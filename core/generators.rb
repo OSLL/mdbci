@@ -38,7 +38,7 @@ Vagrant.configure(2) do |config|
   end
 
   def Generator.getRoleDef(name,version)
-    roledef = '{ '+"\n"+' "name" :' + quote(name)+"\n"+ \
+    roledef = '{ '+"\n"+' "name" :' + quote(name)+",\n"+ \
     <<-EOF
  "default_attributes": { },
     EOF
@@ -65,6 +65,7 @@ Vagrant.configure(2) do |config|
 
   def Generator.generate(config, boxes)
     #TODO Errors check
+    #TODO MariaDb Version Validator
 
     vagrant = File.open('Vagrantfile','w')
 

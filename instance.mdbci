@@ -2,7 +2,7 @@
 	"node1" :
 		{
 			"hostname" : "server",
-			"box" : "suse13",
+			"box" : "ubuntu",
 			"mariadb" : "10.0"
 		},
 	"node2" :
