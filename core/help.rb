@@ -8,7 +8,7 @@ mdbci [option] <up>
   Shows this help screen
 
 -c, --config [config file]
-  Uses [config file] for running instance. by default 'config.mdbci.rb' will be used.
+  Uses [config file] for running instance. by default 'config.mdbci' will be used.
 
 -p, --platforms
   Show list of supported platforms

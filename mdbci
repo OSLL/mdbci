@@ -10,7 +10,7 @@ require_relative 'core/generators'
 
 puts 'MariaDb CI CLI'
 
-config_file = 'config.mdbci.rb'
+config_file = 'config.mdbci'
 
 #Reading options
 opts = GetoptLong.new(
@@ -31,6 +31,7 @@ opts.each do |opt,arg|
       end
     when '--help'
       Help.display
+      exit
     else
       puts 'Options are not supported'
   end

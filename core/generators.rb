@@ -10,7 +10,7 @@ Vagrant.configure(2) do |config|
   end
 
   def Generator.roleFileName(role)
-    return role+'.json'
+    return 'recipes/roles/'+role+'.json'
   end
 
   def Generator.vagrantFooter
@@ -64,12 +64,14 @@ Vagrant.configure(2) do |config|
   end
 
   def Generator.generate(config, boxes)
+    #TODO Errors check
+
     vagrant = File.open('Vagrantfile','w')
 
     vagrant.puts vagrantHeader
 
     config.each do |node|
-      #puts node[0].to_s + ':' + node[1].to_s
+      puts node[0].to_s + ':' + node[1].to_s
       box = node[1]['box'].to_s
       boxurl = boxes[box]
       name = node[0].to_s
