@@ -1,0 +1,11 @@
+{
+	"name": "web",
+  	"default_attributes": { },
+  	"override_attributes": { },
+  	"json_class": "Chef::Role",
+  	"description": "web server role",
+  	"chef_type": "role",
+  	"run_list": [
+		"recipe[mdbc]" 
+	]
+}

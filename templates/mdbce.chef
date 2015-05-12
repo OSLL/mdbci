@@ -1,0 +1,9 @@
+{
+	"name": "default",
+	"default_attributes": { },
+	"override_attributes": { "maria": { "version": "{{MARIADB_VERSION}}" } },
+	"json_class": "Chef::Role",
+	"description": "MariaDb instance install and run",
+	"chef_type": "role",
+	"run_list": [ "recipe[mdbc]" ]
+}

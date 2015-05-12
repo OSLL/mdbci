@@ -1,0 +1,18 @@
+# Vagrantfile template
+
+Vagrant.configure(2) do |config|
+
+	# box name
+	config.vm.box = "box_name" # base or hashicorp/precise32
+
+	config.vm.box_url = "box_url"
+
+	#config.vm.synced_folder ".." "."
+
+	config.vm.provision "chef_solo" do |chef|
+		chef.cookbooks_path = "recipes/cookbooks"
+		chef.roles_path = "recipes/roles"
+		chef.add_role "test"
+	end
+
+end

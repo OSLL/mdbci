@@ -1,0 +1,12 @@
+{
+   	"suse13.1_no_ssh": "https://atlas.hashicorp.com/chef/boxes/opensuse-13.1/versions/1.0.0/providers/virtualbox.box"
+	"suse13": "https://atlas.hashicorp.com/elatov/boxes/opensuse13-64/versions/0.0.1/providers/virtualbox.box"
+	"arch": "https://atlas.hashicorp.com/terrywang/boxes/archlinux/versions/1.0.0/providers/virtualbox.box"
+	"fedora": "https://atlas.hashicorp.com/chef/boxes/fedora-20/versions/1.0.0/providers/virtualbox.box"
+	"centos": "https://atlas.hashicorp.com/chef/boxes/centos-6.5/versions/1.0.0/providers/virtualbox.box"
+	"centos65_x32": "https://atlas.hashicorp.com/chef/boxes/centos-6.5-i386/versions/1.0.0/providers/virtualbox.box"
+	"redhat7_no_ssh": "https://atlas.hashicorp.com/thussain/boxes/rhel7/	versions/1.0.0/providers/virtualbox.box"
+	"mint": "https://atlas.hashicorp.com/rjkernick/boxes/linuxMint17Xfce/versions/1.2.0/providers/virtualbox.box"
+	"ubuntu": "https://vagrantcloud.com/hashicorp/boxes/precise32/versions/1.0.0/providers/virtualbox.box"
+	"debian": "https://atlas.hashicorp.com/chef/boxes/debian-7.4/versions/1.0.0/providers/virtualbox.box"
+}
