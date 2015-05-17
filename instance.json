@@ -10,5 +10,65 @@
 			"hostname" : "slave",
 			"box" : "ubuntu_trusty",
 			"mariadb" : "10.1"
+		},
+	"node3" :
+		{
+			"hostname" : "slave",
+			"box" : "ubuntu_utopic",
+			"mariadb" : "10.1"
+		},
+	"node4" :
+		{
+			"hostname" : "slave",
+			"box" : "ubuntu_precise",
+			"mariadb" : "10.1"
+		},
+	"node5" :
+		{
+			"hostname" : "slave",
+			"box" : "centos7",
+			"mariadb" : "10.1"
+		},
+	"node6" :
+		{
+			"hostname" : "slave",
+			"box" : "centos6",
+			"mariadb" : "10.1"
+		},
+	"node7" :
+		{
+			"hostname" : "slave",
+			"box" : "centos5",
+			"mariadb" : "10.1"
+		},
+	"node8" :
+		{
+			"hostname" : "slave",
+			"box" : "deb_wheezy",
+			"mariadb" : "10.1"
+		},
+	"node9" :
+		{
+			"hostname" : "slave",
+			"box" : "deb_squeeze",
+			"mariadb" : "10.1"
+		},
+	"node10" :
+		{
+			"hostname" : "slave",
+			"box" : "suse13",
+			"mariadb" : "10.1"
+		},
+	"node11" :
+		{
+			"hostname" : "slave",
+			"box" : "fedora20",
+			"mariadb" : "10.1"
+		},
+	"node12" :
+		{
+			"hostname" : "slave",
+			"box" : "fedora19",
+			"mariadb" : "10.1"
 		}
 }
