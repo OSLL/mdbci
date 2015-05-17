@@ -1,11 +1,12 @@
 require 'json'
 require 'fileutils'
+require 'uri'
 
 class Session
 
   attr_accessor :isOverride, :configFile
-  attr  :boxes
-  attr  :versions
+  attr :boxes
+  attr :versions
 
 =begin
      Load collections from json files:
@@ -29,8 +30,13 @@ class Session
         p @boxes.keys
         puts 'Adding boxes to vagrant'
         p @boxes
-        @boxes.each do |key,value|
-          shell = 'vagrant box add '+key+' '+value
+        @boxes.each do |key, value|
+          if value =~ URI::regexp
+            shell = 'vagrant box add '+key+' '+value
+          else
+            shell = shell = 'vagrant box add '+value
+          end
+
           system shell
         end
       else

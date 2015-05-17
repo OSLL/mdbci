@@ -51,7 +51,8 @@ case cmd
   when 'setup'
     session.setup(ARGV.shift)
   else
-    puts 'not implemented:'+cmd
+    puts 'Something wrong with command line'
+    Help.show
 end
 
 
