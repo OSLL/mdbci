@@ -52,7 +52,7 @@ case cmd
     session.setup(ARGV.shift)
   else
     puts 'Something wrong with command line'
-    Help.show
+    Help.display
 end
 
 

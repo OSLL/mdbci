@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="2d593f7a-6e7f-4b42-ac03-0b4341b007c9" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/mdbci" afterPath="$PROJECT_DIR$/mdbci" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/session.rb" afterPath="$PROJECT_DIR$/core/session.rb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="scripts.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -34,8 +32,8 @@
       <file leaf-file-name="mdbci" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/mdbci">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.5978975">
-              <caret line="54" column="13" selection-start-line="54" selection-start-column="13" selection-end-line="54" selection-end-column="13" />
+            <state vertical-scroll-proportion="0.739816">
+              <caret line="54" column="16" selection-start-line="54" selection-start-column="16" selection-end-line="54" selection-end-column="16" />
               <folding />
             </state>
           </provider>
@@ -656,8 +654,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/mdbci">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5978975">
-          <caret line="54" column="13" selection-start-line="54" selection-start-column="13" selection-end-line="54" selection-end-column="13" />
+        <state vertical-scroll-proportion="0.739816">
+          <caret line="54" column="16" selection-start-line="54" selection-start-column="16" selection-end-line="54" selection-end-column="16" />
           <folding />
         </state>
       </provider>
