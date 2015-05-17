@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2d593f7a-6e7f-4b42-ac03-0b4341b007c9" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/mdbci" afterPath="$PROJECT_DIR$/mdbci" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/session.rb" afterPath="$PROJECT_DIR$/core/session.rb" />
     </list>
     <ignored path="scripts.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -29,21 +29,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="mdbci" pinned="false" current-in-tab="true">
+      <file leaf-file-name="mdbci" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/mdbci">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.739816">
-              <caret line="54" column="16" selection-start-line="54" selection-start-column="16" selection-end-line="54" selection-end-column="16" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="35" column="42" selection-start-line="35" selection-start-column="42" selection-end-line="35" selection-end-column="42" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="session.rb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="session.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/session.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="27" column="13" selection-start-line="27" selection-start-column="13" selection-end-line="27" selection-end-column="13" />
+            <state vertical-scroll-proportion="0.28383705">
+              <caret line="36" column="67" selection-start-line="36" selection-start-column="67" selection-end-line="36" selection-end-column="67" />
               <folding />
             </state>
           </provider>
@@ -84,8 +84,8 @@
         <option value="$PROJECT_DIR$/boxes" />
         <option value="$PROJECT_DIR$/core/help.rb" />
         <option value="$PROJECT_DIR$/boxes.json" />
-        <option value="$PROJECT_DIR$/core/session.rb" />
         <option value="$PROJECT_DIR$/mdbci" />
+        <option value="$PROJECT_DIR$/core/session.rb" />
       </list>
     </option>
   </component>
@@ -644,18 +644,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/session.rb">
+    <entry file="file://$PROJECT_DIR$/mdbci">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="27" column="13" selection-start-line="27" selection-start-column="13" selection-end-line="27" selection-end-column="13" />
+          <caret line="35" column="42" selection-start-line="35" selection-start-column="42" selection-end-line="35" selection-end-column="42" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/mdbci">
+    <entry file="file://$PROJECT_DIR$/core/session.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.739816">
-          <caret line="54" column="16" selection-start-line="54" selection-start-column="16" selection-end-line="54" selection-end-column="16" />
+        <state vertical-scroll-proportion="0.28383705">
+          <caret line="36" column="67" selection-start-line="36" selection-start-column="67" selection-end-line="36" selection-end-column="67" />
           <folding />
         </state>
       </provider>

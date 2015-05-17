@@ -34,7 +34,7 @@ class Session
           if value =~ URI::regexp
             shell = 'vagrant box add '+key+' '+value
           else
-            shell = shell = 'vagrant box add '+value
+            shell = shell = 'vagrant box add --provider virtualbox '+value
           end
 
           system shell
