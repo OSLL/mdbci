@@ -27,12 +27,11 @@ Vagrant.configure(2) do |config|
 
   def Generator.getVmDef(name, host, box, boxurl)
     vmdef = 'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
-          + name+'.vm.box = ' + quote(box) + "\n" \
-          + name+'.vm.box_url = ' + quote(boxurl) + "\n" \
+          + name+'.vm.box = ' + quote(boxurl) + "\n" \
           + name+'.vm.hostname = ' + quote(host) +"\n" \
           + name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
-          + 'chef.cookbooks_path = '+ quote('recipes/cookbooks')+"\n" \
-          + 'chef.roles_path = '+ quote('recipes/roles')+"\n" \
+          + 'chef.cookbooks_path = '+ quote('../recipes/cookbooks')+"\n" \
+          + 'chef.roles_path = '+ quote('.')+"\n" \
           + 'chef.add_role '+ quote(name) + "\nend\nend\n"
     return vmdef
   end
@@ -55,6 +54,8 @@ Vagrant.configure(2) do |config|
   end
 
   def Generator.makeDefinition(name, host, box, boxurl, version)
+
+
     vm = getVmDef(name, host, box, boxurl)
     role = getRoleDef(name,version)
 
@@ -71,6 +72,10 @@ Vagrant.configure(2) do |config|
     end
     FileUtils.rm_rf(path);
     Dir.mkdir(path)
+  end
+
+  def Generator.boxValid?(box,boxes)
+    !boxes[box].nil?
   end
 
   def Generator.generate(path, config, boxes, override)
@@ -92,13 +97,14 @@ Vagrant.configure(2) do |config|
       version = node[1]['mariadb']
 
 
-      vm = getVmDef(name,host,box,boxurl)
-      vagrant.puts vm
-
-      role = getRoleDef(name,version)
-      IO.write(roleFileName(name),role)
-
-
+      if Generator.boxValid?(box,boxes)
+        vm = getVmDef(name,host,box,boxurl)
+        vagrant.puts vm
+        role = getRoleDef(name,version)
+        IO.write(roleFileName(name),role)
+      else
+        puts 'ERR: Box '+box+'is not installed or configured ->SKIPPING'
+      end
       #makeDefinition(node[0].to_s,node[1]['hostname'].to_s,box,boxurl,node[1]['mariadb'])
     end
     vagrant.puts vagrantFooter

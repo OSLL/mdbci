@@ -6,7 +6,6 @@ require_relative 'core/help'
 require_relative 'core/generator'
 require_relative 'core/session'
 
-
 puts 'MariaDb CI CLI'
 
 #Reading options
@@ -16,22 +15,23 @@ opts = GetoptLong.new(
     ['--override', '-w', GetoptLong::NO_ARGUMENT],
 )
 
-session = Session.new
+$session = Session.new
+$session.configFile='instance.json'
 
 opts.each do |opt, arg|
   case opt
-    when '--platforms'
-      puts boxes.keys
     when '--template'
+      p arg
       if arg != ''
-        session.configFile =arg
-        puts 'Using template name '+session.configFile
+        $session.configFile= arg
       end
+      puts 'Using template name '+$session.configFile
+
     when '--help'
       Help.display
       exit
     when '--override'
-      session.isOverride =true
+      $session.isOverride =true
     else
       puts 'Option are not supported:'+opt
   end
@@ -41,27 +41,20 @@ end
   run command (create config only for now)
 =end
 
-session.checkConfig
-session.loadCollections
+$session.checkConfig
+$session.loadCollections
 
 case ARGV.shift
   when 'show'
-    session.show(ARGV.shift)
+    $session.show(ARGV.shift)
   when 'setup'
-    session.setup(ARGV.shift)
+    $session.setup(ARGV.shift)
   when 'generate'
-    session.generate(ARGV.shift)
+    p $session
+    $session.generate(ARGV.shift)
   else
-    puts ' (!) Something wrong with command line'
+    puts 'ERR: Something wrong with command line'
     Help.display
 end
-
-
-#  Help.display
-#else
-#
-#  config = JSON.parse(IO.read(config_file))
-#  Generator.generate(config,boxes.json)
-#end
 
 

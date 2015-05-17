@@ -6,10 +6,11 @@ require_relative 'generator'
 
 class Session
 
-  attr_accessor :isOverride
+  attr_accessor :boxes
+  attr_accessor :versions
   attr_accessor :configFile
-  attr :boxes
-  attr :versions
+  attr_accessor :isOverride
+
 
 =begin
      Load collections from json files:
@@ -59,6 +60,8 @@ class Session
         puts JSON.pretty_generate(@boxes)
       when 'versions'
         puts @versions
+      when 'platforms'
+        puts  @boxes.keys
       else
         puts 'Unknown collection: '+collection
     end
@@ -72,9 +75,10 @@ class Session
       path +='/'+name.to_s
     end
 
-    config = JSON.parse(IO.read(@configFile));
+    p configFile
+    config = JSON.parse(IO.read($session.configFile))
     puts 'Generating config in ' + path
-    Generator.generate(path,config,boxes,@isOverride)
+    Generator.generate(path,config,boxes,isOverride)
 
   end
 end

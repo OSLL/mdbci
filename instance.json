@@ -2,13 +2,13 @@
 	"node1" :
 		{
 			"hostname" : "server",
-			"box" : "ubuntu",
+			"box" : "debian",
 			"mariadb" : "10.0"
 		},
 	"node2" :
 		{
 			"hostname" : "slave",
-			"box" : "ubuntu",
+			"box" : "ubuntu_trusty",
 			"mariadb" : "10.1"
 		}
 }

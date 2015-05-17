@@ -10,11 +10,13 @@ mdbci [option] <show | setup | generate>
 -t, --template [config file]:
   Uses [config file] for running instance. By default 'instance.json' will be used as config template.
 
--p, --platforms:
-  Show list of supported platforms
-
 -w, --override
   Override previous configuration
+
+COMMANDS:
+  show [boxes, platforms, versions]
+  generate
+  setup [boxes]
 
   EOF
 
