@@ -34,7 +34,7 @@ class Session
           if value =~ URI::regexp
             shell = 'vagrant box add '+key+' '+value
           else
-            shell = shell = 'vagrant box add --provider virtualbox '+value
+            shell = 'vagrant box add --provider virtualbox '+value
           end
 
           system shell
@@ -59,5 +59,15 @@ class Session
       else
         puts 'Unknown collection: '+collection
     end
+  end
+
+  def generate(name)
+    path = Dir.pwd
+    if name.nil?
+      path += '/default'
+    else
+      path +='/'+name.to_s
+    end
+    puts 'Generating config in ' + path
   end
 end

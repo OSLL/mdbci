@@ -16,7 +16,7 @@
     </EXTENSION>
     <EXTENSION ID="org.jetbrains.plugins.ruby.motion.run.MotionSimulatorRunExtension" />
     <RUBY_RUN_CONFIG NAME="SCRIPT_PATH" VALUE="$MODULE_DIR$/mdbci" />
-    <RUBY_RUN_CONFIG NAME="SCRIPT_ARGS" VALUE="--template instance.json --override setup boxes" />
+    <RUBY_RUN_CONFIG NAME="SCRIPT_ARGS" VALUE="--template instance.json --override generate test" />
     <method />
   </configuration>
 </component>

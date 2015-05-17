@@ -2,7 +2,7 @@ class Help
 
 def Help.display
   puts <<-EOF
-mdbci [option] <make | prepare | run>
+mdbci [option] <show | setup | generate>
 
 -h, --help:
   Shows this help screen

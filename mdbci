@@ -44,14 +44,15 @@ end
 session.checkConfig
 session.loadCollections
 
-cmd = ARGV.shift
-case cmd
+case ARGV.shift
   when 'show'
     session.show(ARGV.shift)
   when 'setup'
     session.setup(ARGV.shift)
+  when 'generate'
+    session.generate(ARGV.shift)
   else
-    puts 'Something wrong with command line'
+    puts ' (!) Something wrong with command line'
     Help.display
 end
 
