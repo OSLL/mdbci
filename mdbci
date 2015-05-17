@@ -3,7 +3,7 @@
 require 'getoptlong'
 
 require_relative 'core/help'
-require_relative 'core/generators'
+require_relative 'core/generator'
 require_relative 'core/session'
 
 

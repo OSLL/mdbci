@@ -14,8 +14,7 @@ mdbci [option] <show | setup | generate>
   Show list of supported platforms
 
 -w, --override
-
-Configname is a directory what will be created for new vagrant configuration. Process will fail if directory already exists. Use key -w to override configuration.
+  Override previous configuration
 
   EOF
 

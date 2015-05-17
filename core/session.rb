@@ -2,9 +2,12 @@ require 'json'
 require 'fileutils'
 require 'uri'
 
+require_relative 'generator'
+
 class Session
 
-  attr_accessor :isOverride, :configFile
+  attr_accessor :isOverride
+  attr_accessor :configFile
   attr :boxes
   attr :versions
 
@@ -68,6 +71,10 @@ class Session
     else
       path +='/'+name.to_s
     end
+
+    config = JSON.parse(IO.read(@configFile));
     puts 'Generating config in ' + path
+    Generator.generate(path,config,boxes,@isOverride)
+
   end
 end

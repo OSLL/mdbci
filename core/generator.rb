@@ -63,11 +63,23 @@ Vagrant.configure(2) do |config|
     #puts role
   end
 
-  def Generator.generate(config, boxes)
+  def Generator.checkPath(path,override)
+    if Dir.exist?(path) && !override
+      puts 'ERR: folder already exists:' + path
+      puts 'Please specify another name or delete'
+      exit -1
+    end
+    FileUtils.rm_rf(path);
+    Dir.mkdir(path)
+  end
+
+  def Generator.generate(path, config, boxes, override)
     #TODO Errors check
     #TODO MariaDb Version Validator
 
-    vagrant = File.open('Vagrantfile','w')
+    checkPath(path,override)
+
+    vagrant = File.open(path+'/Vagrantfile','w')
 
     vagrant.puts vagrantHeader
 
