@@ -1,49 +1,65 @@
 #!/usr/bin/env ruby
 
-require 'json'
-require 'fileutils'
 require 'getoptlong'
 
 require_relative 'core/help'
 require_relative 'core/generators'
+require_relative 'core/session'
 
 
 puts 'MariaDb CI CLI'
 
-config_file = 'config.mdbci'
-
 #Reading options
 opts = GetoptLong.new(
-                     ['--help', '-h', GetoptLong::NO_ARGUMENT],
-                     ['--config', '-c', GetoptLong::REQUIRED_ARGUMENT],
-                     ['--platforms','-p', GetoptLong::NO_ARGUMENT]
+    ['--help', '-h', GetoptLong::NO_ARGUMENT],
+    ['--template', '-t', GetoptLong::REQUIRED_ARGUMENT],
+    ['--override', '-w', GetoptLong::NO_ARGUMENT],
 )
 
-opts.each do |opt,arg|
+session = Session.new
+
+opts.each do |opt, arg|
   case opt
     when '--platforms'
       puts boxes.keys
-    when '--config'
-      if arg == ''
-        puts 'Using default config name \''+config_file+'\''
-      else
-        config_file = arg
+    when '--template'
+      if arg != ''
+        session.configFile =arg
+        puts 'Using template name '+session.configFile
       end
     when '--help'
       Help.display
       exit
+    when '--override'
+      session.isOverride =true
     else
-      puts 'Options are not supported'
+      puts 'Option are not supported:'+opt
   end
 end
 
-if ARGV[ARGV.length-1]!='up'
-  puts 'Command (up) is required'
-  Help.display
-else
-  boxes = JSON.parse(IO.read('boxes'))
-  config = JSON.parse(IO.read(config_file))
-  Generator.generate(config,boxes)
+=begin
+  run command (create config only for now)
+=end
+
+session.checkConfig
+session.loadCollections
+
+cmd = ARGV.shift
+case cmd
+  when 'show'
+    session.show(ARGV.shift)
+  when 'setup'
+    session.setup(ARGV.shift)
+  else
+    puts 'not implemented:'+cmd
 end
+
+
+#  Help.display
+#else
+#
+#  config = JSON.parse(IO.read(config_file))
+#  Generator.generate(config,boxes.json)
+#end
 
 

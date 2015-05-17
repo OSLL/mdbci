@@ -1,0 +1,15 @@
+{
+  "debian" : "https://atlas.hashicorp.com/chef/boxes/debian-7.4/versions/1.0.0/providers/virtualbox.box",
+  "ubuntu_trusty": "chef/ubuntu-14.04",
+  "ubuntu_utopic": "chef/ubuntu-14.10",
+  "ubuntu_precise": "chef/ubuntu-12.04",
+  "centos7": "chef/centos-7.0",
+  "centos6": "chef/centos-6.5",
+  "centos5": "chef/centos-5.10",
+  "deb_wheezy": "chef/debian-7.8",
+  "deb_squeeze": "chef/debian-6.0.8",
+  "suse13": "webhippie/opensuse-13.2",
+  "fedora20": "chef/fedora-20",
+  "fedora19": "chef/fedora-19"
+}
+
