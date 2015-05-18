@@ -4,7 +4,7 @@ For help:
 
   ./mdbci --help
   
-REQUIREMENTS:
+== REQUIREMENTS==:
 Add [deb http://download.virtualbox.org/virtualbox/debian trusty contrib] into /etc/apt/sources.list
 
 wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
@@ -15,8 +15,6 @@ wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key a
 </pre>
 
   
-
-
 <pre>
   #apt-get install ruby
   
@@ -24,6 +22,10 @@ wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key a
   #dpkg -i vagrant_1.7.2_x86_64.deb
   $vagrant plugin install vagrant-vbguest
 </pre>
+
+== WORKFLOW ==
+
+
 
   
 
