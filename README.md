@@ -58,6 +58,8 @@ Since new template is created you can generate stand structure.
 
 In this example MDBCI will generate new vagrant/chef config from mynewstand.json template. It will be placed in NAME subdirectory. If name is not specified than stand will be configured in default subdirectory. Parameter --override is required to overwrite existing configuration.
 
+*NB* Many stands could be configured by MDBCI in subdirectories. Each stand is autonomous.
+
 #### Using vagrant to manage stand
 
 Since stand is generated it can be managed with vagrant command. 
