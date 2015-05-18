@@ -23,12 +23,6 @@
 			"box" : "ubuntu_precise",
 			"mariadb" : "10.1"
 		},
-	"node5" :
-		{
-			"hostname" : "slave",
-			"box" : "centos7",
-			"mariadb" : "10.1"
-		},
 	"node6" :
 		{
 			"hostname" : "slave",
