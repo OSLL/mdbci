@@ -9,8 +9,8 @@ Vagrant.configure(2) do |config|
     return hdr
   end
 
-  def Generator.roleFileName(role)
-    return 'recipes/roles/'+role+'.json'
+  def Generator.roleFileName(path,role)
+    return path+'/'+role+'.json'
   end
 
   def Generator.vagrantFooter
@@ -101,7 +101,7 @@ Vagrant.configure(2) do |config|
         vm = getVmDef(name,host,box,boxurl)
         vagrant.puts vm
         role = getRoleDef(name,version)
-        IO.write(roleFileName(name),role)
+        IO.write(roleFileName(path,name),role)
       else
         puts 'ERR: Box '+box+'is not installed or configured ->SKIPPING'
       end
