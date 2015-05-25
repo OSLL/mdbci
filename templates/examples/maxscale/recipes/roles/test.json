@@ -1,0 +1,19 @@
+{
+	"name": "test",
+  	"default_attributes": { },
+  	"override_attributes": { 
+		"maria": { 
+			"version": "1.1.0",
+			"repo": "http://jenkins.engskysql.com/repository/1.1.0-ga/mariadb-maxscale/repo"
+		},
+		"repo": {
+			"key": "http://jenkins.engskysql.com/repository/1.1.0-ga/mariadb-maxscale"
+		}
+	},
+  	"json_class": "Chef::Role",
+  	"description": "test role",
+  	"chef_type": "role",
+  	"run_list": [
+		"recipe[mscale]" 
+	]
+}
