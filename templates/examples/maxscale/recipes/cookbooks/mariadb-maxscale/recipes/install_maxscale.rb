@@ -28,12 +28,3 @@ when "windows"
 else
   package 'maxscale'
 end
-
-# Starts service
-case node[:platform_family]
-when "windows"
-else
-  service "mysql" do
-    action :start
-  end 
-end

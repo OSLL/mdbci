@@ -2,9 +2,9 @@
 	"name": "test",
   	"default_attributes": { },
   	"override_attributes": { 
-		"maria": { 
+		"maxscale": { 
 			"version": "1.1.0",
-			"repo": "http://jenkins.engskysql.com/repository/1.1.0-ga/mariadb-maxscale/repo"
+			"repo": "http://jenkins.engskysql.com/repository/1.1.0-ga/mariadb-maxscale/yum"
 		},
 		"repo": {
 			"key": "http://jenkins.engskysql.com/repository/1.1.0-ga/mariadb-maxscale"

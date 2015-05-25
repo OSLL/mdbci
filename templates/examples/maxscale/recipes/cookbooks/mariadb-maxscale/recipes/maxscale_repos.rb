@@ -13,8 +13,9 @@ case node[:platform_family]
     command "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 70E4618A8167EE24"
   end
   release_name = '$(lsb_release -cs)'
+  system 'echo Platform: $release_name'
   execute "Repository add" do
-    command 'echo "deb ' + node['maxscale']['repo'] + '/' + node[:platform] + ' ' + release_name + ' main" > /etc/apt/sources.list.d/mariadb-maxscale.list'
+    command 'echo "deb ' + node['maxscale']['repo'] + '/' + node[:platform] + ' ' + release_name + ' main" > /etc/apt/sources.list.d/maxscale.list'
   end
   execute "update" do
     command "apt-get update"
