@@ -8,7 +8,7 @@ case node[:platform_family]
   # maxscale attributes
   system 'echo Maxscale version: ' + node['maxscale']['version']
   system 'echo Maxscale repo: ' + node['maxscale']['repo']
-  system 'echo Maxscale repo key: ' + node['repo']['key']
+  system 'echo Maxscale repo key: ' + node['maxscale']['repo_key']
   # Add repo key
   execute "Key add" do
     command "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 70E4618A8167EE24"
@@ -21,11 +21,6 @@ case node[:platform_family]
   execute "update" do
     command "apt-get update"
   end
-  # Add repo key
-  #template "/etc/apt/maxscale.repo" do
-  #  source "maxscale.deb.erb"
-  #  action :create
-  #end
   when "rhel", "fedora", "centos"
   # Add the repo
   template "/etc/yum.repos.d/maxscale.repo" do

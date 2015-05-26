@@ -8,17 +8,10 @@ Vagrant.configure(2) do |config|
   #config.vm.box = "chef/opensuse-13.1"
   config.vm.box = "chef/centos-6.6"
 
-  #config.vm.box = "fedora20"
-  #config.vm.box_url = "https://atlas.hashicorp.com/chef/boxes/fedora-20/versions/1.0.0/providers/virtualbox.box"
-
-  # install curl and last chef
-  #config.vm.provision :shell, :path => "./curl_install.sh", privileged: true
-  #config.vm.provision :shell, :path => "./chef_install.sh", privileged: true
-
   # configure Chef
   config.vm.provision "chef_solo" do |chef|
-     chef.cookbooks_path = "recipes/cookbooks"
-     chef.roles_path = "recipes/roles"
+     chef.cookbooks_path = "../../../recipes/cookbooks"
+     chef.roles_path = "."
      chef.add_role "test"
   end
  
