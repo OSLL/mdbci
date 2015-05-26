@@ -15,12 +15,12 @@ end  # Turn off SElinux
 case node[:platform_family]
 when "suse"
   execute "install" do
-    command "zypper -n install maxscale"
+    command "zypper install maxscale"
   end
 when "debian"
   package 'maxscale'
 when "windows"
-  windows_package "MariaDB" do
+  windows_package "maxscale" do
     source "#{Chef::Config[:file_cache_path]}/maxscale.msi"
     installer_type :msi
     action :install
