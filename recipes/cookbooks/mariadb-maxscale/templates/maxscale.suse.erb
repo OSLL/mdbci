@@ -3,5 +3,5 @@ name = maxscale
 enabled=1
 autorefresh=0
 baseurl=<%= node['maxscale']['repo'] %>/<%= node[:platform] %>/<%= node[:platform_version].to_i %>/$basearch
-gpgkey=<%= node['repo']['key'] %>/Maxscale-GPG-KEY.public
+gpgkey=<%= node['maxscale']['repo_key'] %>/Maxscale-GPG-KEY.public
 gpgcheck=0
