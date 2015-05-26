@@ -1,0 +1,29 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+  
+  #config.vm.box = "chef/ubuntu-12.04"
+  #config.vm.box = "chef/fedora-21"
+  config.vm.box = "chef/opensuse-13.1"
+
+  #config.vm.box = "fedora20"
+  #config.vm.box_url = "https://atlas.hashicorp.com/chef/boxes/fedora-20/versions/1.0.0/providers/virtualbox.box"
+
+  # ubuntu 12.04
+  #config.vm.box_url = "https://vagrantcloud.com/hashicorp/boxes/precise32/versions/1.0.0/providers/virtualbox.box"
+
+  #config.vm.synced_folder "/home/h05t/Maria_Project/mariadb/", "/home/h05t/thesis/"
+
+  # install curl and last chef
+  #config.vm.provision :shell, :path => "./curl_install.sh", privileged: true
+  #config.vm.provision :shell, :path => "./chef_install.sh", privileged: true
+
+  # configure Chef
+  config.vm.provision "chef_solo" do |chef|
+     chef.cookbooks_path = "recipes/cookbooks"
+     chef.roles_path = "recipes/roles"
+     chef.add_role "test"
+  end
+ 
+end

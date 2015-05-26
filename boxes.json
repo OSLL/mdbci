@@ -8,8 +8,10 @@
   "centos5": "chef/centos-5.11",
   "deb_wheezy": "chef/debian-7.8",
   "deb_squeeze": "chef/debian-6.0.8",
+  "suse13.1": "chef/opensuse-13.1",
   "suse13": "webhippie/opensuse-13.2",
+  "fedora19": "chef/fedora-19",
   "fedora20": "chef/fedora-20",
-  "fedora19": "chef/fedora-19"
+  "fedora21": "chef/fedora-21"
 }
 
