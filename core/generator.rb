@@ -41,12 +41,19 @@ Vagrant.configure(2) do |config|
   end
 
   def Generator.getRoleDef(name,version)
+
+    if version.class == Hash
+      mdbversion = JSON.pretty_generate(version)
+    else
+      mdbversion = '{ '+quote('version')+':'+quote(version)+' }'
+    end
+
     roledef = '{ '+"\n"+' "name" :' + quote(name)+",\n"+ \
     <<-EOF
  "default_attributes": { },
     EOF
-    roledef += ' '+quote('override_attributes') +': { '+quote('maria')+\
-        ': { '+quote('version')+':'+quote(version)+' } },'+"\n"
+    roledef += ' '+quote('override_attributes') +': { '+quote('maria')+ ': '+ mdbversion +\
+    ' },'+"\n"
     roledef += <<-EOF
  "json_class": "Chef::Role",
  "description": "MariaDb instance install and run",
