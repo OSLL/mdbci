@@ -1,0 +1,62 @@
+{
+	"node0" :
+		{
+			"hostname" : "master",
+			"box" : "centos6",
+			"mariadb" : "5.5"
+		},
+	"node1" :
+		{
+			"hostname" : "slave1",
+			"box" : "centos6",
+			"mariadb" : "5.5"
+		},
+	"node2" :
+		{
+			"hostname" : "slave2",
+			"box" : "centos6",
+			"mariadb" : "5.5"
+		},
+	"node3" :
+		{
+			"hostname" : "slave3",
+			"box" : "centos6",
+			"mariadb" : "5.5"
+		},
+	"galera0" :
+		{
+			"hostname" : "galera0",
+			"box" : "centos6",
+			"mariadb" : "5.5"
+		},
+	"galera1" :
+		{
+			"hostname" : "galera1",
+			"box" : "centos6",
+			"mariadb" : "5.5"
+		},
+	"galera2" :
+		{
+			"hostname" : "galera3",
+			"box" : "centos6",
+			"mariadb" : "5.5"
+		},
+	"galera4" :
+		{
+			"hostname" : "galera4",
+			"box" : "centos6",
+			"mariadb" : "5.5"
+		},
+	"maxscale" :
+		{
+			"hostname" : "maxscale",
+			"box" : "centos6",
+			"mariadb" : "5.5"
+		},
+	"test" :
+		{
+			"hostname" : "test",
+			"box" : "ubuntu_trusty",
+			"mariadb" : "5.5"
+		}
+}

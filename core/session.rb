@@ -3,6 +3,7 @@ require 'fileutils'
 require 'uri'
 
 require_relative 'generator'
+require_relative 'network'
 
 class Session
 
@@ -10,7 +11,7 @@ class Session
   attr_accessor :versions
   attr_accessor :configFile
   attr_accessor :isOverride
-
+  attr_accessor :isSilent
 
 =begin
      Load collections from json files:
@@ -19,9 +20,9 @@ class Session
 =end
 
   def loadCollections
-    puts 'Load boxes.json'
+    $out.info 'Load boxes.json'
     @boxes = JSON.parse(IO.read('boxes.json'))
-    puts 'Load Versions'
+    $out.info 'Load Versions'
   end
 
   def inspect
@@ -32,7 +33,7 @@ class Session
     case what
       when 'boxes'
         p @boxes.keys
-        puts 'Adding boxes to vagrant'
+        $out.info 'Adding boxes to vagrant'
         p @boxes
         @boxes.each do |key, value|
           if value =~ URI::regexp
@@ -44,26 +45,28 @@ class Session
           system shell
         end
       else
-        puts 'Cannot setup '+what
+        $out.warn 'Cannot setup '+what
     end
   end
 
   def checkConfig
     #TODO #6267
-    puts 'Checking this machine configuration requirments'
-    puts '.....NOT IMPLEMENTED YET'
+    $out.info 'Checking this machine configuration requirments'
+    $out.info '.....NOT IMPLEMENTED YET'
   end
 
   def show(collection)
     case collection
       when 'boxes'
-        puts JSON.pretty_generate(@boxes)
+        $out.out JSON.pretty_generate(@boxes)
       when 'versions'
-        puts @versions
+        $out.out @versions
       when 'platforms'
-        puts  @boxes.keys
+        $out.out  @boxes.keys
+      when 'network'
+        Network.show(ARGV.shift)
       else
-        puts 'Unknown collection: '+collection
+        $out.error 'Unknown collection: '+collection
     end
   end
 
@@ -75,9 +78,8 @@ class Session
       path +='/'+name.to_s
     end
 
-    p configFile
     config = JSON.parse(IO.read($session.configFile))
-    puts 'Generating config in ' + path
+    $out.info 'Generating config in ' + path
     Generator.generate(path,config,boxes,isOverride)
 
   end
