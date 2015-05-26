@@ -20,7 +20,7 @@ when "suse"
 when "debian"
   package 'maxscale'
 when "windows"
-  windows_package "MariaDB" do
+  windows_package "maxscale" do
     source "#{Chef::Config[:file_cache_path]}/maxscale.msi"
     installer_type :msi
     action :install
