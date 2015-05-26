@@ -11,7 +11,6 @@ class Network
 
   def getNodeInfo(config, node)
     node = Node.new(config, node)
-    $out.info 'Node: '+node.to_s
     @nodes.push(node)
   end
 
@@ -20,9 +19,6 @@ class Network
     Dir.chdir config
 
     vagrant_out = `vagrant status`
-
-    $out.info '[[[[['+vagrant_out+']]]]]'
-
     list = vagrant_out.split("\n")
 
 =begin
@@ -51,7 +47,7 @@ class Network
   def self.show(name)
 
       if name.nil?
-        $out.info 'ERR: Configuration name is required'
+        $out.error 'Configuration name is required'
         return
       end
 

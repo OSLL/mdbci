@@ -11,9 +11,7 @@ class Node
 
   def getIp
     cmd = 'vagrant ssh '+@name+' -c "/sbin/ifconfig eth1 | grep \"inet \" "'
-    $out.info cmd
     vagrant_out = `#{cmd}`
-    $out.info '>>'+vagrant_out
     ip = vagrant_out.scanf('inet addr:%s Bcast')
     @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
     $out.info 'IP:'+@ip
