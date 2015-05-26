@@ -1,5 +1,5 @@
 [mariadb]
 name = MariaDB
-baseurl = http://mirror.mephi.ru/mariadb/yum/<%= node['maria']['version'] %>/<%= node[:platform] == "redhat" ? node[:platform_family] : node[:platform] %>/$releasever/$basearch
-gpgkey=http://mirror.mephi.ru/mariadb/yum/RPM-GPG-KEY-MariaDB
+baseurl = <%= node['maria']['repo'] %>/<%= node['maria']['version'] %>/<%= node[:platform] == "redhat" ? node[:platform_family] : node[:platform] %>/$releasever/$basearch
+gpgkey=<%= node['repo']['key'] %>/RPM-GPG-KEY-MariaDB
 gpgcheck=1

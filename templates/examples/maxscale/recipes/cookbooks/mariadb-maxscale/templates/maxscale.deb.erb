@@ -1,0 +1,5 @@
+[maxscale]
+name = maxscale
+baseurl = <%= node['maxscale']['repo'] %>/<%= node[:platform] %>/<%= node[:platform_family] %>/$releasever/$basearch
+gpgkey = <%= node['maxscale']['repo'] %>/<%= node[:platform] %>/<%= node[:platform_family] %>/Release.gpg
+gpgcheck=1
