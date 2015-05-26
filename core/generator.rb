@@ -1,3 +1,6 @@
+require_relative '../core/out'
+
+
 class Generator
 
   def Generator.vagrantHeader
@@ -27,6 +30,7 @@ Vagrant.configure(2) do |config|
 
   def Generator.getVmDef(name, host, box, boxurl)
     vmdef = 'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
+          + 'config.vm.network ' + quote('private_network')+', type:'+quote('dhcp')+"\n"\
           + name+'.vm.box = ' + quote(boxurl) + "\n" \
           + name+'.vm.hostname = ' + quote(host) +"\n" \
           + name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
@@ -53,6 +57,7 @@ Vagrant.configure(2) do |config|
     return roledef
   end
 
+  #TODO: Delete?
   def Generator.makeDefinition(name, host, box, boxurl, version)
 
 
@@ -66,8 +71,8 @@ Vagrant.configure(2) do |config|
 
   def Generator.checkPath(path,override)
     if Dir.exist?(path) && !override
-      puts 'ERR: folder already exists:' + path
-      puts 'Please specify another name or delete'
+      $out.error 'ERR: folder already exists:' + path
+      $out.error 'Please specify another name or delete'
       exit -1
     end
     FileUtils.rm_rf(path);
@@ -89,7 +94,7 @@ Vagrant.configure(2) do |config|
     vagrant.puts vagrantHeader
 
     config.each do |node|
-      puts node[0].to_s + ':' + node[1].to_s
+      $out.info node[0].to_s + ':' + node[1].to_s
       box = node[1]['box'].to_s
       boxurl = boxes[box]
       name = node[0].to_s
@@ -103,7 +108,7 @@ Vagrant.configure(2) do |config|
         role = getRoleDef(name,version)
         IO.write(roleFileName(path,name),role)
       else
-        puts 'ERR: Box '+box+'is not installed or configured ->SKIPPING'
+        $out.error 'ERR: Box '+box+'is not installed or configured ->SKIPPING'
       end
       #makeDefinition(node[0].to_s,node[1]['hostname'].to_s,box,boxurl,node[1]['mariadb'])
     end

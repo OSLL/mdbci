@@ -4,10 +4,10 @@
   	"override_attributes": { 
 		"maria": { 
 			"version": "10.0",
-			"repo": "http://mirror.mephi.ru/mariadb/repo"
+			"repo": "http://mirror.mephi.ru/mariadb/yum"
 		},
 		"repo": {
-			"key": "http://ftp.kaist.ac.kr/mariadb/yum"
+			"key": "http://mirror.mephi.ru/mariadb/yum"
 		}
 	},
   	"json_class": "Chef::Role",

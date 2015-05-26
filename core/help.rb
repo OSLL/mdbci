@@ -1,7 +1,10 @@
+require_relative '../core/out'
+
+
 class Help
 
 def Help.display
-  puts <<-EOF
+  $out.out <<-EOF
 mdbci [option] <show | setup | generate>
 
 -h, --help:
@@ -13,8 +16,11 @@ mdbci [option] <show | setup | generate>
 -w, --override
   Override previous configuration
 
+-s, --silent
+  Keep silence, output only requested info or nothing if not available
+
 COMMANDS:
-  show [boxes, platforms, versions]
+  show [boxes, platforms, versions, network [config | config/node] ]
   generate
   setup [boxes]
 
