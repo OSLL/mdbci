@@ -1,5 +1,5 @@
 name             'mdbc'
-maintainer       'YOUR_COMPANY_NAME'
+maintainer       'OSLL'
 maintainer_email 'YOUR_EMAIL'
 license          'All rights reserved'
 description      'Installs/Configures mdbc'

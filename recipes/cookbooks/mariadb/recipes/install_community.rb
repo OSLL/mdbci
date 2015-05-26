@@ -13,10 +13,10 @@ end  # Turn off SElinux
 
 # Install packages
 case node[:platform_family]
-#when "suse"	# TBD
-#  execute "install" do
-#    command "zypper -n install --from mariadb MariaDB-" + node['maria']['version'] + ".19-" + node[:platform] + "-" +  node[:kernel][:machine] + "-server.rpm MariaDB-" + node['maria']['version'] + ".19-" + node[:platform] + "-" +  node[:kernel][:machine] + "-client.rpm &> /vagrant/log"
-#  end
+when "suse"
+  execute "install" do
+    command "zypper -n install --from mariadb MariaDB-server MariaDB-client &> /vagrant/log"
+  end
 when "debian"
   package 'mariadb-server'
   package 'mariadb-client'

@@ -1,0 +1,13 @@
+{
+	"node1" :
+		{
+			"hostname" : "server",
+			"box" : "ubuntu_trusty",
+			"mariadb" : 
+				{ 
+					"version"  : "10.0",
+					"repo"		 : "http://mirror.mephi.ru/mariadb/repo",
+					"repo_key" : "http://mirror.mephi.ru/mariadb/yum"
+    		}
+		}
+}

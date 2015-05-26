@@ -21,7 +21,11 @@
 		{
 			"hostname" : "slave",
 			"box" : "ubuntu_precise",
-			"mariadb" : "10.1"
+			"mariadb" : {
+			  "version" : "10.0",
+			  "repo"    : "http://mirror.mephi.ru/mariadb/repo/",
+			  "repo_key": "http://mirror.mephi.ru/mariadb/repo/"
+			}
 		},
 	"node6" :
 		{
