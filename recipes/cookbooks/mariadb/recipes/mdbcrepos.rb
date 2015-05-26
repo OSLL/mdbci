@@ -1,6 +1,8 @@
-#node.default['maria']['version'] = "10.0"
+#
 #node.set_unless['maria']['version'] = "10.0"
-
+#node.default['maria']['version'] = "10.0"
+#node.override["key"] = "value"
+#
 case node[:platform_family]
   when "debian", "ubuntu", "mint"
   # Add repo key
@@ -9,10 +11,11 @@ case node[:platform_family]
   end
   release_name = '$(lsb_release -cs)'
   system 'echo MariaDB version: ' + node['maria']['version']
+  system 'echo MariaDB repo: ' + node['maria']['repo']
+  system 'echo MariaDB repo key: ' + node['repo']['key']
   # Add repo
   execute "Repository add" do
-    # Use Mepthi repo for MDB Community
-    command 'echo "deb http://mirror.mephi.ru/mariadb/repo/'+ node['maria']['version'] + '/' + node[:platform] + ' ' + release_name + ' main" > /etc/apt/sources.list.d/mariadb.list'
+    command 'echo "deb ' + node['maria']['repo'] + '/' + node['maria']['version'] + '/' + node[:platform] + ' ' + release_name + ' main" > /etc/apt/sources.list.d/mariadb.list'
   end
   execute "update" do
     command "apt-get update"
@@ -23,7 +26,7 @@ case node[:platform_family]
     source "mariadb.rhel.erb"
     action :create
   end
-  when "suse"	# TBD
+  when "suse", "sles"
   # Add the repo
   template "/etc/zypp/repos.d/mariadb.repo.template" do
     source "mariadb.suse.erb"
@@ -34,26 +37,9 @@ case node[:platform_family]
     command "cat /etc/zypp/repos.d/mariadb.repo.template | sed s/PLATFORM/$(" + release_name + ")/g > /etc/zypp/repos.d/mariadb.repo"
   end
 
-  # TBD platforms
-  # - arch
-  # - mageia
-  # - windows
-
-  #when "arch"
-    # Add the repo
-    # template
-  #end
-
-  #when "mageia"
-    # Add the repo
-    # template
-  #end
-
-
 # MDB Community Win path
 # https://downloads.mariadb.org/interstitial/mariadb-10.0.17/winx64-packages/mariadb-10.0.17-winx64.msi/from/http%3A//mirror.mephi.ru/mariadb
 # http://mirror.mephi.ru/mariadb/
-
 
 #when "windows"
 #  arch = node[:kernel][:machine] == "x86_64" ? "winx64" : "win32"  
