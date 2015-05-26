@@ -1,3 +1,4 @@
+
 #
 # MariaDB Maxscale repos
 #
@@ -31,9 +32,9 @@ case node[:platform_family]
     source "maxscale.rhel.erb"
     action :create
   end
-  when "suse", "sles"
+  when "suse"
   # Add the repo
-  template "/etc/zypp/repos.d/maxscale.repo.template" do
+  template "/etc/zypp/repos.d/maxscale.repo" do
     source "maxscale.suse.erb"
     action :create
   end
