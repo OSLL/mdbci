@@ -9,19 +9,19 @@ class Out
   end
 
   def info(string)
-    if !$session.isSilent
+    if !$session.isSilent && !string.nil?
       puts ' INFO:'+string
     end
   end
 
   def warning(string)
-    if !$session.isSilent
+    if !$session.isSilent && !string.nil?
       puts ' WARN:'+string
     end
   end
 
   def error(string)
-    if !$session.isSilent
+    if !$session.isSilent && !string.nil?
       puts 'ERROR:'+string
     end
   end

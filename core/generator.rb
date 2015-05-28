@@ -5,8 +5,12 @@ class Generator
 
   def Generator.vagrantHeader
     hdr = <<-EOF
-#Generated content, do not edit
+# !! Generated content, do not edit !!
+
 Vagrant.configure(2) do |config|
+
+#Network autoconfiguration
+config.vm.network "private_network", type: "dhcp"
 
     EOF
     return hdr
@@ -30,7 +34,6 @@ Vagrant.configure(2) do |config|
 
   def Generator.getVmDef(name, host, box, boxurl)
     vmdef = 'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
-          + 'config.vm.network ' + quote('private_network')+', type:'+quote('dhcp')+"\n"\
           + name+'.vm.box = ' + quote(boxurl) + "\n" \
           + name+'.vm.hostname = ' + quote(host) +"\n" \
           + name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
