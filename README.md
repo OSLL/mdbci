@@ -74,7 +74,7 @@ Since stand is generated it can be managed with vagrant command.
 
 More information about vagrant features could be found in [vagrant documentation](https://docs.vagrantup.com/v2/). 
 
-*Responsible project leader: Sergey Balandin*
+** Responsible project leader: Sergey Balandin **
 
 
 
