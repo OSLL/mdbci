@@ -1,0 +1,19 @@
+{
+	"name": "test",
+  	"default_attributes": { },
+  	"override_attributes": { 
+		"maria": { 
+			"version": "10.0",
+			"repo": "http://mirror.mephi.ru/mariadb/yum"
+		},
+		"repo": {
+			"key": "http://mirror.mephi.ru/mariadb/yum"
+		}
+	},
+  	"json_class": "Chef::Role",
+  	"description": "test role",
+  	"chef_type": "role",
+  	"run_list": [
+		"recipe[mdbc]" 
+	]
+}
