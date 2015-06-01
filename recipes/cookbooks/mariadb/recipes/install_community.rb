@@ -31,11 +31,12 @@ else
   package 'MariaDB-client'
 end
 
+# Check if MariaDb installed, than start service!
 # Starts service
-case node[:platform_family]
-when "windows"
-else
-  service "mysql" do
-    action :start
-  end 
-end
+#case node[:platform_family]
+#when "windows"
+#else
+#  service "mysql" do
+#    action :start
+#  end 
+#end
