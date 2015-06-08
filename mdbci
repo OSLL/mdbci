@@ -5,18 +5,20 @@ require 'getoptlong'
 require_relative 'core/help'
 require_relative 'core/generator'
 require_relative 'core/session'
-require_relative  'core/out'
+require_relative 'core/out'
 
 #Reading options
 opts = GetoptLong.new(
     ['--help', '-h', GetoptLong::NO_ARGUMENT],
     ['--template', '-t', GetoptLong::REQUIRED_ARGUMENT],
+    ['--boxes', '-b', GetoptLong::REQUIRED_ARGUMENT],
     ['--override', '-w', GetoptLong::NO_ARGUMENT],
     ['--silent', '-s', GetoptLong::NO_ARGUMENT],
 )
 
 $session = Session.new
 $session.configFile='instance.json'
+$session.boxesFile='boxes.json'
 
 $out = Out.new
 
@@ -28,7 +30,12 @@ opts.each do |opt, arg|
         $session.configFile= arg
       end
       $out.info 'Using template name '+$session.configFile
-
+    when '--boxes'
+      p arg
+      if arg != ''
+        $session.boxesFile= arg
+      end
+      $out.info 'Using boxes name '+$session.boxesFile
     when '--help'
       Help.display
       exit

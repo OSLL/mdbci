@@ -91,7 +91,7 @@ config.vm.network "private_network", type: "dhcp"
       $out.error 'Please specify another name or delete'
       exit -1
     end
-    FileUtils.rm_rf(path);
+    FileUtils.rm_rf(path)
     Dir.mkdir(path)
   end
 
@@ -114,7 +114,7 @@ config.vm.network "private_network", type: "dhcp"
 
     config.each do |node|
       $out.info node[0].to_s + ':' + node[1].to_s
-
+      
       box = node[1]['box'].to_s
       boxurl = boxes[box]
       name = node[0].to_s
@@ -139,7 +139,7 @@ config.vm.network "private_network", type: "dhcp"
         role = getRoleDef(name,package,params)
         IO.write(roleFileName(path,name),role)
       else
-        $out.error 'ERR: Box '+box+'is not installed or configured ->SKIPPING'
+        $out.warning 'WARNING: Box '+box+'is not installed or configured ->SKIPPING'
       end
       #makeDefinition(node[0].to_s,node[1]['hostname'].to_s,box,boxurl,node[1]['mariadb'])
     end
