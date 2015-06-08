@@ -1,102 +1,103 @@
 {
-	"node1" :
-		{
-			"hostname" : "server",
-			"box" : "debian",
-		  	"mariadb" : {
-				"version" : "10.0",
-				"repo"    : "http://mirror.mephi.ru/mariadb/repo/",
-				"repo_key": "http://mirror.mephi.ru/mariadb/repo/"
-		  	}
-		},
-	"node2" :
-		{
-			"hostname" : "slave",
-			"box" : "ubuntu_trusty",
-		  	"mariadb" : {
-				"version" : "10.0",
-				"repo"    : "http://mirror.mephi.ru/mariadb/repo/",
-				"repo_key": "http://mirror.mephi.ru/mariadb/repo/"
-		  	}
-		},
-	"node3" :
-		{
-			"hostname" : "slave",
-			"box" : "ubuntu_utopic",
-		  	"mariadb" : {
-				"version" : "10.0",
-				"repo"    : "http://mirror.mephi.ru/mariadb/repo/",
-				"repo_key": "http://mirror.mephi.ru/mariadb/repo/"
-		  	}
-		},
-	"node4" :
-		{
-			"hostname" : "slave",
-			"box" : "ubuntu_precise",
-			"mariadb" : {
-			  "version" : "10.0",
-			  "repo"    : "http://mirror.mephi.ru/mariadb/repo/",
-			  "repo_key": "http://mirror.mephi.ru/mariadb/repo/"
-			}
-		},
-	"node5" :
-		{
-			"hostname" : "maxscale",
-			"box" : "centos6",
-            "mariadb" : {
-              "version" : "10.0",
-              "repo"    : "http://mirror.mephi.ru/mariadb/repo/",
-              "repo_key": "http://mirror.mephi.ru/mariadb/repo/"
-            }
-		},
-	"node6" :
-		{
-			"hostname" : "slave",
-			"box" : "centos5",
-		  	"maxscale" : {
-			  "version" : "1.0.0",
-			  "repo"    : "http://maxscale/yum/",
-			  "repo_key": "http://maxscale/key/"
-		  	}
-		},
-	"node7" :
-		{
-			"hostname" : "slave",
-			"box" : "deb_wheezy",
-            "maxscale" : {
-              "version" : "1.0.0",
-              "repo"    : "http://maxscale/yum/",
-              "repo_key": "http://maxscale/key/"
-            }
-		},
-	"node8" :
-		{
-			"hostname" : "slave",
-			"box" : "deb_squeeze",
-            "maxscale" : {
-              "version" : "1.0.0",
-              "repo"    : "http://maxscale/yum/",
-              "repo_key": "http://maxscale/key/"
-            }
-		},
-	"node9" :
-		{
-			"hostname" : "slave",
-			"box" : "suse13",
-            "maxscale" : {
-              "version" : "1.0.0",
-              "repo"    : "http://maxscale/yum/",
-              "repo_key": "http://maxscale/key/"
-            }
-		},
-	"node10" :
-		{
-			"hostname" : "slave",
-			"box" : "fedora20",
-            "maxscale" : {
-              "version" : "1.0.0",
-              "repo"    : "http://maxscale/yum/",
-              "repo_key": "http://maxscale/key/"
-            }
+  "cookbook_path" : "home/h05t/cookbooks",
+  "node1" :
+  {
+	"hostname" : "server",
+	"box" : "debian",
+	"mariadb" : {
+		"version" : "10.0",
+		"repo"    : "http://mirror.mephi.ru/mariadb/repo/",
+		"repo_key": "http://mirror.mephi.ru/mariadb/repo/"
 		}
+  },
+  "node2" :
+  {
+	"hostname" : "slave",
+	"box" : "ubuntu_trusty",
+	"mariadb" : {
+	  "version" : "10.0",
+	  "repo"    : "http://mirror.mephi.ru/mariadb/repo/",
+	  "repo_key": "http://mirror.mephi.ru/mariadb/repo/"
+	}
+  },
+  "node3" :
+  {
+	"hostname" : "slave",
+	"box" : "ubuntu_utopic",
+	"mariadb" : {
+	  "version" : "10.0",
+	  "repo"    : "http://mirror.mephi.ru/mariadb/repo/",
+	  "repo_key": "http://mirror.mephi.ru/mariadb/repo/"
+	}
+  },
+  "node4" :
+  {
+	"hostname" : "slave",
+	"box" : "ubuntu_precise",
+	"mariadb" : {
+	  "version" : "10.0",
+	  "repo"    : "http://mirror.mephi.ru/mariadb/repo/",
+	  "repo_key": "http://mirror.mephi.ru/mariadb/repo/"
+	}
+  },
+  "node5" :
+  {
+	"hostname" : "maxscale",
+	"box" : "centos6",
+	"mariadb" : {
+	  "version" : "10.0",
+	  "repo"    : "http://mirror.mephi.ru/mariadb/repo/",
+	  "repo_key": "http://mirror.mephi.ru/mariadb/repo/"
+	}
+  },
+  "node6" :
+  {
+	"hostname" : "slave",
+	"box" : "centos5",
+	"maxscale" : {
+	  "version" : "1.0.0",
+	  "repo"    : "http://maxscale/yum/",
+	  "repo_key": "http://maxscale/key/"
+	}
+  },
+  "node7" :
+  {
+	"hostname" : "slave",
+	"box" : "deb_wheezy",
+	"maxscale" : {
+	  "version" : "1.0.0",
+	  "repo"    : "http://maxscale/yum/",
+	  "repo_key": "http://maxscale/key/"
+	}
+  },
+  "node8" :
+  {
+	"hostname" : "slave",
+	"box" : "deb_squeeze",
+	"maxscale" : {
+	  "version" : "1.0.0",
+	  "repo"    : "http://maxscale/yum/",
+	  "repo_key": "http://maxscale/key/"
+	}
+  },
+  "node9" :
+  {
+	"hostname" : "slave",
+	"box" : "suse13",
+	"maxscale" : {
+	  "version" : "1.0.0",
+	  "repo"    : "http://maxscale/yum/",
+	  "repo_key": "http://maxscale/key/"
+	}
+  },
+  "node10" :
+  {
+	"hostname" : "slave",
+	"box" : "fedora20",
+	"maxscale" : {
+	  "version" : "1.0.0",
+	  "repo"    : "http://maxscale/yum/",
+	  "repo_key": "http://maxscale/key/"
+	}
+  }
 }

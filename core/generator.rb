@@ -32,12 +32,12 @@ config.vm.network "private_network", type: "dhcp"
     IO.write(name,content)
   end
 
-  def Generator.getVmDef(name, host, box, boxurl)
+  def Generator.getVmDef(cookbook_path, name, host, box, boxurl)
     vmdef = 'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
           + name+'.vm.box = ' + quote(boxurl) + "\n" \
           + name+'.vm.hostname = ' + quote(host) +"\n" \
           + name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
-          + 'chef.cookbooks_path = '+ quote('../recipes/cookbooks')+"\n" \
+          + 'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
           + 'chef.roles_path = '+ quote('.')+"\n" \
           + 'chef.add_role '+ quote(name) + "\nend\nend\n"
     return vmdef
@@ -77,7 +77,7 @@ config.vm.network "private_network", type: "dhcp"
   def Generator.makeDefinition(name, host, box, boxurl, version)
 
 
-    vm = getVmDef(name, host, box, boxurl)
+    #vm = getVmDef(name, host, box, boxurl)
     #role = getRoleDef(name,version)
 
     #writeFile('.Vagrantfile',vmdef)
@@ -109,8 +109,12 @@ config.vm.network "private_network", type: "dhcp"
 
     vagrant.puts vagrantHeader
 
+    # default cookbook path
+    cookbook_path = './recipes/cookbooks/'
+
     config.each do |node|
       $out.info node[0].to_s + ':' + node[1].to_s
+
       box = node[1]['box'].to_s
       boxurl = boxes[box]
       name = node[0].to_s
@@ -123,10 +127,14 @@ config.vm.network "private_network", type: "dhcp"
         package = 'maxscale'
         params = node[1]['maxscale']
       end
+      #
+      if node[0]['cookbook_path']
+        cookbook_path = node[1].to_s
+      end
 
       # generate vm definition and role
       if Generator.boxValid?(box,boxes)
-        vm = getVmDef(name,host,box,boxurl)
+        vm = getVmDef(cookbook_path,name,host,box,boxurl)
         vagrant.puts vm
         role = getRoleDef(name,package,params)
         IO.write(roleFileName(path,name),role)
