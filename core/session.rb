@@ -12,6 +12,7 @@ class Session
   attr_accessor :configFile
   attr_accessor :isOverride
   attr_accessor :isSilent
+  attr_accessor :command
 
 =begin
      Load collections from json files:
@@ -53,6 +54,28 @@ class Session
     #TODO #6267
     $out.info 'Checking this machine configuration requirments'
     $out.info '.....NOT IMPLEMENTED YET'
+  end
+
+  def sudo(args)
+
+    if args.nil?
+      $out.error 'Configuration name is required'
+      return
+    end
+
+    config = args.split('/')
+
+    pwd = Dir.pwd
+    Dir.chdir config[0]
+
+    cmd = 'vagrant ssh '+config[1]+' -c "/usr/bin/sudo '+$session.command+'"'
+
+    $out.info 'Running ['+cmd+'] on '+config[0]+'/'+config[1]
+
+    vagrant_out = `#{cmd}`
+    $out.out vagrant_out
+
+    Dir.chdir pwd
   end
 
   def show(collection)

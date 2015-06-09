@@ -16,6 +16,9 @@ mdbci [option] <show | setup | generate>
 -w, --override
   Override previous configuration
 
+-c, --command
+  Set command to run in sudo clause
+
 -s, --silent
   Keep silence, output only requested info or nothing if not available
 
@@ -23,6 +26,10 @@ COMMANDS:
   show [boxes, platforms, versions, network [config | config/node], keyfile config/node ]
   generate
   setup [boxes]
+  sudo --command 'command arguments' config/node
+
+EXAMPLES:
+  mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
 
   EOF
 

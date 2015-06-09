@@ -11,6 +11,7 @@ require_relative  'core/out'
 opts = GetoptLong.new(
     ['--help', '-h', GetoptLong::NO_ARGUMENT],
     ['--template', '-t', GetoptLong::REQUIRED_ARGUMENT],
+    ['--command', '-c', GetoptLong::REQUIRED_ARGUMENT],
     ['--override', '-w', GetoptLong::NO_ARGUMENT],
     ['--silent', '-s', GetoptLong::NO_ARGUMENT],
 )
@@ -34,6 +35,8 @@ opts.each do |opt, arg|
       exit
     when '--override'
       $session.isOverride =true
+    when '--command'
+      $session.command =arg
     when '--silent'
       $session.isSilent =true
     else
@@ -54,6 +57,8 @@ $session.loadCollections
 case ARGV.shift
   when 'show'
     $session.show(ARGV.shift)
+  when 'sudo'
+    $session.sudo(ARGV.shift)
   when 'setup'
     $session.setup(ARGV.shift)
   when 'generate'
