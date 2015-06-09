@@ -114,7 +114,7 @@ config.vm.network "private_network", type: "dhcp"
 
     config.each do |node|
       $out.info node[0].to_s + ':' + node[1].to_s
-      
+
       box = node[1]['box'].to_s
       boxurl = boxes[box]
       name = node[0].to_s
