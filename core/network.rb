@@ -44,6 +44,29 @@ class Network
     Dir.chdir pwd
   end
 
+  def self.showKeyFile(name)
+
+    #TODO refactor with show
+
+    if name.nil?
+      $out.error 'Configuration name is required'
+      return
+    end
+
+    args = name.split('/')
+
+    pwd = Dir.pwd
+    Dir.chdir args[0]
+
+    cmd = 'vagrant ssh-config '+args[1]+ ' |grep IdentityFile '
+    vagrant_out = `#{cmd}`
+
+
+    $out.out vagrant_out.split(' ')[1]
+
+    Dir.chdir pwd
+  end
+
   def self.show(name)
 
       if name.nil?

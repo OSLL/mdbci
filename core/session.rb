@@ -65,6 +65,8 @@ class Session
         $out.out  @boxes.keys
       when 'network'
         Network.show(ARGV.shift)
+      when 'keyfile'
+        Network.showKeyFile(ARGV.shift)
       else
         $out.error 'Unknown collection: '+collection
     end
