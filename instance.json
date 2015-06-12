@@ -129,5 +129,15 @@
   {
 	"hostname" : "build_maxscale",
 	"box" : "centos6"
+  },
+  "node14" :
+  {
+	"hostname" : "master",
+	"box" : "ubuntu_precise",
+	"maxscale" : {
+	  "version" : "1.0.0",
+	  "repo"    : "http://maxscale/yum/",
+	  "repo_key": "http://maxscale/key/"
+	}
   }
 }

@@ -118,13 +118,10 @@ config.vm.network "private_network", type: "dhcp"
     vagrant.puts vagrantHeader
 
     cookbook_path = './recipes/cookbooks/'  # default cookbook path
-    #provisioned = true                      # default provision option
-
-    #p "SIZE: " + config.
+    provisioned = true                      # default provision option
 
     config.each do |node|
       $out.info node[0].to_s + ':' + node[1].to_s
-
       box = node[1]['box'].to_s
       boxurl = boxes[box]
       name = node[0].to_s
@@ -146,12 +143,11 @@ config.vm.network "private_network", type: "dhcp"
         cookbook_path = node[1].to_s
       end
 
-      p "NODE: " + node[0].to_s
-
       # generate vm definition and role
       if Generator.boxValid?(box,boxes)
         vm = getVmDef(cookbook_path,name,host,box,boxurl,provisioned)
         vagrant.puts vm
+        # if box with mariadb, maxscale - create role
         if provisioned
           role = getRoleDef(name,package,params)
           IO.write(roleFileName(path,name),role)
