@@ -3,7 +3,9 @@
   	"default_attributes": { },
   	"override_attributes": {
 		"maria" : {
-			"version" : "10.0"
+			"version" : "10.0",
+			"repo": "http://mirror.mephi.ru/mariadb/yum",
+			"repo_key": "http://mirror.mephi.ru/mariadb/yum"
 		},
 		"mariadb" : {
 			"server_id" : "1",
@@ -13,5 +15,5 @@
   	"json_class": "Chef::Role",
   	"description": "master_slave role",
   	"chef_type": "role",
-  	"run_list": [ "recipe[master_slave]" ]
+  	"run_list": [ "recipe[mdbc]" ]
 }

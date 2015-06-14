@@ -7,13 +7,19 @@ Vagrant.configure(2) do |config|
   #config.vm.box = "base"
 
   config.vm.define "master" do |master|
-    master.vm.box = "hashicorp/precise32"	# ubuntu 12.04 x32
+    #master.vm.box = "hashicorp/precise32"	# ubuntu 12.04 x32
     #master.vm.box = "chef/ubuntu-14.04"	# x64
     #master.vm.box = "chef/ubuntu-14.10"	# x64
     #master.vm.box = "chef/ubuntu-12.04"	# x64
+    #master.vm.box = "chef/fedora-20-i386"	
+    master.vm.box = "chef/centos-6.5-i386"
+    #master.vm.box = "chef/opensuse-13.1-i386"	
     
     master.vm.hostname = "master"
     #master.vm.network "private_network", ip: "192.168.2.1"
+
+    #config.vm.provision :shell, :path => "./curl_install.sh", privileged: true
+    #config.vm.provision :shell, :path => "./chef_install.sh", privileged: true
 
     # Chef provision for 'master' node
     config.vm.provision "chef_solo" do |chef|
