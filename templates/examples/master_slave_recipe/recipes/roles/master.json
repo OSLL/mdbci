@@ -1,0 +1,17 @@
+{
+	"name": "master_slave",
+  	"default_attributes": { },
+  	"override_attributes": {
+		"maria" : {
+			"version" : "10.0"
+		},
+		"mariadb" : {
+			"server_id" : "1",
+			"database" : "test"
+		}
+	},
+  	"json_class": "Chef::Role",
+  	"description": "master_slave role",
+  	"chef_type": "role",
+  	"run_list": [ "recipe[master_slave]" ]
+}

@@ -13,23 +13,13 @@ Vagrant.configure(2) do |config|
     #master.vm.box = "chef/ubuntu-12.04"	# x64
     
     master.vm.hostname = "master"
-    #master.vm.network "forwarded_port", guest: 3306, host: 3336
-    master.vm.network "private_network", ip: "192.168.2.1"
+    #master.vm.network "private_network", ip: "192.168.2.1"
 
     # Chef provision for 'master' node
     config.vm.provision "chef_solo" do |chef|
       chef.cookbooks_path = ["../../../recipes/cookbooks", "recipes/cookbooks" ]
       chef.roles_path = "recipes/roles"
       chef.add_role "master"
-
-    #  chef.json = {
-    #    "mysql" => {
-    #    	"server_root_password" => "qwerty",           
-    #    	"server_repl_password" => "qwerty",
-    #    	"server_debian_password" => "qwerty"
-    #    }
-    #  }
-    
     end
   end
 
