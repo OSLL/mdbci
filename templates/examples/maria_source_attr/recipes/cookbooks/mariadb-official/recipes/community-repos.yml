@@ -1,0 +1,11 @@
+# MariaDB community repos
+#
+community:
+   ubuntu : '' 
+   debian : ''
+   centos : '"https://yum.mariadb.org/'
+   rhel : '"https://yum.mariadb.org/'
+   fedora : '"https://yum.mariadb.org/'
+   suse : '"https://yum.mariadb.org/'
+   opensuse : '"https://yum.mariadb.org/'
+   sles : '"https://yum.mariadb.org/'
