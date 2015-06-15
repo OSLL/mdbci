@@ -32,38 +32,44 @@ config.vm.network "private_network", type: "dhcp"
     IO.write(name,content)
   end
 
-  def Generator.getVmDef(name, host, box, boxurl)
+  def Generator.getVmDef(cookbook_path, name, host, box, boxurl)
     vmdef = 'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
           + name+'.vm.box = ' + quote(boxurl) + "\n" \
           + name+'.vm.hostname = ' + quote(host) +"\n" \
           + name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
-          + 'chef.cookbooks_path = '+ quote('../recipes/cookbooks')+"\n" \
+          + 'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
           + 'chef.roles_path = '+ quote('.')+"\n" \
           + 'chef.add_role '+ quote(name) + "\nend\nend\n"
     return vmdef
   end
 
-  def Generator.getRoleDef(name,version)
+  def Generator.getRoleDef(name,package,params)
 
-    if version.class == Hash
-      mdbversion = JSON.pretty_generate(version)
+    if params.class == Hash
+      mdbversion = JSON.pretty_generate(params)
     else
-      mdbversion = '{ '+quote('version')+':'+quote(version)+' }'
+      mdbversion = '{ '+quote('version')+':'+quote(params)+' }'
+    end
+    # package recipe name
+    if package == 'mariadb'
+      recipe_name = 'mdbc'
+    else
+      recipe_name = 'mscale'
     end
 
     roledef = '{ '+"\n"+' "name" :' + quote(name)+",\n"+ \
     <<-EOF
  "default_attributes": { },
     EOF
-    roledef += ' '+quote('override_attributes') +': { '+quote('maria')+ ': '+ mdbversion +\
-    ' },'+"\n"
+    roledef += " #{quote('override_attributes')}: { #{quote(package)}: #{mdbversion} },\n"
     roledef += <<-EOF
  "json_class": "Chef::Role",
  "description": "MariaDb instance install and run",
  "chef_type": "role",
- "run_list": [ "recipe[mdbc]" ]
-}
     EOF
+    roledef += quote('run_list') + ": [ " + quote("recipe[" + recipe_name + "]") + " ]\n"
+    roledef += "}"
+
     return roledef
   end
 
@@ -71,8 +77,8 @@ config.vm.network "private_network", type: "dhcp"
   def Generator.makeDefinition(name, host, box, boxurl, version)
 
 
-    vm = getVmDef(name, host, box, boxurl)
-    role = getRoleDef(name,version)
+    #vm = getVmDef(name, host, box, boxurl)
+    #role = getRoleDef(name,version)
 
     #writeFile('.Vagrantfile',vmdef)
     #puts vm
@@ -85,7 +91,7 @@ config.vm.network "private_network", type: "dhcp"
       $out.error 'Please specify another name or delete'
       exit -1
     end
-    FileUtils.rm_rf(path);
+    FileUtils.rm_rf(path)
     Dir.mkdir(path)
   end
 
@@ -103,22 +109,37 @@ config.vm.network "private_network", type: "dhcp"
 
     vagrant.puts vagrantHeader
 
+    # default cookbook path
+    cookbook_path = './recipes/cookbooks/'
+
     config.each do |node|
       $out.info node[0].to_s + ':' + node[1].to_s
+
       box = node[1]['box'].to_s
       boxurl = boxes[box]
       name = node[0].to_s
       host = node[1]['hostname'].to_s
-      version = node[1]['mariadb']
+      # package: mariadb or maxscale
+      if node[1]['mariadb']
+        package = 'mariadb'
+        params = node[1]['mariadb']
+      elsif node[1]['maxscale']
+        package = 'maxscale'
+        params = node[1]['maxscale']
+      end
+      #
+      if node[0]['cookbook_path']
+        cookbook_path = node[1].to_s
+      end
 
-
+      # generate vm definition and role
       if Generator.boxValid?(box,boxes)
-        vm = getVmDef(name,host,box,boxurl)
+        vm = getVmDef(cookbook_path,name,host,box,boxurl)
         vagrant.puts vm
-        role = getRoleDef(name,version)
+        role = getRoleDef(name,package,params)
         IO.write(roleFileName(path,name),role)
       else
-        $out.error 'ERR: Box '+box+'is not installed or configured ->SKIPPING'
+        $out.warning 'WARNING: Box '+box+'is not installed or configured ->SKIPPING'
       end
       #makeDefinition(node[0].to_s,node[1]['hostname'].to_s,box,boxurl,node[1]['mariadb'])
     end

@@ -15,7 +15,7 @@ end  # Turn off SElinux
 case node[:platform_family]
 when "suse"
   execute "install" do
-    command "zypper install maxscale"
+    command "zypper -y install maxscale"
   end
 when "debian"
   package 'maxscale'

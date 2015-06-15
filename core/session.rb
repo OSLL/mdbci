@@ -10,6 +10,7 @@ class Session
   attr_accessor :boxes
   attr_accessor :versions
   attr_accessor :configFile
+  attr_accessor :boxesFile
   attr_accessor :isOverride
   attr_accessor :isSilent
   attr_accessor :command
@@ -21,8 +22,8 @@ class Session
 =end
 
   def loadCollections
-    $out.info 'Load boxes.json'
-    @boxes = JSON.parse(IO.read('boxes.json'))
+    $out.info 'Load ' + $session.boxesFile
+    @boxes = JSON.parse(IO.read($session.boxesFile))
     $out.info 'Load Versions'
   end
 
