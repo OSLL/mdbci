@@ -1,0 +1,13 @@
+{
+  "name": "test",
+  "default_attributes": { },
+  "override_attributes": {
+    "maria": { 
+      "source": "community"	
+    }
+  },
+  "json_class": "Chef::Role",
+  "description": "mariadb role",
+  "chef_type": "role",
+  "run_list": [ "recipe[mdbc]" ]
+}

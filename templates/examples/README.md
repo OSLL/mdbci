@@ -10,4 +10,6 @@ Examples:
 
 4. vagrant_aws : Vagrant AWS test.
 
+5. maria_source_attr : MariaDB chef recipe with 'source 'attribute
+
 All cookbooks are in mdbci/recipes/cookbooks directory!
