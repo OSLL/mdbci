@@ -10,6 +10,11 @@
 		"repo_key": "http://mirror.mephi.ru/mariadb/repo/"
 		}
   },
+  "build1" :
+  {
+	"hostname" : "build_maxscale",
+	"box" : "centos6"
+  },
   "node2" :
   {
 	"hostname" : "slave",
@@ -39,6 +44,11 @@
 	  "repo"    : "http://mirror.mephi.ru/mariadb/repo/",
 	  "repo_key": "http://mirror.mephi.ru/mariadb/repo/"
 	}
+  },
+  "build2" :
+  {
+	"hostname" : "build_maxscale",
+	"box" : "centos5"
   },
   "node5" :
   {
@@ -70,6 +80,11 @@
 	  "repo_key": "http://maxscale/key/"
 	}
   },
+  "build3" :
+  {
+	"hostname" : "build_maxscale",
+	"box" : "centos7"
+  },
   "node8" :
   {
 	"hostname" : "slave",
@@ -94,6 +109,31 @@
   {
 	"hostname" : "slave",
 	"box" : "fedora20",
+	"maxscale" : {
+	  "version" : "1.0.0",
+	  "repo"    : "http://maxscale/yum/",
+	  "repo_key": "http://maxscale/key/"
+	}
+  },
+  "node11" :
+  {
+	"hostname" : "build",
+	"box" : "fedora19"
+  },
+  "node12" :
+  {
+	"hostname" : "build_env",
+	"box" : "fedora20"
+  },
+  "node13" :
+  {
+	"hostname" : "build_maxscale",
+	"box" : "centos6"
+  },
+  "node14" :
+  {
+	"hostname" : "master",
+	"box" : "ubuntu_precise",
 	"maxscale" : {
 	  "version" : "1.0.0",
 	  "repo"    : "http://maxscale/yum/",

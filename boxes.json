@@ -12,7 +12,6 @@
   "suse13": "webhippie/opensuse-13.2",
   "fedora19": "chef/fedora-19",
   "fedora20": "chef/fedora-20",
-  "fedora19": "chef/fedora-19",
   "fedora21": "chef/fedora-21"
 }
 
