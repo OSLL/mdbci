@@ -1,0 +1,22 @@
+{
+	"name": "test",
+  	"default_attributes": { },
+  	"override_attributes": { 
+		"maria": { 
+			"version": "10.0",
+			"repo": "http://mirror.mephi.ru/mariadb/yum",
+			"repo_key": "http://mirror.mephi.ru/mariadb/yum"
+		},
+		"maxscale": { 
+			"version": "1.1.0",
+			"repo": "http://jenkins.engskysql.com/repository/1.1.0-ga/mariadb-maxscale/yum",
+			"repo_key": "http://jenkins.engskysql.com/repository/1.1.0-ga/mariadb-maxscale"
+		}
+	},
+  	"json_class": "Chef::Role",
+  	"description": "test role",
+  	"chef_type": "role",
+  	"run_list": [
+		"recipe[mdbc]" 
+	]
+}

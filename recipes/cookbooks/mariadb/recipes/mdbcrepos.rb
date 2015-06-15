@@ -1,7 +1,5 @@
 #
-#node.set_unless['maria']['version'] = "10.0"
-#node.default['maria']['version'] = "10.0"
-#node.override["key"] = "value"
+#
 #
 case node[:platform_family]
   when "debian", "ubuntu", "mint"
@@ -21,20 +19,18 @@ case node[:platform_family]
     command "apt-get update"
   end
   when "rhel", "fedora", "centos"
-  # Add the repo
   template "/etc/yum.repos.d/mariadb.repo" do
     source "mariadb.rhel.erb"
     action :create
   end
-  when "suse", "sles"
-  # Add the repo
-  template "/etc/zypp/repos.d/mariadb.repo.template" do
+  when "suse"
+  template "/etc/zypp/repos.d/mariadb.repo" do
     source "mariadb.suse.erb"
     action :create
   end
-  release_name = "test -f /etc/os-release && cat /etc/os-release | grep '^ID=' | sed s/'^ID='//g | sed s/'\"'//g || if cat /etc/SuSE-release | grep Enterprise &>/dev/null; then echo sles; else echo opensuse; fi"
+  release_name = "if cat /etc/SuSE-release | grep Enterprise &>/dev/null; then echo sles; else echo opensuse; fi"
   execute "Change suse on sles repository" do
-    command "cat /etc/zypp/repos.d/mariadb.repo.template | sed s/PLATFORM/$(" + release_name + ")/g > /etc/zypp/repos.d/mariadb.repo"
+  	command "cat /etc/zypp/repos.d/mariadb.repo | sed s/suse/$(" + release_name + ")/g > /etc/zypp/repos.d/mariadb.repo"
   end
 
 end
