@@ -9,4 +9,4 @@
 
 
 # run MariaDB install with mdbcrepos.rb recipe
-include_recipe "mariadb::install_community"
+include_recipe "mariadb::install"

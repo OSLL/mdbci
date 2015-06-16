@@ -1,5 +1,0 @@
-[mariadb]
-name = MariaDB
-baseurl = <%= node['maria']['repo'] %>/<%= node['maria']['version'] %>/<%= node[:platform] == "redhat" ? node[:platform_family] : node[:platform] %>/$releasever/$basearch
-gpgkey=<%= node['maria']['repo_key'] %>/RPM-GPG-KEY-MariaDB
-gpgcheck=1

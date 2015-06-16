@@ -12,7 +12,7 @@ Vagrant.configure(2) do |config|
 
   # configure Chef
   config.vm.provision "chef_solo" do |chef|
-     chef.cookbooks_path = "./recipes/cookbooks"
+     chef.cookbooks_path = "../../../recipes/cookbooks"
      chef.roles_path = "."
      chef.add_role "test"
   end

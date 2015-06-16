@@ -1,27 +1,16 @@
-require 'yaml'
-
-
+#
 node.set_unless['mariadb']['source'] = "enterprise"
+#
 if node['mariadb']['source'] == "enterprise"
   puts 'MariaDB Enterprise'
   include_recipe "mariadb::init_enterprise"
-  #if File.exist?("enterprise-repos.yml")
-  #  enterprise_repos = YAML.load_file("enterprise-repos.yml")["enterprise"]
-  #end
-  include_recipe "mariadb::init_enterprise"
 elsif node['mariadb']['source'] == "community"
   puts 'MariaDB Community'
-  #if File.exist?("community-repos.yml")
-  #  community_repos = YAML.load_file("community-repos.yml")["community"]
-  #end
   include_recipe "mariadb::init_community"
   system 'echo repo: ' + node['mariadb']['other_repo']
   system 'echo distr: ' + node['mariadb']['other_distr']
 elsif node['mariadb']['source'] == 'oracle'
   puts 'Oracle MySQL:'
-  #if File.exist?("oracle-mysql-repos.yml")
-  #  oracle_repos = YAML.load_file("oracle-mysql-repos.yml")["oracle"]
-  #end
   include_recipe "mariadb::init_oracle"
 else
   puts 'MariaDB Distribution'

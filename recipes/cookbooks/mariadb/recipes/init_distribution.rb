@@ -1,4 +1,5 @@
-#
+# TODO
+# 
 # MariaDB Distribution 
 #    - means that package should be installed from default linux 		distribution repository + in this case "version" can be omitted 	- just install latest version from distro repo
 #
