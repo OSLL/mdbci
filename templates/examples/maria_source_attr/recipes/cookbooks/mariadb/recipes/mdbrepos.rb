@@ -1,23 +1,23 @@
 require 'yaml'
 
 
-node.set_unless['maria']['source'] = "enterprise"
-if node['maria']['source'] == "enterprise"
+node.set_unless['mariadb']['source'] = "enterprise"
+if node['mariadb']['source'] == "enterprise"
   puts 'MariaDB Enterprise'
   include_recipe "mariadb::init_enterprise"
   #if File.exist?("enterprise-repos.yml")
   #  enterprise_repos = YAML.load_file("enterprise-repos.yml")["enterprise"]
   #end
   include_recipe "mariadb::init_enterprise"
-elsif node['maria']['source'] == "community"
+elsif node['mariadb']['source'] == "community"
   puts 'MariaDB Community'
   #if File.exist?("community-repos.yml")
   #  community_repos = YAML.load_file("community-repos.yml")["community"]
   #end
   include_recipe "mariadb::init_community"
-  system 'echo repo: ' + node['maria']['other_repo']
-  system 'echo distr: ' + node['maria']['other_distr']
-elsif node['maria']['source'] == 'oracle'
+  system 'echo repo: ' + node['mariadb']['other_repo']
+  system 'echo distr: ' + node['mariadb']['other_distr']
+elsif node['mariadb']['source'] == 'oracle'
   puts 'Oracle MySQL:'
   #if File.exist?("oracle-mysql-repos.yml")
   #  oracle_repos = YAML.load_file("oracle-mysql-repos.yml")["oracle"]
@@ -34,11 +34,11 @@ when "debian"
     command "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com " + node['ubuntu']['key']
   end
   release_name = '$(lsb_release -cs)'
-  system 'echo MariaDB version: ' + node['maria']['version']
-  system 'echo MariaDB repo: ' + node['maria']['deb_repo']
+  system 'echo MariaDB version: ' + node['mariadb']['version']
+  system 'echo MariaDB repo: ' + node['mariadb']['deb_repo']
   #
   execute "Repository add" do
-    command 'echo "deb ' + node['maria']['deb_repo'] + node['maria']['deb_distr'] + node['maria']['version'] + node['maria']['deb_family'] + node[:platform] + ' ' + release_name + ' main" > /etc/apt/sources.list.d/mariadb.list'
+    command 'echo "deb ' + node['mariadb']['deb_repo'] + node['mariadb']['deb_distr'] + node['mariadb']['version'] + node['mariadb']['deb_family'] + node[:platform] + ' ' + release_name + ' main" > /etc/apt/sources.list.d/mariadb.list'
   end
   execute "update" do
     command "apt-get update"
@@ -62,10 +62,10 @@ when "windows"
   
   md5sums_file = "#{Chef::Config[:file_cache_path]}/md5sums.txt"
   remote_file "#{md5sums_file}" do
-    source node['maria']['other_repo'] + "/" + node['maria']['version'] + "/" + arch + "-packages/md5sums.txt"
+    source node['mariadb']['other_repo'] + "/" + node['mariadb']['version'] + "/" + arch + "-packages/md5sums.txt"
   end
 
-  file_name = "mariadb-enterprise-" + node['maria']['version'] + "-" + arch + ".msi"
+  file_name = "mariadb-enterprise-" + node['mariadb']['version'] + "-" + arch + ".msi"
 
   if File.exists?("#{md5sums_file}")
     f = File.open("#{md5sums_file}")
@@ -80,6 +80,6 @@ when "windows"
   end
 
   remote_file "#{Chef::Config[:file_cache_path]}/mariadb.msi" do
-    source node['maria']['other_repo'] + "/" + node['maria']['version'] + "/" + arch + "-packages/" + file_name
+    source node['mariadb']['other_repo'] + "/" + node['mariadb']['version'] + "/" + arch + "-packages/" + file_name
   end
 end
