@@ -10,11 +10,6 @@
 		"repo_key": "http://mirror.mephi.ru/mariadb/repo/"
 		}
   },
-  "build1" :
-  {
-	"hostname" : "build_maxscale",
-	"box" : "centos6"
-  },
   "node2" :
   {
 	"hostname" : "slave",
@@ -44,11 +39,6 @@
 	  "repo"    : "http://mirror.mephi.ru/mariadb/repo/",
 	  "repo_key": "http://mirror.mephi.ru/mariadb/repo/"
 	}
-  },
-  "build2" :
-  {
-	"hostname" : "build_maxscale",
-	"box" : "centos5"
   },
   "node5" :
   {
@@ -80,7 +70,7 @@
 	  "repo_key": "http://maxscale/key/"
 	}
   },
-  "build3" :
+  "build1" :
   {
 	"hostname" : "build_maxscale",
 	"box" : "centos7"
@@ -120,10 +110,27 @@
 	"hostname" : "build",
 	"box" : "fedora19"
   },
-  "node12" :
+  "rhel6_aws" :
   {
-	"hostname" : "build_env",
-	"box" : "fedora20"
+	"hostname" : "aws",
+	"box" : "rhel6_ami",
+	"aws_config" : "./aws-config.yml",
+	"mariadb" : {
+	  "version" : "10.0",
+	  "repo"    : "http://mirror.mephi.ru/mariadb/repo/",
+	  "repo_key": "http://mirror.mephi.ru/mariadb/repo/"
+	}
+  },
+  "rhel7_aws" :
+  {
+	"hostname" : "aws",
+	"box" : "rhel7_ami",
+	"aws_config" : "./aws-config.yml",
+	"mariadb" : {
+	  "version" : "10.0",
+	  "repo"    : "http://mirror.mephi.ru/mariadb/repo/",
+	  "repo_key": "http://mirror.mephi.ru/mariadb/repo/"
+	}
   },
   "node13" :
   {

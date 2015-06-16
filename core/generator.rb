@@ -3,8 +3,14 @@ require_relative '../core/out'
 
 class Generator
 
-  def Generator.vagrantHeader
-    hdr = <<-EOF
+  def Generator.quote(string)
+    return '"'+string+'"'
+  end
+
+  def Generator.vagrantHeader(aws_config)
+
+    if aws_config
+      hdr = <<-EOF
 # !! Generated content, do not edit !!
 
 Vagrant.configure(2) do |config|
@@ -13,6 +19,30 @@ Vagrant.configure(2) do |config|
 config.vm.network "private_network", type: "dhcp"
 
     EOF
+    else
+      hdr = <<-EOF
+# !! Generated content, do not edit !!
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+require 'yaml'
+
+# Load AWS config file
+      EOF
+      hdr += 'if File.exist?(' + quote(aws_config.to_s) + ")\n"
+      hdr += 'aws_config = YAML.load_file(' + quote(aws_config.to_s) + ")['aws']\n"
+      hdr += "end\n"
+      hdr += <<-EOF
+
+Vagrant.configure(2) do |config|
+
+config.vm.synced_folder ".", "/vagrant", type: "rsync"
+#Network autoconfiguration
+config.vm.network "private_network", type: "dhcp"
+
+      EOF
+    end
+
     return hdr
   end
 
@@ -22,10 +52,6 @@ config.vm.network "private_network", type: "dhcp"
 
   def Generator.vagrantFooter
     return "\n end # End of generated content"
-  end
-
-  def Generator.quote(string)
-    return '"'+string+'"'
   end
 
   def Generator.writeFile(name,content)
@@ -50,6 +76,30 @@ config.vm.network "private_network", type: "dhcp"
 
     return vmdef
   end
+  # config_file - to begin
+  def Generator.getAWSVmDef(name, cookbook_path)  # ami as parameter
+    awsdef = 'config.vm.provider :aws do |'+ name +", override|\n" \
+           + name+'.access_key_id = aws_config["access_key_id"]' + "\n" \
+           + name+'.secret_access_key = aws_config["secret_access_key"]' + "\n" \
+           + name+'.keypair_name = aws_config["keypair_name"]' + "\n" \
+           + name+'.ami = aws_config["ami"]' + "\n" \
+           + name+'.region = aws_config["region"]' + "\n" \
+           + name+'.security_groups = aws_config["security_groups"]' + "\n" \
+           + name+'.user_data = aws_config["user_data"]' + "\n" \
+           + "\n" \
+           + 'override.vm.box = "dummy"' + "\n" \
+           + 'override.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"' + "\n" \
+           + 'override.ssh.username = "ec2-user"' + "\n" \
+           + 'override.ssh.private_key_path = aws_config["pemfile"]' + "\n" \
+           + "\n" \
+           + 'config.vm.provision '+ quote('chef_solo')+' do |chef|' + "\n" \
+           + 'chef.cookbooks_path = '+ quote(cookbook_path) + "\n" \
+           + 'chef.roles_path = '+ quote('.') + "\n" \
+           + 'chef.add_role '+ quote(name) + "\n" \
+           + 'chef.synced_folder_type = "rsync"' + "\nend\nend\n"
+
+    return awsdef
+  end
 
   def Generator.getRoleDef(name,package,params)
 
@@ -66,24 +116,23 @@ config.vm.network "private_network", type: "dhcp"
     end
 
     roledef = '{ '+"\n"+' "name" :' + quote(name)+",\n"+ \
-    <<-EOF
-    "default_attributes": { },
-    EOF
-    roledef += " #{quote('override_attributes')}: { #{quote(package)}: #{mdbversion} },\n"
-    roledef += <<-EOF
-    "json_class": "Chef::Role",
-    "description": "MariaDb instance install and run",
-    "chef_type": "role",
-    EOF
-    roledef += quote('run_list') + ": [ " + quote("recipe[" + recipe_name + "]") + " ]\n"
-    roledef += "}"
+      <<-EOF
+      "default_attributes": { },
+      EOF
+      roledef += " #{quote('override_attributes')}: { #{quote(package)}: #{mdbversion} },\n"
+      roledef += <<-EOF
+      "json_class": "Chef::Role",
+      "description": "MariaDb instance install and run",
+      "chef_type": "role",
+      EOF
+      roledef += quote('run_list') + ": [ " + quote("recipe[" + recipe_name + "]") + " ]\n"
+      roledef += "}"
 
     return roledef
   end
 
   #TODO: Delete?
   def Generator.makeDefinition(name, host, box, boxurl, version)
-
 
     #vm = getVmDef(name, host, box, boxurl)
     #role = getRoleDef(name,version)
@@ -107,7 +156,7 @@ config.vm.network "private_network", type: "dhcp"
     !boxes[box].nil?
   end
 
-  def Generator.generate(path, config, boxes, override)
+  def Generator.generate(path, config, boxes, override,aws_config)
     #TODO Errors check
     #TODO MariaDb Version Validator
 
@@ -115,13 +164,18 @@ config.vm.network "private_network", type: "dhcp"
 
     vagrant = File.open(path+'/Vagrantfile','w')
 
-    vagrant.puts vagrantHeader
+    vagrant.puts vagrantHeader(aws_config)
 
     cookbook_path = './recipes/cookbooks/'  # default cookbook path
     provisioned = true                      # default provision option
 
     config.each do |node|
       $out.info node[0].to_s + ':' + node[1].to_s
+      # cookbook path dir
+      if node[0]['cookbook_path']
+        cookbook_path = node[1].to_s
+      end
+      # configuration parameters
       box = node[1]['box'].to_s
       boxurl = boxes[box]
       name = node[0].to_s
@@ -138,16 +192,18 @@ config.vm.network "private_network", type: "dhcp"
       else
         provisioned = false
       end
-      #
-      if node[0]['cookbook_path']
-        cookbook_path = node[1].to_s
-      end
 
       # generate vm definition and role
       if Generator.boxValid?(box,boxes)
-        vm = getVmDef(cookbook_path,name,host,box,boxurl,provisioned)
-        vagrant.puts vm
-        # if box with mariadb, maxscale - create role
+        # aws block
+        if node[1]['aws_config']
+          aws = getAWSVmDef(name, cookbook_path)
+          vagrant.puts aws
+        else
+          vm = getVmDef(cookbook_path,name,host,box,boxurl,provisioned)
+          vagrant.puts vm
+        end
+        # box with mariadb, maxscale provision - create role
         if provisioned
           role = getRoleDef(name,package,params)
           IO.write(roleFileName(path,name),role)

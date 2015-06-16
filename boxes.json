@@ -12,6 +12,8 @@
   "suse13": "webhippie/opensuse-13.2",
   "fedora19": "chef/fedora-19",
   "fedora20": "chef/fedora-20",
-  "fedora21": "chef/fedora-21"
+  "fedora21": "chef/fedora-21",
+  "rhel6_ami": "rhel6_ami",
+  "rhel7_ami": "rhel7_ami"
 }
 
