@@ -8,12 +8,12 @@ case node[:platform_family]
     command "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db"
   end
   release_name = '$(lsb_release -cs)'
-  system 'echo MariaDB version: ' + node['maria']['version']
-  system 'echo MariaDB repo: ' + node['maria']['repo']
-  system 'echo MariaDB repo key: ' + node['maria']['repo_key']
+  system 'echo MariaDB version: ' + node['mariadb']['version']
+  system 'echo MariaDB repo: ' + node['mariadb']['repo']
+  system 'echo MariaDB repo key: ' + node['mariadb']['repo_key']
   # Add repo
   execute "Repository add" do
-    command 'echo "deb ' + node['maria']['repo'] + '/' + node['maria']['version'] + '/' + node[:platform] + ' ' + release_name + ' main" > /etc/apt/sources.list.d/mariadb.list'
+    command 'echo "deb ' + node['mariadb']['repo'] + '/' + node['mariadb']['version'] + '/' + node[:platform] + ' ' + release_name + ' main" > /etc/apt/sources.list.d/mariadb.list'
   end
   execute "update" do
     command "apt-get update"
