@@ -1,0 +1,25 @@
+{
+  "cookbook_path" : "../recipes/cookbooks/",
+  "vm_provision" : "aws",
+  "aws_config" : "../aws-config.yml",
+  "rhel6_aws" :
+  {
+	"hostname" : "aws",
+	"box" : "rhel6",
+    "mariadb" : {
+      "version" : "10.0",
+      "repo": "http://mirror.mephi.ru/mariadb/yum",
+      "repo_key": "http://mirror.mephi.ru/mariadb/yum"
+    }
+  },
+  "rhel7_aws" :
+  {
+	"hostname" : "aws",
+	"box" : "rhel7",
+    "mariadb" : {
+      "version" : "10.0",
+      "repo": "http://mirror.mephi.ru/mariadb/yum",
+      "repo_key": "http://mirror.mephi.ru/mariadb/yum"
+    }
+  }
+}
