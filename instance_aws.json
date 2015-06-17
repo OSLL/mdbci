@@ -1,40 +1,43 @@
 {
-  "cookbook_path" : "home/h05t/cookbooks",
+  "cookbook_path" : "../recipes/cookbooks/",
   "vm_provision" : "aws",
-  "aws_config" : "./aws-config.yml",
-  "rhel66_aws" :
-  {
-	"hostname" : "aws",
-	"aws" : {
-	  "ami" : "rhel6",
-	  "user_data" : "command"
-	},
-	"mariadb" : {
-	  "version" : "10.0",
-	  "source" : "community"
-	}
-  },
+  "aws_config" : "../aws-config.yml",
   "rhel6_aws" :
   {
 	"hostname" : "aws",
 	"aws" : {
-	  "ami" : "rhel6_ami",
-	  "user_data" : "command"
+	  "ami" : "rhel6",
+	  "user_data" : "#!/bin/bash\nsed -i -e 's/^Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers"
 	},
 	"mariadb" : {
 	  "version" : "10.0",
-	  "source" : "enterprise"
+	  "repo": "http://mirror.mephi.ru/mariadb/yum",
+	  "repo_key": "http://mirror.mephi.ru/mariadb/yum"
 	}
   },
-  "rhel7_aws" : {
+  "rhel7_aws" :
+  {
+	"hostname" : "aws",
+	"aws" : {
+	  "ami" : "rhel7",
+	  "user_data" : "#!/bin/bash\nsed -i -e 's/^Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers"
+	},
+	"mariadb" : {
+	  "version" : "10.0",
+	  "repo": "http://mirror.mephi.ru/mariadb/yum",
+	  "repo_key": "http://mirror.mephi.ru/mariadb/yum"
+	}
+  },
+  "sles11_aws" : {
 	"hostname": "aws",
 	"aws": {
-	  "ami": "rhel7_ami",
-	  "user_data": "command"
+	  "ami": "sles11",
+	  "user_data": "#!/bin/bash\nsed -i -e 's/^Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers"
 	},
 	"mariadb": {
-	  "version": "10.0",
-	  "source": "enterprise"
+	  "version" : "10.0",
+	  "repo": "http://mirror.mephi.ru/mariadb/yum",
+	  "repo_key": "http://mirror.mephi.ru/mariadb/yum"
 	}
   }
 }

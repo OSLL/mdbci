@@ -40,9 +40,6 @@ Vagrant.configure(2) do |config|
 
 config.vm.synced_folder ".", "/vagrant", type: "rsync"
 
-#Network autoconfiguration
-config.vm.network "private_network", type: "dhcp"
-
       EOF
     end
 
@@ -54,7 +51,7 @@ config.vm.network "private_network", type: "dhcp"
   end
 
   def Generator.vagrantFooter
-    return "\n end # End of generated content"
+    return "\nend # End of generated content"
   end
 
   def Generator.writeFile(name,content)
@@ -64,7 +61,7 @@ config.vm.network "private_network", type: "dhcp"
   def Generator.getVmDef(cookbook_path, name, host, box, boxurl, provisioned)
 
     if provisioned
-      vmdef = 'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
+      vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) +"\n" \
             + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
@@ -207,6 +204,7 @@ config.vm.network "private_network", type: "dhcp"
       # aws node configuration
       if node[1]['aws']
         ami = node[1]['aws']['ami']
+        amiurl = boxes[ami]
         user_data = node[1]['aws']['user_data']
       end
 
@@ -226,7 +224,7 @@ config.vm.network "private_network", type: "dhcp"
         end
       elsif vm_provision == 'aws'
         if Generator.amiValid?(ami,boxes)
-          aws = getAWSVmDef(name, cookbook_path, ami, user_data)
+          aws = getAWSVmDef(name, cookbook_path, amiurl, user_data)
           vagrant.puts aws
           # refactoring
           # box with mariadb, maxscale provision - create role
