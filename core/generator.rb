@@ -9,9 +9,11 @@ class Generator
 
   def Generator.vagrantHeader(aws_config)
 
-    if aws_config
+    if aws_config.to_s.empty?
       hdr = <<-EOF
 # !! Generated content, do not edit !!
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
 
 Vagrant.configure(2) do |config|
 
@@ -62,16 +64,16 @@ config.vm.network "private_network", type: "dhcp"
 
     if provisioned
       vmdef = 'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
-            + name+'.vm.box = ' + quote(boxurl) + "\n" \
-            + name+'.vm.hostname = ' + quote(host) +"\n" \
-            + name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
-            + 'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
-            + 'chef.roles_path = '+ quote('.')+"\n" \
-            + 'chef.add_role '+ quote(name) + "\nend\nend\n"
+            + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
+            + "\t"+name+'.vm.hostname = ' + quote(host) +"\n" \
+            + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
+            + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
+            + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
+            + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend\nend\n"
     else
       vmdef = 'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
-            + name+'.vm.box = ' + quote(boxurl) + "\n" \
-            + name+'.vm.hostname = ' + quote(host) +"\nend\n"
+            + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
+            + "\t"+name+'.vm.hostname = ' + quote(host) +"\nend\n"
     end
 
     return vmdef
@@ -79,24 +81,24 @@ config.vm.network "private_network", type: "dhcp"
   # config_file - to begin
   def Generator.getAWSVmDef(name, cookbook_path)  # ami as parameter
     awsdef = 'config.vm.provider :aws do |'+ name +", override|\n" \
-           + name+'.access_key_id = aws_config["access_key_id"]' + "\n" \
-           + name+'.secret_access_key = aws_config["secret_access_key"]' + "\n" \
-           + name+'.keypair_name = aws_config["keypair_name"]' + "\n" \
-           + name+'.ami = aws_config["ami"]' + "\n" \
-           + name+'.region = aws_config["region"]' + "\n" \
-           + name+'.security_groups = aws_config["security_groups"]' + "\n" \
-           + name+'.user_data = aws_config["user_data"]' + "\n" \
+           + "\t"+name+'.access_key_id = aws_config["access_key_id"]' + "\n" \
+           + "\t"+name+'.secret_access_key = aws_config["secret_access_key"]' + "\n" \
+           + "\t"+name+'.keypair_name = aws_config["keypair_name"]' + "\n" \
+           + "\t"+name+'.ami = aws_config["ami"]' + "\n" \
+           + "\t"+name+'.region = aws_config["region"]' + "\n" \
+           + "\t"+name+'.security_groups = aws_config["security_groups"]' + "\n" \
+           + "\t"+name+'.user_data = aws_config["user_data"]' + "\n" \
            + "\n" \
-           + 'override.vm.box = "dummy"' + "\n" \
-           + 'override.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"' + "\n" \
-           + 'override.ssh.username = "ec2-user"' + "\n" \
-           + 'override.ssh.private_key_path = aws_config["pemfile"]' + "\n" \
+           + "\t"+'override.vm.box = "dummy"' + "\n" \
+           + "\t"+'override.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"' + "\n" \
+           + "\t"+'override.ssh.username = "ec2-user"' + "\n" \
+           + "\t"+'override.ssh.private_key_path = aws_config["pemfile"]' + "\n" \
            + "\n" \
-           + 'config.vm.provision '+ quote('chef_solo')+' do |chef|' + "\n" \
-           + 'chef.cookbooks_path = '+ quote(cookbook_path) + "\n" \
-           + 'chef.roles_path = '+ quote('.') + "\n" \
-           + 'chef.add_role '+ quote(name) + "\n" \
-           + 'chef.synced_folder_type = "rsync"' + "\nend\nend\n"
+           + "\t"+'config.vm.provision '+ quote('chef_solo')+' do |chef|' + "\n" \
+           + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path) + "\n" \
+           + "\t\t"+'chef.roles_path = '+ quote('.') + "\n" \
+           + "\t\t"+'chef.add_role '+ quote(name) + "\n" \
+           + "\t\t"+'chef.synced_folder_type = "rsync"' + "\n\tend\nend\n"
 
     return awsdef
   end
@@ -156,7 +158,7 @@ config.vm.network "private_network", type: "dhcp"
     !boxes[box].nil?
   end
 
-  def Generator.generate(path, config, boxes, override,aws_config)
+  def Generator.generate(path, config, boxes, override)
     #TODO Errors check
     #TODO MariaDb Version Validator
 
@@ -164,10 +166,20 @@ config.vm.network "private_network", type: "dhcp"
 
     vagrant = File.open(path+'/Vagrantfile','w')
 
+    aws_config = ''
+    config.each do |node|
+      if node[1]['aws_config']
+        aws_config = node[1]['aws_config'].to_s
+      end
+    end
+    #
+    p "AWS CONFIG: " + aws_config.to_s
     vagrant.puts vagrantHeader(aws_config)
 
     cookbook_path = './recipes/cookbooks/'  # default cookbook path
     provisioned = true                      # default provision option
+    aws_support = false                     # default aws support
+    config_aws = false                      #
 
     config.each do |node|
       $out.info node[0].to_s + ':' + node[1].to_s
@@ -192,22 +204,44 @@ config.vm.network "private_network", type: "dhcp"
       else
         provisioned = false
       end
+      #
+      if node[0]['aws_support']
+        aws_support = node[1]
+      end
+      p "AWS SUPPORT: " + aws_support.to_s
+      #
+      if node[1]['aws_config']
+        config_aws = true
+      elsif !node[1]['aws_config']
+        config_aws = false
+      end
+      p "AWS CONFIG: " + config_aws.to_s
 
       # generate vm definition and role
       if Generator.boxValid?(box,boxes)
-        # aws block
-        if node[1]['aws_config']
-          aws = getAWSVmDef(name, cookbook_path)
-          vagrant.puts aws
-        else
-          vm = getVmDef(cookbook_path,name,host,box,boxurl,provisioned)
-          vagrant.puts vm
+
+        if aws_support && config_aws # aws block
+            p "AWS BLOCK: "
+            aws = getAWSVmDef(name, cookbook_path)
+            vagrant.puts aws
+            # refactoring
+            # box with mariadb, maxscale provision - create role
+            if provisioned
+              role = getRoleDef(name,package,params)
+              IO.write(roleFileName(path,name),role)
+            end
+        elsif aws_support == false && config_aws == false # other block: virtualbox, build and other
+            p "NOT AWS BLOCK: "
+            vm = getVmDef(cookbook_path,name,host,box,boxurl,provisioned)
+            vagrant.puts vm
+            # refactoring
+            # box with mariadb, maxscale provision - create role
+            if provisioned
+              role = getRoleDef(name,package,params)
+              IO.write(roleFileName(path,name),role)
+            end
         end
-        # box with mariadb, maxscale provision - create role
-        if provisioned
-          role = getRoleDef(name,package,params)
-          IO.write(roleFileName(path,name),role)
-        end
+
       else
         $out.warning 'WARNING: Box '+box+'is not installed or configured ->SKIPPING'
       end

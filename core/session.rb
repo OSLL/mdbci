@@ -14,7 +14,6 @@ class Session
   attr_accessor :isOverride
   attr_accessor :isSilent
   attr_accessor :command
-  attr_accessor :aws_config
 
 =begin
      Load collections from json files:
@@ -106,15 +105,8 @@ class Session
     end
 
     config = JSON.parse(IO.read($session.configFile))
-    #
-    config.each do |node|
-      if node[1]['aws_config']
-        aws_config = node[1]['aws_config']
-      end
-    end
-    #
     $out.info 'Generating config in ' + path
-    Generator.generate(path,config,boxes,isOverride,aws_config)
+    Generator.generate(path,config,boxes,isOverride)
 
   end
 end
