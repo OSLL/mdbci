@@ -14,6 +14,7 @@
   "fedora20": "chef/fedora-20",
   "fedora21": "chef/fedora-21",
   "rhel6_ami": "rhel6_ami",
-  "rhel7_ami": "rhel7_ami"
+  "rhel7_ami": "rhel7_ami",
+  "rhel6" : "ami-8cff51fb"
 }
 

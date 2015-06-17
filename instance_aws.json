@@ -1,0 +1,40 @@
+{
+  "cookbook_path" : "home/h05t/cookbooks",
+  "vm_provision" : "aws",
+  "aws_config" : "./aws-config.yml",
+  "rhel66_aws" :
+  {
+	"hostname" : "aws",
+	"aws" : {
+	  "ami" : "rhel6",
+	  "user_data" : "command"
+	},
+	"mariadb" : {
+	  "version" : "10.0",
+	  "source" : "community"
+	}
+  },
+  "rhel6_aws" :
+  {
+	"hostname" : "aws",
+	"aws" : {
+	  "ami" : "rhel6_ami",
+	  "user_data" : "command"
+	},
+	"mariadb" : {
+	  "version" : "10.0",
+	  "source" : "enterprise"
+	}
+  },
+  "rhel7_aws" : {
+	"hostname": "aws",
+	"aws": {
+	  "ami": "rhel7_ami",
+	  "user_data": "command"
+	},
+	"mariadb": {
+	  "version": "10.0",
+	  "source": "enterprise"
+	}
+  }
+}

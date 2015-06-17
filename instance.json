@@ -1,6 +1,5 @@
 {
   "cookbook_path" : "home/h05t/cookbooks",
-  "aws_support" : "false",
   "node1" :
   {
 	"hostname" : "server",
@@ -26,16 +25,6 @@
 	"mariadb" : {
 	  "version" : "5.5",
 	  "source" : "enterprise"
-	}
-  },
-  "rhel66_aws" :
-  {
-	"hostname" : "aws",
-	"box" : "rhel6_ami",
-	"aws_config" : "./aws-config.yml",
-	"mariadb" : {
-	  "version" : "10.0",
-	  "source" : "community"
 	}
   },
   "node4" :
@@ -65,26 +54,6 @@
   {
 	"hostname" : "build",
 	"box" : "fedora19"
-  },
-  "rhel6_aws" :
-  {
-	"hostname" : "aws",
-	"box" : "rhel6_ami",
-	"aws_config" : "./aws-config.yml",
-	"mariadb" : {
-	  "version" : "10.0",
-	  "source"    : "enterprise"
-	}
-  },
-  "rhel7_aws" :
-  {
-	"hostname" : "aws",
-	"box" : "rhel7_ami",
-	"aws_config" : "./aws-config.yml",
-	"mariadb" : {
-	  "version" : "10.0",
-	  "source"    : "enterprise"
-	}
   },
   "build3" :
   {

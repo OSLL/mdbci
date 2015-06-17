@@ -39,6 +39,7 @@ require 'yaml'
 Vagrant.configure(2) do |config|
 
 config.vm.synced_folder ".", "/vagrant", type: "rsync"
+
 #Network autoconfiguration
 config.vm.network "private_network", type: "dhcp"
 
@@ -78,16 +79,16 @@ config.vm.network "private_network", type: "dhcp"
 
     return vmdef
   end
-  # config_file - to begin
-  def Generator.getAWSVmDef(name, cookbook_path)  # ami as parameter
+  #
+  def Generator.getAWSVmDef(name, cookbook_path, ami, user_data)
     awsdef = 'config.vm.provider :aws do |'+ name +", override|\n" \
            + "\t"+name+'.access_key_id = aws_config["access_key_id"]' + "\n" \
            + "\t"+name+'.secret_access_key = aws_config["secret_access_key"]' + "\n" \
            + "\t"+name+'.keypair_name = aws_config["keypair_name"]' + "\n" \
-           + "\t"+name+'.ami = aws_config["ami"]' + "\n" \
+           + "\t"+name+'.ami = ' + quote(ami) + "\n" \
            + "\t"+name+'.region = aws_config["region"]' + "\n" \
            + "\t"+name+'.security_groups = aws_config["security_groups"]' + "\n" \
-           + "\t"+name+'.user_data = aws_config["user_data"]' + "\n" \
+           + "\t"+name+'.user_data = ' + quote(user_data) + "\n" \
            + "\n" \
            + "\t"+'override.vm.box = "dummy"' + "\n" \
            + "\t"+'override.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"' + "\n" \
@@ -158,7 +159,11 @@ config.vm.network "private_network", type: "dhcp"
     !boxes[box].nil?
   end
 
-  def Generator.generate(path, config, boxes, override)
+  def Generator.amiValid?(ami,boxes)
+    !boxes[ami].nil?
+  end
+
+  def Generator.generate(path, config, boxes, override, aws_config)
     #TODO Errors check
     #TODO MariaDb Version Validator
 
@@ -166,26 +171,21 @@ config.vm.network "private_network", type: "dhcp"
 
     vagrant = File.open(path+'/Vagrantfile','w')
 
-    aws_config = ''
-    config.each do |node|
-      if node[1]['aws_config']
-        aws_config = node[1]['aws_config'].to_s
-      end
-    end
-    #
-    p "AWS CONFIG: " + aws_config.to_s
     vagrant.puts vagrantHeader(aws_config)
 
     cookbook_path = './recipes/cookbooks/'  # default cookbook path
+    vm_provision = ''                       # vm provisioner: aws, qemu
     provisioned = true                      # default provision option
-    aws_support = false                     # default aws support
-    config_aws = false                      #
 
     config.each do |node|
       $out.info node[0].to_s + ':' + node[1].to_s
       # cookbook path dir
       if node[0]['cookbook_path']
         cookbook_path = node[1].to_s
+      end
+      # vm_provision
+      if node[0]['vm_provision']
+        vm_provision = node[1].to_s
       end
       # configuration parameters
       box = node[1]['box'].to_s
@@ -204,47 +204,43 @@ config.vm.network "private_network", type: "dhcp"
       else
         provisioned = false
       end
-      #
-      if node[0]['aws_support']
-        aws_support = node[1]
+      # aws node configuration
+      if node[1]['aws']
+        ami = node[1]['aws']['ami']
+        user_data = node[1]['aws']['user_data']
       end
-      p "AWS SUPPORT: " + aws_support.to_s
-      #
-      if node[1]['aws_config']
-        config_aws = true
-      elsif !node[1]['aws_config']
-        config_aws = false
-      end
-      p "AWS CONFIG: " + config_aws.to_s
 
-      # generate vm definition and role
-      if Generator.boxValid?(box,boxes)
-
-        if aws_support && config_aws # aws block
-            p "AWS BLOCK: "
-            aws = getAWSVmDef(name, cookbook_path)
-            vagrant.puts aws
-            # refactoring
-            # box with mariadb, maxscale provision - create role
-            if provisioned
-              role = getRoleDef(name,package,params)
-              IO.write(roleFileName(path,name),role)
-            end
-        elsif aws_support == false && config_aws == false # other block: virtualbox, build and other
-            p "NOT AWS BLOCK: "
-            vm = getVmDef(cookbook_path,name,host,box,boxurl,provisioned)
-            vagrant.puts vm
-            # refactoring
-            # box with mariadb, maxscale provision - create role
-            if provisioned
-              role = getRoleDef(name,package,params)
-              IO.write(roleFileName(path,name),role)
-            end
+      # generate node definition and role
+      if vm_provision == '' # virtualbox
+        if Generator.boxValid?(box,boxes)
+          vm = getVmDef(cookbook_path,name,host,box,boxurl,provisioned)
+          vagrant.puts vm
+          # refactoring
+          # box with mariadb, maxscale provision - create role
+          if provisioned
+            role = getRoleDef(name,package,params)
+            IO.write(roleFileName(path,name),role)
+          end
+        else
+          $out.warning 'WARNING: Box '+box+'is not installed or configured ->SKIPPING'
         end
-
+      elsif vm_provision == 'aws'
+        if Generator.amiValid?(ami,boxes)
+          aws = getAWSVmDef(name, cookbook_path, ami, user_data)
+          vagrant.puts aws
+          # refactoring
+          # box with mariadb, maxscale provision - create role
+          if provisioned
+            role = getRoleDef(name,package,params)
+            IO.write(roleFileName(path,name),role)
+          end
+        else
+          $out.warning 'WARNING: AWS AMI '+ami.to_s+'is not installed or configured ->SKIPPING'
+        end
       else
-        $out.warning 'WARNING: Box '+box+'is not installed or configured ->SKIPPING'
+        $out.warning 'WARNING: Configuration has not AWS support|config file or other vm provision'
       end
+
       #makeDefinition(node[0].to_s,node[1]['hostname'].to_s,box,boxurl,node[1]['mariadb'])
     end
     vagrant.puts vagrantFooter
