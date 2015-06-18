@@ -9,8 +9,8 @@ class Network
     @nodes = Array.new
   end
 
-  def getNodeInfo(config, node)
-    node = Node.new(config, node)
+  def getNodeInfo(config, node, type)
+    node = Node.new(config, node, type)
     @nodes.push(node)
   end
 
@@ -36,9 +36,15 @@ class Network
   Node info is located in (2..END-3) lines
 
 =end
+    #puts list
+    # puts "LIST length: " + list.length.to_s
+    # get node type
+    list[2].to_s.include?("aws") ? vm_type = "aws" : vm_type = "virtualbox"
+    #p "DEBUG: TYPE: " + vm_type.to_s
 
-    (2..list.length-5).each do |x|
-      getNodeInfo(config, list[x])
+    # TODO : 4 - for aws, 3 - for VBox
+    (2..list.length-4).each do |x|
+      getNodeInfo(config, list[x], vm_type)
     end
 
     Dir.chdir pwd
@@ -60,7 +66,6 @@ class Network
 
     cmd = 'vagrant ssh-config '+args[1]+ ' |grep IdentityFile '
     vagrant_out = `#{cmd}`
-
 
     $out.out vagrant_out.split(' ')[1]
 
@@ -85,7 +90,7 @@ class Network
         end
       else
         node = network.nodes.find {|name| name.name == args[1]}
-        $out.out node.ip
+        #$out.out node.ip
       end
 
       $out.info args[1]
