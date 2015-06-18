@@ -79,8 +79,10 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
     return vmdef
   end
   #
-  def Generator.getAWSVmDef(name, cookbook_path, boxurl)
-    awsdef = 'config.vm.provider :aws do |'+ name +", override|\n" \
+  def Generator.getAWSVmDef(name, cookbook_path, boxurl,provisioned)
+
+    if provisioned
+      awsdef = 'config.vm.provider :aws do |'+ name +", override|\n" \
            + "\t"+name+'.access_key_id = aws_config["access_key_id"]' + "\n" \
            + "\t"+name+'.secret_access_key = aws_config["secret_access_key"]' + "\n" \
            + "\t"+name+'.keypair_name = aws_config["keypair_name"]' + "\n" \
@@ -100,6 +102,22 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
            + "\t\t"+'chef.roles_path = '+ quote('.') + "\n" \
            + "\t\t"+'chef.add_role '+ quote(name) + "\n" \
            + "\t\t"+'chef.synced_folder_type = "rsync"' + "\n\tend\nend\n"
+    else
+      awsdef = 'config.vm.provider :aws do |'+ name +", override|\n" \
+           + "\t"+name+'.access_key_id = aws_config["access_key_id"]' + "\n" \
+           + "\t"+name+'.secret_access_key = aws_config["secret_access_key"]' + "\n" \
+           + "\t"+name+'.keypair_name = aws_config["keypair_name"]' + "\n" \
+           + "\t"+name+'.ami = ' + quote(boxurl) + "\n" \
+           + "\t"+name+'.region = aws_config["region"]' + "\n" \
+           + "\t"+name+'.instance_type = aws_config["instance_type"]' + "\n" \
+           + "\t"+name+'.security_groups = aws_config["security_groups"]' + "\n" \
+           + "\t"+name+'.user_data = aws_config["user_data"]' + "\n" \
+           + "\n" \
+           + "\t"+'override.vm.box = "dummy"' + "\n" \
+           + "\t"+'override.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"' + "\n" \
+           + "\t"+'override.ssh.username = "ec2-user"' + "\n" \
+           + "\t"+'override.ssh.private_key_path = aws_config["pemfile"]' + "\nend\n"
+    end
 
     return awsdef
   end
@@ -207,7 +225,7 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
           vm = getVmDef(cookbook_path,name,host,box,boxurl,provisioned)
           vagrant.puts vm
         elsif vm_provision == 'aws'
-          aws = getAWSVmDef(name, cookbook_path, boxurl)
+          aws = getAWSVmDef(name, cookbook_path, boxurl,provisioned)
           vagrant.puts aws
         else
           $out.warning 'WARNING: Configuration has not AWS support|config file or other vm provision'
