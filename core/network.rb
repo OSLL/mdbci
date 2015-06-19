@@ -37,7 +37,7 @@ class Network
   AWS Node info is located in (2..END-4) lines
 
 =end
-    # TODO : 4 - for aws, 3 - for VBox
+    # TODO : 4 - for aws, 5 - for VBox
     (2..list.length-4).each do |x|
       getNodeInfo(config, list[x])
     end
