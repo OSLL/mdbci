@@ -9,3 +9,4 @@ aws:
    region : 'xxxxxxxxxx'	# your AWS region
    instance_type : 'xxxxxxxxxx' # your instance type, ex. t1.micro
    pemfile : 'xxxxxxxxxxxxxxxx' # your private key
+   user_data : 'xxxxxxx'	# your command, that you want to run in ami

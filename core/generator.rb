@@ -234,7 +234,6 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
         $out.warning 'WARNING: Box '+box+'is not installed or configured ->SKIPPING'
       end
 
-      # refactoring
       # box with mariadb, maxscale provision - create role
       if provisioned
         role = getRoleDef(name,package,params)

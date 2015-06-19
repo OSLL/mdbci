@@ -9,8 +9,8 @@ class Network
     @nodes = Array.new
   end
 
-  def getNodeInfo(config, node, type)
-    node = Node.new(config, node, type)
+  def getNodeInfo(config, node)
+    node = Node.new(config, node)
     @nodes.push(node)
   end
 
@@ -33,18 +33,13 @@ class Network
   >VM, run `vagrant status NAME`.
   >
 
-  Node info is located in (2..END-3) lines
+  VBOX Node info is located in (2..END-3) lines
+  AWS Node info is located in (2..END-4) lines
 
 =end
-    #puts list
-    # puts "LIST length: " + list.length.to_s
-    # get node type
-    list[2].to_s.include?("aws") ? vm_type = "aws" : vm_type = "virtualbox"
-    #p "DEBUG: TYPE: " + vm_type.to_s
-
     # TODO : 4 - for aws, 3 - for VBox
     (2..list.length-4).each do |x|
-      getNodeInfo(config, list[x], vm_type)
+      getNodeInfo(config, list[x])
     end
 
     Dir.chdir pwd
@@ -82,15 +77,15 @@ class Network
       args = name.split('/')
 
       network = Network.new
-      network.loadNodes args[0]
+      network.loadNodes args[0] # load nodes from dir
 
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
           $out.out node.ip + ' ' + node.name
         end
       else
-        node = network.nodes.find {|name| name.name == args[1]}
-        #$out.out node.ip
+        node = network.nodes.find {|elem| elem.name == args[1]}
+        $out.out node.ip
       end
 
       $out.info args[1]
