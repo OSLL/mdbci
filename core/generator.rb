@@ -60,7 +60,7 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
     IO.write(name,content)
   end
 
-  def Generator.getVmDef(cookbook_path, name, host, box, boxurl, provisioned)
+  def Generator.getVmDef(cookbook_path, name, host, boxurl, provisioned)
 
     if provisioned
       vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
@@ -177,6 +177,32 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
     !boxes[box].nil?
   end
 
+  def Generator.parseBoxes(boxes, provider, box, user, instance)
+
+    boxes.each do |block|
+      $out.info block[0].to_s + ':' + block[1].to_s
+
+      provider = block[1]['provider'].to_s
+      p "provider: : " + provider.to_s
+
+      if provider == "aws"
+        box = block[1]['ami'].to_s
+        p "ami: : " + box.to_s
+
+        user = block[1]['user'].to_s
+        p "user: : " + user.to_s
+
+        instance = block[1]['default_instance_type'].to_s
+        p "instance: : " + instance.to_s
+      else
+        box = block[1]['box'].to_s
+        p "box: : " + box.to_s
+      end
+
+    end
+
+  end
+
   def Generator.generate(path, config, boxes, override, aws_config)
     #TODO Errors check
     #TODO MariaDb Version Validator
@@ -188,29 +214,35 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
     vagrant.puts vagrantHeader(aws_config)
 
     cookbook_path = './recipes/cookbooks/'  # default cookbook path
-    vm_provision = ''                       # vm provisioner: aws, qemu
     provisioned = true                      # default provision option
 
     config.each do |node|
       $out.info node[0].to_s + ':' + node[1].to_s
+
       # cookbook path dir
       if node[0]['cookbook_path']
         cookbook_path = node[1].to_s
       end
-      # vm_provision
-      if node[0]['vm_provision']
-        vm_provision = node[1].to_s
-      end
+
       # configuration parameters
-      box = node[1]['box'].to_s
-      boxurl = boxes[box]
       name = node[0].to_s
       host = node[1]['hostname'].to_s
-      # aws user and instance type
-      if vm_provision == "aws"
-        user = node[1]['user'].to_s
-        instance_type = node[1]['instance_type'].to_s
+
+      box = node[1]['box'].to_s
+      if !box.empty?
+        box_params = boxes[box]
+        #p box_params.class
+        provider = box_params["provider"].to_s
+        if provider == "aws"
+          amiurl = box_params['ami'].to_s
+          user = box_params['user'].to_s
+          instance = box_params['default_instance_type'].to_s
+        else
+          boxurl = box_params['box'].to_s
+        end
+
       end
+
       # package: mariadb or maxscale
       if node[1]['mariadb']
         package = 'mariadb'
@@ -226,11 +258,11 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
 
       # generate node definition and role
       if Generator.boxValid?(box,boxes)
-        if vm_provision == '' # virtualbox
-          vm = getVmDef(cookbook_path,name,host,box,boxurl,provisioned)
+        if provider == 'virtualbox'
+          vm = getVmDef(cookbook_path,name,host,boxurl,provisioned)
           vagrant.puts vm
-        elsif vm_provision == 'aws'
-          aws = getAWSVmDef(name,cookbook_path,boxurl,user,instance_type,provisioned)
+        elsif provider == 'aws'
+          aws = getAWSVmDef(name,cookbook_path,amiurl,user,instance,provisioned)
           vagrant.puts aws
         else
           $out.warning 'WARNING: Configuration has not AWS support, config file or other vm provision'
