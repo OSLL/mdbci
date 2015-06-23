@@ -1,20 +1,77 @@
 {
-  "debian" : "https://atlas.hashicorp.com/chef/boxes/debian-7.4/versions/1.0.0/providers/virtualbox.box",
-  "ubuntu_trusty": "chef/ubuntu-14.04",
-  "ubuntu_utopic": "chef/ubuntu-14.10",
-  "ubuntu_precise": "chef/ubuntu-12.04",
-  "centos7": "chef/centos-7.1",
-  "centos6": "chef/centos-6.6",
-  "centos5": "chef/centos-5.11",
-  "deb_wheezy": "chef/debian-7.8",
-  "deb_squeeze": "chef/debian-6.0.8",
-  "suse13.1": "chef/opensuse-13.1",
-  "suse13": "webhippie/opensuse-13.2",
-  "fedora19": "chef/fedora-19",
-  "fedora20": "chef/fedora-20",
-  "fedora21": "chef/fedora-21",
-  "rhel6" : "ami-8cfc51fb",
-  "rhel7" : "ami-8cff51fb",
-  "sles11" : "ami-17c44860"
+  "debian" : {
+    "provider": "virtualbox",
+    "box": "https://atlas.hashicorp.com/chef/boxes/debian-7.4/versions/1.0.0/providers/virtualbox.box"
+  },
+  "ubuntu_trusty": {
+    "provider": "virtualbox",
+    "box": "chef/ubuntu-14.04"
+  },
+  "ubuntu_utopic": {
+    "provider": "virtualbox",
+    "box": "chef/ubuntu-14.10"
+  },
+  "ubuntu_precise": {
+    "provider": "virtualbox",
+    "box": "chef/ubuntu-12.04"
+  },
+  "centos7": {
+    "provider": "virtualbox",
+    "box": "chef/centos-7.1"
+  },
+  "centos6": {
+    "provider": "virtualbox",
+    "box": "chef/centos-6.6"
+  },
+  "centos5": {
+    "provider": "virtualbox",
+    "box": "chef/centos-5.11"
+  },
+  "deb_wheezy": {
+    "provider": "virtualbox",
+    "box": "chef/debian-7.8"
+  },
+  "deb_squeeze" : {
+    "provider": "virtualbox",
+    "box": "chef/debian-6.0.8"
+  },
+  "suse13.1": {
+    "provider": "virtualbox",
+    "box": "chef/opensuse-13.1"
+  },
+  "suse13": {
+    "provider": "virtualbox",
+    "box": "webhippie/opensuse-13.2"
+  },
+  "fedora19": {
+    "provider": "virtualbox",
+    "box": "chef/fedora-19"
+  },
+  "fedora20": {
+    "provider": "virtualbox",
+    "box": "chef/fedora-20"
+  },
+  "fedora21": {
+    "provider": "virtualbox",
+    "box": "chef/fedora-21"
+  },
+  "rhel6" : {
+    "provider": "aws",
+    "ami": "ami-8cfc51fb",
+    "user": "ec2-user",
+    "default_instance_type": "t1.micro"
+  },
+  "rhel7" : {
+    "provider": "aws",
+    "ami": "ami-8cff51fb",
+    "user": "root",
+    "default_instance_type": "t2.micro"
+  },
+  "sles11" : {
+    "provider": "aws",
+    "ami": "ami-17c44860",
+    "user": "root",
+    "default_instance_type": "t1.micro"
+  }
 }
 

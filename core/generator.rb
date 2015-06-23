@@ -60,7 +60,7 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
     IO.write(name,content)
   end
 
-  def Generator.getVmDef(cookbook_path, name, host, box, boxurl, provisioned)
+  def Generator.getVmDef(cookbook_path, name, host, boxurl, provisioned)
 
     if provisioned
       vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
@@ -79,7 +79,7 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
     return vmdef
   end
   #
-  def Generator.getAWSVmDef(name, cookbook_path, boxurl,provisioned)
+  def Generator.getAWSVmDef(name,cookbook_path,boxurl,user,instance_type,provisioned)
 
     if provisioned
       awsdef = 'config.vm.provider :aws do |'+ name +", override|\n" \
@@ -88,13 +88,13 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
            + "\t"+name+'.keypair_name = aws_config["keypair_name"]' + "\n" \
            + "\t"+name+'.ami = ' + quote(boxurl) + "\n" \
            + "\t"+name+'.region = aws_config["region"]' + "\n" \
-           + "\t"+name+'.instance_type = aws_config["instance_type"]' + "\n" \
+           + "\t"+name+'.instance_type = ' + quote(instance_type) + "\n" \
            + "\t"+name+'.security_groups = aws_config["security_groups"]' + "\n" \
            + "\t"+name+'.user_data = aws_config["user_data"]' + "\n" \
            + "\n" \
            + "\t"+'override.vm.box = "dummy"' + "\n" \
            + "\t"+'override.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"' + "\n" \
-           + "\t"+'override.ssh.username = "ec2-user"' + "\n" \
+           + "\t"+'override.ssh.username = ' + quote(user) + "\n" \
            + "\t"+'override.ssh.private_key_path = aws_config["pemfile"]' + "\n" \
            + "\n" \
            + "\t"+'config.vm.provision '+ quote('chef_solo')+' do |chef|' + "\n" \
@@ -109,13 +109,13 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
            + "\t"+name+'.keypair_name = aws_config["keypair_name"]' + "\n" \
            + "\t"+name+'.ami = ' + quote(boxurl) + "\n" \
            + "\t"+name+'.region = aws_config["region"]' + "\n" \
-           + "\t"+name+'.instance_type = aws_config["instance_type"]' + "\n" \
+           + "\t"+name+'.instance_type = ' + quote(instance_type) + "\n" \
            + "\t"+name+'.security_groups = aws_config["security_groups"]' + "\n" \
            + "\t"+name+'.user_data = aws_config["user_data"]' + "\n" \
            + "\n" \
            + "\t"+'override.vm.box = "dummy"' + "\n" \
            + "\t"+'override.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"' + "\n" \
-           + "\t"+'override.ssh.username = "ec2-user"' + "\n" \
+           + "\t"+'override.ssh.username = ' + quote(user) + "\n" \
            + "\t"+'override.ssh.private_key_path = aws_config["pemfile"]' + "\nend\n"
     end
 
@@ -188,24 +188,35 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
     vagrant.puts vagrantHeader(aws_config)
 
     cookbook_path = './recipes/cookbooks/'  # default cookbook path
-    vm_provision = ''                       # vm provisioner: aws, qemu
     provisioned = true                      # default provision option
 
     config.each do |node|
       $out.info node[0].to_s + ':' + node[1].to_s
+
       # cookbook path dir
       if node[0]['cookbook_path']
         cookbook_path = node[1].to_s
       end
-      # vm_provision
-      if node[0]['vm_provision']
-        vm_provision = node[1].to_s
-      end
+
       # configuration parameters
-      box = node[1]['box'].to_s
-      boxurl = boxes[box]
       name = node[0].to_s
       host = node[1]['hostname'].to_s
+
+      box = node[1]['box'].to_s
+      if !box.empty?
+        box_params = boxes[box]
+        #p box_params.class
+        provider = box_params["provider"].to_s
+        if provider == "aws"
+          amiurl = box_params['ami'].to_s
+          user = box_params['user'].to_s
+          instance = box_params['default_instance_type'].to_s
+        else
+          boxurl = box_params['box'].to_s
+        end
+
+      end
+
       # package: mariadb or maxscale
       if node[1]['mariadb']
         package = 'mariadb'
@@ -221,14 +232,14 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
 
       # generate node definition and role
       if Generator.boxValid?(box,boxes)
-        if vm_provision == '' # virtualbox
-          vm = getVmDef(cookbook_path,name,host,box,boxurl,provisioned)
+        if provider == 'virtualbox'
+          vm = getVmDef(cookbook_path,name,host,boxurl,provisioned)
           vagrant.puts vm
-        elsif vm_provision == 'aws'
-          aws = getAWSVmDef(name, cookbook_path, boxurl,provisioned)
+        elsif provider == 'aws'
+          aws = getAWSVmDef(name,cookbook_path,amiurl,user,instance,provisioned)
           vagrant.puts aws
         else
-          $out.warning 'WARNING: Configuration has not AWS support|config file or other vm provision'
+          $out.warning 'WARNING: Configuration has not AWS support, config file or other vm provision'
         end
       else
         $out.warning 'WARNING: Box '+box+'is not installed or configured ->SKIPPING'
