@@ -214,7 +214,6 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
         else
           boxurl = box_params['box'].to_s
         end
-
       end
 
       # package: mariadb or maxscale

@@ -37,8 +37,10 @@ class Network
   AWS Node info is located in (2..END-4) lines
 
 =end
-    # TODO : 4 - for aws, 5 - for VBox
-    (2..list.length-4).each do |x|
+    # Log offset: 4 - for aws, 5 - for VBox
+    list[2].to_s.include?("aws") ? offset = 4 : offset = 5
+
+    (2..list.length-offset).each do |x|
       getNodeInfo(config, list[x])
     end
 
@@ -81,11 +83,11 @@ class Network
 
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
-          $out.out node.ip + ' ' + node.name
+          $out.out(node.ip.to_s + ' ' + node.name.to_s)
         end
       else
         node = network.nodes.find {|elem| elem.name == args[1]}
-        $out.out node.ip
+        $out.out(node.ip.to_s)
       end
 
       $out.info args[1]
