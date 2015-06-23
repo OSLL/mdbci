@@ -9,5 +9,8 @@ default["maxscale"]["repo"] = "http://jenkins.engskysql.com/repository/1.1.0-ga/
 # repo for centos/fedora/rhel/suse
 #default["maxscale"]["repo"] = "http://jenkins.engskysql.com/repository/1.1.0-ga/mariadb-maxscale/yum"
 
+# debian/ubuntu repo key
+#default["maxscale"]["repo_key"] = "70E4618A8167EE24"
+
 # maxscale repo key for rhel/fedora/centos/suse
 default["maxscale"]["repo_key"] = "http://jenkins.engskysql.com/repository/1.1.0-ga/mariadb-maxscale"

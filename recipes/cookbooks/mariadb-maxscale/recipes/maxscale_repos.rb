@@ -11,7 +11,7 @@ case node[:platform_family]
   system 'echo Maxscale repo key: ' + node['maxscale']['repo_key']
   # Add repo key
   execute "Key add" do
-    command "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 70E4618A8167EE24"
+    command "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com " + node['maxscale']['repo_key']
   end
   release_name = '$(lsb_release -cs)'
   system 'echo Platform: $release_name'
