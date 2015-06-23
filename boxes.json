@@ -12,6 +12,9 @@
   "suse13": "webhippie/opensuse-13.2",
   "fedora19": "chef/fedora-19",
   "fedora20": "chef/fedora-20",
-  "fedora21": "chef/fedora-21"
+  "fedora21": "chef/fedora-21",
+  "rhel6" : "ami-8cfc51fb",
+  "rhel7" : "ami-8cff51fb",
+  "sles11" : "ami-17c44860"
 }
 

@@ -14,6 +14,7 @@ class Session
   attr_accessor :isOverride
   attr_accessor :isSilent
   attr_accessor :command
+  attr_accessor :awsConfig
 
 =begin
      Load collections from json files:
@@ -105,8 +106,16 @@ class Session
     end
 
     config = JSON.parse(IO.read($session.configFile))
+    #
+    aws_config = config.find { |value| value.to_s.match(/aws_config/) }
+    if aws_config.to_s.empty?
+      awsConfig = ''
+    else
+      awsConfig = aws_config[1].to_s
+    end
+    #
     $out.info 'Generating config in ' + path
-    Generator.generate(path,config,boxes,isOverride)
+    Generator.generate(path,config,boxes,isOverride,awsConfig)
 
   end
 end

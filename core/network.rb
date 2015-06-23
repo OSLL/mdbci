@@ -33,11 +33,12 @@ class Network
   >VM, run `vagrant status NAME`.
   >
 
-  Node info is located in (2..END-3) lines
+  VBOX Node info is located in (2..END-3) lines
+  AWS Node info is located in (2..END-4) lines
 
 =end
-
-    (2..list.length-5).each do |x|
+    # TODO : 4 - for aws, 5 - for VBox
+    (2..list.length-4).each do |x|
       getNodeInfo(config, list[x])
     end
 
@@ -61,7 +62,6 @@ class Network
     cmd = 'vagrant ssh-config '+args[1]+ ' |grep IdentityFile '
     vagrant_out = `#{cmd}`
 
-
     $out.out vagrant_out.split(' ')[1]
 
     Dir.chdir pwd
@@ -77,14 +77,14 @@ class Network
       args = name.split('/')
 
       network = Network.new
-      network.loadNodes args[0]
+      network.loadNodes args[0] # load nodes from dir
 
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
           $out.out node.ip + ' ' + node.name
         end
       else
-        node = network.nodes.find {|name| name.name == args[1]}
+        node = network.nodes.find {|elem| elem.name == args[1]}
         $out.out node.ip
       end
 
