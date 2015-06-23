@@ -177,32 +177,6 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
     !boxes[box].nil?
   end
 
-  def Generator.parseBoxes(boxes, provider, box, user, instance)
-
-    boxes.each do |block|
-      $out.info block[0].to_s + ':' + block[1].to_s
-
-      provider = block[1]['provider'].to_s
-      p "provider: : " + provider.to_s
-
-      if provider == "aws"
-        box = block[1]['ami'].to_s
-        p "ami: : " + box.to_s
-
-        user = block[1]['user'].to_s
-        p "user: : " + user.to_s
-
-        instance = block[1]['default_instance_type'].to_s
-        p "instance: : " + instance.to_s
-      else
-        box = block[1]['box'].to_s
-        p "box: : " + box.to_s
-      end
-
-    end
-
-  end
-
   def Generator.generate(path, config, boxes, override, aws_config)
     #TODO Errors check
     #TODO MariaDb Version Validator
