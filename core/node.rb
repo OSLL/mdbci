@@ -9,6 +9,32 @@ class Node
   attr_accessor :provider
   attr_accessor :ip
 
+  def curlCheck
+    cmd_curl = 'vagrant ssh '+@name+' -c "which curl"'
+    vagrant_out = `#{cmd_curl}`
+    curl = vagrant_out.scanf('%s')
+    #
+    if curl.to_s.tr('[]','') == ''
+      $out.out("Curl not found! Trying to install curl...")
+      return false
+    else
+      return true
+    end
+  end
+
+  # TODO - only for Debian/Ubuntu
+  def installCurl
+    # TODO: check box|ami platform
+    cmd = 'vagrant ssh '+@name+' -c "sudo apt-get install -y curl"'
+    vagrant_cmd = `#{cmd}`
+    #
+    if curlCheck
+      $out.out("Curl installed! Try to run 'show network' again!")
+    else
+      $out.error("Curl not installed!")
+    end
+  end
+
   def getIp(provider)
     if provider == '(virtualbox)'
       cmd = 'vagrant ssh '+@name+' -c "/sbin/ifconfig eth1 | grep \"inet \" "'
@@ -16,14 +42,22 @@ class Node
       ip = vagrant_out.scanf('inet addr:%s Bcast')
       @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
     elsif provider == '(aws)'
-      cmd = 'vagrant ssh '+@name+' -c "curl http://169.254.169.254/latest/meta-data/public-ipv4"'
-      vagrant_out = `#{cmd}`
-      ip = vagrant_out.scanf('%s')
-      @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')
+      if curlCheck
+        cmd = 'vagrant ssh '+@name+' -c "curl http://169.254.169.254/latest/meta-data/public-ipv4"'
+        vagrant_out = `#{cmd}`
+        ip = vagrant_out.scanf('%s')
+        @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')
+      else
+        installCurl
+      end
     else
-      $out.warning 'WARNING: Unknown machine type!'
+      $out.warning('WARNING: Unknown machine type!')
     end
-    $out.info 'IP:'+@ip
+    if !@ip.to_s.empty?
+      $out.info('IP:'+@ip.to_s)
+    else
+      $out.warning('IP address is not received!')
+    end
   end
 
   def initialize(config, initString)

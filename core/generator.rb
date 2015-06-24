@@ -205,7 +205,7 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
       box = node[1]['box'].to_s
       if !box.empty?
         box_params = boxes[box]
-        #p box_params.class
+        #
         provider = box_params["provider"].to_s
         if provider == "aws"
           amiurl = box_params['ami'].to_s
@@ -238,7 +238,7 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
           aws = getAWSVmDef(name,cookbook_path,amiurl,user,instance,provisioned)
           vagrant.puts aws
         else
-          $out.warning 'WARNING: Configuration has not AWS support, config file or other vm provision'
+          $out.warning 'WARNING: Configuration has not support AWS, config file or other vm provision'
         end
       else
         $out.warning 'WARNING: Box '+box+'is not installed or configured ->SKIPPING'
