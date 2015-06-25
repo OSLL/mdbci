@@ -1,0 +1,18 @@
+name              'mysql'
+maintainer        'MySQL, Inc.'
+maintainer_email  'osll@osll.ru'
+license           'Apache 2.0'
+description       'MySQL coockbook'
+version           '0.0.1'
+recipe            'develop', 'Prepares environment to build MySQL'
+recipe            'install', 'Installs Enterprise edition'
+recipe            'uninstall', 'Uninstalls any edition'
+recipe            'purge', 'Uninstalls any edition and remove all data'
+
+supports          'redhat'
+supports          'centos'
+supports          'fedora'
+supports          'debian'
+supports          'ubuntu'
+supports          'suse'
+

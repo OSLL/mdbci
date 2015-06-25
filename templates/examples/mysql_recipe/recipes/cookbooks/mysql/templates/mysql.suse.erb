@@ -1,0 +1,6 @@
+[mysql]
+name = MySQL
+autorefresh=0
+baseurl = <%= node['mysql']['repo'] %>/<%= node['mysql']['version'] %>/<%= node[:platform] %>/<%= node[:platform_version].to_i %>/$basearch
+gpgkey=<%= node['mysql']['repo_key'] %>/RPM-GPG-KEY-mysql
+gpgcheck=0
