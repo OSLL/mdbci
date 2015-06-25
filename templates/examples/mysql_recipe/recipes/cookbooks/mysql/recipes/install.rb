@@ -15,7 +15,7 @@ end  # Turn off SElinux
 case node[:platform_family]
 when "suse"
   execute "install" do
-    command "zypper -n install mysql-server mysql-client &> /vagrant/log"
+    command "zypper -n install mysql-community-server mysql-community-client"
   end
 when "debian"
   execute "install" do
@@ -23,13 +23,16 @@ when "debian"
   end
   #package 'mysql-server'
   #package 'mysql-client'
-when "windows"
+when "windows" # TODO
   windows_package "MySQL" do
     source "#{Chef::Config[:file_cache_path]}/mysql.msi"
     installer_type :msi
     action :install
   end
-else
-  package 'mysql-server'
-  package 'mysql-client'
+else # for rhel, centof, fedora
+  execute "install" do
+    command "yum install mysql-community-server mysql-community-client"
+  end
+  #package 'mysql-community-server'
+  #package 'mysql-community-client'
 end
