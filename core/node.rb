@@ -9,6 +9,17 @@ class Node
   attr_accessor :provider
   attr_accessor :ip
 
+
+  # get node platform name
+  def getNodePlatform
+    cmd = 'vagrant ssh '+@name+' -c "cat /etc/*-release | grep ID"'
+    vagrant_out = `#{cmd}`
+    platform = vagrant_out.scanf('%s')
+    p "get platform = " + platform.to_s
+    return platform.to_s.tr('[]','')
+  end
+
+  # check if curl installed on AWS node
   def curlCheck
     cmd_curl = 'vagrant ssh '+@name+' -c "which curl"'
     vagrant_out = `#{cmd_curl}`
@@ -22,17 +33,15 @@ class Node
     end
   end
 
-  # TODO - only for Debian/Ubuntu
+  # TODO: install curl -- move to recipe: mariadb or separate build|environment
   def installCurl
     # TODO: check box|ami platform
+    #platform = getNodePlatform
+    p "install platform = " + platform.to_s
     cmd = 'vagrant ssh '+@name+' -c "sudo apt-get install -y curl"'
     vagrant_cmd = `#{cmd}`
     #
-    if curlCheck
-      $out.out("Curl installed! Try to run 'show network' again!")
-    else
-      $out.error("Curl not installed!")
-    end
+    $out.out("Curl installed! Run 'show network <node>' command again!")
   end
 
   def getIp(provider)
@@ -56,7 +65,7 @@ class Node
     if !@ip.to_s.empty?
       $out.info('IP:'+@ip.to_s)
     else
-      $out.warning('IP address is not received!')
+      $out.warning('IP address is not received! Try to repeate command!')
     end
   end
 

@@ -132,9 +132,14 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
     # package recipe name
     if package == 'mariadb'
       recipe_name = 'mdbc'
-    else
+      #mariadb_recipe = quote('run_list') + ": [ " + quote("recipe[" + recipe_name + "]") + " ]\n"
+    elsif package == 'maxscale'
       recipe_name = 'mscale'
+    elsif package == 'mysql'
+      recipe_name = 'msql'
     end
+
+    # TODO: form string for several box recipes for maridb, maxscale, mysql
 
     roledef = '{ '+"\n"+' "name" :' + quote(name)+",\n"+ \
       <<-EOF
@@ -217,6 +222,7 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
       end
 
       # package: mariadb or maxscale
+      # TODO: if two or more recipes in box?
       if node[1]['mariadb']
         package = 'mariadb'
         params = node[1]['mariadb']
@@ -224,6 +230,10 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
       elsif node[1]['maxscale']
         package = 'maxscale'
         params = node[1]['maxscale']
+        provisioned = true
+      elsif node[1]['mysql']
+        package = 'mysql'
+        params = node[1]['mysql']
         provisioned = true
       else
         provisioned = false

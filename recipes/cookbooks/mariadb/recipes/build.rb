@@ -26,6 +26,7 @@ when "ubuntu", "debian"
   package 'hardening-wrapper'
   package 'libaio-dev'
   package 'libjemalloc-dev'
+  package 'curl'
 when "centos"
   package 'epel-release'
   package 'openssl-devel'
@@ -34,4 +35,7 @@ when "centos"
   package 'libaio-devel'
   package 'rpm-build'
   package 'jemalloc-devel'
+  package 'curl'
+when "rhel", "fedora", "suse"
+  package 'curl'
 end
