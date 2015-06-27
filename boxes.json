@@ -1,11 +1,13 @@
 {
   "debian" : {
     "provider": "virtualbox",
-    "box": "https://atlas.hashicorp.com/chef/boxes/debian-7.4/versions/1.0.0/providers/virtualbox.box"
+    "box": "https://atlas.hashicorp.com/chef/boxes/debian-7.4/versions/1.0.0/providers/virtualbox.box",
+    "vbox.memory" : "1024"
   },
   "ubuntu_trusty": {
     "provider": "virtualbox",
-    "box": "chef/ubuntu-14.04"
+    "box": "chef/ubuntu-14.04",
+    "vbox.memory" : "1024"
   },
   "ubuntu_utopic": {
     "provider": "virtualbox",
@@ -17,7 +19,8 @@
   },
   "centos7": {
     "provider": "virtualbox",
-    "box": "chef/centos-7.1"
+    "box": "chef/centos-7.1",
+    "vbox.memory" : "1024"
   },
   "centos6": {
     "provider": "virtualbox",
@@ -25,7 +28,8 @@
   },
   "centos5": {
     "provider": "virtualbox",
-    "box": "chef/centos-5.11"
+    "box": "chef/centos-5.11",
+    "vbox.memory" : "1024"
   },
   "deb_wheezy": {
     "provider": "virtualbox",
@@ -33,7 +37,8 @@
   },
   "deb_squeeze" : {
     "provider": "virtualbox",
-    "box": "chef/debian-6.0.8"
+    "box": "chef/debian-6.0.8",
+    "vbox.memory" : "1024"
   },
   "suse13.1": {
     "provider": "virtualbox",

@@ -60,7 +60,7 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
     IO.write(name,content)
   end
 
-  def Generator.getVmDef(cookbook_path, name, host, boxurl, provisioned)
+  def Generator.getVmDef(cookbook_path, name, host, boxurl, vm_mem, provisioned)
 
     if provisioned
       vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
@@ -69,12 +69,19 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
             + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
-            + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend\nend\n"
+            + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
     else
-      vmdef = 'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
+      vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
-            + "\t"+name+'.vm.hostname = ' + quote(host) +"\nend\n"
+            + "\t"+name+'.vm.hostname = ' + quote(host)
     end
+
+    if vm_mem
+      vmdef += "\n\t"+'config.vm.provider :virtualbox do |vbox|' + "\n" \
+               "\t\t"+'vbox.customize ["modifyvm", :id, "--memory", ' + quote(vm_mem) +"]\n\tend\n"
+    end
+
+    vmdef += "end\n"
 
     return vmdef
   end
@@ -132,9 +139,14 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
     # package recipe name
     if package == 'mariadb'
       recipe_name = 'mdbc'
-    else
+      #mariadb_recipe = quote('run_list') + ": [ " + quote("recipe[" + recipe_name + "]") + " ]\n"
+    elsif package == 'maxscale'
       recipe_name = 'mscale'
+    elsif package == 'mysql'
+      recipe_name = 'msql'
     end
+
+    # TODO: form string for several box recipes for maridb, maxscale, mysql
 
     roledef = '{ '+"\n"+' "name" :' + quote(name)+",\n"+ \
       <<-EOF
@@ -189,6 +201,7 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
 
     cookbook_path = './recipes/cookbooks/'  # default cookbook path
     provisioned = true                      # default provision option
+    vm_mem = nil
 
     config.each do |node|
       $out.info node[0].to_s + ':' + node[1].to_s
@@ -206,6 +219,11 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
       if !box.empty?
         box_params = boxes[box]
         #
+        if box_params["vbox.memory"]
+          vm_mem = box_params["vbox.memory"].to_s
+          p "VBOX.PARAMS : " + vm_mem.to_s
+        end
+        #
         provider = box_params["provider"].to_s
         if provider == "aws"
           amiurl = box_params['ami'].to_s
@@ -217,6 +235,7 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
       end
 
       # package: mariadb or maxscale
+      # TODO: if two or more recipes in box?
       if node[1]['mariadb']
         package = 'mariadb'
         params = node[1]['mariadb']
@@ -225,6 +244,10 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
         package = 'maxscale'
         params = node[1]['maxscale']
         provisioned = true
+      elsif node[1]['mysql']
+        package = 'mysql'
+        params = node[1]['mysql']
+        provisioned = true
       else
         provisioned = false
       end
@@ -232,7 +255,7 @@ config.vm.synced_folder ".", "/vagrant", type: "rsync"
       # generate node definition and role
       if Generator.boxValid?(box,boxes)
         if provider == 'virtualbox'
-          vm = getVmDef(cookbook_path,name,host,boxurl,provisioned)
+          vm = getVmDef(cookbook_path,name,host,boxurl,vm_mem,provisioned)
           vagrant.puts vm
         elsif provider == 'aws'
           aws = getAWSVmDef(name,cookbook_path,amiurl,user,instance,provisioned)
