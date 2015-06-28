@@ -1,0 +1,6 @@
+[<%= node['mysql']['version'] %>]
+name = MySQL Community
+baseurl = <%= node['mysql']['repo'] %>/<%= node['mysql']['version'] %>/<%= node[:platform] == "redhat" || node[:platform] == "centos" ? "el" : "fc" %>/$releasever/$basearch
+enabled=1
+gpgcheck=1
+gpgkey=<%= node['mysql']['repo_key'] %>/RPM-GPG-KEY-mysql

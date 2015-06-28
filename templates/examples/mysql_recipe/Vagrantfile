@@ -1,0 +1,52 @@
+# !! Generated content, do not edit !!
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+
+#Network autoconfiguration
+config.vm.network "private_network", type: "dhcp"
+
+
+config.vm.define "node1" do |node1|
+	node1.vm.box = "chef/ubuntu-14.04"
+	node1.vm.hostname = "server"
+	node1.vm.provision "chef_solo" do |chef| 
+		chef.cookbooks_path = "../../../recipes/cookbooks"
+		chef.roles_path = "."
+		chef.add_role "node1"
+	end
+end
+
+config.vm.define "node2" do |node2|
+	node2.vm.box = "chef/centos-6.6"
+	node2.vm.hostname = "slave"
+	node2.vm.provision "chef_solo" do |chef| 
+		chef.cookbooks_path = "../../../recipes/cookbooks"
+		chef.roles_path = "."
+		chef.add_role "node2"
+	end
+end
+
+# P.S. couldn't want to wokr with DHCP !!!
+config.vm.define "node3" do |node3|
+	node3.vm.box = "chef/fedora-21"
+	node3.vm.hostname = "slave"
+	node3.vm.provision "chef_solo" do |chef| 
+		chef.cookbooks_path = "../../../recipes/cookbooks"
+		chef.roles_path = "."
+		chef.add_role "node3"
+	end
+end
+
+config.vm.define "node4" do |node4|
+	node4.vm.box = "chef/opensuse-13.1"
+	node4.vm.hostname = "slave"
+	node4.vm.provision "chef_solo" do |chef| 
+		chef.cookbooks_path = "../../../recipes/cookbooks"
+		chef.roles_path = "."
+		chef.add_role "node4"
+	end
+end
+
+end # End of generated content
