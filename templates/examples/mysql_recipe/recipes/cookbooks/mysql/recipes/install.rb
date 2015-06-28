@@ -31,7 +31,7 @@ when "windows" # TODO
   end
 else # for rhel, centof, fedora
   execute "install" do
-    command "yum install mysql-community-server mysql-community-client"
+    command "yum -y install mysql-community-server mysql-community-client"
   end
   #package 'mysql-community-server'
   #package 'mysql-community-client'

@@ -1,0 +1,13 @@
+{ 
+ "name" :"node3",
+      "default_attributes": { },
+ "override_attributes": { "mysql": {
+  "version": "mysql-5.6-community",
+  "repo": "http://repo.mysql.com/yum",
+  "repo_key": "http://repo.mysql.com/"
+} },
+      "json_class": "Chef::Role",
+      "description": "MariaDb instance install and run",
+      "chef_type": "role",
+"run_list": [ "recipe[msql]" ]
+}
