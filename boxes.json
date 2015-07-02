@@ -15,5 +15,11 @@
   "fedora21": "chef/fedora-21",
   "rhel6_ami": "rhel6_ami",
   "rhel7_ami": "rhel7_ami"
+
+
+	#example
+
+  centos7 : {provider: [qemu, vbox, aws], def : "string | {} ", 
+
 }
 
