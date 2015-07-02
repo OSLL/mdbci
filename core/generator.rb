@@ -119,7 +119,9 @@ EOF
     return vmdef
   end
   #
-  def Generator.getAWSVmDef(name,cookbook_path,boxurl,user,instance_type,provisioned)
+  def Generator.getAWSVmDef(cookbook_path,name,boxurl,user,instance_type,provisioned)
+
+    $out.info 'AWS: name='+name
 
     if provisioned
       awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
@@ -202,10 +204,9 @@ EOF
     !boxes[box].nil?
   end
 
-  def Generator.nodeDefinition(node, boxes, path)
+  def Generator.nodeDefinition(node, boxes, path, cookbook_path)
 
-    cookbook_path = '../recipes/cookbooks/'  # default cookbook path
-    provisioned = true                      # default provision option
+    #??? kkv -- provisioned = true                      # default provision option
     vm_mem = nil
 
     $out.info node[0].to_s + ':' + node[1].to_s
@@ -262,7 +263,7 @@ EOF
       if provider == 'virtualbox'
         machine = getVmDef(cookbook_path,name,host,boxurl,vm_mem,provisioned)
       elsif provider == 'aws'
-        machine = getAWSVmDef(name,cookbook_path,amiurl,user,instance,provisioned)
+        machine = getAWSVmDef(cookbook_path,name,amiurl,user,instance,provisioned)
       else
         $out.warning 'WARNING: Configuration has not support AWS, config file or other vm provision'
       end
@@ -285,6 +286,15 @@ EOF
 
     checkPath(path,override)
 
+    cookbook_path = '../recipes/cookbooks/'  # default cookbook path
+    unless (config['cookbook_path'].nil?)
+      cookbook_path = config['cookbook_path']
+    end
+
+
+    $out.info 'Global cookbook_path=' + cookbook_path
+
+
     vagrant = File.open(path+'/Vagrantfile','w')
 
     vagrant.puts vagrantFileHeader
@@ -298,7 +308,7 @@ EOF
       vagrant.puts Generator.awsProviderConfig
 
       config.each do |node|
-        vagrant.puts Generator.nodeDefinition(node,boxes,path)
+        vagrant.puts Generator.nodeDefinition(node,boxes,path,cookbook_path)
       end
 
       vagrant.puts Generator.vagrantConfigFooter
