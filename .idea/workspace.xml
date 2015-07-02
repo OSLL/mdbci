@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2d593f7a-6e7f-4b42-ac03-0b4341b007c9" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/generator.rb" afterPath="$PROJECT_DIR$/core/generator.rb" />
-    </list>
+    <list default="true" id="2d593f7a-6e7f-4b42-ac03-0b4341b007c9" name="Default" comment="" />
     <ignored path="scripts.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path=".idea/dataSources.local.xml" />
@@ -62,8 +60,8 @@
       <file leaf-file-name="generator.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/generator.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.7045721">
-              <caret line="294" column="53" selection-start-line="294" selection-start-column="53" selection-end-line="294" selection-end-column="53" />
+            <state vertical-scroll-proportion="0.5017585">
+              <caret line="186" column="44" selection-start-line="186" selection-start-column="44" selection-end-line="186" selection-end-column="44" />
               <folding>
                 <element signature="e#195#357#0" expanded="false" />
                 <element signature="e#828#1574#0" expanded="false" />
@@ -900,8 +898,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/core/generator.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.7045721">
-          <caret line="294" column="53" selection-start-line="294" selection-start-column="53" selection-end-line="294" selection-end-column="53" />
+        <state vertical-scroll-proportion="0.5017585">
+          <caret line="186" column="44" selection-start-line="186" selection-start-column="44" selection-end-line="186" selection-end-column="44" />
           <folding>
             <element signature="e#195#357#0" expanded="false" />
             <element signature="e#828#1574#0" expanded="false" />
