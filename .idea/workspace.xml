@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2d593f7a-6e7f-4b42-ac03-0b4341b007c9" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/core/generator.rb" afterPath="$PROJECT_DIR$/core/generator.rb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="scripts.iws" />
@@ -33,16 +34,16 @@
         <entry file="file://$PROJECT_DIR$/mdbci">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="40" column="23" selection-start-line="40" selection-start-column="23" selection-end-line="40" selection-end-column="23" />
+              <caret line="40" column="18" selection-start-line="40" selection-start-column="18" selection-end-line="40" selection-end-column="18" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="help.rb" pinned="false" current-in-tab="true">
+      <file leaf-file-name="help.rb" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/core/help.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.66083914">
+            <state vertical-scroll-proportion="0.0">
               <caret line="21" column="12" selection-start-line="21" selection-start-column="12" selection-end-line="21" selection-end-column="12" />
               <folding />
             </state>
@@ -53,7 +54,7 @@
         <entry file="file://$PROJECT_DIR$/core/session.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="78" column="5" selection-start-line="78" selection-start-column="5" selection-end-line="78" selection-end-column="5" />
+              <caret line="79" column="5" selection-start-line="79" selection-start-column="5" selection-end-line="79" selection-end-column="5" />
               <folding />
             </state>
           </provider>
@@ -63,7 +64,7 @@
         <entry file="file://$PROJECT_DIR$/core/network.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="66" column="17" selection-start-line="57" selection-start-column="3" selection-end-line="66" selection-end-column="17" />
+              <caret line="12" column="18" selection-start-line="12" selection-start-column="18" selection-end-line="12" selection-end-column="18" />
               <folding />
             </state>
           </provider>
@@ -73,7 +74,7 @@
         <entry file="file://$PROJECT_DIR$/core/node.rb">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="13" column="3" selection-start-line="12" selection-start-column="3" selection-end-line="13" selection-end-column="3" />
+              <caret line="45" column="99" selection-start-line="45" selection-start-column="99" selection-end-line="45" selection-end-column="99" />
               <folding />
             </state>
           </provider>
@@ -93,18 +94,26 @@
         <entry file="file://$PROJECT_DIR$/instance.json">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="26" column="64" selection-start-line="26" selection-start-column="64" selection-end-line="26" selection-end-column="64" />
+              <caret line="25" column="24" selection-start-line="25" selection-start-column="24" selection-end-line="25" selection-end-column="24" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="generator.rb" pinned="false" current-in-tab="false">
+      <file leaf-file-name="generator.rb" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/core/generator.rb">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="27" column="25" selection-start-line="27" selection-start-column="25" selection-end-line="27" selection-end-column="25" />
-              <folding />
+            <state vertical-scroll-proportion="0.6210526">
+              <caret line="206" column="23" selection-start-line="206" selection-start-column="23" selection-end-line="206" selection-end-column="23" />
+              <folding>
+                <element signature="e#195#357#0" expanded="false" />
+                <element signature="e#828#1574#0" expanded="false" />
+                <element signature="e#1578#1827#0" expanded="false" />
+                <element signature="e#2142#2218#0" expanded="false" />
+                <element signature="e#2222#2301#0" expanded="false" />
+                <element signature="e#2305#2375#0" expanded="false" />
+                <element signature="e#2379#3416#0" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -136,12 +145,12 @@
         <option value="$PROJECT_DIR$/templates/examples/master_slave/Vagrantfile" />
         <option value="$PROJECT_DIR$/core/node.rb" />
         <option value="$PROJECT_DIR$/instance.json" />
-        <option value="$PROJECT_DIR$/core/generator.rb" />
         <option value="$PROJECT_DIR$/core/out.rb" />
         <option value="$PROJECT_DIR$/core/network.rb" />
         <option value="$PROJECT_DIR$/mdbci" />
         <option value="$PROJECT_DIR$/core/session.rb" />
         <option value="$PROJECT_DIR$/core/help.rb" />
+        <option value="$PROJECT_DIR$/core/generator.rb" />
       </list>
     </option>
   </component>
@@ -153,9 +162,9 @@
     <order />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="1600" />
-    <option name="width" value="1920" />
-    <option name="height" value="1080" />
+    <option name="x" value="2136" />
+    <option name="width" value="1381" />
+    <option name="height" value="1202" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="true" id="Add" />
@@ -180,20 +189,6 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scope">
-        <subPane subId="Project Files">
-          <PATH>
-            <PATH_ELEMENT USER_OBJECT="Root">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT USER_OBJECT="scripts">
-              <option name="myItemId" value="" />
-              <option name="myItemType" value="" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -229,6 +224,20 @@
         </subPane>
       </pane>
       <pane id="Scratches" />
+      <pane id="Scope">
+        <subPane subId="Project Files">
+          <PATH>
+            <PATH_ELEMENT USER_OBJECT="Root">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT USER_OBJECT="scripts">
+              <option name="myItemId" value="" />
+              <option name="myItemType" value="" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -245,7 +254,7 @@
       <recent name="$PROJECT_DIR$/" />
     </key>
   </component>
-  <component name="RunManager" selected="Ruby.mdbci">
+  <component name="RunManager">
     <configuration default="false" name="help" type="RubyRunConfigurationType" factoryName="Ruby" temporary="true">
       <module name="scripts" />
       <RUBY_RUN_CONFIG NAME="RUBY_ARGS" VALUE="-e $stdout.sync=true;$stderr.sync=true;load($0=ARGV.shift)" />
@@ -393,10 +402,8 @@
       <envs />
       <method />
     </configuration>
-    <list size="3">
-      <item index="0" class="java.lang.String" itemvalue="Ruby.mdbci --help" />
-      <item index="1" class="java.lang.String" itemvalue="Ruby.mdbci" />
-      <item index="2" class="java.lang.String" itemvalue="Ruby.help" />
+    <list size="1">
+      <item index="0" class="java.lang.String" itemvalue="Ruby.help" />
     </list>
     <recent_temporary>
       <list size="1">
@@ -418,27 +425,27 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1600" y="0" width="1920" height="1080" extended-state="6" />
-    <editor active="false" />
+    <frame x="2136" y="0" width="1381" height="1202" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22495607" sideWeight="0.48370746" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2328125" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3996479" sideWeight="0.49791667" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26584506" sideWeight="0.5520833" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3236785" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Event Log" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.41043308" sideWeight="0.44791666" order="8" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22495607" sideWeight="0.5162925" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32922536" sideWeight="0.48645833" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3996479" sideWeight="0.49791667" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.26584506" sideWeight="0.5520833" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3994709" sideWeight="0.49669966" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -468,6 +475,30 @@
     <entry file="file://$PROJECT_DIR$/instance.json">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
+          <caret line="26" column="24" selection-start-line="26" selection-start-column="24" selection-end-line="26" selection-end-column="24" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/core/generator.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="27" column="19" selection-start-line="27" selection-start-column="19" selection-end-line="27" selection-end-column="19" />
+          <folding>
+            <element signature="e#195#357#0" expanded="false" />
+            <element signature="e#828#1574#0" expanded="false" />
+            <element signature="e#1578#1827#0" expanded="false" />
+            <element signature="e#2142#2218#0" expanded="false" />
+            <element signature="e#2222#2301#0" expanded="false" />
+            <element signature="e#2305#2375#0" expanded="false" />
+            <element signature="e#2379#3416#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/instance.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
           <caret line="26" column="64" selection-start-line="26" selection-start-column="64" selection-end-line="26" selection-end-column="64" />
           <folding />
         </state>
@@ -477,7 +508,15 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#195#357#0" expanded="false" />
+            <element signature="e#828#1574#0" expanded="false" />
+            <element signature="e#1578#1827#0" expanded="false" />
+            <element signature="e#2142#2218#0" expanded="false" />
+            <element signature="e#2222#2301#0" expanded="false" />
+            <element signature="e#2305#2375#0" expanded="false" />
+            <element signature="e#2379#3416#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -553,7 +592,15 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="12" column="11" selection-start-line="12" selection-start-column="11" selection-end-line="12" selection-end-column="11" />
-          <folding />
+          <folding>
+            <element signature="e#195#357#0" expanded="false" />
+            <element signature="e#828#1574#0" expanded="false" />
+            <element signature="e#1578#1827#0" expanded="false" />
+            <element signature="e#2142#2218#0" expanded="false" />
+            <element signature="e#2222#2301#0" expanded="false" />
+            <element signature="e#2305#2375#0" expanded="false" />
+            <element signature="e#2379#3416#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -591,7 +638,15 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#195#357#0" expanded="false" />
+            <element signature="e#828#1574#0" expanded="false" />
+            <element signature="e#1578#1827#0" expanded="false" />
+            <element signature="e#2142#2218#0" expanded="false" />
+            <element signature="e#2222#2301#0" expanded="false" />
+            <element signature="e#2305#2375#0" expanded="false" />
+            <element signature="e#2379#3416#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -621,7 +676,15 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="40" column="52" selection-start-line="40" selection-start-column="52" selection-end-line="40" selection-end-column="52" />
-          <folding />
+          <folding>
+            <element signature="e#195#357#0" expanded="false" />
+            <element signature="e#828#1574#0" expanded="false" />
+            <element signature="e#1578#1827#0" expanded="false" />
+            <element signature="e#2142#2218#0" expanded="false" />
+            <element signature="e#2222#2301#0" expanded="false" />
+            <element signature="e#2305#2375#0" expanded="false" />
+            <element signature="e#2379#3416#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -633,14 +696,14 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/instance.json">
+      <provider editor-type-id="com.intellij.database.editor.CsvTableFileEditorProvider">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
         </state>
-      </provider>
-      <provider editor-type-id="com.intellij.database.editor.CsvTableFileEditorProvider">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mdbci">
@@ -662,7 +725,15 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#195#357#0" expanded="false" />
+            <element signature="e#828#1574#0" expanded="false" />
+            <element signature="e#1578#1827#0" expanded="false" />
+            <element signature="e#2142#2218#0" expanded="false" />
+            <element signature="e#2222#2301#0" expanded="false" />
+            <element signature="e#2305#2375#0" expanded="false" />
+            <element signature="e#2379#3416#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -678,7 +749,15 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="1" column="38" selection-start-line="1" selection-start-column="38" selection-end-line="1" selection-end-column="38" />
-          <folding />
+          <folding>
+            <element signature="e#195#357#0" expanded="false" />
+            <element signature="e#828#1574#0" expanded="false" />
+            <element signature="e#1578#1827#0" expanded="false" />
+            <element signature="e#2142#2218#0" expanded="false" />
+            <element signature="e#2222#2301#0" expanded="false" />
+            <element signature="e#2305#2375#0" expanded="false" />
+            <element signature="e#2379#3416#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -694,7 +773,15 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="1" column="9" selection-start-line="1" selection-start-column="9" selection-end-line="1" selection-end-column="9" />
-          <folding />
+          <folding>
+            <element signature="e#195#357#0" expanded="false" />
+            <element signature="e#828#1574#0" expanded="false" />
+            <element signature="e#1578#1827#0" expanded="false" />
+            <element signature="e#2142#2218#0" expanded="false" />
+            <element signature="e#2222#2301#0" expanded="false" />
+            <element signature="e#2305#2375#0" expanded="false" />
+            <element signature="e#2379#3416#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -714,13 +801,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/boxes.json">
+      <provider editor-type-id="com.intellij.database.editor.CsvTableFileEditorProvider">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
-      </provider>
-      <provider editor-type-id="com.intellij.database.editor.CsvTableFileEditorProvider">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/mdbci">
@@ -784,38 +871,24 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/boxes.json">
+      <provider editor-type-id="com.intellij.database.editor.CsvTableFileEditorProvider">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.03327172">
           <caret line="2" column="6" selection-start-line="2" selection-start-column="3" selection-end-line="2" selection-end-column="16" />
         </state>
       </provider>
-      <provider editor-type-id="com.intellij.database.editor.CsvTableFileEditorProvider">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/templates/examples/master_slave/Vagrantfile">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/templates/examples/master_slave/recipes/solo.rb">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/instance.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="26" column="64" selection-start-line="26" selection-start-column="64" selection-end-line="26" selection-end-column="64" />
-          <folding />
-        </state>
-      </provider>
       <provider editor-type-id="com.intellij.database.editor.CsvTableFileEditorProvider">
         <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="25" column="24" selection-start-line="25" selection-start-column="24" selection-end-line="25" selection-end-column="24" />
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/out.rb">
@@ -826,10 +899,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/core/help.rb">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="21" column="12" selection-start-line="21" selection-start-column="12" selection-end-line="21" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/core/network.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="66" column="17" selection-start-line="57" selection-start-column="3" selection-end-line="66" selection-end-column="17" />
+          <caret line="12" column="18" selection-start-line="12" selection-start-column="18" selection-end-line="12" selection-end-column="18" />
           <folding />
         </state>
       </provider>
@@ -837,15 +918,7 @@
     <entry file="file://$PROJECT_DIR$/core/node.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="13" column="3" selection-start-line="12" selection-start-column="3" selection-end-line="13" selection-end-column="3" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/mdbci">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="40" column="23" selection-start-line="40" selection-start-column="23" selection-end-line="40" selection-end-column="23" />
+          <caret line="45" column="99" selection-start-line="45" selection-start-column="99" selection-end-line="45" selection-end-column="99" />
           <folding />
         </state>
       </provider>
@@ -853,24 +926,32 @@
     <entry file="file://$PROJECT_DIR$/core/session.rb">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="78" column="5" selection-start-line="78" selection-start-column="5" selection-end-line="78" selection-end-column="5" />
+          <caret line="79" column="5" selection-start-line="79" selection-start-column="5" selection-end-line="79" selection-end-column="5" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/core/help.rb">
+    <entry file="file://$PROJECT_DIR$/mdbci">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.66083914">
-          <caret line="21" column="12" selection-start-line="21" selection-start-column="12" selection-end-line="21" selection-end-column="12" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="40" column="18" selection-start-line="40" selection-start-column="18" selection-end-line="40" selection-end-column="18" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/core/generator.rb">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="27" column="25" selection-start-line="27" selection-start-column="25" selection-end-line="27" selection-end-column="25" />
-          <folding />
+        <state vertical-scroll-proportion="0.6210526">
+          <caret line="206" column="23" selection-start-line="206" selection-start-column="23" selection-end-line="206" selection-end-column="23" />
+          <folding>
+            <element signature="e#195#357#0" expanded="false" />
+            <element signature="e#828#1574#0" expanded="false" />
+            <element signature="e#1578#1827#0" expanded="false" />
+            <element signature="e#2142#2218#0" expanded="false" />
+            <element signature="e#2222#2301#0" expanded="false" />
+            <element signature="e#2305#2375#0" expanded="false" />
+            <element signature="e#2379#3416#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
