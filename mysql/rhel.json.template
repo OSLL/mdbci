@@ -1,0 +1,25 @@
+{
+   "product":           "mysql",
+   "version":           "###version###",
+   "repo":              "http://repo.mysql.com/yum/mysql-###version###-community/el/5/x86_64",
+   "repo_key":          "http://repo.mysql.com/RPM-GPG-KEY-mysql",
+   "platform":          "rhel",
+   "platform_version":  5
+},
+{
+   "product":		"mysql",
+   "version":		"###version###",
+   "repo":		"http://repo.mysql.com/yum/mysql-###version###-community/el/6/x86_64",
+   "repo_key":		"http://repo.mysql.com/RPM-GPG-KEY-mysql",
+   "platform":		"rhel",
+   "platform_version":	6
+},
+{
+   "product":           "mysql",
+   "version":           "###version###",
+   "repo":              "http://repo.mysql.com/yum/mysql-###version###-community/el/7/x86_64",
+   "repo_key":          "http://repo.mysql.com/RPM-GPG-KEY-mysql",
+   "platform":          "rhel",
+   "platform_version":  7
+}
+

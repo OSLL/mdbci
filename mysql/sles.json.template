@@ -1,0 +1,17 @@
+{
+   "product":           "mysql",
+   "version":           "###version###",
+   "repo":              "http://repo.mysql.com/yum/mysql-###version###-community/sles/11/x86_64",
+   "repo_key":          "http://repo.mysql.com/RPM-GPG-KEY-mysql",
+   "platform":          "sles",
+   "platform_version":  11
+},
+{
+   "product":		"mysql",
+   "version":		"###version###",
+   "repo":		"http://repo.mysql.com/yum/mysql-###version###-community/sles/12/x86_64",
+   "repo_key":		"http://repo.mysql.com/RPM-GPG-KEY-mysql",
+   "platform":		"sles",
+   "platform_version":	12
+}
+
