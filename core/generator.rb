@@ -150,13 +150,34 @@ EOF
     return awsdef
   end
 
-  def Generator.getRoleDef(name,package,params)
+
+
+  def Generator.getRoleDef(name,product)
+
+    product_name = nil
+
+    unless product['repo'].nil?
+
+      repo = product['repo']
+      $out.info 'Repo specified ['+repo.to_s+'] other product params will be ignored'
+
+      unless $session.repos.knownRepo?(repo)
+        $out.warning 'Unknown key for repo '+repo+' will be skipped'
+        return "#NONE, due invalid repo name "+repo+"\n"
+      end
+
+      product_name = $session.repos.productName(repo)
+    end
+
+#todo uncomment
+if false
 
     if params.class == Hash
       mdbversion = JSON.pretty_generate(params)
     else
       mdbversion = '{ '+ "version"+':'+quote(params)+' }'
     end
+
     # package recipe name
     if package == 'mariadb'
       recipe_name = 'mdbc'
@@ -174,7 +195,7 @@ EOF
       "default_attributes": { },
       EOF
 
-    roledef += " #{quote('override_attributes')}: { #{quote(package)}: #{mdbversion} },\n"
+      roledef += " #{quote('override_attributes')}: { #{quote(package)}: #{mdbversion} },\n"
 
       roledef += <<-EOF
       "json_class": "Chef::Role",
@@ -183,7 +204,7 @@ EOF
       EOF
       roledef += quote('run_list') + ": [ " + quote("recipe[" + recipe_name + "]") + " ]\n"
       roledef += "}"
-
+end
     return roledef
   end
 
@@ -205,8 +226,6 @@ EOF
 
     #??? kkv -- provisioned = true                      # default provision option
     vm_mem = nil
-
-    $out.info node[0].to_s + ':' + node[1].to_s
 
     # cookbook path dir
     if node[0]['cookbook_path']
@@ -237,25 +256,32 @@ EOF
     end
 
     # package: mariadb or maxscale
-    # TODO: if two or more recipes in box?
-    if node[1]['mariadb']
-      package = 'mariadb'
-      params = node[1]['mariadb']
-      provisioned = true
-    elsif node[1]['maxscale']
-      package = 'maxscale'
-      params = node[1]['maxscale']
-      provisioned = true
-    elsif node[1]['mysql']
-      package = 'mysql'
-      params = node[1]['mysql']
-      provisioned = true
-    else
-      provisioned = false
+    # TODO: [kkv] if two or more recipes in box?
+    #
+    # if node[1]['mariadb']
+    #   package = 'mariadb'
+    #   params = node[1]['mariadb']
+    #   provisioned = true
+    # elsif node[1]['maxscale']
+    #   package = 'maxscale'
+    #   params = node[1]['maxscale']
+    #   provisioned = true
+    # elsif node[1]['mysql']
+    #   package = 'mysql'
+    #   params = node[1]['mysql']
+    #   provisioned = true
+    # else
+    #   provisioned = false
+    # end
+
+    provisioned = !node[1]['product'].nil?
+
+    if(provisioned)
+      product = node[1]['product']
     end
 
     # generate node definition and role
-    machine = ""
+    machine = ''
     if Generator.boxValid?(box,boxes)
       if provider == 'virtualbox'
         machine = getVmDef(cookbook_path,name,host,boxurl,vm_mem,provisioned)
@@ -270,7 +296,8 @@ EOF
 
     # box with mariadb, maxscale provision - create role
     if provisioned
-      role = getRoleDef(name,package,params)
+      $out.info 'Machine '+name+' is provisioned by '+product.to_s
+      role = getRoleDef(name,product)
       IO.write(roleFileName(path,name),role)
     end
 

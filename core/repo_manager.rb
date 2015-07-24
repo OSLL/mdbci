@@ -21,12 +21,23 @@ class RepoManager
     Dir.glob(path+'/**/*.json', File::FNM_DOTMATCH) do |f|
       addRepo(f)
     end
-
     $out.info 'Loaded repos: ' + @repos.size.to_s
   end
 
+  def knownRepo?(repo)
+    @repos.key?(repo)
+  end
+
+  def productName(repo)
+    repo.to_s.split('@')[0]
+  end
+
   def makeKey(product,version,platform,platform_version)
-    product.to_s+'@'+version.to_s+'_'+platform.to_s+'@'+platform_version.to_s
+    if version.nil?
+      version = '?'
+    end
+
+    product.to_s+'@'+version.to_s+'_'+platform.to_s+platform_version.to_s
   end
 
   def addRepo(file)
