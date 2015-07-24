@@ -1,3 +1,4 @@
+[
 {
    "product":		"mariadb",
    "version":		"###version###",
@@ -22,3 +23,4 @@
    "platform":          "centos",
    "platform_version":  7
 }
+]

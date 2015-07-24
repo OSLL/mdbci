@@ -1,3 +1,4 @@
+[
 {
    "product":		"mariadb",
    "version":		"###version###",
@@ -23,4 +24,4 @@
    "platform":          "debian",
    "platform_version":  "jessie"
 }
-
+]

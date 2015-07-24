@@ -1,3 +1,4 @@
+[
 {
    "product":		"mariadb",
    "version":		"###version###",
@@ -33,3 +34,4 @@
    "platform_version":  "vivid"
 }
 
+]

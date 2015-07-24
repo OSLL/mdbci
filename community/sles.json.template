@@ -1,3 +1,4 @@
+[
 {
    "product":		"mariadb",
    "version":		"###version###",
@@ -14,3 +15,4 @@
    "platform":          "sles",
    "platform_version":  12
 }
+]

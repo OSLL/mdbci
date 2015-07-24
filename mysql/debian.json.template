@@ -1,3 +1,4 @@
+[
 {
    "product":           "mysql",
    "version":           "###version###",
@@ -14,3 +15,5 @@
    "platform":          "debian",
    "platform_version":  "wheezy"
 }
+]
+

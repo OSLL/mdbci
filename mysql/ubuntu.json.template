@@ -1,3 +1,4 @@
+[
 {
    "product":           "mysql",
    "version":           "###version###",
@@ -30,3 +31,4 @@
    "platform":          "ubuntu",
    "platform_version":  "vivid"
 }
+]
