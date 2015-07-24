@@ -123,7 +123,6 @@ EOF
 
     $out.info 'AWS: name='+name
 
-    if provisioned
       awsdef = 'config.vm.provider :aws do |'+ name +", override|\n" \
            + "\t"+name+'.access_key_id = aws_config["access_key_id"]' + "\n" \
            + "\t"+name+'.secret_access_key = aws_config["secret_access_key"]' + "\n" \
@@ -139,15 +138,15 @@ EOF
            + "\t"+'override.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"' + "\n" \
            + "\t"+'override.ssh.username = ' + quote(user) + "\n" \
            + "\t"+'override.ssh.private_key_path = aws_config["pemfile"]' + "\n" \
-           + "\n" \
-           + "\t"+'config.vm.provision '+ quote('chef_solo')+' do |chef|' + "\n" \
+           + "\n"
+   if provisioned
+    awsdef += "\t"+'config.vm.provision '+ quote('chef_solo')+' do |chef|' + "\n" \
            + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path) + "\n" \
            + "\t\t"+'chef.roles_path = '+ quote('.') + "\n" \
            + "\t\t"+'chef.add_role '+ quote(name) + "\n" \
-           + "\t\t"+'chef.synced_folder_type = "rsync"' + "\n\tend\nend\n"
-    else
-      $out.error "Not implemented"
+           + "\t\t"+'chef.synced_folder_type = "rsync"' + "\n\t\tend # <- end of chef block"
     end
+    awsdef += "\n\tend # <- end of VM description block \n"
     return awsdef
   end
 
@@ -291,7 +290,6 @@ EOF
 
 
     $out.info 'Global cookbook_path=' + cookbook_path
-
 
     vagrant = File.open(path+'/Vagrantfile','w')
 
