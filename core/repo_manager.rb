@@ -3,16 +3,43 @@ require 'json'
 class RepoManager
 
   attr_accessor :repos
+  attr_accessor :recipes  # product => recipe
 
   def initialize(path)
     @repos= Hash.new
+    @recipes = Hash.new
+
     lookup(path)
+
+    @recipes['mariadb']='mdbc'
+    @recipes['maxscale']='mscale'
+    @recipes['mysql']='msql'
+  end
+
+  def recipeName(product)
+    @recipes[product]
+  end
+
+  def findRepo(name, product, box)
+    $out.info 'Looking for repo'
+
+    version = (product['version'].nil? ? 'default' : product['version']);
+    repokey = name+'@'+version+'_'+box
+
+    repo = @repos[repokey]
+    $out.info 'Repo key is '+repokey + ' ... ' + (repo.nil? ? 'NOT_FOUND' : 'FOUND')
+
+    return repo;
   end
 
   def show
     @repos.keys.each do |key|
       $out.out key + ' => [' +@repos[key]['repo'] +']'
     end
+  end
+
+  def getRepo(key)
+    @repos[key]
   end
 
   def lookup(path)

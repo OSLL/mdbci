@@ -152,41 +152,64 @@ EOF
 
 
 
-  def Generator.getRoleDef(name,product)
+  def Generator.getRoleDef(name,product, box)
 
+    errorMock = "#NONE, due invalid repo name \n"
+    role = Hash.new
+    productConfig = Hash.new
     product_name = nil
+    repoName = nil
+    repo = nil
 
-    unless product['repo'].nil?
+    if !product['repo'].nil?
 
-      repo = product['repo']
-      $out.info 'Repo specified ['+repo.to_s+'] other product params will be ignored'
+      repoName = product['repo']
 
-      unless $session.repos.knownRepo?(repo)
-        $out.warning 'Unknown key for repo '+repo+' will be skipped'
-        return "#NONE, due invalid repo name "+repo+"\n"
+      unless $session.repos.knownRepo?(repoName)
+        $out.warning 'Unknown key for repo '+repoName+' will be skipped'
+        return errorMock
       end
 
-      product_name = $session.repos.productName(repo)
-    end
+      $out.info 'Repo specified ['+repoName.to_s+'] (CORRECT), other product params will be ignored'
+      repo = $session.repos.getRepo(repoName)
 
-#todo uncomment
-if false
-
-    if params.class == Hash
-      mdbversion = JSON.pretty_generate(params)
+      product_name = $session.repos.productName(repoName)
     else
-      mdbversion = '{ '+ "version"+':'+quote(params)+' }'
+      product_name = product['name']
     end
 
-    # package recipe name
-    if package == 'mariadb'
-      recipe_name = 'mdbc'
-      #mariadb_recipe = quote('run_list') + ": [ " + quote("recipe[" + recipe_name + "]") + " ]\n"
-    elsif package == 'maxscale'
-      recipe_name = 'mscale'
-    elsif package == 'mysql'
-      recipe_name = 'msql'
+    recipe_name = $session.repos.recipeName(product_name)
+
+    $out.info 'Recipe '+recipe_name
+
+    if repo.nil?
+      repo = $session.repos.findRepo(product_name, product, box)
     end
+
+    if repo.nil?
+      return errorMock
+    end
+
+    config = Hash.new
+
+    config['version'] = repo['version']
+    config['repo'] = repo['repo']
+    config['repo_key'] = repo['repo_key']
+    productConfig[product_name] = config
+
+    role['name'] = name
+    role['default_attributes'] = {}
+    role['override_attributes'] = productConfig
+    role['json_class'] =  'Chef::Role'
+    role['description'] = 'MariaDb instance install and run'
+    role['chef_type'] =  'role'
+    role['run_list'] =  [ 'recipe['+recipe_name+']' ]
+
+    roledef = JSON.pretty_generate(role)
+    return roledef
+
+    #todo uncomment
+    if false
 
     # TODO: form string for several box recipes for maridb, maxscale, mysql
 
@@ -297,7 +320,7 @@ end
     # box with mariadb, maxscale provision - create role
     if provisioned
       $out.info 'Machine '+name+' is provisioned by '+product.to_s
-      role = getRoleDef(name,product)
+      role = getRoleDef(name,product,box)
       IO.write(roleFileName(path,name),role)
     end
 
