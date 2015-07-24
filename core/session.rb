@@ -4,6 +4,7 @@ require 'uri'
 
 require_relative 'generator'
 require_relative 'network'
+require_relative 'repo_manager'
 
 class Session
 
@@ -15,6 +16,7 @@ class Session
   attr_accessor :isSilent
   attr_accessor :command
   attr_accessor :awsConfig
+  attr_accessor :repos
 
 =begin
      Load collections from json files:
@@ -25,7 +27,8 @@ class Session
   def loadCollections
     $out.info 'Load ' + $session.boxesFile
     @boxes = JSON.parse(IO.read($session.boxesFile))
-    $out.info 'Load Versions'
+    $out.info 'Load Repos'
+    @repos = RepoManager.new('./repo.d')
   end
 
   def inspect
