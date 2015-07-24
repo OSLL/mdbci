@@ -165,7 +165,9 @@ EOF
       <<-EOF
       "default_attributes": { },
       EOF
-      roledef += " #{quote('override_attributes')}: { #{quote(package)}: #{mdbversion} },\n"
+
+    roledef += " #{quote('override_attributes')}: { #{quote(package)}: #{mdbversion} },\n"
+
       roledef += <<-EOF
       "json_class": "Chef::Role",
       "description": "MariaDb instance install and run",

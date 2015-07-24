@@ -9,6 +9,7 @@ class RepoManager
     lookup(path)
   end
 
+
   def lookup(path)
     $out.info 'Looking up for repos '+path
 
