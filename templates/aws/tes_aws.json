@@ -1,0 +1,94 @@
+{
+  "cookbook_path" : "../recipes/cookbooks/",
+  "aws_config" : "../aws-config.yml",
+  "node0" :
+  {
+        "hostname" : "node0",
+        "box" : "rhel6",
+        "mariadb" : {
+                "version" : "10.0",
+		"source" : "community"
+                }
+  },
+
+  "node1" :
+  {
+        "hostname" : "node1",
+        "box" : "rhel6",
+        "mariadb" : {
+                "version" : "10.0",
+		"source" : "community"
+                }
+  },
+
+  "node2" :
+  {
+        "hostname" : "node2",
+        "box" : "rhel6",
+        "mariadb" : {
+                "version" : "10.0",
+		"source" : "community"
+                }
+  },
+
+  "node3" :
+  {
+        "hostname" : "node3",
+        "box" : "rhel6",
+        "mariadb" : {
+                "version" : "10.0",
+		"source" : "community"
+                }
+  },
+
+  "galera0" :
+  {
+        "hostname" : "galera0",
+        "box" : "rhel6",
+        "mariadb" : {
+                "version" : "10.0",
+		"source" : "community"
+                }
+  },
+
+  "galera1" :
+  {
+        "hostname" : "galera1",
+        "box" : "rhel6",
+        "mariadb" : {
+                "version" : "10.0",
+		"source" : "community"
+                }
+  },
+
+  "galera2" :
+  {
+        "hostname" : "galera2",
+        "box" : "rhel6",
+        "mariadb" : {
+                "version" : "10.0",
+		"source" : "community"
+                }
+  },
+
+  "galera3" :
+  {
+        "hostname" : "galera3",
+        "box" : "rhel6",
+        "mariadb" : {
+                "version" : "10.0",
+		"source" : "community"
+                }
+  },
+
+  "maxscale" :
+  {
+        "hostname" : "maxscale",
+        "box" : "rhel6",
+	"maxscale" : {
+             	"version": "1.1.1",
+    		"repo": "http://jenkins.engskysql.com/repository/develop-test/mariadb-maxscale/yum",
+		"repo_key": "http://jenkins.engskysql.com/repository/1.1.0-ga/mariadb-maxscale"
+        }
+  }
+}
