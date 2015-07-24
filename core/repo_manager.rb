@@ -20,10 +20,15 @@ class RepoManager
   end
 
   def addRepo(file)
-    repo = JSON.parse(IO.read(file))
+    begin
+      repo = JSON.parse(IO.read(file))
 
-    #TODO check keys
-    @repos << repo
+      #TODO #6374 check keys
+      @repos << repo
+    rescue
+      $out.warning 'Invalid file format: '+file.to_s
+      end
+
 
   end
 end
