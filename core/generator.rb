@@ -45,11 +45,11 @@ EOF
     aws.secret_access_key = aws_config["secret_access_key"]
     aws.keypair_name = aws_config["keypair_name"]
     aws.region = aws_config["region"]
-    # aws.instance_type = "t1.micro"
     aws.security_groups = aws_config["security_groups"]
     aws.user_data = aws_config["user_data"]
     override.ssh.username = "ec2-user"
     override.ssh.private_key_path = aws_config["pemfile"]
+    override.nfs.functional = false
   end ## of AWS Provider config block
 
     EOF
@@ -123,7 +123,9 @@ EOF
 
     $out.info 'AWS: name='+name
 
-      awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
+
+
+    awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
            + "config.vm.define :"+ name +" do |vm|\n" \
            + "\tconfig.vm.provider :aws do |aws|\n" \
            + "\t\taws.ami = " + quote(boxurl) + "\n"\
