@@ -1,7 +1,7 @@
 {
    "product":           "maxscale",
-   "version":           "default",
-   "repo":              "http://maxscale-jenkins.mariadb.com/ci-repository/BRANCH-MXS-70-test-jun25/mariadb-maxscale/centos/7/x86_64/",
+   "version":           ""
+   "repo":              "http://maxscale-jenkins.mariadb.com/ci-repository/BRANCH-develop-test01/mariadb-maxscale/centos/7/x86_64/",
    "repo_key":          "http://maxscale-jenkins.mariadb.com/ci-repository/Maxscale-GPG-KEY.public",
    "platform":          "centos",
    "platform_version":  7
