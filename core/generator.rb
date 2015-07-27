@@ -129,10 +129,11 @@ Vagrant.configure(2) do |config|
            + "\tconfig.vm.provider :aws do |aws|\n" \
            + "\t\taws.ami = " + quote(boxurl) + "\n"\
            + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
-           + "\tend\n" \
-           + "\tconfig.vm.provision "+ quote('chef_solo')+" do |chef| \n"
+           + "\tend\n"
     if provisioned
-      awsdef +="\t\tchef.cookbooks_path = "+ quote(cookbook_path) + "\n" \
+      awsdef += "--- Chef binding ---\n"\
+           + "\tconfig.vm.provision "+ quote('chef_solo')+" do |chef| \n"\
+           + "\t\tchef.cookbooks_path = "+ quote(cookbook_path) + "\n" \
            + "\t\tchef.roles_path = "+ quote('.') + "\n" \
            + "\t\tchef.add_role "+ quote(name) + "\n" \
            + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend #<-- end of chef binding\n"
