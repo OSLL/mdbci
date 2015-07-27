@@ -129,7 +129,7 @@ Vagrant.configure(2) do |config|
            + "\tconfig.vm.provider :aws do |aws,override|\n" \
            + "\t\taws.ami = " + quote(boxurl) + "\n"\
            + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
-           + "\t\taws.tags['Name']="+'"'+name+'"'+"\n"\
+           + "\t\taws.tags['tool']=+'mdbci'\n"\
            + "\tend\n"
     if provisioned
       awsdef += "##--- Chef binding ---\n"\
