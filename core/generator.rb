@@ -157,7 +157,7 @@ def Generator.getRoleDef(name, product, box)
 
     $out.info "Repo name: "+repoName
 
-    unless !$session.repos.knownRepo?(repoName['repo'])
+    unless $session.repos.knownRepo?(repoName)
       $out.warning 'Unknown key for repo '+repoName[repo]+' will be skipped'
       return errorMock
     end
