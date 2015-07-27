@@ -126,9 +126,10 @@ Vagrant.configure(2) do |config|
 
     awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
            + "config.vm.define :"+ name +" do |vm|\n" \
-           + "\tconfig.vm.provider :aws do |aws|\n" \
+           + "\tconfig.vm.provider :aws do |aws,override|\n" \
            + "\t\taws.ami = " + quote(boxurl) + "\n"\
            + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
+           + "\t\taws.tag['Name']="+'"'+name+'"'+"\n"\
            + "\tend\n"
     if provisioned
       awsdef += "--- Chef binding ---\n"\
