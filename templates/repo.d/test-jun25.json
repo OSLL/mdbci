@@ -1,0 +1,94 @@
+{
+  "cookbook_path" : "../recipes/cookbooks/",
+  "aws_config" : "../aws-config.yml",
+  "node0" :
+  {
+        "hostname" : "node0",
+        "box" : "centos7",
+	"product" : {
+      		"name": "mariadb",
+		"version": "5.5"
+	}
+
+  },
+
+  "node1" :
+  {
+        "hostname" : "node1",
+        "box" : "centos7",
+        "product" : {
+                "name": "mariadb",
+                "version": "5.5"
+        }
+  },
+
+  "node2" :
+  {
+        "hostname" : "node2",
+        "box" : "centos7",
+        "product" : {
+                "name": "mariadb",
+                "version": "5.5"
+        }
+  },
+
+  "node3" :
+  {
+        "hostname" : "node3",
+        "box" : "centos7",
+        "product" : {
+                "name": "mariadb",
+                "version": "5.5"
+        }
+  },
+
+  "galera0" :
+  {
+        "hostname" : "galera0",
+        "box" : "centos7",
+        "product" : {
+                "name": "mariadb",
+                "version": "5.5"
+        }
+  },
+
+  "galera1" :
+  {
+        "hostname" : "galera1",
+        "box" : "centos7",
+        "product" : {
+                "name": "mariadb",
+                "version": "5.5"
+        }
+  },
+
+  "galera2" :
+  {
+        "hostname" : "galera2",
+        "box" : "centos7",
+        "product" : {
+                "name": "mariadb",
+                "version": "5.5"
+        }
+  },
+
+  "galera3" :
+  {
+        "hostname" : "galera3",
+        "box" : "centos7",
+        "product" : {
+                "name": "mariadb",
+                "version": "5.5"
+        }
+  },
+
+  "maxscale" :
+  {
+    "hostname" : "maxscale",
+    "box" : "centos7",
+    "product" : {
+
+      "name" : "maxscale"
+    }
+  }
+}
