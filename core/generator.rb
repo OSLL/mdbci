@@ -135,11 +135,9 @@ Vagrant.configure(2) do |config|
     +"\t\tchef.cookbooks_path = "+ quote(cookbook_path) + "\n" \
            + "\t\tchef.roles_path = "+ quote('.') + "\n" \
            + "\t\tchef.add_role "+ quote(name) + "\n" \
-           + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend\nend\n"\
-
+           + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend #<-- end of chef binding\n"\
   end
-
-  +"#  -> End definition for machine: " + name +"\n\n"
+  +"\nend#  -> End definition for machine: " + name +"\n\n"
   return awsdef
 end
 
