@@ -123,30 +123,18 @@ EOF
 
     $out.info 'AWS: name='+name
 
-      awsdef = 'config.vm.provider :aws do |'+ name +", override|\n" \
-           + "\t"+name+'.access_key_id = aws_config["access_key_id"]' + "\n" \
-           + "\t"+name+'.secret_access_key = aws_config["secret_access_key"]' + "\n" \
-           + "\t"+name+'.keypair_name = aws_config["keypair_name"]' + "\n" \
-           + "\t"+name+'.ami = ' + quote(boxurl) + "\n" \
-           + "\t"+name+'.region = aws_config["region"]' + "\n" \
-           + "\t"+name+'.instance_type = ' + quote(instance_type) + "\n" \
-           + "\t"+name+'.security_groups = aws_config["security_groups"]' + "\n" \
-           + "\t"+name+'.user_data = aws_config["user_data"]' + "\n" \
-           + "\n" \
-           + "\t"+'override.vm.box = "dummy"' + "\n" \
-           + "\toverride.nfs.functional = false\n" \
-           + "\t"+'override.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"' + "\n" \
-           + "\t"+'override.ssh.username = ' + quote(user) + "\n" \
-           + "\t"+'override.ssh.private_key_path = aws_config["pemfile"]' + "\n" \
-           + "\n"
-   if provisioned
-    awsdef += "\t"+'config.vm.provision '+ quote('chef_solo')+' do |chef|' + "\n" \
-           + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path) + "\n" \
-           + "\t\t"+'chef.roles_path = '+ quote('.') + "\n" \
-           + "\t\t"+'chef.add_role '+ quote(name) + "\n" \
-           + "\t\t"+'chef.synced_folder_type = "rsync"' + "\n\t\tend # <- end of chef block"
-    end
-    awsdef += "\n\tend # <- end of VM description block \n"
+      awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
+           + "config.vm.define :"+ name +" do |vm|\n" \
+           + "\tconfig.vm.provider :aws do |aws|\n" \
+           + "\t\taws.ami = " + quote(boxurl) + "\n"\
+           + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
+           + "\tend\n" \
+           + "\tconfig.vm.provision "+ quote('chef_solo')+" do |chef| \n" \
+           + "\t\tchef.cookbooks_path = "+ quote(cookbook_path) + "\n" \
+           + "\t\tchef.roles_path = "+ quote('.') + "\n" \
+           + "\t\tchef.add_role "+ quote(name) + "\n" \
+           + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend\nend\n"\
+           + "#  -> End definition for machine: " + name +"\n\n"
     return awsdef
   end
 
