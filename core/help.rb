@@ -26,7 +26,7 @@ mdbci [option] <show | setup | generate>
   Keep silence, output only requested info or nothing if not available
 
 COMMANDS:
-  show [boxes, platforms, versions, network [config | config/node], keyfile config/node ]
+  show [boxes, platforms, versions, network, repos [config | config/node], keyfile config/node ]
   generate
   setup [boxes]
   sudo --command 'command arguments' config/node

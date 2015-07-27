@@ -4,6 +4,7 @@ require 'uri'
 
 require_relative 'generator'
 require_relative 'network'
+require_relative 'repo_manager'
 
 class Session
 
@@ -15,6 +16,7 @@ class Session
   attr_accessor :isSilent
   attr_accessor :command
   attr_accessor :awsConfig
+  attr_accessor :repos
 
 =begin
      Load collections from json files:
@@ -25,19 +27,20 @@ class Session
   def loadCollections
     $out.info 'Load ' + $session.boxesFile
     @boxes = JSON.parse(IO.read($session.boxesFile))
-    $out.info 'Load Versions'
+    $out.info 'Found boxes: ' + $session.boxes.size().to_s
+
+    $out.info 'Load Repos'
+    @repos = RepoManager.new('./repo.d')
   end
 
-  def inspect
-    @boxes.to_json
-  end
+   def inspect
+     @boxes.to_json
+   end
 
   def setup(what)
     case what
       when 'boxes'
-        p @boxes.keys
         $out.info 'Adding boxes to vagrant'
-        p @boxes
         @boxes.each do |key, value|
           if value =~ URI::regexp
             shell = 'vagrant box add '+key+' '+value
@@ -84,14 +87,22 @@ class Session
     case collection
       when 'boxes'
         $out.out JSON.pretty_generate(@boxes)
+
+      when 'repos'
+        @repos.show
+
       when 'versions'
         $out.out @versions
+
       when 'platforms'
         $out.out  @boxes.keys
+
       when 'network'
         Network.show(ARGV.shift)
+
       when 'keyfile'
         Network.showKeyFile(ARGV.shift)
+
       else
         $out.error 'Unknown collection: '+collection
     end

@@ -123,21 +123,7 @@ EOF
 
     $out.info 'AWS: name='+name
 
-    if provisioned
-      awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
-           + "config.vm.define :"+ name +" do |vm|\n" \
-           + "\tconfig.vm.provider :aws do |aws|\n" \
-           + "\t\taws.ami = " + quote(boxurl) + "\n"\
-           + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
-           + "\tend\n" \
-           + "\tconfig.vm.provision "+ quote('chef_solo')+" do |chef| \n" \
-           + "\t\tchef.cookbooks_path = "+ quote(cookbook_path) + "\n" \
-           + "\t\tchef.roles_path = "+ quote('.') + "\n" \
-           + "\t\tchef.add_role "+ quote(name) + "\n" \
-           + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend\nend\n"\
-           + "#  -> End definition for machine: " + name +"\n\n"
-    else
-      awsdef = 'config.vm.provider :'+ name +' do |'+ name +", override|\n" \
+      awsdef = 'config.vm.provider :aws do |'+ name +", override|\n" \
            + "\t"+name+'.access_key_id = aws_config["access_key_id"]' + "\n" \
            + "\t"+name+'.secret_access_key = aws_config["secret_access_key"]' + "\n" \
            + "\t"+name+'.keypair_name = aws_config["keypair_name"]' + "\n" \
@@ -148,29 +134,82 @@ EOF
            + "\t"+name+'.user_data = aws_config["user_data"]' + "\n" \
            + "\n" \
            + "\t"+'override.vm.box = "dummy"' + "\n" \
+           + "\toverride.nfs.functional = false\n" \
            + "\t"+'override.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"' + "\n" \
            + "\t"+'override.ssh.username = ' + quote(user) + "\n" \
-           + "\t"+'override.ssh.private_key_path = aws_config["pemfile"]' + "\nend\n"
+           + "\t"+'override.ssh.private_key_path = aws_config["pemfile"]' + "\n" \
+           + "\n"
+   if provisioned
+    awsdef += "\t"+'config.vm.provision '+ quote('chef_solo')+' do |chef|' + "\n" \
+           + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path) + "\n" \
+           + "\t\t"+'chef.roles_path = '+ quote('.') + "\n" \
+           + "\t\t"+'chef.add_role '+ quote(name) + "\n" \
+           + "\t\t"+'chef.synced_folder_type = "rsync"' + "\n\t\tend # <- end of chef block"
     end
+    awsdef += "\n\tend # <- end of VM description block \n"
     return awsdef
   end
 
-  def Generator.getRoleDef(name,package,params)
 
-    if params.class == Hash
-      mdbversion = JSON.pretty_generate(params)
+
+  def Generator.getRoleDef(name,product, box)
+
+    errorMock = "#NONE, due invalid repo name \n"
+    role = Hash.new
+    productConfig = Hash.new
+    product_name = nil
+    repoName = nil
+    repo = nil
+
+    if !product['repo'].nil?
+
+      repoName = product['repo']
+
+      unless $session.repos.knownRepo?(repoName)
+        $out.warning 'Unknown key for repo '+repoName+' will be skipped'
+        return errorMock
+      end
+
+      $out.info 'Repo specified ['+repoName.to_s+'] (CORRECT), other product params will be ignored'
+      repo = $session.repos.getRepo(repoName)
+
+      product_name = $session.repos.productName(repoName)
     else
-      mdbversion = '{ '+ "version"+':'+quote(params)+' }'
+      product_name = product['name']
     end
-    # package recipe name
-    if package == 'mariadb'
-      recipe_name = 'mdbc'
-      #mariadb_recipe = quote('run_list') + ": [ " + quote("recipe[" + recipe_name + "]") + " ]\n"
-    elsif package == 'maxscale'
-      recipe_name = 'mscale'
-    elsif package == 'mysql'
-      recipe_name = 'msql'
+
+    recipe_name = $session.repos.recipeName(product_name)
+
+    $out.info 'Recipe '+recipe_name
+
+    if repo.nil?
+      repo = $session.repos.findRepo(product_name, product, box)
     end
+
+    if repo.nil?
+      return errorMock
+    end
+
+    config = Hash.new
+
+    config['version'] = repo['version']
+    config['repo'] = repo['repo']
+    config['repo_key'] = repo['repo_key']
+    productConfig[product_name] = config
+
+    role['name'] = name
+    role['default_attributes'] = {}
+    role['override_attributes'] = productConfig
+    role['json_class'] =  'Chef::Role'
+    role['description'] = 'MariaDb instance install and run'
+    role['chef_type'] =  'role'
+    role['run_list'] =  [ 'recipe['+recipe_name+']' ]
+
+    roledef = JSON.pretty_generate(role)
+    return roledef
+
+    #todo uncomment
+    if false
 
     # TODO: form string for several box recipes for maridb, maxscale, mysql
 
@@ -178,7 +217,9 @@ EOF
       <<-EOF
       "default_attributes": { },
       EOF
+
       roledef += " #{quote('override_attributes')}: { #{quote(package)}: #{mdbversion} },\n"
+
       roledef += <<-EOF
       "json_class": "Chef::Role",
       "description": "MariaDb instance install and run",
@@ -186,7 +227,7 @@ EOF
       EOF
       roledef += quote('run_list') + ": [ " + quote("recipe[" + recipe_name + "]") + " ]\n"
       roledef += "}"
-
+end
     return roledef
   end
 
@@ -208,8 +249,6 @@ EOF
 
     #??? kkv -- provisioned = true                      # default provision option
     vm_mem = nil
-
-    $out.info node[0].to_s + ':' + node[1].to_s
 
     # cookbook path dir
     if node[0]['cookbook_path']
@@ -240,25 +279,32 @@ EOF
     end
 
     # package: mariadb or maxscale
-    # TODO: if two or more recipes in box?
-    if node[1]['mariadb']
-      package = 'mariadb'
-      params = node[1]['mariadb']
-      provisioned = true
-    elsif node[1]['maxscale']
-      package = 'maxscale'
-      params = node[1]['maxscale']
-      provisioned = true
-    elsif node[1]['mysql']
-      package = 'mysql'
-      params = node[1]['mysql']
-      provisioned = true
-    else
-      provisioned = false
+    # TODO: [kkv] if two or more recipes in box?
+    #
+    # if node[1]['mariadb']
+    #   package = 'mariadb'
+    #   params = node[1]['mariadb']
+    #   provisioned = true
+    # elsif node[1]['maxscale']
+    #   package = 'maxscale'
+    #   params = node[1]['maxscale']
+    #   provisioned = true
+    # elsif node[1]['mysql']
+    #   package = 'mysql'
+    #   params = node[1]['mysql']
+    #   provisioned = true
+    # else
+    #   provisioned = false
+    # end
+
+    provisioned = !node[1]['product'].nil?
+
+    if(provisioned)
+      product = node[1]['product']
     end
 
     # generate node definition and role
-    machine = ""
+    machine = ''
     if Generator.boxValid?(box,boxes)
       if provider == 'virtualbox'
         machine = getVmDef(cookbook_path,name,host,boxurl,vm_mem,provisioned)
@@ -273,7 +319,8 @@ EOF
 
     # box with mariadb, maxscale provision - create role
     if provisioned
-      role = getRoleDef(name,package,params)
+      $out.info 'Machine '+name+' is provisioned by '+product.to_s
+      role = getRoleDef(name,product,box)
       IO.write(roleFileName(path,name),role)
     end
 
@@ -293,7 +340,6 @@ EOF
 
 
     $out.info 'Global cookbook_path=' + cookbook_path
-
 
     vagrant = File.open(path+'/Vagrantfile','w')
 

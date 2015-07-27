@@ -1,0 +1,36 @@
+{
+  "cookbook_path" : "../recipes/cookbooks/",
+  "aws_config" : "../aws-config.yml",
+  "node0" :
+  {
+    "hostname" : "node0",
+    "box" : "rhel5",
+    "product" : {
+      "name": "mariadb"
+    }
+  },
+
+  "noprov" :
+  {
+    "hostname" : "node0",
+    "box" : "rhel5"
+  },
+
+  "node1" :
+  {
+    "hostname" : "node0",
+    "box" : "rhel5",
+    "product" : {
+      "name": "mariadb",
+      "version": "10.0.20"
+    }
+  },
+  "reponode" :
+  {
+    "hostname" : "node0",
+    "box" : "rhel5",
+    "product" : {
+      "repo": "mariadb@10.0.20_rhel5"
+    }
+  }
+}
