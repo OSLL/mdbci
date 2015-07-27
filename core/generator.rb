@@ -132,7 +132,7 @@ Vagrant.configure(2) do |config|
            + "\t\taws.tags['Name']="+'"'+name+'"'+"\n"\
            + "\tend\n"
     if provisioned
-      awsdef += "--- Chef binding ---\n"\
+      awsdef += "##--- Chef binding ---\n"\
            + "\tconfig.vm.provision "+ quote('chef_solo')+" do |chef| \n"\
            + "\t\tchef.cookbooks_path = "+ quote(cookbook_path) + "\n" \
            + "\t\tchef.roles_path = "+ quote('.') + "\n" \
