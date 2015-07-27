@@ -24,13 +24,13 @@ case node[:platform_family]
   when "rhel", "fedora", "centos"
   # Add the repo
   template "/etc/yum.repos.d/maxscale.repo" do
-    source "maxscale.rhel.erb"
+    source "mdbci.maxscale.rhel.erb"
     action :create
   end
   when "suse"
   # Add the repo
   template "/etc/zypp/repos.d/maxscale.repo" do
-    source "maxscale.suse.erb"
+    source "mdbci.maxscale.suse.erb"
     action :create
   end
 end

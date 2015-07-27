@@ -138,8 +138,6 @@ EOF
     return awsdef
   end
 
-
-
   def Generator.getRoleDef(name,product, box)
 
     errorMock = "#NONE, due invalid repo name \n"
@@ -265,25 +263,6 @@ end
         boxurl = box_params['box'].to_s
       end
     end
-
-    # package: mariadb or maxscale
-    # TODO: [kkv] if two or more recipes in box?
-    #
-    # if node[1]['mariadb']
-    #   package = 'mariadb'
-    #   params = node[1]['mariadb']
-    #   provisioned = true
-    # elsif node[1]['maxscale']
-    #   package = 'maxscale'
-    #   params = node[1]['maxscale']
-    #   provisioned = true
-    # elsif node[1]['mysql']
-    #   package = 'mysql'
-    #   params = node[1]['mysql']
-    #   provisioned = true
-    # else
-    #   provisioned = false
-    # end
 
     provisioned = !node[1]['product'].nil?
 
