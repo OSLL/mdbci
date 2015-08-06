@@ -1,0 +1,13 @@
+{
+  "cookbook_path" : "../recipes/cookbooks/",
+  "aws_config" : "../aws-config.yml",
+  
+	"reponode" :
+  {
+    "hostname" : "mysql",
+    "box" : "rhel5",
+    "product" : {
+      "repo": "mysql@5.5_rhel5"
+    }
+  }
+}
