@@ -1,0 +1,9 @@
+{
+  "cookbook_path" : "../recipes/cookbooks/",
+  "build" :
+  {
+        "hostname" : "default",
+        "box" : "centos6"
+  }
+}
+

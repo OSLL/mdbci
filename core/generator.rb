@@ -339,7 +339,7 @@ def Generator.generate(path, config, boxes, override, aws_config)
     vagrant.puts Generator.vboxProviderConfig
 
     config.each do |node|
-      vagrant.puts Generator.nodeDefinition(node, boxes, path)
+      vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
     end
 
     vagrant.puts Generator.vagrantConfigFooter
