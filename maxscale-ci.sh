@@ -6,4 +6,4 @@
 dest=$2
 ci=$1
 
-./maxscale http://maxscale-jenkins.mariadb.com/repository/$ci/mariadb-maxscale/ $dest
+./maxscale.sh http://maxscale-jenkins.mariadb.com/ci-repository/$ci/mariadb-maxscale/ $dest

@@ -1,7 +1,10 @@
+[
 {
    "product":		"maxscale",
+   "version":           "default",
    "repo":		"###repo_prefix###/ubuntu ###platform_version### main",
    "repo_key":		"http://maxscale-jenkins.mariadb.com/repository/release/mariadb-maxscale/Maxscale-GPG-KEY.public",
-   "platform":		"ubuntu"
+   "platform":		"ubuntu",
    "platform_version":  "###platform_version###"
 }
+]
