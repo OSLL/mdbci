@@ -1,0 +1,6 @@
+[mariadb]
+name = MariaDB
+autorefresh=0
+baseurl = <%= node['mariadb']['repo'] %>
+gpgkey=<%= node['mariadb']['repo_key'] %>
+gpgcheck=0
