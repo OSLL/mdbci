@@ -1,4 +1,6 @@
 {
+  "cookbook_path" : "../recipes/cookbooks/",
+  "aws_config" : "../aws-config.yml",
   "galera3": {
     "hostname": "galera3",
     "box": "centos7",
