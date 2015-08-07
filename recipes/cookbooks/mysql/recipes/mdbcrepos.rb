@@ -24,7 +24,7 @@ case node[:platform_family]
   end
 
   when "rhel", "fedora", "centos"
-  template "/etc/yum.repos.d/mariadb.repo" do
+  template "/etc/yum.repos.d/mysql.repo" do
     source "mdbci.mysql.rhel.erb"
     action :create
   end
