@@ -1,4 +1,4 @@
-include_recipe "mariadb::mdbcrepos"
+include_recipe "mysql::mdbcrepos"
 
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0 
@@ -15,14 +15,14 @@ end  # Turn off SElinux
 case node[:platform_family]
 when "suse"
   execute "install" do
-    command "zypper -n install --from mariadb MariaDB-server MariaDB-client &> /vagrant/log"
+    command "zypper -n install --from mysql MariaDB-server MariaDB-client &> /vagrant/log"
   end
 when "debian"
-  package 'mariadb-server'
-  package 'mariadb-client'
+  package 'mysql-server'
+  package 'mysql-client'
 when "windows"
   windows_package "MariaDB" do
-    source "#{Chef::Config[:file_cache_path]}/mariadb.msi"
+    source "#{Chef::Config[:file_cache_path]}/mysql.msi"
     installer_type :msi
     action :install
   end

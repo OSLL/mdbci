@@ -9,36 +9,36 @@ when "debian"
   release_name = '$(lsb_release -cs)'
   # Add repo
   execute "Repository add" do
-    command 'echo "deb http://code.mariadb.com/mariadb-enterprise/'+ node['maria']['version'] + '/repo/' + node[:platform] + ' ' + release_name + ' main" > /etc/apt/sources.list.d/mariadb.list'
+    command 'echo "deb http://code.mysql.com/mysql-enterprise/'+ node['maria']['version'] + '/repo/' + node[:platform] + ' ' + release_name + ' main" > /etc/apt/sources.list.d/mysql.list'
   end
   execute "update" do
     command "apt-get update"
   end
 when "rhel", "fedora"
   # Add the repo
-  template "/etc/yum.repos.d/mariadb.repo" do
-    source "mariadb.rhel.erb"
+  template "/etc/yum.repos.d/mysql.repo" do
+    source "mysql.rhel.erb"
     action :create
   end
 when "suse"
   # Add the repo
-  template "/etc/zypp/repos.d/mariadb.repo.template" do
-    source "mariadb.suse.erb"
+  template "/etc/zypp/repos.d/mysql.repo.template" do
+    source "mysql.suse.erb"
     action :create
   end
   release_name = "test -f /etc/os-release && cat /etc/os-release | grep '^ID=' | sed s/'^ID='//g | sed s/'\"'//g || if cat /etc/SuSE-release | grep Enterprise &>/dev/null; then echo sles; else echo opensuse; fi"
   execute "Change suse on sles repository" do
-    command "cat /etc/zypp/repos.d/mariadb.repo.template | sed s/PLATFORM/$(" + release_name + ")/g > /etc/zypp/repos.d/mariadb.repo"
+    command "cat /etc/zypp/repos.d/mysql.repo.template | sed s/PLATFORM/$(" + release_name + ")/g > /etc/zypp/repos.d/mysql.repo"
   end
 when "windows"
   arch = node[:kernel][:machine] == "x86_64" ? "winx64" : "win32"
   
   md5sums_file = "#{Chef::Config[:file_cache_path]}/md5sums.txt"
   remote_file "#{md5sums_file}" do
-    source "https://code.mariadb.com/mariadb-enterprise/" + node['maria']['version'] + "/" + arch + "-packages/md5sums.txt"
+    source "https://code.mysql.com/mysql-enterprise/" + node['maria']['version'] + "/" + arch + "-packages/md5sums.txt"
   end
 
-  file_name = "mariadb-enterprise-" + node['maria']['version'] + "-" + arch + ".msi"
+  file_name = "mysql-enterprise-" + node['maria']['version'] + "-" + arch + ".msi"
 
   if File.exists?("#{md5sums_file}")
     f = File.open("#{md5sums_file}")
@@ -52,7 +52,7 @@ when "windows"
     f.close
   end
 
-  remote_file "#{Chef::Config[:file_cache_path]}/mariadb.msi" do
-    source "https://code.mariadb.com/mariadb-enterprise/" + node['maria']['version'] + "/" + arch + "-packages/" + file_name
+  remote_file "#{Chef::Config[:file_cache_path]}/mysql.msi" do
+    source "https://code.mysql.com/mysql-enterprise/" + node['maria']['version'] + "/" + arch + "-packages/" + file_name
   end
 end

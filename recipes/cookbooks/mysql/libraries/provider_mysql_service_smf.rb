@@ -8,7 +8,7 @@ class Chef
 
           template "#{new_resource.name} :start #{method_script_path}" do
             path method_script_path
-            cookbook 'mariadb'
+            cookbook 'mysql'
             source 'smf/svc.method.mysqld.erb'
             owner 'root'
             group 'root'

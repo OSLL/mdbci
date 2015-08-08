@@ -1,4 +1,4 @@
-include_recipe "mariadb::uninstall"
+include_recipe "mysql::uninstall"
 
 execute "Configuration cleaning" do
   command "rm -fr /etc/my*"

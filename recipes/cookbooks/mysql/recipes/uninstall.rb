@@ -1,10 +1,10 @@
 case node[:platform_family]
 when "debian"
-  package "mariadb-common" do
+  package "mysql-common" do
     action :remove
   end
-  execute "Remove mariadb repository" do
-    command "rm -fr /etc/apt/sources.list.d/mariadb.list"
+  execute "Remove mysql repository" do
+    command "rm -fr /etc/apt/sources.list.d/mysql.list"
   end
   execute "update" do
     command "apt-get update"
@@ -14,6 +14,6 @@ when "rhel", "fedora", "suse"
     action :remove
   end
   execute "Remove repo" do
-    command "rm -fr /etc/yum.repos.d/mariadb.repo /etc/zypp/repos.d/mariadb.repo*"
+    command "rm -fr /etc/yum.repos.d/mysql.repo /etc/zypp/repos.d/mysql.repo*"
   end
 end

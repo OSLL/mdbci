@@ -62,7 +62,7 @@ Usage
 -----
 Place a dependency on the MariaDB cookbook in your cookbook's metadata.rb
 ```ruby
-depends 'mariadb', '~> 0'
+depends 'mysql', '~> 0'
 ```
 
 Then, in a recipe:

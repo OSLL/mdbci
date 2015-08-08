@@ -125,7 +125,7 @@ class Chef
         template "#{new_resource.name} :create #{etc_dir}/my.cnf" do
           path "#{etc_dir}/my.cnf"
           source 'my.cnf.erb'
-          cookbook 'mariadb'
+          cookbook 'mysql'
           owner new_resource.run_user
           group new_resource.run_group
           mode '0600'
@@ -200,7 +200,7 @@ class Chef
 
             template "#{new_resource.name} :create /etc/apparmor.d/local/usr.sbin.mysqld" do
               path '/etc/apparmor.d/local/usr.sbin.mysqld'
-              cookbook 'mariadb'
+              cookbook 'mysql'
               source 'apparmor/usr.sbin.mysqld-local.erb'
               owner 'root'
               group 'root'
@@ -211,7 +211,7 @@ class Chef
 
             template "#{new_resource.name} :create /etc/apparmor.d/usr.sbin.mysqld" do
               path '/etc/apparmor.d/usr.sbin.mysqld'
-              cookbook 'mariadb'
+              cookbook 'mysql'
               source 'apparmor/usr.sbin.mysqld.erb'
               owner 'root'
               group 'root'
@@ -222,7 +222,7 @@ class Chef
 
             template "#{new_resource.name} :create /etc/apparmor.d/local/mysql/#{new_resource.instance}" do
               path "/etc/apparmor.d/local/mysql/#{new_resource.instance}"
-              cookbook 'mariadb'
+              cookbook 'mysql'
               source 'apparmor/usr.sbin.mysqld-instance.erb'
               owner 'root'
               group 'root'
