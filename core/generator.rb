@@ -114,7 +114,7 @@ Vagrant.configure(2) do |config|
                "\t\t"+'vbox.customize ["modifyvm", :id, "--memory", ' + quote(vm_mem) +"]\n\tend\n"
     end
 
-    vmdef += "end\n"
+    vmdef += "\nend # <-- end of VM definition>\n"
 
     return vmdef
   end
