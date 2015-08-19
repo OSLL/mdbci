@@ -21,10 +21,12 @@ class RepoManager
   end
 
   def findRepo(name, product, box)
+
     $out.info 'Looking for repo'
 
     version = (product['version'].nil? ? 'default' : product['version']);
-    repokey = name+'@'+version+'+'+box
+    platform = $session.platformKey(box)
+    repokey = name+'@'+version+'+'+ platform
 
     repo = @repos[repokey]
     $out.info 'Repo key is '+repokey + ' ... ' + (repo.nil? ? 'NOT_FOUND' : 'FOUND')
@@ -64,7 +66,7 @@ class RepoManager
       version = '?'
     end
 
-    product.to_s+'@'+version.to_s+'_'+platform.to_s+'$'+platform_version.to_s
+    product.to_s+'@'+version.to_s+'_'+platform.to_s+'^'+platform_version.to_s
   end
 
   def addRepo(file)

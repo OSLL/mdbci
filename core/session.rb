@@ -25,7 +25,8 @@ class Session
 =end
 
   def loadCollections
-    $out.info 'Load ' + $session.boxesFile
+
+    $out.info 'Load boxes from' + $session.boxesFile
     @boxes = JSON.parse(IO.read($session.boxesFile))
     $out.info 'Found boxes: ' + $session.boxes.size().to_s
 
@@ -83,6 +84,21 @@ class Session
     Dir.chdir pwd
   end
 
+  def platformKey(box_name)
+    key = @boxes.keys.select {|value| value == box_name }
+    return key.nil? ? "UNKNOWN" : @boxes[key[0]]['platform'] + '^' +@boxes[key[0]]['platform_version']
+  end
+
+
+  def showBoxKeys
+    @boxes.values.each do |value|
+      $out.out value['$key']
+    end
+    $out.out '!!!!!! '+platformKey('centos7')
+
+  end
+
+
   def show(collection)
     case collection
       when 'boxes'
@@ -102,6 +118,9 @@ class Session
 
       when 'keyfile'
         Network.showKeyFile(ARGV.shift)
+
+      when 'boxkeys'
+        showBoxKeys
 
       else
         $out.error 'Unknown collection: '+collection
