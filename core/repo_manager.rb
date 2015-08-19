@@ -24,7 +24,7 @@ class RepoManager
     $out.info 'Looking for repo'
 
     version = (product['version'].nil? ? 'default' : product['version']);
-    repokey = name+'@'+version+'_'+box
+    repokey = name+'@'+version+'+'+box
 
     repo = @repos[repokey]
     $out.info 'Repo key is '+repokey + ' ... ' + (repo.nil? ? 'NOT_FOUND' : 'FOUND')
