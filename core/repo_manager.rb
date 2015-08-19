@@ -26,7 +26,7 @@ class RepoManager
 
     version = (product['version'].nil? ? 'default' : product['version']);
     platform = $session.platformKey(box)
-    repokey = name+'@'+version+'+'+ platform
+    repokey = makeKey(name,version,platform)
 
     repo = @repos[repokey]
     $out.info 'Repo key is '+repokey + ' ... ' + (repo.nil? ? 'NOT_FOUND' : 'FOUND')
@@ -61,12 +61,12 @@ class RepoManager
     repo.to_s.split('@')[0]
   end
 
-  def makeKey(product,version,platform,platform_version)
+  def makeKey(product,version,platform)
     if version.nil?
       version = '?'
     end
 
-    product.to_s+'@'+version.to_s+'_'+platform.to_s+'^'+platform_version.to_s
+    product.to_s+'@'+version.to_s+'+'+platform
   end
 
   def addRepo(file)
