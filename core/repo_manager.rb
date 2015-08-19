@@ -85,8 +85,8 @@ class RepoManager
 
       #TODO #6374 check keys
       #@repos << repo
-    rescue
-      $out.warning 'Invalid file format: '+file.to_s + ' SKIPPED!'
+   # rescue
+   #   $out.warning 'Invalid file format: '+file.to_s + ' SKIPPED!'
     end
   end
 end
