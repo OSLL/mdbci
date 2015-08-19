@@ -1,0 +1,10 @@
+[
+{
+   "product":		"maxscale",
+   "version":           "default",
+   "repo":		"http://maxscale-jenkins.mariadb.com/ci-repository/develop/mariadb-maxscale//debian wheezy main ",
+   "repo_key":		"http://maxscale-jenkins.mariadb.com/repository/release/mariadb-maxscale/Maxscale-GPG-KEY.public",
+   "platform":		"debian",
+   "platform_version":  "wheezy"
+}
+]

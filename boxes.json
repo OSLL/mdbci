@@ -110,7 +110,7 @@
   },
   "sles11" : {
     "provider": "aws",
-    "ami": "ami-17c44860",
+    "ami": "ami-9a6f3ded",
     "user": "ec2-user",
     "default_instance_type": "t1.micro",
     "platform": "sles",
@@ -118,7 +118,7 @@
   },
   "sles12" : {
     "provider": "aws",
-    "ami": "ami-1804aa6f",
+    "ami": "ami-185e0c6f",
     "user": "ec2-user",
     "default_instance_type": "t1.micro",
     "platform": "rhel",
