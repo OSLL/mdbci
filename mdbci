@@ -23,6 +23,8 @@ $session.boxesFile='boxes.json'
 
 $out = Out.new
 
+$out.info 'mdbci called with: '+ARGV.to_s
+
 opts.each do |opt, arg|
   case opt
     when '--template'
