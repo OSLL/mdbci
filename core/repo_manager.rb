@@ -64,7 +64,7 @@ class RepoManager
       version = '?'
     end
 
-    product.to_s+'@'+version.to_s+'_'+platform.to_s+platform_version.to_s
+    product.to_s+'@'+version.to_s+'_'+platform.to_s+'$'+platform_version.to_s
   end
 
   def addRepo(file)
