@@ -23,18 +23,14 @@ $session.boxesFile='boxes.json'
 
 $out = Out.new
 
-$out.info 'mdbci called with: '+ARGV.to_s
-
 opts.each do |opt, arg|
   case opt
     when '--template'
-      p arg
       if arg != ''
         $session.configFile= arg
       end
       $out.info 'Using template name '+$session.configFile
     when '--boxes'
-      p arg
       if arg != ''
         $session.boxesFile= arg
       end
@@ -55,6 +51,7 @@ end
 
 #Hello message
 $out.info 'MariaDb CI CLI'
+$out.info 'mdbci called with: '+ARGV.to_s
 
 =begin
   run command (create config only for now)
