@@ -1,7 +1,7 @@
 [
 {
    "product":           "mysql",
-   "version":           "###version###",
+   "version":           "###version-clean###",
    "repo":              "deb http://repo.mysql.com/apt/debian/ jessie mysql-###version###",
    "repo_key":          "http://repo.mysql.com/RPM-GPG-KEY-mysql",
    "platform":          "debian",
@@ -9,7 +9,7 @@
 },
 {
    "product":           "mysql",
-   "version":           "###version###",
+   "version":           "###version-clean###",
    "repo":              "deb http://repo.mysql.com/apt/debian/ wheezy mysql-###version###",
    "repo_key":          "http://repo.mysql.com/RPM-GPG-KEY-mysql",
    "platform":          "debian",
