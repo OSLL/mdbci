@@ -1,7 +1,7 @@
 [
 {
    "product":           "mysql",
-   "version":           "5.7-dmr",
+   "version":           "5.7",
    "repo":              "deb http://repo.mysql.com/apt/debian/ jessie mysql-5.7-dmr",
    "repo_key":          "http://repo.mysql.com/RPM-GPG-KEY-mysql",
    "platform":          "debian",
@@ -9,7 +9,7 @@
 },
 {
    "product":           "mysql",
-   "version":           "5.7-dmr",
+   "version":           "5.7",
    "repo":              "deb http://repo.mysql.com/apt/debian/ wheezy mysql-5.7-dmr",
    "repo_key":          "http://repo.mysql.com/RPM-GPG-KEY-mysql",
    "platform":          "debian",

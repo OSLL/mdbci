@@ -22,14 +22,5 @@
    "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
    "platform":          "rhel",
    "platform_version":  7
-},
-   {
-      "product":           "mariadb",
-      "version":           "default",
-      "repo":              "http://yum.mariadb.org/10.0/rhel7-amd64",
-      "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
-      "platform":          "rhel",
-      "platform_version":  6
-   }
-
+}
 ]

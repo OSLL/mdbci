@@ -15,7 +15,7 @@ end  # Turn off SElinux
 case node[:platform_family]
 when "suse"
   execute "install" do
-    command "zypper -n install --from mysql MariaDB-server MariaDB-client &> /vagrant/log"
+    command "zypper -n install --from mysql mysql-community-client mysql-community-server &> /vagrant/log"
   end
 when "debian"
   package 'mysql-server'
@@ -28,5 +28,5 @@ when "windows"
   end
 else
   package 'mysql-community-client'
-  package 'mysql-community-client'
+  package 'mysql-community-server'
 end

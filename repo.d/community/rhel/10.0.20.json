@@ -1,13 +1,5 @@
 [
-   {
-      "product":		"mariadb",
-      "version":		"default",
-      "repo":		"http://yum.mariadb.org/10.0.20/rhel5-amd64",
-      "repo_key":		"https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
-      "platform":		"rhel",
-      "platform_version":	5
-   },
-   {
+{
    "product":		"mariadb",
    "version":		"10.0.20",
    "repo":		"http://yum.mariadb.org/10.0.20/rhel5-amd64",
