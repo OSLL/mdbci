@@ -122,8 +122,6 @@ Vagrant.configure(2) do |config|
   #
   def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, instance_type, provisioned)
 
-    $out.info 'AWS: name='+name
-
     awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
            + "config.vm.define :"+ name +" do |vm|\n" \
            + "\tconfig.vm.provider :aws do |aws,override|\n" \
