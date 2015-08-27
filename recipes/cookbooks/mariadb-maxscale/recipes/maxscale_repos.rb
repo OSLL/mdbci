@@ -15,8 +15,10 @@ case node[:platform_family]
   end
   release_name = '$(lsb_release -cs)'
   system 'echo Platform: $release_name'
+  addrepocmd = 'echo "deb '+ node['maxscale']['repo']+' ">/etc/apt/sources.list.d//etc/apt/sources.list.d/maxscale.list'
   execute "Repository add" do
-    command 'echo "deb [arch=amd64] ' + node['maxscale']['repo'] + '/' + node[:platform] + ' ' + release_name + ' main" > /etc/apt/sources.list.d/maxscale.list'
+    command addrepocmd
+
   end
   execute "update" do
     command "apt-get update"
