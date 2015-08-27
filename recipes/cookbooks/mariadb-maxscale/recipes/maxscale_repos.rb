@@ -28,7 +28,7 @@ case node[:platform_family]
   end
 
   when "rhel", "fedora", "centos"
-    
+
   # Add the repo
   template "/etc/yum.repos.d/maxscale.repo" do
     source "mdbci.maxscale.rhel.erb"

@@ -265,6 +265,7 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
       amiurl = box_params['ami'].to_s
       user = box_params['user'].to_s
       instance = box_params['default_instance_type'].to_s
+      $out.info 'AWS definition for host:'+host+', ami:'+amiurl+', user:'+user+', instance:'+instance
     else
       boxurl = box_params['box'].to_s
     end
