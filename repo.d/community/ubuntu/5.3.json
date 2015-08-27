@@ -28,7 +28,7 @@
 {
    "product":           "mariadb",
    "version":           "5.3",
-   "repo":              "http://mirror.netinch.com/pub/mariadb/repo/5.3/ubuntu vivid main",
+   "repo":              "http://mirror.netinch.com/pub/mariadb/repo/5.3/ubuntu trusty main",
    "repo_key":          "0xcbcb082a1bb943db",
    "platform":          "ubuntu",
    "platform_version":  "vivid"
