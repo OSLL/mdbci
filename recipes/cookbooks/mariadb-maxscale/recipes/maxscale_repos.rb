@@ -13,17 +13,22 @@ case node[:platform_family]
   execute "Key add" do
     command "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com " + node['maxscale']['repo_key']
   end
-  release_name = '$(lsb_release -cs)'
-  system 'echo Platform: $release_name'
-  addrepocmd = 'echo "deb '+ node['maxscale']['repo']+' ">/etc/apt/sources.list.d//etc/apt/sources.list.d/maxscale.list'
+  #release_name = '$(lsb_release -cs)'
+  #system 'echo Platform: $release_name'
+
+  repo = node['maxscale']['repo']
+  addrepocmd = 'echo "deb '+ repo +' " >/etc/apt/sources.list.d/maxscale.list'
+
   execute "Repository add" do
     command addrepocmd
-
   end
+
   execute "update" do
     command "apt-get update"
   end
+
   when "rhel", "fedora", "centos"
+    
   # Add the repo
   template "/etc/yum.repos.d/maxscale.repo" do
     source "mdbci.maxscale.rhel.erb"
