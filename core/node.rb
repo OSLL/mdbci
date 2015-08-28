@@ -40,6 +40,9 @@ class Node
       cmd = 'vagrant ssh '+@name+' -c "/sbin/ifconfig eth1 | grep \"inet \" "'
       vagrant_out = `#{cmd}`
       ip = vagrant_out.scanf('inet addr:%s Bcast')
+
+      $out.info 'Node.GetIp '+cmd
+
       @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
     elsif provider == '(aws)'
       if curlCheck
