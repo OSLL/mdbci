@@ -1,6 +1,6 @@
 [
 {
-   "product":		"mariadb",
+   "product":		"galera",
    "version":		"###version###",
    "repo":		"http://yum.mariadb.org/###version###/centos5-amd64",
    "repo_key":		"https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
@@ -8,7 +8,7 @@
    "platform_version":	5
 },
 {
-   "product":           "mariadb",
+   "product":           "galera",
    "version":           "###version###",
    "repo":              "http://yum.mariadb.org/###version###/centos6-amd64",
    "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
@@ -16,7 +16,7 @@
    "platform_version":  6
 },
 {
-   "product":           "mariadb",
+   "product":           "galera",
    "version":           "###version###",
    "repo":              "http://yum.mariadb.org/###version###/centos7-amd64",
    "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",

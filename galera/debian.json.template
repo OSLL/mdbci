@@ -1,6 +1,6 @@
 [
 {
-   "product":		"mariadb",
+   "product":		"galera",
    "version":		"###version###",
    "repo":		"http://mirror.netinch.com/pub/mariadb/repo/###version###/debian squeeze main",
    "repo_key":		"0xcbcb082a1bb943db",
@@ -8,7 +8,7 @@
    "platform_version":	"squeeze"
 },
 {
-   "product":           "mariadb",
+   "product":           "galera",
    "version":           "###version###",
    "repo":              "http://mirror.netinch.com/pub/mariadb/repo/###version###/debian wheezy main",
    "repo_key":          "0xcbcb082a1bb943db",
@@ -17,7 +17,7 @@
 },
 
 {
-   "product":           "mariadb",
+   "product":           "galera",
    "version":           "###version###",
    "repo":              "http://mirror.netinch.com/pub/mariadb/repo/###version###/debian jessie main",
    "repo_key":          "0xcbcb082a1bb943db",

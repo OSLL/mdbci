@@ -1,6 +1,6 @@
 [
 {
-   "product":		"mariadb",
+   "product":		"galera",
    "version":		"###version###",
    "repo":		"http://yum.mariadb.org/###version###/sles/11/x86_64",
    "repo_key":		"https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
@@ -8,7 +8,7 @@
    "platform_version":	11
 },
 {
-   "product":           "mariadb",
+   "product":           "galera",
    "version":           "###version###",
    "repo":              "http://yum.mariadb.org/###version###/sles/12/x86_64",
    "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",

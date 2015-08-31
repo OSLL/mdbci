@@ -1,6 +1,6 @@
 [
 {
-   "product":		"mariadb",
+   "product":		"galera",
    "version":		"###version###",
    "repo":		"http://mirror.netinch.com/pub/mariadb/repo/###version###/ubuntu precise main",
    "repo_key":		"0xcbcb082a1bb943db",
@@ -8,7 +8,7 @@
    "platform_version":	"precise"
 },
 {
-   "product":           "mariadb",
+   "product":           "galera",
    "version":           "###version###",
    "repo":              "http://mirror.netinch.com/pub/mariadb/repo/###version###/ubuntu trusty main",
    "repo_key":          "0xcbcb082a1bb943db",
@@ -17,7 +17,7 @@
 },
 
 {
-   "product":           "mariadb",
+   "product":           "galera",
    "version":           "###version###",
    "repo":              "http://mirror.netinch.com/pub/mariadb/repo/###version###/ubuntu utopic main",
    "repo_key":          "0xcbcb082a1bb943db",
@@ -26,7 +26,7 @@
 },
 
 {
-   "product":           "mariadb",
+   "product":           "galera",
    "version":           "###version###",
    "repo":              "http://mirror.netinch.com/pub/mariadb/repo/###version###/ubuntu vivid main",
    "repo_key":          "0xcbcb082a1bb943db",

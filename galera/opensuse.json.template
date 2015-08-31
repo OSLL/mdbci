@@ -1,5 +1,5 @@
 {
-   "product":		"mariadb",
+   "product":		"galera",
    "version":		"###version###",
    "repo":		"http://yum.mariadb.org/###version###/opensuse/13/x86_64",
    "repo_key":		"https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
