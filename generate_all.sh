@@ -9,6 +9,17 @@ dest=$1
 ./generate.sh community debian $dest
 ./generate.sh community ubuntu $dest
 
+./generate.sh community_old centos $dest
+./generate.sh community_old rhel $dest
+
+./generate.sh galera centos $dest
+./generate.sh galera rhel $dest
+./generate.sh galera sles $dest
+./generate.sh galera opensuse $dest
+./generate.sh galera debian $dest
+./generate.sh galera ubuntu $dest
+
+
 ./generate.sh mdbe centos $dest
 ./generate.sh mdbe rhel $dest
 ./generate.sh mdbe sles $dest

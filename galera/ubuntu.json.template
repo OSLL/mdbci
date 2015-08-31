@@ -1,0 +1,37 @@
+[
+{
+   "product":		"mariadb",
+   "version":		"###version###",
+   "repo":		"http://mirror.netinch.com/pub/mariadb/repo/###version###/ubuntu precise main",
+   "repo_key":		"0xcbcb082a1bb943db",
+   "platform":		"ubuntu",
+   "platform_version":	"precise"
+},
+{
+   "product":           "mariadb",
+   "version":           "###version###",
+   "repo":              "http://mirror.netinch.com/pub/mariadb/repo/###version###/ubuntu trusty main",
+   "repo_key":          "0xcbcb082a1bb943db",
+   "platform":          "ubuntu",
+   "platform_version":  "trusty"
+},
+
+{
+   "product":           "mariadb",
+   "version":           "###version###",
+   "repo":              "http://mirror.netinch.com/pub/mariadb/repo/###version###/ubuntu utopic main",
+   "repo_key":          "0xcbcb082a1bb943db",
+   "platform":          "ubuntu",
+   "platform_version":  "utopic"
+},
+
+{
+   "product":           "mariadb",
+   "version":           "###version###",
+   "repo":              "http://mirror.netinch.com/pub/mariadb/repo/###version###/ubuntu vivid main",
+   "repo_key":          "0xcbcb082a1bb943db",
+   "platform":          "ubuntu",
+   "platform_version":  "vivid"
+}
+
+]
