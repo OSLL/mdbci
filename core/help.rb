@@ -25,6 +25,9 @@ mdbci [option] <show | setup | generate>
 -s, --silent
   Keep silence, output only requested info or nothing if not available
 
+-r, --repo-dir
+  Change default place for repo.d
+
 COMMANDS:
   show [boxes, platforms, versions, network, repos [config | config/node], keyfile config/node ]
   generate
@@ -33,6 +36,7 @@ COMMANDS:
 
 EXAMPLES:
   mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
+  mdbci --repo-dir /home/testbed/config/repos show repos
 
   EOF
 

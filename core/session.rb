@@ -17,6 +17,11 @@ class Session
   attr_accessor :command
   attr_accessor :awsConfig
   attr_accessor :repos
+  attr_accessor :repoDir
+
+  def initialize
+    @repoDir = './repo.d'
+  end
 
 =begin
      Load collections from json files:
@@ -30,8 +35,8 @@ class Session
     @boxes = JSON.parse(IO.read($session.boxesFile))
     $out.info 'Found boxes: ' + $session.boxes.size().to_s
 
-    $out.info 'Load Repos'
-    @repos = RepoManager.new('./repo.d')
+    $out.info 'Load Repos from '+$session.repoDir
+    @repos = RepoManager.new($session.repoDir)
   end
 
    def inspect
@@ -94,8 +99,6 @@ class Session
     @boxes.values.each do |value|
       $out.out value['$key']
     end
-    $out.out '!!!!!! '+platformKey('centos7')
-
   end
 
 
