@@ -41,7 +41,7 @@
   },
   "centos6": {
     "provider": "virtualbox",
-    "box": "chef/centos-6.7",
+    "box": "bento/centos-6.7",
     "platform": "centos",
     "platform_version": "6"
   },
