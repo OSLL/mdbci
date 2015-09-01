@@ -9,7 +9,7 @@ repo=$1
 rm -rf $dest/maxscale
 mkdir -p $dest/maxscale
 
-./generate_platform_version.sh maxscale "$dest/maxscale-templates"
+~/mdbci-repository-config/generate_platform_version.sh maxscale "$dest/maxscale-templates"
 
 c_dir=`pwd`
 
@@ -23,4 +23,4 @@ do
     sed "s|###repo_prefix###|$repo|g" $dest/maxscale-templates/$f  > $dest/maxscale/$f
 done
 
-rm -rf $dest/maxscale/templates
+rm -rf $dest/maxscale-templates

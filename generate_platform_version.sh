@@ -8,7 +8,7 @@ dest=$2
 
 c_dir=`pwd`
 mkdir -p $dest
-cd $work_dir
+cd ~/mdbci-repository-config/$work_dir
 
 platforms=`ls *.json.template | sed "s/.json.template//g"`
 
