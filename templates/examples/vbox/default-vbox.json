@@ -3,6 +3,7 @@
   "build" :
   {
         "hostname" : "default",
+				"memory_size" : "3456",
         "box" : "centos6"
   }
 }

@@ -98,6 +98,7 @@ Vagrant.configure(2) do |config|
     if provisioned
       vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
+#            + "\t"+name+'.vm.memory = ' + vm_mem + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) +"\n" \
             + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
@@ -238,8 +239,7 @@ end
 
 def Generator.nodeDefinition(node, boxes, path, cookbook_path)
 
-  #??? kkv -- provisioned = true                      # default provision option
-  vm_mem = nil
+  vm_mem = node[1]['memory_size'].nil? ? '1024' : node[1]['memory_size']
 
   # cookbook path dir
   if node[0]['cookbook_path']
@@ -250,15 +250,14 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
   name = node[0].to_s
   host = node[1]['hostname'].to_s
 
+
+  $out.info 'Requested memory ' + vm_mem
+
   box = node[1]['box'].to_s
   if !box.empty?
+
     box_params = boxes[box]
-    #
-    if box_params["vbox.memory"]
-      vm_mem = box_params["vbox.memory"].to_s
-      p "VBOX.PARAMS : " + vm_mem.to_s
-    end
-    #
+
     provider = box_params["provider"].to_s
     if provider == "aws"
       amiurl = box_params['ami'].to_s
@@ -267,6 +266,7 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
       $out.info 'AWS definition for host:'+host+', ami:'+amiurl+', user:'+user+', instance:'+instance
     else
       boxurl = box_params['box'].to_s
+      p boxurl
     end
   end
 
@@ -320,13 +320,13 @@ def Generator.generate(path, config, boxes, override, aws_config)
 
   unless (aws_config.to_s.empty?)
     # Generate AWS Configuration
-
     vagrant.puts Generator.awsProviderConfigImport(aws_config)
     vagrant.puts Generator.vagrantConfigHeader
 
     vagrant.puts Generator.awsProviderConfig
 
     config.each do |node|
+      $out.info 'Generate AWS Node definition for ['+node[0]+']'
       vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
     end
 
@@ -339,7 +339,10 @@ def Generator.generate(path, config, boxes, override, aws_config)
     vagrant.puts Generator.vboxProviderConfig
 
     config.each do |node|
-      vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
+      unless (node[1]['box'].nil?)
+        $out.info 'Generate VBox Node definition for ['+node[0]+']'
+        vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
+      end
     end
 
     vagrant.puts Generator.vagrantConfigFooter
