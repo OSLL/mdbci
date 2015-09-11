@@ -98,7 +98,6 @@ Vagrant.configure(2) do |config|
     if provisioned
       vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
-#            + "\t"+name+'.vm.memory = ' + vm_mem + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) +"\n" \
             + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
