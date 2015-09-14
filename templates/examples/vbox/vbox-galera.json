@@ -1,0 +1,15 @@
+{
+"cookbook_path" : "../recipes/cookbooks/",
+
+"node1" : {
+"hostname" : "node1",
+"box" : "centos6",
+"memory_size" : "2048",
+"product" : {
+"name": "galera",
+"version": "10.0" 
+}
+
+}
+}
+
