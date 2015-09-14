@@ -14,6 +14,7 @@ class RepoManager
     @recipes['mariadb']='mdbc'
     @recipes['maxscale']='mscale'
     @recipes['mysql']='mysql'
+    @recipes['galera']='galera'
   end
 
   def recipeName(product)

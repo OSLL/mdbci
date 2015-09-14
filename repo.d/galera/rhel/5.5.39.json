@@ -1,0 +1,26 @@
+[
+{
+   "product":		"galera",
+   "version":		"5.5.39",
+   "repo":		"http://yum.mariadb.org/5.5.39/rhel5-amd64",
+   "repo_key":		"https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+   "platform":		"rhel",
+   "platform_version":	5
+},
+{
+   "product":           "galera",
+   "version":           "5.5.39",
+   "repo":              "http://yum.mariadb.org/5.5.39/rhel6-amd64",
+   "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+   "platform":          "rhel",
+   "platform_version":  6
+},
+{
+   "product":           "galera",
+   "version":           "5.5.39",
+   "repo":              "http://yum.mariadb.org/5.5.39/rhel7-amd64",
+   "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+   "platform":          "rhel",
+   "platform_version":  7
+}
+]

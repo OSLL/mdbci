@@ -1,0 +1,37 @@
+[
+{
+   "product":		"galera",
+   "version":		"5.1",
+   "repo":		"http://mirror.netinch.com/pub/mariadb/repo/5.1/ubuntu precise main",
+   "repo_key":		"0xcbcb082a1bb943db",
+   "platform":		"ubuntu",
+   "platform_version":	"precise"
+},
+{
+   "product":           "galera",
+   "version":           "5.1",
+   "repo":              "http://mirror.netinch.com/pub/mariadb/repo/5.1/ubuntu trusty main",
+   "repo_key":          "0xcbcb082a1bb943db",
+   "platform":          "ubuntu",
+   "platform_version":  "trusty"
+},
+
+{
+   "product":           "galera",
+   "version":           "5.1",
+   "repo":              "http://mirror.netinch.com/pub/mariadb/repo/5.1/ubuntu utopic main",
+   "repo_key":          "0xcbcb082a1bb943db",
+   "platform":          "ubuntu",
+   "platform_version":  "utopic"
+},
+
+{
+   "product":           "galera",
+   "version":           "5.1",
+   "repo":              "http://mirror.netinch.com/pub/mariadb/repo/5.1/ubuntu vivid main",
+   "repo_key":          "0xcbcb082a1bb943db",
+   "platform":          "ubuntu",
+   "platform_version":  "vivid"
+}
+
+]
