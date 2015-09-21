@@ -18,9 +18,11 @@ class Session
   attr_accessor :awsConfig
   attr_accessor :repos
   attr_accessor :repoDir
+  attr_accessor :nodes
 
   def initialize
     @repoDir = './repo.d'
+    @nodes = Hash.new
   end
 
 =begin
@@ -47,11 +49,17 @@ class Session
     case what
       when 'boxes'
         $out.info 'Adding boxes to vagrant'
-        @boxes.each do |key, value|
-          if value =~ URI::regexp
-            shell = 'vagrant box add '+key+' '+value
+        boxes = JSON.parse(inspect) # json to hash
+        boxes.each do |key, value|
+          next if value['provider'] == "aws" # skip 'aws' block
+          next if value['provider'] == "mdbci" # skip 'mdbci' block
+          #
+          if value['box'].to_s =~ URI::regexp
+            puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
+            shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
           else
-            shell = 'vagrant box add --provider virtualbox '+value
+            puts 'vagrant box add --provider virtualbox '+value['box'].to_s
+            shell = 'vagrant box add --provider virtualbox '+value['box'].to_s
           end
 
           system shell
