@@ -263,12 +263,10 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
       instance = box_params['default_instance_type'].to_s
       $out.info 'AWS definition for host:'+host+', ami:'+amiurl+', user:'+user+', instance:'+instance
     elsif provider == "mdbci"
-      ip = box_params['IP'].to_s
-      user = box_params['user'].to_s
-      keyfile = box_params['keyfile'].to_s
-      platform = box_params['platform'].to_s
-      platform_version = box_params['platform_version'].to_s
-      $out.info 'MDBCI definition for host:'+host+', IP:'+ip+', user:'+user+', keyfile:'+keyfile+", platform:" +platform
+      box_params.each do |key, value|
+        $session.nodes[key] = value
+      end
+      $out.info 'MDBCI definition for host:'+host+', with parameters: ' + $session.nodes.to_s
     else
       boxurl = box_params['box'].to_s
       p boxurl
@@ -288,10 +286,6 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
       machine = getVmDef(cookbook_path, name, host, boxurl, vm_mem, provisioned)
     elsif provider == 'aws'
       machine = getAWSVmDef(cookbook_path, name, amiurl, user, instance, provisioned)
-    elsif provider == 'mdbci'
-      $session.nodes = {:ip => ip, :user => user, :keyfile => keyfile,
-                        :platform => platform, :platform_version => platform_version}
-      p $session.nodes
     else
       $out.warning 'WARNING: Configuration has not support AWS, config file or other vm provision'
     end
@@ -342,19 +336,21 @@ def Generator.generate(path, config, boxes, override, aws_config)
     vagrant.puts Generator.vagrantConfigFooter
 
   else
-    # Generate VBox Configuration
-    vagrant.puts Generator.vagrantConfigHeader
+    #if config[1]['provider'] != 'mdbci'
+      # Generate VBox Configuration
+      vagrant.puts Generator.vagrantConfigHeader
 
-    vagrant.puts Generator.vboxProviderConfig
+      vagrant.puts Generator.vboxProviderConfig
 
-    config.each do |node|
-      unless (node[1]['box'].nil?)
-        $out.info 'Generate VBox Node definition for ['+node[0]+']'
-        vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
+      config.each do |node|
+        unless (node[1]['box'].nil?)
+          $out.info 'Generate VBox Node definition for ['+node[0]+']'
+          vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
+        end
       end
-    end
 
-    vagrant.puts Generator.vagrantConfigFooter
+      vagrant.puts Generator.vagrantConfigFooter
+    #end
   end
 
   vagrant.close
