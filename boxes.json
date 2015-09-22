@@ -5,6 +5,32 @@
     "platform": "debian",
     "platform_version": "wheezy"
   },
+  "ubuntu_vivid": {
+    "provider": "aws",
+    "ami": "ami-b1443fc6",
+    "user": "ubuntu",
+    "default_instance_type": "m3.medium",
+    "platform": "ubuntu",
+    "platform_version": "vivid"
+  },
+  "ubuntu_trusty": {
+    "provider": "virtualbox",
+    "box": "chef/ubuntu-14.04",
+    "platform": "ubuntu",
+    "platform_version": "trusty"
+  },
+  "ubuntu_utopic": {
+    "provider": "virtualbox",
+    "box": "chef/ubuntu-14.10",
+    "platform": "ubuntu",
+    "platform_version": "utopic"
+  },
+  "ubuntu_precise": {
+    "provider": "virtualbox",
+    "box": "chef/ubuntu-12.04",
+    "platform": "ubuntu",
+    "platform_version": "precise"
+  },
   "centos7" : {
     "provider": "aws",
     "ami": "ami-1c2e8b6b",
@@ -12,6 +38,123 @@
     "default_instance_type": "t1.micro",
     "platform": "centos",
     "platform_version": "7"
+  },
+  "centos6": {
+    "provider": "virtualbox",
+    "box": "bento/centos-6.7",
+    "platform": "centos",
+    "platform_version": "6"
+  },
+  "centos5": {
+    "provider": "virtualbox",
+    "box": "chef/centos-5.11",
+    "platform": "centos",
+    "platform_version": "5"
+  },
+  "deb_wheezy": {
+    "provider": "virtualbox",
+    "box": "chef/debian-7.8",
+    "platform": "debian",
+    "platform_version": "wheezy"
+  },
+  "deb_squeeze" : {
+    "provider": "virtualbox",
+    "box": "chef/debian-6.0.8",
+    "platform": "debian",
+    "platform_version": "squeeze"
+  },
+  "deb_jessie" : {
+    "provider": "aws",
+    "ami": "ami-2899dd5f",
+    "user": "admin",
+    "default_instance_type": "t1.micro",
+    "platform": "debian",
+    "platform_version": "jessie"
+  },
+  "suse13.1": {
+    "provider": "virtualbox",
+    "box": "chef/opensuse-13.1",
+    "platform": "opensuse",
+    "platform_version": "13"
+  },
+  "suse13": {
+    "provider": "virtualbox",
+    "box": "webhippie/opensuse-13.2",
+    "platform": "opensuse",
+    "platform_version": "13"
+  },
+  "rhel5" : {
+    "provider": "aws",
+    "ami": "ami-2e1c5b59",
+    "user": "ec2-user",
+    "default_instance_type": "t1.micro",
+    "platform": "rhel",
+    "platform_version": "5"
+  },
+  "rhel6" : {
+    "provider": "aws",
+    "ami": "ami-8cfc51fb",
+    "user": "ec2-user",
+    "default_instance_type": "t1.micro",
+    "platform": "rhel",
+    "platform_version": "6"
+  },
+  "rhel7" : {
+    "provider": "aws",
+    "ami": "ami-25158352",
+    "user": "ec2-user",
+    "default_instance_type": "m3.medium",
+    "platform": "rhel",
+    "platform_version": "7"
+  },
+  "sles11" : {
+    "provider": "aws",
+    "ami": "ami-9a6f3ded",
+    "user": "ec2-user",
+    "default_instance_type": "t1.micro",
+    "platform": "sles",
+    "platform_version": "11"
+  },
+  "sles12" : {
+    "provider": "aws",
+    "ami": "ami-185e0c6f",
+    "user": "ec2-user",
+    "default_instance_type": "t1.micro",
+    "platform": "sles",
+    "platform_version": "12"
+  },
+  "fedora19" : {
+    "provider": "aws",
+    "ami": "ami-34b4f043",
+    "user": "fedora",
+    "default_instance_type": "m1.medium",
+    "platform": "fedora",
+    "platform_version": "19"
+  },
+  "fedora20" : {
+    "provider": "aws",
+    "ami": "ami-8cb4f0fb",
+    "user": "fedora",
+    "default_instance_type": "m1.medium",
+    "platform": "fedora",
+    "platform_version": "20"
+  },
+  "fedora21" : {
+    "provider": "aws",
+    "ami": "ami-6c44031b",
+    "user": "fedora",
+    "default_instance_type": "m3.medium",
+    "platform": "fedora",
+    "platform_version": "21"
+  },
+
+  "fedora23" : {
+    "provider": "aws",
+    "ami": "ami-252c5a52",
+    "user": "fedora",
+    "default_instance_type": "m3.medium",
+    "platform": "fedora",
+    "platform_version": "23"
   },
   "fedora22" : {
     "provider": "aws",
