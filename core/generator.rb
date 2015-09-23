@@ -257,19 +257,20 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
     box_params = boxes[box]
 
     provider = box_params["provider"].to_s
-    if provider == "aws"
-      amiurl = box_params['ami'].to_s
-      user = box_params['user'].to_s
-      instance = box_params['default_instance_type'].to_s
-      $out.info 'AWS definition for host:'+host+', ami:'+amiurl+', user:'+user+', instance:'+instance
-    elsif provider == "mdbci"
-      box_params.each do |key, value|
-        $session.nodes[key] = value
-      end
-      $out.info 'MDBCI definition for host:'+host+', with parameters: ' + $session.nodes.to_s
-    else
-      boxurl = box_params['box'].to_s
-      p boxurl
+    case provider
+      when "aws"
+        amiurl = box_params['ami'].to_s
+        user = box_params['user'].to_s
+        instance = box_params['default_instance_type'].to_s
+        $out.info 'AWS definition for host:'+host+', ami:'+amiurl+', user:'+user+', instance:'+instance
+      when "mdbci"
+        box_params.each do |key, value|
+          $session.nodes[key] = value
+        end
+        $out.info 'MDBCI definition for host:'+host+', with parameters: ' + $session.nodes.to_s
+      else
+        boxurl = box_params['box'].to_s
+        p boxurl
     end
   end
 
@@ -282,12 +283,13 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
   # generate node definition and role
   machine = ''
   if Generator.boxValid?(box, boxes)
-    if provider == 'virtualbox'
-      machine = getVmDef(cookbook_path, name, host, boxurl, vm_mem, provisioned)
-    elsif provider == 'aws'
-      machine = getAWSVmDef(cookbook_path, name, amiurl, user, instance, provisioned)
-    else
-      $out.warning 'WARNING: Configuration has not support AWS, config file or other vm provision'
+    case provider
+      when 'virtualbox'
+        machine = getVmDef(cookbook_path, name, host, boxurl, vm_mem, provisioned)
+      when 'aws'
+        machine = getAWSVmDef(cookbook_path, name, amiurl, user, instance, provisioned)
+      else
+        $out.warning 'WARNING: Configuration has not support AWS, config file or other vm provision'
     end
   else
     $out.warning 'WARNING: Box '+box+'is not installed or configured ->SKIPPING'
@@ -336,21 +338,19 @@ def Generator.generate(path, config, boxes, override, aws_config)
     vagrant.puts Generator.vagrantConfigFooter
 
   else
-    #if config[1]['provider'] != 'mdbci'
-      # Generate VBox Configuration
-      vagrant.puts Generator.vagrantConfigHeader
+    # Generate VBox Configuration
+    vagrant.puts Generator.vagrantConfigHeader
 
-      vagrant.puts Generator.vboxProviderConfig
+    vagrant.puts Generator.vboxProviderConfig
 
-      config.each do |node|
-        unless (node[1]['box'].nil?)
-          $out.info 'Generate VBox Node definition for ['+node[0]+']'
-          vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
-        end
+    config.each do |node|
+      unless (node[1]['box'].nil?)
+        $out.info 'Generate VBox Node definition for ['+node[0]+']'
+        vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
       end
+    end
 
-      vagrant.puts Generator.vagrantConfigFooter
-    #end
+    vagrant.puts Generator.vagrantConfigFooter
   end
 
   vagrant.close

@@ -33,7 +33,7 @@ class Session
 
   def loadCollections
 
-    $out.info 'Load boxes from' + $session.boxesFile
+    $out.info 'Load boxes from ' + $session.boxesFile
     @boxes = JSON.parse(IO.read($session.boxesFile))
     $out.info 'Found boxes: ' + $session.boxes.size().to_s
 
