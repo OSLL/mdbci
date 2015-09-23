@@ -15,7 +15,8 @@ class Network
   end
 
   def loadNodes(config)
-    pwd = Dir.pwd
+    $out.info 'Load configuration nodes from vagrant status ...'
+    #pwd = Dir.pwd
     Dir.chdir config
 
     vagrant_out = `vagrant status`
@@ -44,7 +45,7 @@ class Network
       getNodeInfo(config, list[x])
     end
 
-    Dir.chdir pwd
+    #Dir.chdir pwd
   end
 
   def self.showKeyFile(name)
@@ -71,25 +72,29 @@ class Network
 
   def self.show(name)
 
-      if name.nil?
-        $out.error 'Configuration name is required'
-        return
+    pwd = Dir.pwd
+
+    if name.nil?
+      $out.error 'Configuration name is required'
+      return
+    end
+
+    args = name.split('/')
+
+    network = Network.new
+    network.loadNodes args[0] # load nodes from dir
+
+    if args[1].nil? # No node argument, show all config
+      network.nodes.each do |node|
+        node.getIp(node.provider) # execute three times!
+        $out.out(node.ip.to_s + ' ' + node.name.to_s)
       end
+    else
+      node = network.nodes.find { |elem| elem.name == args[1]}
+      node.getIp(node.provider)
+      $out.out(node.ip.to_s + ' ' + node.name.to_s)
+    end
 
-      args = name.split('/')
-
-      network = Network.new
-      network.loadNodes args[0] # load nodes from dir
-
-      if args[1].nil? # No node argument, show all config
-        network.nodes.each do |node|
-          $out.out(node.ip.to_s + ' ' + node.name.to_s)
-        end
-      else
-        node = network.nodes.find {|elem| elem.name == args[1]}
-        $out.out(node.ip.to_s)
-      end
-
-      $out.info args[1]
+    Dir.chdir pwd
   end
 end
