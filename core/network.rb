@@ -16,7 +16,7 @@ class Network
 
   def loadNodes(config)
     $out.info 'Load configuration nodes from vagrant status ...'
-    #pwd = Dir.pwd
+
     Dir.chdir config
 
     vagrant_out = `vagrant status`
@@ -38,14 +38,14 @@ class Network
   AWS Node info is located in (2..END-4) lines
 
 =end
-    # Log offset: 4 - for aws, 5 - for VBox
-    list[2].to_s.include?("aws") ? offset = 4 : offset = 5
+    # Log offset: 5 - for aws, 5 - for VBox
+    #list[2].to_s.include?("aws") ? offset = 5 : offset = 5
 
+    offset = 5 # configuration offset for vbox and aws nodes
     (2..list.length-offset).each do |x|
       getNodeInfo(config, list[x])
     end
 
-    #Dir.chdir pwd
   end
 
   def self.showKeyFile(name)
@@ -86,7 +86,7 @@ class Network
 
     if args[1].nil? # No node argument, show all config
       network.nodes.each do |node|
-        node.getIp(node.provider) # execute three times!
+        node.getIp(node.provider)
         $out.out(node.ip.to_s + ' ' + node.name.to_s)
       end
     else
