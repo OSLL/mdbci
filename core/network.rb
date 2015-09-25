@@ -38,10 +38,18 @@ class Network
   AWS Node info is located in (2..END-4) lines
 
 =end
-    # Log offset: 5 - for aws, 5 - for VBox
-    #list[2].to_s.include?("aws") ? offset = 5 : offset = 5
 
-    offset = 5 # configuration offset for vbox and aws nodes
+    count = 0
+    provider = ["virtualbox", "aws", "mdbci"]
+    list.each do |line|
+      provider.each do |item|
+        count += 1 if line.to_s.include?(item)
+      end
+    end
+
+    # Log offset: 4 - for ONE node, 5 - for multiple nodes
+    if count == 1; offset = 4; else offset = 5; end
+
     (2..list.length-offset).each do |x|
       getNodeInfo(config, list[x])
     end
@@ -60,7 +68,6 @@ class Network
     args = name.split('/')
 
     pwd = Dir.pwd
-    Dir.chdir args[0]
 
     cmd = 'vagrant ssh-config '+args[1]+ ' |grep IdentityFile '
     vagrant_out = `#{cmd}`
