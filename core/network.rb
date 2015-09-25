@@ -68,6 +68,7 @@ class Network
     args = name.split('/')
 
     pwd = Dir.pwd
+    Dir.chdir args[0]
 
     cmd = 'vagrant ssh-config '+args[1]+ ' |grep IdentityFile '
     vagrant_out = `#{cmd}`
