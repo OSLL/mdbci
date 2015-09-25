@@ -97,6 +97,77 @@ class Session
     Dir.chdir pwd
   end
 
+  # TODO - ssh to mdbci provider node
+  # Example: mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
+  def ssh(args)
+
+    if args.nil?
+      $out.error 'Configuration name is required'
+      return
+    end
+
+    params = args.split('/')
+
+    box = Hash.new
+    name = ''
+    # TODO: move to separate function
+    config = JSON.parse(IO.read($session.configFile))
+    # 1. get ip for node by node name
+    config.each do |node|
+      name = node[1]['hostname'].to_s
+      p "NAME: " + name.to_s
+
+      if name == params[0] || name == params[1]
+        box = node[1]['box'].to_s
+        break
+      end
+    end
+
+    if !box.empty?
+      box_params = boxes[box]
+
+      provider = box_params["provider"].to_s
+      p "PROVIDER: " + provider.to_s
+
+      # vagrant ssh
+      if provider == 'virtualbox' || provider == 'aws'
+
+        if params[1] == name
+
+          pwd = Dir.pwd
+          Dir.chdir params[0]
+
+          cmd = 'vagrant ssh '+params[1]+' -c "'+$session.command+'"'
+          $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+
+          vagrant_out = `#{cmd}`
+          $out.out vagrant_out
+
+          Dir.chdir pwd
+
+        end
+      elsif provider == "mdbci"
+
+        box_params.each do |key, value|
+          @nodes[key] = value
+        end
+
+        # TODO: get mdbci box params from boxes.json
+        p @nodes
+
+        cmd = 'ssh ' + nodes["user"].to_s + '@' + nodes["IP"].to_s + ' -c "'+$session.command+'"'
+
+        $out.info 'Running ['+cmd+'] on '+params[0]
+
+        vagrant_out = `#{cmd}`
+        $out.out vagrant_out
+
+      end
+
+    end
+
+  end
+
   def platformKey(box_name)
     key = @boxes.keys.select {|value| value == box_name }
     return key.nil? ? "UNKNOWN" : @boxes[key[0]]['platform'] + '^' +@boxes[key[0]]['platform_version']
@@ -148,15 +219,11 @@ class Session
 
     config = JSON.parse(IO.read($session.configFile))
     #
-    aws_config = config.find { |value| value.to_s.match(/aws_config/) }
-    if aws_config.to_s.empty?
-      awsConfig = ''
-    else
-      awsConfig = aws_config[1].to_s
-    end
+    aws_config = @config.find { |value| value.to_s.match(/aws_config/) }
+    awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     $out.info 'Generating config in ' + path
-    Generator.generate(path,config,boxes,isOverride,awsConfig)
+    Generator.generate(path,@config,boxes,isOverride,awsConfig)
 
   end
 end
