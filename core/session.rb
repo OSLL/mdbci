@@ -219,11 +219,11 @@ class Session
 
     config = JSON.parse(IO.read($session.configFile))
     #
-    aws_config = @config.find { |value| value.to_s.match(/aws_config/) }
+    aws_config = config.find { |value| value.to_s.match(/aws_config/) }
     awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     $out.info 'Generating config in ' + path
-    Generator.generate(path,@config,boxes,isOverride,awsConfig)
+    Generator.generate(path,config,boxes,isOverride,awsConfig)
 
   end
 end
