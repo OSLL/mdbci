@@ -1,4 +1,51 @@
-MDBC CI CLI
+# MariaDb continuous integration infrastructure (MDBCI)
+
+[MDBCI](https://github.com/OSLL/mdbci) is a standard set of tools for testing MariaDb components on the wide set of configurations. The main features of **mdbci** are:
+
+* automatic creation of virtual machine set by configuration template
+* automatic deploy MariaDb/Galera and other packages to VM nodes, running configuration procedures
+* support MariaDb repos on all available platforms (more than 300 at the moment)
+
+### Current version
+
+Current version of mdbci is 0.4 (beta)
+
+### Roadmap
+
+Following features are under development and will be available in the next versions of **mdbci**:
+
+* Support remote Linux systems as tager nodes
+* Support PPC boxes
+* Support qemu images
+
+## Architecture
+
+### Terminology
+
+* [MDBCI](https://github.com/OSLL/mdbci) is a standard set of tools for testing MariaDb components on the wide set of configurations.
+
+* [MariaDb](http://mariadb.org) is an enhanced, drop-in replacement for MySQL. It contains several set of components which can be used in standalone configurations and in cluster based heterogenous systems. 
+
+* Box
+
+* Repo
+
+* Template file
+
+* Node
+
+### Workflow
+
+
+### Supported VM providers
+
+MDBCI supports next VM providers:
+
+* VirtualBox 4.3 and upper
+* Amason EC2
+* _Remote PPC Boxes (under development)_
+
+
 
 For help:
 
@@ -74,7 +121,13 @@ Since stand is generated it can be managed with vagrant command.
 
 More information about vagrant features could be found in [vagrant documentation](https://docs.vagrantup.com/v2/). 
 
-**Responsible project leader: Sergey Balandin**
+### Team
+
+* Project leader: Sergey Balandin
+* Developers:
+  * asdf
+  * asdkfjh
+   
 
 
 
