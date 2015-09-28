@@ -9,6 +9,7 @@ require_relative 'repo_manager'
 class Session
 
   attr_accessor :boxes
+  attr_accessor :configs
   attr_accessor :versions
   attr_accessor :configFile
   attr_accessor :boxesFile
@@ -36,6 +37,10 @@ class Session
     $out.info 'Load boxes from ' + $session.boxesFile
     @boxes = JSON.parse(IO.read($session.boxesFile))
     $out.info 'Found boxes: ' + $session.boxes.size().to_s
+
+    $out.info 'Load configurations from ' + $session.configFile
+    @configs = JSON.parse(IO.read($session.configFile))
+    $out.info 'Found nodes: ' + $session.configs.size().to_s
 
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
@@ -96,9 +101,11 @@ class Session
 
     Dir.chdir pwd
   end
-
-  # TODO - ssh to mdbci provider node
-  # Example: mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
+  #
+  # Example:
+  #   VBox, AWS: mdbci ssh --template _config_template_json --command "touch file.txt" config_dir/node0 --silent
+  #   mdbci:     mdbci ssh --template _mdbci_config_template_json --command "touch file.txt" node0 --silent
+  #
   def ssh(args)
 
     if args.nil?
@@ -111,11 +118,8 @@ class Session
     box = Hash.new
     name = ''
     # TODO: move to separate function
-    config = JSON.parse(IO.read($session.configFile))
-    # 1. get ip for node by node name
-    config.each do |node|
+    $session.configs.each do |node|
       name = node[1]['hostname'].to_s
-      p "NAME: " + name.to_s
 
       if name == params[0] || name == params[1]
         box = node[1]['box'].to_s
@@ -123,11 +127,11 @@ class Session
       end
     end
 
+    p "BOX:   " + box.to_s
+
     if !box.empty?
       box_params = boxes[box]
-
       provider = box_params["provider"].to_s
-      p "PROVIDER: " + provider.to_s
 
       # vagrant ssh
       if provider == 'virtualbox' || provider == 'aws'
@@ -144,23 +148,24 @@ class Session
           $out.out vagrant_out
 
           Dir.chdir pwd
-
         end
       elsif provider == "mdbci"
 
-        box_params.each do |key, value|
-          @nodes[key] = value
+        if params[0] == name
+
+          # get nodes configuration
+          box_params.each do |key, value|
+            $session.nodes[key] = value
+          end
+
+          cmd = "ssh -i " + $session.nodes["keyfile"].to_s + " "\
+                          + $session.nodes["user"].to_s + "@"\
+                          + $session.nodes["IP"].to_s + " '" + $session.command + "'"
+          $out.info 'Running ['+cmd+'] on '+params[0]
+
+          vagrant_out = `#{cmd}`
+          $out.out vagrant_out
         end
-
-        # TODO: get mdbci box params from boxes.json
-        p @nodes
-
-        cmd = 'ssh ' + nodes["user"].to_s + '@' + nodes["IP"].to_s + ' -c "'+$session.command+'"'
-
-        $out.info 'Running ['+cmd+'] on '+params[0]
-
-        vagrant_out = `#{cmd}`
-        $out.out vagrant_out
 
       end
 
@@ -217,12 +222,12 @@ class Session
       path +='/'+name.to_s
     end
 
-    config = JSON.parse(IO.read($session.configFile))
-    aws_config = config.find { |value| value.to_s.match(/aws_config/) }
+    #config = JSON.parse(IO.read($session.configFile))
+    aws_config = $session.configs.find { |value| value.to_s.match(/aws_config/) }
     awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     $out.info 'Generating config in ' + path
-    Generator.generate(path,config,boxes,isOverride,awsConfig)
+    Generator.generate(path,configs,boxes,isOverride,awsConfig)
 
   end
 end
