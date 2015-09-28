@@ -20,19 +20,17 @@ Following features are under development and will be available in the next versi
 
 ## Architecture
 
+This section describes MDBCI architecture, workflow and other technical details.
+
 ### Terminology
 
-* [MDBCI](https://github.com/OSLL/mdbci) is a standard set of tools for testing MariaDb components on the wide set of configurations.
-
-* [MariaDb](http://mariadb.org) is an enhanced, drop-in replacement for MySQL. It contains several set of components which can be used in standalone configurations and in cluster based heterogenous systems. 
-
-* Box
-
-* Repo
-
-* Template file
-
-* Node
+* **[MDBCI](https://github.com/OSLL/mdbci)** is a standard set of tools for testing MariaDb components on the wide set of configurations.
+* **[MariaDb](http://mariadb.org)** is an enhanced, drop-in replacement for MySQL. It contains several set of components which can be used in standalone configurations and in cluster based heterogenous systems. 
+* **Box**
+* **Repo**
+* **Template**
+* **Node**
+*
 
 ### Workflow
 
@@ -125,8 +123,9 @@ More information about vagrant features could be found in [vagrant documentation
 
 * Project leader: Sergey Balandin
 * Developers:
-  * asdf
-  * asdkfjh
+  * Kirill Krinkin
+  * Kirill Yudenok
+   
    
 
 
