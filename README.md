@@ -144,9 +144,53 @@ The file boxes.json contains definitions of available boxes. His format is comme
 }
 ```
 
+##### Available options
+
+* provider -- virtual machine provider
+* box -- virtualbox image if provider is virtualbox
+* ami -- AWS image if provider is Amazon
+* platform  -- name of target platform
+* platform_version -- name of version of platform
+* user -- user which will be used to access to box
+* default_instance_type -- default instance size/type if provider is amazon
+
+
 #### repo.d files
 
+Repositories for products are described in json files. Each file could contain one or more repodefinitions (fields are commented below). During the start mdbci scans repo.d directory and builds full set of available product versions.
+
+```
+[
+{
+   "product":           "galera",
+   "version":           "5.3.10",
+   "repo":              "http://yum.mariadb.org/5.3.10/centos6-amd64",
+   "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+   "platform":          "centos",
+   "platform_version":  6
+},
+{
+   "product":           "galera",
+   "version":           "5.3.10",
+   "repo":              "http://yum.mariadb.org/5.3.10/centos7-amd64",
+   "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+   "platform":          "centos",
+   "platform_version":  7
+}
+]
+```
+##### Available options
+
+* product -- product name
+* version -- product version
+* repo -- link to the repo
+* repo_key -- link to repo key
+* platform  -- name of target platform
+* platform_version -- name of version of platform
+
 #### template.json
+
+
 
 ### Box, products, versions
 
