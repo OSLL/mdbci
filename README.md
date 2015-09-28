@@ -38,9 +38,11 @@ This section describes MDBCI architecture, workflow and other technical details.
   * mysql -- Mysql server and client
   * galera -- Galera server and clients
   
-* **Repo** is a description of package repository with particular product version. Usually, repositories are described in repo.json formar and collected in repo.d directory (see. [repo.d files]()
+* **Repo** is a description of package repository with particular product version. Usually, repositories are described in repo.json formar and collected in repo.d directory (see. [repo.d files](#repod-files)
 
-* **Template**
+* **Template** is a set of node definitions in [template.json format](#templatejson). Templates are being used for setup a teting cluster.
+
+### Components 
 
 ### Workflow
 
@@ -60,7 +62,7 @@ MDBCI supports next VM providers:
 * Amason EC2
 * _Remote PPC Boxes (under development)_
 
-
+## MDBCI Syntax
 
 For help:
 
