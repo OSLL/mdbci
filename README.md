@@ -102,16 +102,7 @@ There are next steps for managing testing configuration:
 
 #### Creating configuration
 
-
-### Configuration files
-
-#### boxes.json
-
-#### repo.d files
-
-#### template.json
-
-MDBCI can generate Vagrant/chef files from template. Template example is available as instance.json. You can copy this file with another name and tailor configuration for your needs. It's possible to create multi-VM stands.
+MDBCI generates Vagrant/chef files from template. Template example is available as instance.json. You can copy this file with another name and tailor configuration for your needs. It's possible to create multi-VM stands.
 
 Since new template is created you can generate stand structure.
 
@@ -122,6 +113,41 @@ Since new template is created you can generate stand structure.
 In this example MDBCI will generate new vagrant/chef config from mynewstand.json template. It will be placed in NAME subdirectory. If name is not specified than stand will be configured in default subdirectory. Parameter --override is required to overwrite existing configuration.
 
 *NB* Many stands could be configured by MDBCI in subdirectories. Each stand is autonomous.
+
+
+### Configuration files
+
+#### boxes.json
+
+The file boxes.json contains definitions of available boxes. His format is commented below (**NOTE** real json does not support comments, we used ## just for this documentation). 
+
+```
+{
+
+  ## Example of VirtualBox definition
+  "debian" : { ## Box name  
+    "provider": "virtualbox",
+    "box": "https://atlas.hashicorp.com/chef/boxes/debian-7.4/versions/1.0.0/providers/virtualbox.box",
+    "platform": "debian",
+    "platform_version": "wheezy"
+  },
+  
+  ## Example of AWS Box Definition
+  "ubuntu_vivid": {
+    "provider": "aws",   
+    "ami": "ami-b1443fc6",  ## Amazon Image ID
+    "user": "ubuntu",       ## User which will be used for access to the box
+    "default_instance_type": "m3.medium",  ## Amazon instance type
+    "platform": "ubuntu",                 
+    "platform_version": "vivid"
+  }
+}
+```
+
+
+#### repo.d files
+
+#### template.json
 
 
 ### Supported VM providers
