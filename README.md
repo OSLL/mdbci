@@ -35,8 +35,7 @@ This section describes MDBCI architecture, workflow and other technical details.
 
 ### Configuration files
 
-#### boxes.json {boxes.json}
-
+#### boxes.json
 
 ### Supported VM providers
 
