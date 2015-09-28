@@ -24,7 +24,7 @@ This section describes MDBCI architecture, workflow and other technical details.
 
 ### Terminology
 
-* **Box** is a description of virtual machine image template. For vagrant provider the _box_ have the same meaning; for AWS EC2 _box_ is similar to _image_. Boxes described in [boxes.json](#boxesjson) file.
+* **Box** is a description of virtual machine image template. For vagrant provider the _box_ have the same meaning; for AWS EC2 _box_ is similar to _image_. Boxes described in [boxes.json](#boxes-json) file.
 * **[MDBCI](https://github.com/OSLL/mdbci)** is a standard set of tools for testing MariaDb components on the wide set of configurations.
 * **[MariaDb](http://mariadb.org)** is an enhanced, drop-in replacement for MySQL. It contains several set of components which can be used in standalone configurations and in cluster based heterogenous systems. 
 * **Node**
@@ -35,7 +35,7 @@ This section describes MDBCI architecture, workflow and other technical details.
 
 ### Configuration files
 
-#### boxes.json
+#### boxes.json {boxes-json}
 
 ### Supported VM providers
 
