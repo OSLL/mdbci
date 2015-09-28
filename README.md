@@ -127,7 +127,7 @@ The file boxes.json contains definitions of available boxes. His format is comme
   ## Example of VirtualBox definition
   "debian" : { ## Box name  
     "provider": "virtualbox",
-    "box": "https://atlas.hashicorp.com/chef/boxes/debian-7.4/versions/1.0.0/providers/virtualbox.box",
+    "box": "https://atlas.hashicorp.com/.../virtualbox.box", ## Box URL
     "platform": "debian",
     "platform_version": "wheezy"
   },
@@ -144,11 +144,11 @@ The file boxes.json contains definitions of available boxes. His format is comme
 }
 ```
 
-
 #### repo.d files
 
 #### template.json
 
+### Box, products, versions
 
 ### Supported VM providers
 
