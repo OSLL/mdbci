@@ -1,12 +1,15 @@
 include_recipe "mariadb::mdbcrepos"
 
-# BUG: Check if SElinux already disabled!
+# BUG: #6309 Check if SElinux already disabled!
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
-  #result = "$(setenforce 0)"
+  execute "SElinux status" do
+  	command "/usr/sbin/selinuxenabled && echo enabled || echo disabled"
+	returns [1, 0]
+  end
   execute "Turn off SElinux" do
-    #if result != 1
-      command "setenforce 0"
+    #if 1
+      command "/usr/sbin/setenforce 0"
     #end
   end
   cookbook_file 'selinux.config' do
@@ -15,10 +18,9 @@ if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
   end
 end  # Turn off SElinux
 
-# 6430
 # Remove mysql-libs for MariaDB-Server 5.1
 if node['mariadb']['version'] == "5.1"
-  execute "Remove mysql-libs" do
+  execute "Remove mysql-libs for MariaDB-Server 5.1" do
     if node[:platform] == "ubuntu" and node[:platform] == "debian" 
       command "apt-get -y remove mysql-libs"
     elsif node[:platform] == "centos"
