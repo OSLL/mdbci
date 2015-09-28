@@ -218,7 +218,6 @@ class Session
     end
 
     config = JSON.parse(IO.read($session.configFile))
-    #
     aws_config = config.find { |value| value.to_s.match(/aws_config/) }
     awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
