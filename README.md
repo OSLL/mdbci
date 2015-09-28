@@ -86,9 +86,32 @@ Known boxes could be displayed by
 
 ### Workflow
 
-#### Create configuration
+Currently, we use vagrant commands for running/destroing virtual machines. In Future releases it will be shadowed by mdbci.
 
-MDBCI can generate Vagrant/chef files by template. Template example is available as instance.json. You can copy this file with another name and tailor configuration for your needs. It's possible to create multi-VM stands.
+There are next steps for managing testing configuration:
+  * Boxes and repos preparation
+  * Creating stand template
+  * Running up virtual machine cluster
+  * Running tests
+  * Destroing allocated resources
+  
+  
+  ***PICTURE***
+  
+  In the picture you can see what command and files are being used on each stage
+
+#### Creating configuration
+
+
+### Configuration files
+
+#### boxes.json
+
+#### repo.d files
+
+#### template.json
+
+MDBCI can generate Vagrant/chef files from template. Template example is available as instance.json. You can copy this file with another name and tailor configuration for your needs. It's possible to create multi-VM stands.
 
 Since new template is created you can generate stand structure.
 
@@ -100,13 +123,6 @@ In this example MDBCI will generate new vagrant/chef config from mynewstand.json
 
 *NB* Many stands could be configured by MDBCI in subdirectories. Each stand is autonomous.
 
-### Configuration files
-
-#### boxes.json
-
-#### repo.d files
-
-#### template.json
 
 ### Supported VM providers
 
@@ -118,11 +134,12 @@ MDBCI supports next VM providers:
 
 ## MDBCI Syntax
 
-For help:
+In this section mdbci commands are described. In order to get help in runtime just call mdbci with --help flag:
 
+<pre>
   ./mdbci --help
+</pre>
   
-
 
 #### Using vagrant to manage stand
 
@@ -138,7 +155,7 @@ Since stand is generated it can be managed with vagrant command.
 
 More information about vagrant features could be found in [vagrant documentation](https://docs.vagrantup.com/v2/). 
 
-### Team
+## Team
 
 * Project leader: Sergey Balandin
 * Developers:
