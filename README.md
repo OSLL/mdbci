@@ -44,9 +44,7 @@ This section describes MDBCI architecture, workflow and other technical details.
 
 ### Components 
 
-All components of MDBCI is shown in the next picture
-
-***!!!! TBD PICTURE***
+MDBCI uses vagrant with set of plugins as the VM backend manager. It's written with Ruby in order to seamless integration with vagrant. Next releases will be partially converted to vagrant plugins.
 
 ### Installation
 
@@ -95,11 +93,6 @@ There are next steps for managing testing configuration:
   * Running tests
   * Destroing allocated resources
   
-  
-  ***PICTURE***
-  
-  In the picture you can see what command and files are being used on each stage
-
 #### Creating configuration
 
 MDBCI generates Vagrant/chef files from template. Template example is available as instance.json. You can copy this file with another name and tailor configuration for your needs. It's possible to create multi-VM stands.
@@ -291,8 +284,6 @@ mdbe@?+opensuse^13 => [http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb
 where mdbe@? means default mariadb community version on Opensuse13 target platfrom.
 
 
-
-
 ### Supported VM providers
 
 MDBCI supports next VM providers:
@@ -309,7 +300,58 @@ In this section mdbci commands are described. In order to get help in runtime ju
   ./mdbci --help
 </pre>
   
+General syntax for mdbci is following:
 
+```
+mdbci [options] <show | setup | generate>
+```
+
+### Flags
+
+-h, --help:
+  Shows help screen
+
+-t, --template [config file]:
+  Use [config file] for running instance. By default 'instance.json' will be used as config template.
+
+-b, --boxes [boxes file]:
+  Use [boxes file] for existing boxes. By default 'boxes.json'  will be used as boxes file.
+
+-w, --override
+  Override previous configuration 
+
+-c, --command
+  Set command to run in sudo clause
+
+-s, --silent
+  Keep silence, output only requested info or nothing if not available
+
+-r, --repo-dir
+  Change default place for repo.d
+
+### Commands:
+
+  show [boxes, platforms, versions, network, repos [config | config/node], keyfile [config/node] ]
+  
+  generate
+  
+  setup [boxes]
+  
+  sudo --command 'command arguments' config/node
+
+### Examples:
+
+Run command inside of VM
+
+```
+  ./mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
+```  
+  
+Show repos with using alternative repo.d repository
+```  
+  mdbci --repo-dir /home/testbed/config/repos show repos
+```
+  
 ## Using vagrant to manage stand
 
 Since stand is generated it can be managed with vagrant command. In the future releases it will be shadowed by corresponded mdbci commands
