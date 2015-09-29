@@ -38,10 +38,6 @@ class Session
     @boxes = JSON.parse(IO.read($session.boxesFile))
     $out.info 'Found boxes: ' + $session.boxes.size().to_s
 
-    $out.info 'Load configurations from ' + $session.configFile
-    @configs = JSON.parse(IO.read($session.configFile))
-    $out.info 'Found nodes: ' + $session.configs.size().to_s
-
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
   end
@@ -222,7 +218,7 @@ class Session
       path +='/'+name.to_s
     end
 
-    #config = JSON.parse(IO.read($session.configFile))
+    @configs = JSON.parse(IO.read($session.configFile))
     aws_config = $session.configs.find { |value| value.to_s.match(/aws_config/) }
     awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
