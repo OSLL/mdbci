@@ -114,8 +114,14 @@ In this example MDBCI will generate new vagrant/chef config from mynewstand.json
 
 *NB* Many stands could be configured by MDBCI in subdirectories. Each stand is autonomous.
 
-
 ### Configuration files
+
+MDBCI configuration is placed to the next files:
+
+* boxes.json
+* repo.d directory and repo.json files
+* templates
+* aws-config.yml
 
 #### boxes.json
 
@@ -190,9 +196,102 @@ Repositories for products are described in json files. Each file could contain o
 
 #### template.json
 
+Templates describe particular stand configuration and have json format. Usually templait contains next blocks:
 
+  * Global config
+  * Nodes definitions
+  
+##### Global config parameters
+
+The are next global optional parameters
+
+* cookbook_path -- replaces path to cookbooks.
+* aws_config -- if AWS is used. It specifies [aws_config.yml](#awsconfigyml) file. **Note** If this parameter is specified, mdbci will all nodes interpret as AWS nodes.
+
+
+##### Node definition
+
+Node definition could contain next parameters:
+
+* hostname -- name (and hostname) for VM instance
+* box -- box mane according [boxes.json](#boxesjson) file
+* product -- product block definition
+
+Product block definition looks like as an example:
+
+```
+    "product" : {
+      "name": "mariadb",
+      "version": "10.0.20"
+    }
+```
+
+If you want to use non standard configuration for box/product (for instance, you need to install centos6 package with mariadb to cenos7 with some particular version) you can use hard repo name link like 
+
+```
+    "product" : {
+      "repo": "mariadb@10.0.20_centos6"
+    }
+```
+
+Extra information about matching boxes, versions and products could be found in [corresponded section](#box-products-versions)
+
+
+#### aws_config.yml
+
+This file contains parameters which are required for access to Amazon machines. We intentionally keep ньд format to have compatibility with other tools. Next keys are available in this file
+
+* access_key_id -- AWS access key id
+* secret_access_key --  secret access key
+* keypair_name	-- private key name
+* security_groups -- List of amazon security groups
+* region -- AWS region
+* pemfile -- pem file
+* user_data -- extra user parameters
+
+Here is an example
+
+```
+aws:
+   access_key_id : 'DFGKJDHLGSKJDFGGGGD'
+   secret_access_key : '4VI93857398SJJJU8347634lksdf834sfs'
+   keypair_name	: 'maxscale'
+   security_groups : [ 'default', 'vagrant' ]
+   region : 'eu-west-1'	
+   pemfile : '../maxscale.pem' 		# your private key
+   user_data : "#!/bin/bash\nsed -i -e 's/^Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers"		
+```
 
 ### Box, products, versions
+
+MDBCI makes matching between boxes, target platforms, products and vesions by lexicographical base. If we
+have a look at the output of next command
+
+```
+./mdbci show repos 
+```
+
+we can see something like this:
+
+```
+galera@5.1+debian^squeeze => [http://mirror.netinch.com/pub/mariadb/repo/5.1/debian squeeze main]
+galera@5.1+debian^jessie => [http://mirror.netinch.com/pub/mariadb/repo/5.1/debian jessie main]
+galera@10.0.16+rhel^5 => [http://yum.mariadb.org/10.0.16/rhel5-amd64]
+```
+
+It means that each exact product/platform version combination is encoded 
+
+product@version+platform^platform_version
+
+In cases, when we need to use default product version on particular platfrom this encoding will be 
+
+```
+mdbe@?+opensuse^13 => [http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.42-pgo/opensuse/13]
+```
+where mdbe@? means default mariadb community version on Opensuse13 target platfrom.
+
+
+
 
 ### Supported VM providers
 
@@ -211,9 +310,9 @@ In this section mdbci commands are described. In order to get help in runtime ju
 </pre>
   
 
-#### Using vagrant to manage stand
+## Using vagrant to manage stand
 
-Since stand is generated it can be managed with vagrant command. 
+Since stand is generated it can be managed with vagrant command. In the future releases it will be shadowed by corresponded mdbci commands
 
 * vagrant up --provision  -- started virtual machines and run chef scripts against them
 * vagrant ssh [node] getting segure shell to [node] machine
