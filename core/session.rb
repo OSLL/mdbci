@@ -38,9 +38,9 @@ class Session
     @boxes = JSON.parse(IO.read($session.boxesFile))
     $out.info 'Found boxes: ' + $session.boxes.size().to_s
 
-    $out.info 'Load configurations from ' + $session.configFile
-    @configs = JSON.parse(IO.read($session.configFile))
-    $out.info 'Found nodes: ' + $session.configs.size().to_s
+    #$out.info 'Load configurations from ' + $session.configFile
+    #@configs = JSON.parse(IO.read($session.configFile))
+    #$out.info 'Found nodes: ' + $session.configs.size().to_s
 
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
@@ -101,11 +101,10 @@ class Session
 
     Dir.chdir pwd
   end
-  #
-  # Example:
-  #   VBox, AWS: mdbci ssh --template _config_template_json --command "touch file.txt" config_dir/node0 --silent
-  #   mdbci:     mdbci ssh --template _mdbci_config_template_json --command "touch file.txt" node0 --silent
-  #
+
+  # ./mdbci ssh command for AWS and VBox machines
+  #     VBox, AWS: mdbci ssh --command "touch file.txt" config_dir/node0 --silent
+  # TODO: for PPC64 box - execute ssh -i keyfile.pem user@ip
   def ssh(args)
 
     if args.nil?
@@ -115,61 +114,16 @@ class Session
 
     params = args.split('/')
 
-    box = Hash.new
-    name = ''
-    # TODO: move to separate function
-    $session.configs.each do |node|
-      name = node[1]['hostname'].to_s
+    pwd = Dir.pwd
+    Dir.chdir params[0]
 
-      if name == params[0] || name == params[1]
-        box = node[1]['box'].to_s
-        break
-      end
-    end
+    cmd = 'vagrant ssh '+params[1]+' -c "'+$session.command+'"'
+    $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
 
-    p "BOX:   " + box.to_s
+    vagrant_out = `#{cmd}`
+    $out.out vagrant_out
 
-    if !box.empty?
-      box_params = boxes[box]
-      provider = box_params["provider"].to_s
-
-      # vagrant ssh
-      if provider == 'virtualbox' || provider == 'aws'
-
-        if params[1] == name
-
-          pwd = Dir.pwd
-          Dir.chdir params[0]
-
-          cmd = 'vagrant ssh '+params[1]+' -c "'+$session.command+'"'
-          $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
-
-          vagrant_out = `#{cmd}`
-          $out.out vagrant_out
-
-          Dir.chdir pwd
-        end
-      elsif provider == "mdbci"
-
-        if params[0] == name
-
-          # get nodes configuration
-          box_params.each do |key, value|
-            $session.nodes[key] = value
-          end
-
-          cmd = "ssh -i " + $session.nodes["keyfile"].to_s + " "\
-                          + $session.nodes["user"].to_s + "@"\
-                          + $session.nodes["IP"].to_s + " '" + $session.command + "'"
-          $out.info 'Running ['+cmd+'] on '+params[0]
-
-          vagrant_out = `#{cmd}`
-          $out.out vagrant_out
-        end
-
-      end
-
-    end
+    Dir.chdir pwd
 
   end
 
@@ -221,7 +175,8 @@ class Session
     else
       path +='/'+name.to_s
     end
-    
+
+    @configs = JSON.parse(IO.read($session.configFile))
     aws_config = $session.configs.find { |value| value.to_s.match(/aws_config/) }
     awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
