@@ -20,6 +20,7 @@ class Session
   attr_accessor :repos
   attr_accessor :repoDir
   attr_accessor :nodes
+  attr_accessor :currentProvider   # current configuration provider
 
   def initialize
     @repoDir = './repo.d'
@@ -168,6 +169,29 @@ class Session
     end
   end
 
+  # load mdbci boxes parameters from boxes.json
+  def LoadMdbciNodes(configs)
+
+    mdbciConfig = Hash.new
+
+    configs.each do |node|
+      host = node[1]['hostname'].to_s
+      box = node[1]['box'].to_s
+      if !box.empty?
+        box_params = boxes[box]
+        provider = box_params["provider"].to_s
+        if provider == "mdbci"
+          @currentProvider = provider.to_s
+          box_params.each do |key, value|
+            mdbciConfig[key] = value
+          end
+          $session.nodes[host] = mdbciConfig
+          $out.info 'MDBCI definition for host: '+host+', with parameters: ' + $session.nodes.to_s
+        end
+      end
+    end
+  end
+
   def generate(name)
     path = Dir.pwd
     if name.nil?
@@ -177,11 +201,16 @@ class Session
     end
 
     @configs = JSON.parse(IO.read($session.configFile))
+    LoadMdbciNodes(configs)
     aws_config = $session.configs.find { |value| value.to_s.match(/aws_config/) }
     awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
-    $out.info 'Generating config in ' + path
-    Generator.generate(path,configs,boxes,isOverride,awsConfig)
-
+    if currentProvider != "mdbci"
+      Generator.generate(path,configs,boxes,isOverride,awsConfig)
+      $out.info 'Generating config in ' + path
+    else
+      $out.info "Using mdbci ppc64 box definition ..."
+    end
   end
+
 end

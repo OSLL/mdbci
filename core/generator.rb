@@ -248,12 +248,10 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
   name = node[0].to_s
   host = node[1]['hostname'].to_s
 
-
   $out.info 'Requested memory ' + vm_mem
 
   box = node[1]['box'].to_s
   if !box.empty?
-
     box_params = boxes[box]
 
     provider = box_params["provider"].to_s
@@ -262,14 +260,8 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
       user = box_params['user'].to_s
       instance = box_params['default_instance_type'].to_s
       $out.info 'AWS definition for host:'+host+', ami:'+amiurl+', user:'+user+', instance:'+instance
-    elsif provider == "mdbci"
-      box_params.each do |key, value|
-        $session.nodes[key] = value
-      end
-      $out.info 'MDBCI definition for host:'+host+', with parameters: ' + $session.nodes.to_s
     else
       boxurl = box_params['box'].to_s
-      p boxurl
     end
   end
 
@@ -314,7 +306,6 @@ def Generator.generate(path, config, boxes, override, aws_config)
     cookbook_path = config['cookbook_path']
   end
 
-
   $out.info 'Global cookbook_path=' + cookbook_path
 
   vagrant = File.open(path+'/Vagrantfile', 'w')
@@ -336,7 +327,6 @@ def Generator.generate(path, config, boxes, override, aws_config)
     vagrant.puts Generator.vagrantConfigFooter
 
   else
-    #if config[1]['provider'] != 'mdbci'
       # Generate VBox Configuration
       vagrant.puts Generator.vagrantConfigHeader
 
