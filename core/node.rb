@@ -22,9 +22,8 @@ class Node
     end
   end
 
-  # TODO - only for Debian/Ubuntu
+  # TODO - now only for Debian/Ubuntu
   def installCurl
-    # TODO: check box|ami platform
     cmd = 'vagrant ssh '+@name+' -c "sudo apt-get install -y curl"'
     vagrant_cmd = `#{cmd}`
     #
@@ -36,25 +35,26 @@ class Node
   end
 
   def getIp(provider)
-    if provider == '(virtualbox)'
-      cmd = 'vagrant ssh '+@name+' -c "/sbin/ifconfig eth1 | grep \"inet \" "'
-      vagrant_out = `#{cmd}`
-      ip = vagrant_out.scanf('inet addr:%s Bcast')
-
-      $out.info 'Node.GetIp '+cmd
-
-      @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
-    elsif provider == '(aws)'
-      if curlCheck
-        cmd = 'vagrant ssh '+@name+' -c "curl http://169.254.169.254/latest/meta-data/public-ipv4"'
+    case provider
+      when '(virtualbox)'
+        cmd = 'vagrant ssh '+@name+' -c "/sbin/ifconfig eth1 | grep \"inet \" "'
         vagrant_out = `#{cmd}`
-        ip = vagrant_out.scanf('%s')
-        @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')
+        ip = vagrant_out.scanf('inet addr:%s Bcast')
+
+        $out.info 'Node.GetIp '+cmd
+
+        @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
+      when '(aws)'
+        if curlCheck
+          cmd = 'vagrant ssh '+@name+' -c "curl http://169.254.169.254/latest/meta-data/public-ipv4"'
+          vagrant_out = `#{cmd}`
+          ip = vagrant_out.scanf('%s')
+          @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')
+        else
+          installCurl
+        end
       else
-        installCurl
-      end
-    else
-      $out.warning('WARNING: Unknown machine type!')
+        $out.warning('WARNING: Unknown machine type!')
     end
     if !@ip.to_s.empty?
       $out.info('IP:'+@ip.to_s)
@@ -70,7 +70,6 @@ class Node
       @state = parts[1]
       @provider = parts[2]
       @config = config
-      getIp(@provider)
     else
       $out.error 'ERR: Cannot parse vagrant node description. Has format changed? ['+initString+']'
     end
