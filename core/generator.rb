@@ -47,7 +47,6 @@ require 'yaml'
     aws.region = aws_config["region"]
     aws.security_groups = aws_config["security_groups"]
     aws.user_data = aws_config["user_data"]
-    override.ssh.username = "ec2-user"
     override.ssh.private_key_path = aws_config["pemfile"]
     override.nfs.functional = false
   end ## of AWS Provider config block
@@ -123,15 +122,15 @@ Vagrant.configure(2) do |config|
   def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, instance_type, provisioned)
 
     awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
-           + "config.vm.define :"+ name +" do |vm|\n" \
-           + "\tconfig.vm.provider :aws do |aws,override|\n" \
+           + "config.vm.define :"+ name +" do |" + name + "|\n" \
+           + "\t" + name + ".vm.provider :aws do |aws,override|\n" \
            + "\t\taws.ami = " + quote(boxurl) + "\n"\
            + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
            + "\t\toverride.ssh.username = " + quote(user) + "\n" \
            + "\tend\n"
     if provisioned
       awsdef += "##--- Chef binding ---\n"\
-           + "\tconfig.vm.provision "+ quote('chef_solo')+" do |chef| \n"\
+           + "\t" + name + ".vm.provision "+ quote('chef_solo')+" do |chef| \n"\
            + "\t\tchef.cookbooks_path = "+ quote(cookbook_path) + "\n" \
            + "\t\tchef.roles_path = "+ quote('.') + "\n" \
            + "\t\tchef.add_role "+ quote(name) + "\n" \
@@ -249,12 +248,10 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
   name = node[0].to_s
   host = node[1]['hostname'].to_s
 
-
   $out.info 'Requested memory ' + vm_mem
 
   box = node[1]['box'].to_s
   if !box.empty?
-
     box_params = boxes[box]
 
     provider = box_params["provider"].to_s
@@ -265,7 +262,6 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
       $out.info 'AWS definition for host:'+host+', ami:'+amiurl+', user:'+user+', instance:'+instance
     else
       boxurl = box_params['box'].to_s
-      p boxurl
     end
   end
 
@@ -310,7 +306,6 @@ def Generator.generate(path, config, boxes, override, aws_config)
     cookbook_path = config['cookbook_path']
   end
 
-
   $out.info 'Global cookbook_path=' + cookbook_path
 
   vagrant = File.open(path+'/Vagrantfile', 'w')
@@ -332,19 +327,20 @@ def Generator.generate(path, config, boxes, override, aws_config)
     vagrant.puts Generator.vagrantConfigFooter
 
   else
-    # Generate VBox Configuration
-    vagrant.puts Generator.vagrantConfigHeader
+      # Generate VBox Configuration
+      vagrant.puts Generator.vagrantConfigHeader
 
-    vagrant.puts Generator.vboxProviderConfig
+      vagrant.puts Generator.vboxProviderConfig
 
-    config.each do |node|
-      unless (node[1]['box'].nil?)
-        $out.info 'Generate VBox Node definition for ['+node[0]+']'
-        vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
+      config.each do |node|
+        unless (node[1]['box'].nil?)
+          $out.info 'Generate VBox Node definition for ['+node[0]+']'
+          vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
+        end
       end
-    end
 
-    vagrant.puts Generator.vagrantConfigFooter
+      vagrant.puts Generator.vagrantConfigFooter
+    #end
   end
 
   vagrant.close

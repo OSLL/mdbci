@@ -74,6 +74,8 @@ case ARGV.shift
     $session.show(ARGV.shift)
   when 'sudo'
     $session.sudo(ARGV.shift)
+  when 'ssh'
+    $session.ssh(ARGV.shift)
   when 'setup'
     $session.setup(ARGV.shift)
   when 'generate'

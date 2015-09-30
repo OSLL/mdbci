@@ -15,7 +15,8 @@ class Network
   end
 
   def loadNodes(config)
-    pwd = Dir.pwd
+    $out.info 'Load configuration nodes from vagrant status ...'
+
     Dir.chdir config
 
     vagrant_out = `vagrant status`
@@ -37,14 +38,22 @@ class Network
   AWS Node info is located in (2..END-4) lines
 
 =end
-    # Log offset: 4 - for aws, 5 - for VBox
-    list[2].to_s.include?("aws") ? offset = 4 : offset = 5
+
+    count = 0
+    provider = ["virtualbox", "aws", "mdbci"]
+    list.each do |line|
+      provider.each do |item|
+        count += 1 if line.to_s.include?(item)
+      end
+    end
+
+    # Log offset: 4 - for ONE node, 5 - for multiple nodes
+    if count == 1; offset = 4; else offset = 5; end
 
     (2..list.length-offset).each do |x|
       getNodeInfo(config, list[x])
     end
 
-    Dir.chdir pwd
   end
 
   def self.showKeyFile(name)
@@ -71,25 +80,29 @@ class Network
 
   def self.show(name)
 
-      if name.nil?
-        $out.error 'Configuration name is required'
-        return
-      end
+    pwd = Dir.pwd
 
-      args = name.split('/')
+    if name.nil?
+      $out.error 'Configuration name is required'
+      return
+    end
 
-      network = Network.new
-      network.loadNodes args[0] # load nodes from dir
+    args = name.split('/')
 
-      if args[1].nil? # No node argument, show all config
-        network.nodes.each do |node|
-          $out.out(node.ip.to_s + ' ' + node.name.to_s)
-        end
-      else
-        node = network.nodes.find {|elem| elem.name == args[1]}
+    network = Network.new
+    network.loadNodes args[0] # load nodes from dir
+
+    if args[1].nil? # No node argument, show all config
+      network.nodes.each do |node|
+        node.getIp(node.provider)
         $out.out(node.ip.to_s)
       end
+    else
+      node = network.nodes.find { |elem| elem.name == args[1]}
+      node.getIp(node.provider)
+      $out.out(node.ip.to_s)
+    end
 
-      $out.info args[1]
+    Dir.chdir pwd
   end
 end
