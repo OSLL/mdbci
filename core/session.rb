@@ -39,10 +39,6 @@ class Session
     @boxes = JSON.parse(IO.read($session.boxesFile))
     $out.info 'Found boxes: ' + $session.boxes.size().to_s
 
-    #$out.info 'Load configurations from ' + $session.configFile
-    #@configs = JSON.parse(IO.read($session.configFile))
-    #$out.info 'Found nodes: ' + $session.configs.size().to_s
-
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
   end
@@ -194,6 +190,7 @@ class Session
 
   def generate(name)
     path = Dir.pwd
+
     if name.nil?
       path += '/default'
     else

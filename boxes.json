@@ -147,7 +147,6 @@
     "platform": "fedora",
     "platform_version": "21"
   },
-
   "fedora23" : {
     "provider": "aws",
     "ami": "ami-252c5a52",
