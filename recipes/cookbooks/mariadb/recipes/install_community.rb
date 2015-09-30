@@ -3,10 +3,10 @@ include_recipe "mariadb::mdbcrepos"
 # BUG: #6309 Check if SElinux already disabled!
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
-  execute "SElinux status" do
-  	command "/usr/sbin/selinuxenabled && echo enabled || echo disabled"
-	returns [1, 0]
-  end
+#  execute "SElinux status" do
+#  	command "/usr/sbin/selinuxenabled && echo enabled || echo disabled"
+#	returns [1, 0]
+#  end
   execute "Turn off SElinux" do
     #if 1
       command "/usr/sbin/setenforce 0"
