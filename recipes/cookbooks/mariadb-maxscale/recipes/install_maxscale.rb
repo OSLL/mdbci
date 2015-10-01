@@ -11,6 +11,26 @@ if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
   end
 end  # Turn off SElinux
 
+# check and install iptables
+case node[:platform_family]
+  when "debian", "ubuntu"
+
+    p "iptables packages for Deb platforms ..."
+
+  when "rhel", "fedora", "centos"
+
+    execute "Install and config iptables services" do
+      command "yum --assumeyes install iptables-services"
+      command "systemctl start iptables"
+      command "systemctl enable iptables"
+    end
+
+  when "suse"
+
+    
+
+end
+
 # iptables rules
 case node[:platform_family]
   when "debian", "ubuntu", "rhel", "fedora", "centos"
@@ -76,7 +96,7 @@ case node[:platform_family]
   when "rhel", "fedora", "centos"
     bash 'Save MariaDB iptables rules' do
     code <<-EOF
-      service iptables save
+      /sbin/service iptables save
     EOF
     end
     # service iptables restart
