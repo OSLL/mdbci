@@ -32,7 +32,7 @@ class RepoManager
     repo = @repos[repokey]
     $out.info 'Repo key is '+repokey + ' ... ' + (repo.nil? ? 'NOT_FOUND' : 'FOUND')
 
-    return repo;
+    return repo
   end
 
   def show

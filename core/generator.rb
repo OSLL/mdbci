@@ -185,6 +185,9 @@ def Generator.getRoleDef(name, product, box)
   config['version'] = repo['version']
   config['repo'] = repo['repo']
   config['repo_key'] = repo['repo_key']
+  if !product['server_id'].nil?
+    config['server_id'] = product['server_id']
+  end
   productConfig[product_name] = config
 
   role['name'] = name
@@ -268,7 +271,6 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
         $out.info 'MDBCI definition for host:'+host+', with parameters: ' + $session.nodes.to_s
       else
         boxurl = box_params['box'].to_s
-        p boxurl
     end
   end
 
@@ -324,7 +326,6 @@ def Generator.generate(path, config, boxes, override, aws_config)
     # Generate AWS Configuration
     vagrant.puts Generator.awsProviderConfigImport(aws_config)
     vagrant.puts Generator.vagrantConfigHeader
-
     vagrant.puts Generator.awsProviderConfig
 
     config.each do |node|

@@ -10,4 +10,7 @@ default["mariadb"]["repo"] = "http://yum.mariadb.org/"
 
 # mariadb repo key for rhel/fedora/centos/suse
 #default["mariadb"]["repo_key"] = "http://mirror.mephi.ru/mariadb/yum"
-default["mariadb"]["repo_key"] = " http://yum.mariadb.org/"
+default["mariadb"]["repo_key"] = "http://yum.mariadb.org/"
+
+# mariadb server_id
+default["mariadb"]["server_id"] = "1"
