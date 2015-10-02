@@ -35,7 +35,7 @@ end
 case node[:platform_family]
   when "debian", "ubuntu"
     execute "Install iptables-persistent" do
-      command "apt-get -y install iptables-persistent"
+      command "DEBIAN_FRONTEND=noninteractive apt-get -y install iptables-persistent"
     end
   when "rhel", "fedora", "centos"
     bash 'Install and config iptables services' do
@@ -46,7 +46,10 @@ case node[:platform_family]
     EOF
     end
   when "suse"
-
+    execute "Install iptables and SuSEfirewall2" do
+      command "zypper install -y iptables"
+      command "zypper install -y SuSEfirewall2"
+    end
 end
 
 # iptables rules
@@ -57,18 +60,13 @@ case node[:platform_family]
       command "iptables -I INPUT -p tcp --dport 3306 -j ACCEPT -m state --state NEW"
     end
   when "suse"
-    execute "Install iptables and SuSEfirewall2" do
-      command "zypper install -y iptables"
-      command "zypper install -y SuSEfirewall2"
-    end
-    #
     execute "Opening MariaDB ports" do
       command "/usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 3306 -j ACCEPT"
       command "/usr/sbin/iptables -I INPUT -p tcp --dport 3306 -j ACCEPT -m state --state NEW"
    end
 end # iptables rules
 
-# TODO: check saving iptables rules
+# TODO: check saving iptables rules after reboot
 # save iptables rules
 case node[:platform_family]
   when "debian", "ubuntu"
@@ -107,24 +105,4 @@ else
   package 'MariaDB-client'
 end
 
-# Config /etc/mysql/my.cnf.d/server.cnf file
-#case node[:platform_family]
-#  when "debian", "ubuntu"
 
-#    bash 'Config mariadb /etc/mysql/my.cnf.d/server.cnf file' do
-#    code <<-EOF
-#      line=$(grep --line-number [mysqld] /etc/mysql/my.cnf.d/server.cnf | sed -e s/\:.*//)
-#      sed -i $line'iserver-id\t\t= #{Shellwords.escape(node['mariadb']['server_id'])}' /etc/mysql/my.cnf.d/server.cnf
-#      EOF
-#    end
-
-#  when "rhel", "fedora", "centos", "suse"
-
-#    bash 'Config mariadb /etc/my.cnf.d/server.cnf file' do
-#    code <<-EOF
-#      line=$(grep --line-number [mysqld] /etc/my.cnf.d/server.cnf | sed -e s/\:.*//)
-#      sed -i $line+1'iserver-id\t\t= #{Shellwords.escape(node['mariadb']['server_id'])}' /etc/my.cnf.d/server.cnf
-#      EOF
-#    end
-
-#end # server.cnf block

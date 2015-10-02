@@ -14,45 +14,15 @@ end  # Turn off SElinux
 # check and install iptables
 case node[:platform_family]
   when "debian", "ubuntu"
-
-    p "iptables packages for Deb platforms ..."
-
-  when "rhel", "fedora", "centos"
-
-    execute "Install and config iptables services" do
-      command "yum --assumeyes install iptables-services"
-      command "systemctl start iptables"
-      command "systemctl enable iptables"
+    execute "Install iptables-persistent" do
+      command "DEBIAN_FRONTEND=noninteractive apt-get -y install iptables-persistent"
     end
-
-  when "suse"
-
-    
-
-end
-
-# iptables rules
-case node[:platform_family]
-  when "debian", "ubuntu", "rhel", "fedora", "centos"
-    bash 'Opening MariaDB ports' do
+  when "rhel", "fedora", "centos"
+    bash 'Install and config iptables services' do
     code <<-EOF
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 3306 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 4006 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 4008 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 4009 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 4016 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 5306 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 4442 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 6444 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -m state --state RELATED,ESTABLISHED, -j ACEPT 
-      /usr/sbin/iptables -I INPUT -p tcp --dport 3306 -j ACCEPT -m state --state NEW
-      /usr/sbin/iptables -I INPUT -p tcp --dport 4006 -j ACCEPT -m state --state NEW
-      /usr/sbin/iptables -I INPUT -p tcp --dport 4008 -j ACCEPT -m state --state NEW
-      /usr/sbin/iptables -I INPUT -p tcp --dport 4009 -j ACCEPT -m state --state NEW
-      /usr/sbin/iptables -I INPUT -p tcp --dport 4016 -j ACCEPT -m state --state NEW
-      /usr/sbin/iptables -I INPUT -p tcp --dport 5306 -j ACCEPT -m state --state NEW
-      /usr/sbin/iptables -I INPUT -p tcp --dport 4442 -j ACCEPT -m state --state NEW
-      /usr/sbin/iptables -I INPUT -p tcp --dport 6444 -j ACCEPT -m state --state NEW
+      yum --assumeyes install iptables-services
+      systemctl start iptables
+      systemctl enable iptables
     EOF
     end
   when "suse"
@@ -60,7 +30,33 @@ case node[:platform_family]
       command "zypper install -y iptables"
       command "zypper install -y SuSEfirewall2"
     end
-    #
+end
+
+# iptables rules
+case node[:platform_family]
+  when "debian", "ubuntu", "rhel", "fedora", "centos"
+    bash 'Opening MariaDB ports' do
+    code <<-EOF
+      iptables -I INPUT -p tcp -m tcp --dport 3306 -j ACCEPT
+      iptables -I INPUT -p tcp -m tcp --dport 4006 -j ACCEPT
+      iptables -I INPUT -p tcp -m tcp --dport 4008 -j ACCEPT
+      iptables -I INPUT -p tcp -m tcp --dport 4009 -j ACCEPT
+      iptables -I INPUT -p tcp -m tcp --dport 4016 -j ACCEPT
+      iptables -I INPUT -p tcp -m tcp --dport 5306 -j ACCEPT
+      iptables -I INPUT -p tcp -m tcp --dport 4442 -j ACCEPT
+      iptables -I INPUT -p tcp -m tcp --dport 6444 -j ACCEPT
+      iptables -I INPUT -m state --state RELATED,ESTABLISHED, -j ACEPT 
+      iptables -I INPUT -p tcp --dport 3306 -j ACCEPT -m state --state NEW
+      iptables -I INPUT -p tcp --dport 4006 -j ACCEPT -m state --state NEW
+      iptables -I INPUT -p tcp --dport 4008 -j ACCEPT -m state --state NEW
+      iptables -I INPUT -p tcp --dport 4009 -j ACCEPT -m state --state NEW
+      iptables -I INPUT -p tcp --dport 4016 -j ACCEPT -m state --state NEW
+      iptables -I INPUT -p tcp --dport 5306 -j ACCEPT -m state --state NEW
+      iptables -I INPUT -p tcp --dport 4442 -j ACCEPT -m state --state NEW
+      iptables -I INPUT -p tcp --dport 6444 -j ACCEPT -m state --state NEW
+    EOF
+    end
+  when "suse"
     bash 'Opening MariaDB ports' do
     code <<-EOF
       /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 3306 -j ACCEPT
@@ -84,27 +80,22 @@ case node[:platform_family]
    end
 end # iptables rules
 
-# TODO: check saving iptables rules
+# TODO: check saving iptables rules after reboot
 # save iptables rules
 case node[:platform_family]
   when "debian", "ubuntu"
-    bash 'Save MariaDB iptables rules' do
-    code <<-EOF
-      iptables-save > /etc/iptables/rules.v4
-    EOF
+    execute "Save MariaDB iptables rules" do
+      command "iptables-save > /etc/iptables/rules.v4"
+      #command "/usr/sbin/service iptables-persistent save"
     end
-  when "rhel", "fedora", "centos"
-    bash 'Save MariaDB iptables rules' do
-    code <<-EOF
-      /sbin/service iptables save
-    EOF
+  when "rhel", "centos", "fedora"
+    execute "Save MariaDB iptables rules" do
+      command "/sbin/service iptables save"
     end
     # service iptables restart
   when "suse"
-    bash 'Save MariaDB iptables rules' do
-    code <<-EOF
-      iptables-save > /etc/sysconfig/iptables
-    EOF
+    execute "Save MariaDB iptables rules" do
+      command "iptables-save > /etc/sysconfig/iptables"
     end
 end # save iptables rules
 

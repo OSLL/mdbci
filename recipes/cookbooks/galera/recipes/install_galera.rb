@@ -14,21 +14,22 @@ end  # Turn off SElinux
 # check and install iptables
 case node[:platform_family]
   when "debian", "ubuntu"
-
-    p "iptables packages for Deb platforms ..."
-
-  when "rhel", "fedora", "centos"
-
-    execute "Install and config iptables services" do
-      command "yum --assumeyes install iptables-services"
-      command "systemctl start iptables"
-      command "systemctl enable iptables"
+    execute "Install iptables-persistent" do
+      command "DEBIAN_FRONTEND=noninteractive apt-get -y install iptables-persistent"
     end
-
+  when "rhel", "fedora", "centos"
+    bash 'Install and config iptables services' do
+    code <<-EOF
+      yum --assumeyes install iptables-services
+      systemctl start iptables
+      systemctl enable iptables
+    EOF
+    end
   when "suse"
-
-    
-
+    execute "Install iptables and SuSEfirewall2" do
+      command "zypper install -y iptables"
+      command "zypper install -y SuSEfirewall2"
+    end
 end
 
 # iptables rules
@@ -55,11 +56,6 @@ case node[:platform_family]
     EOF
     end
   when "suse"
-    execute "Install iptables and SuSEfirewall2" do
-      command "zypper install -y iptables"
-      command "zypper install -y SuSEfirewall2"
-    end
-    #
     bash 'Opening MariaDB ports' do
     code <<-EOF
       /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 4567 -j ACCEPT
@@ -82,27 +78,22 @@ case node[:platform_family]
    end
 end # iptables rules
 
-# TODO: check saving iptables rules
+# TODO: check saving iptables rules after reboot
 # save iptables rules
 case node[:platform_family]
   when "debian", "ubuntu"
-    bash 'Save MariaDB iptables rules' do
-    code <<-EOF
-      /sbin/iptables-save > /etc/iptables/rules.v4
-    EOF
+    execute "Save MariaDB iptables rules" do
+      command "iptables-save > /etc/iptables/rules.v4"
+      #command "/usr/sbin/service iptables-persistent save"
     end
-  when "rhel", "fedora", "centos"
-    bash 'Save MariaDB iptables rules' do
-    code <<-EOF
-      /sbin/service iptables save
-    EOF
+  when "rhel", "centos", "fedora"
+    execute "Save MariaDB iptables rules" do
+      command "/sbin/service iptables save"
     end
     # service iptables restart
   when "suse"
-    bash 'Save MariaDB iptables rules' do
-    code <<-EOF
-      iptables-save > /etc/sysconfig/iptables
-    EOF
+    execute "Save MariaDB iptables rules" do
+      command "iptables-save > /etc/sysconfig/iptables"
     end
 end # save iptables rules
 
@@ -145,24 +136,3 @@ else
   package 'MariaDB-Galera-server'
 end
 
-# Config /etc/mysql/my.cnf.d/server.cnf file
-case node[:platform_family]
-  when "debian", "ubuntu"
-
-    bash 'Config Galera /etc/mysql/my.cnf.d/server.cnf file' do
-    code <<-EOF
-      line=$(grep --line-number [mysqld] /etc/mysql/my.cnf.d/server.cnf | sed -e s/\:.*//)
-      sed -i $line'iserver-id\t\t= #{Shellwords.escape(node['galera']['server_id'])}' /etc/mysql/my.cnf.d/server.cnf
-      EOF
-    end
-
-  when "rhel", "fedora", "centos", "suse"
-
-    bash 'Config Galera /etc/my.cnf.d/server.cnf file' do
-    code <<-EOF
-      line=$(grep --line-number [mysqld] /etc/my.cnf.d/server.cnf | sed -e s/\:.*//)
-      sed -i $line'iserver-id\t\t= #{Shellwords.escape(node['galera']['server_id'])}' /etc/my.cnf.d/server.cnf
-      EOF
-    end
-
-end # server.cnf block
