@@ -20,7 +20,7 @@ mdbci [option] <show | setup | generate>
   Override previous configuration
 
 -c, --command
-  Set command to run in sudo clause
+  Set command to run for sudo or ssh clause
 
 -s, --silent
   Keep silence, output only requested info or nothing if not available
@@ -33,9 +33,11 @@ COMMANDS:
   generate
   setup [boxes]
   sudo --command 'command arguments' config/node
+  ssh --command 'command arguments' config/node
 
 EXAMPLES:
   mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
+  mdbci ssh --command "cat script.sh" T/node1
   mdbci --repo-dir /home/testbed/config/repos show repos
 
   EOF
