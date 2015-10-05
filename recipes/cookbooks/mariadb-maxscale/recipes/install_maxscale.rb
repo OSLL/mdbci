@@ -18,12 +18,21 @@ case node[:platform_family]
       command "DEBIAN_FRONTEND=noninteractive apt-get -y install iptables-persistent"
     end
   when "rhel", "fedora", "centos"
-    bash 'Install and config iptables services' do
-    code <<-EOF
-      yum --assumeyes install iptables-services
-      systemctl start iptables
-      systemctl enable iptables
-    EOF
+    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
+      bash 'Install and configure iptables' do
+      code <<-EOF
+        yum --assumeyes install iptables-services
+        systemctl start iptables
+        systemctl enable iptables
+      EOF
+      end
+    else
+      bash 'Configure iptables' do
+      code <<-EOF
+        /sbin/service start iptables
+        chkconfig iptables on
+      EOF
+      end
     end
   when "suse"
     execute "Install iptables and SuSEfirewall2" do
@@ -34,7 +43,7 @@ end
 
 # iptables rules
 case node[:platform_family]
-  when "debian", "ubuntu", "rhel", "fedora", "centos"
+  when "debian", "ubuntu", "rhel", "fedora", "centos", "suse"
     bash 'Opening MariaDB ports' do
     code <<-EOF
       iptables -I INPUT -p tcp -m tcp --dport 3306 -j ACCEPT
@@ -56,28 +65,6 @@ case node[:platform_family]
       iptables -I INPUT -p tcp --dport 6444 -j ACCEPT -m state --state NEW
     EOF
     end
-  when "suse"
-    bash 'Opening MariaDB ports' do
-    code <<-EOF
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 3306 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 4006 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 4008 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 4009 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 4016 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 5306 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 4442 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 6444 -j ACCEPT
-      /usr/sbin/iptables -I INPUT -m state --state RELATED,ESTABLISHED, -j ACEPT 
-      /usr/sbin/iptables -I INPUT -p tcp --dport 3306 -j ACCEPT -m state --state NEW
-      /usr/sbin/iptables -I INPUT -p tcp --dport 4006 -j ACCEPT -m state --state NEW
-      /usr/sbin/iptables -I INPUT -p tcp --dport 4008 -j ACCEPT -m state --state NEW
-      /usr/sbin/iptables -I INPUT -p tcp --dport 4009 -j ACCEPT -m state --state NEW
-      /usr/sbin/iptables -I INPUT -p tcp --dport 4016 -j ACCEPT -m state --state NEW
-      /usr/sbin/iptables -I INPUT -p tcp --dport 5306 -j ACCEPT -m state --state NEW
-      /usr/sbin/iptables -I INPUT -p tcp --dport 4442 -j ACCEPT -m state --state NEW
-      /usr/sbin/iptables -I INPUT -p tcp --dport 6444 -j ACCEPT -m state --state NEW
-    EOF
-   end
 end # iptables rules
 
 # TODO: check saving iptables rules after reboot

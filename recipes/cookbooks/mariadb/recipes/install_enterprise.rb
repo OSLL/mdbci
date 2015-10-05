@@ -18,12 +18,21 @@ case node[:platform_family]
       command "DEBIAN_FRONTEND=noninteractive apt-get -y install iptables-persistent"
     end
   when "rhel", "fedora", "centos"
-    bash 'Install and config iptables services' do
-    code <<-EOF
-      yum --assumeyes install iptables-services
-      systemctl start iptables
-      systemctl enable iptables
-    EOF
+    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
+      bash 'Install and configure iptables' do
+      code <<-EOF
+        yum --assumeyes install iptables-services
+        systemctl start iptables
+        systemctl enable iptables
+      EOF
+      end
+    else
+      bash 'Configure iptables' do
+      code <<-EOF
+        /sbin/service start iptables
+        chkconfig iptables on
+      EOF
+      end
     end
   when "suse"
     execute "Install iptables and SuSEfirewall2" do
@@ -34,16 +43,11 @@ end
 
 # iptables rules
 case node[:platform_family]
-  when "debian", "ubuntu", "rhel", "fedora", "centos"
+  when "debian", "ubuntu", "rhel", "fedora", "centos", "suse"
     execute "Opening MariaDB ports" do
       command "iptables -I INPUT -p tcp -m tcp --dport 3306 -j ACCEPT"
       command "iptables -I INPUT -p tcp --dport 3306 -j ACCEPT -m state --state NEW"
     end
-  when "suse"
-    execute "Opening MariaDB ports" do
-      command "/usr/sbin/iptables -I INPUT -p tcp -m tcp --dport 3306 -j ACCEPT"
-      command "/usr/sbin/iptables -I INPUT -p tcp --dport 3306 -j ACCEPT -m state --state NEW"
-   end
 end # iptables rules
 
 # TODO: check saving iptables rules after reboot
