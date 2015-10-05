@@ -8,9 +8,7 @@ if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
 #	returns [1, 0]
 #  end
   execute "Turn off SElinux" do
-    #if 1
       command "/usr/sbin/setenforce 0"
-    #end
   end
   cookbook_file 'selinux.config' do
     path "/etc/selinux/config"
@@ -28,6 +26,8 @@ if node['mariadb']['version'] == "5.1"
     end
   end
 end
+
+system 'echo Platform family: '+node[:platform_family]
 
 # Install packages
 case node[:platform_family]
@@ -48,3 +48,47 @@ else
   package 'MariaDB-server'
   package 'MariaDB-client'
 end
+
+# cnf_template configuration
+case node[:platform_family]
+
+  when "debian", "ubuntu"
+  
+    # create cnf_template dir
+    createcmd = "mkdir " + node['mariadb']['cnf_template']
+    execute "Create cnf_template directory" do
+      command createcmd
+    end
+
+    copycmd = 'cp /vagrant/mdbci_server.cnf ' + node['mariadb']['cnf_template']
+    # copy to /etc/mysql/my.cnf.d/
+    execute "Copy mdbci_server.cnf to cnf_template directory" do
+      command copycmd
+    end
+
+    # TODO: check if line already exist !!!
+    # Debian: /etc/mysql/conf.d -- dir for *.cnf files
+    # Ubuntu: /etc/mysql/my.cnf.d
+    addlinecmd = 'echo "!includedir ' + node['mariadb']['cnf_template'] + '" >> /etc/mysql/my.cnf'
+    execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
+      command addlinecmd
+    end
+
+  when "rhel", "fedora", "centos", "suse"
+
+    # centos7 - /etc/my.cnf.d -- dir for *.cnf files
+    copycmd = 'cp /vagrant/mdbci_server.cnf ' + node['mariadb']['cnf_template']
+    execute "Copy mdbci_server.cnf to cnf_template directory" do
+      command copycmd
+    end
+
+    # add includedir to my.cnf file
+    # TODO: check if line already exist !!!
+    # centos7 - already exist!
+    addlinecmd = "echo '!includedir " + node['mariadb']['cnf_template'] + "' >> /etc/my.cnf"
+    execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
+      command addlinecmd
+    end
+
+end
+

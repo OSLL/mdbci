@@ -185,6 +185,9 @@ def Generator.getRoleDef(name, product, box)
   config['version'] = repo['version']
   config['repo'] = repo['repo']
   config['repo_key'] = repo['repo_key']
+  if !product['cnf_template'].nil?
+    config['cnf_template'] = product['cnf_template']
+  end
   productConfig[product_name] = config
 
   role['name'] = name
