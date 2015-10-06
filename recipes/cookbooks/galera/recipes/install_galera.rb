@@ -64,9 +64,7 @@ case node[:platform_family]
       command copycmd
     end
 
-    # TODO: check if line already exist !!!
-    # Debian: /etc/mysql/conf.d -- dir for *.cnf files
-    # Ubuntu: /etc/mysql/my.cnf.d
+    # /etc/mysql/my.cnf.d -- dir for *.cnf files
     addlinecmd = 'echo "!includedir ' + node['mariadb']['cnf_template'] + '" >> /etc/mysql/my.cnf'
     execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
       command addlinecmd
@@ -74,18 +72,15 @@ case node[:platform_family]
 
   when "rhel", "fedora", "centos", "suse"
 
-    # centos7 - /etc/my.cnf.d -- dir for *.cnf files
+    # /etc/my.cnf.d -- dir for *.cnf files
     copycmd = 'cp /vagrant/mdbci_server.cnf ' + node['mariadb']['cnf_template']
     execute "Copy mdbci_server.cnf to cnf_template directory" do
       command copycmd
     end
 
     # TODO: check if line already exist !!!
-    # centos7, rhel6 - already exist!
-    #addlinecmd = "echo '!includedir " + node['mariadb']['cnf_template'] + "' >> /etc/my.cnf"
-    addlinecmd = "replace '!includedir /etc/my.cnf.d' '" + node['mariadb']['cnf_template'] + "' -- /etc/my.cnf"
+    addlinecmd = "replace '!includedir /etc/my.cnf.d' '!includedir " + node['mariadb']['cnf_template'] + "' -- /etc/my.cnf"
     execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
       command addlinecmd
     end
-
 end
