@@ -94,11 +94,17 @@ Vagrant.configure(2) do |config|
 
   def Generator.getVmDef(cookbook_path, name, host, boxurl, vm_mem, template_path, provisioned)
 
+    if template_path
+      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote("/home/vagrant/cnf_templates")
+    else
+      templatedef = ""
+    end
+
     if provisioned
       vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) +"\n" \
-            + "\t"+name+'.vm.synced_folder ' + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + "\n" \
+            + templatedef  + "\n"\
             + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
@@ -107,7 +113,7 @@ Vagrant.configure(2) do |config|
       vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
-            + "\t"+name+'.vm.synced_folder ' + quote(template_path) + " " + quote("/home/vagrant/cnf_templates")
+            + templatedef
     end
 
     if vm_mem
@@ -123,7 +129,11 @@ Vagrant.configure(2) do |config|
   #
   def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, instance_type, template_path, provisioned)
 
-    awsdef = "config.vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync") + "\n" \
+    if template_path
+      awsdef = "config.vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync") + "\n" \
+    else
+      awsdef = ""
+    end
 
     awsdef += "\n#  -> Begin definition for machine: " + name +"\n"\
            + "config.vm.define :"+ name +" do |" + name + "|\n" \
@@ -189,7 +199,7 @@ def Generator.getRoleDef(name, product, box)
   config['version'] = repo['version']
   config['repo'] = repo['repo']
   config['repo_key'] = repo['repo_key']
-  if !product['cnf_template'].nil?
+  if !product['cnf_template'].nil? && !product['cnf_template_path'].nil?
     config['cnf_template'] = product['cnf_template']
     config['cnf_template_path'] = product['cnf_template_path']
   end
@@ -284,7 +294,9 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
 
   if (provisioned)
     product = node[1]['product']
-    template_path = product['cnf_template_path']
+    if !product['cnf_template_path'].nil?
+      template_path = product['cnf_template_path']
+    end
   end
 
   # generate node definition and role
