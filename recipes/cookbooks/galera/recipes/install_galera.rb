@@ -129,18 +129,18 @@ case node[:platform_family]
 
   when "debian", "ubuntu"
   
-    createcmd = "mkdir " + node['mariadb']['cnf_template']
+    createcmd = "mkdir /etc/mysql/my.cnf.d"
     execute "Create cnf_template directory" do
       command createcmd
     end
 
-    copycmd = 'cp /vagrant/mdbci_server.cnf ' + node['mariadb']['cnf_template']
+    copycmd = 'cp '+ node['mariadb']['cnf_template_path'] + '/' + node['mariadb']['cnf_template'] + ' /etc/mysql/my.cnf.d'
     execute "Copy mdbci_server.cnf to cnf_template directory" do
       command copycmd
     end
 
     # /etc/mysql/my.cnf.d -- dir for *.cnf files
-    addlinecmd = 'echo "!includedir ' + node['mariadb']['cnf_template'] + '" >> /etc/mysql/my.cnf'
+    addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
     execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
       command addlinecmd
     end
@@ -148,14 +148,38 @@ case node[:platform_family]
   when "rhel", "fedora", "centos", "suse"
 
     # /etc/my.cnf.d -- dir for *.cnf files
-    copycmd = 'cp /vagrant/mdbci_server.cnf ' + node['mariadb']['cnf_template']
+    copycmd = 'cp '+ node['mariadb']['cnf_template_path'] + '/' + node['mariadb']['cnf_template'] + ' /etc/my.cnf.d'
     execute "Copy mdbci_server.cnf to cnf_template directory" do
       command copycmd
     end
 
     # TODO: check if line already exist !!!
-    addlinecmd = "replace '!includedir /etc/my.cnf.d' '!includedir " + node['mariadb']['cnf_template'] + "' -- /etc/my.cnf"
-    execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-      command addlinecmd
-    end
+    #addlinecmd = "replace '!includedir /etc/my.cnf.d' '!includedir " + node['mariadb']['cnf_template'] + "' -- /etc/my.cnf"
+    #execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
+    #  command addlinecmd
+    #end
+end
+
+# configure galera server.cnf file
+case node[:platform_family]
+
+  when "debian", "ubuntu"
+
+    # 1. find ###GALERA-LIB-PATH### and replace with proper path to libgalera_smm.so. use dpkg or yum for list package so libs
+    #galera_lib_path=$()
+    #sed -i "s/###GALERA-LIB-PATH###/$galera_lib_path/g" /etc/mysql/my.cnf.d/mdbci_server.cnf
+
+    # 2. find ###NODE-ADDRESS### and replace with private IP address
+    # (IP address of node for VBox/Qemu and output of curl http://169.254.169.254/latest/meta-data/local-ipv4 for AWS
+    #node_address=$()
+    #sed -i "s/###NODE-ADDRESS###/$node_address/g" /etc/mysql/my.cnf.d/mdbci_server.cnf
+
+    # 3. ###NODE-NAME### string have to be replaced with node name from node definition
+    #node_name=$()
+    #sed -i "s/###NODE-NAME###/$node_name/g" /etc/mysql/my.cnf.d/mdbci_server.cnf
+
+  when "rhel", "fedora", "centos", "suse"
+
+    # same as
+   
 end

@@ -13,4 +13,5 @@ default["mariadb"]["repo"] = "http://yum.mariadb.org/"
 default["mariadb"]["repo_key"] = " http://yum.mariadb.org/"
 
 # path for server.cnf file
-default["mariadb"]["cnf_template"] = " /etc/mysql/my.cnf.d/"
+default["mariadb"]["cnf_template"] = " server1.cnf"
+default["mariadb"]["cnf_template_path"] = " /cnf"

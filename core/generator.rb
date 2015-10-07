@@ -92,12 +92,13 @@ Vagrant.configure(2) do |config|
     IO.write(name, content)
   end
 
-  def Generator.getVmDef(cookbook_path, name, host, boxurl, vm_mem, provisioned)
+  def Generator.getVmDef(cookbook_path, name, host, boxurl, vm_mem, template_path, provisioned)
 
     if provisioned
       vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) +"\n" \
+            + "\t"+name+'.vm.synced_folder ' + quote(template_path) + " " + quote("/home/vagrant/cnf_templates") + "\n" \
             + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
@@ -105,7 +106,8 @@ Vagrant.configure(2) do |config|
     else
       vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
-            + "\t"+name+'.vm.hostname = ' + quote(host)
+            + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
+            + "\t"+name+'.vm.synced_folder ' + quote(template_path) + " " + quote("/home/vagrant/cnf_templates")
     end
 
     if vm_mem
@@ -187,6 +189,7 @@ def Generator.getRoleDef(name, product, box)
   config['repo_key'] = repo['repo_key']
   if !product['cnf_template'].nil?
     config['cnf_template'] = product['cnf_template']
+    config['cnf_template_path'] = product['cnf_template_path']
   end
   productConfig[product_name] = config
 
@@ -281,12 +284,14 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
     product = node[1]['product']
   end
 
+  template_path = node[1]['product']['cnf_template_path']
+
   # generate node definition and role
   machine = ''
   if Generator.boxValid?(box, boxes)
     case provider
       when 'virtualbox'
-        machine = getVmDef(cookbook_path, name, host, boxurl, vm_mem, provisioned)
+        machine = getVmDef(cookbook_path, name, host, boxurl, vm_mem, template_path, provisioned)
       when 'aws'
         machine = getAWSVmDef(cookbook_path, name, amiurl, user, instance, provisioned)
       else

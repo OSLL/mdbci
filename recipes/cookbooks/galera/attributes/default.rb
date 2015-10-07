@@ -1,4 +1,5 @@
 
 
 # path for server.cnf file
-default["galera"]["cnf_template"] = " /etc/mysql/my.cnf.d/"
+default["galera"]["cnf_template"] = " server1.cnf"
+default["galera"]["cnf_template_path"] = " /cnf"
