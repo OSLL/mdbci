@@ -98,7 +98,7 @@ Vagrant.configure(2) do |config|
       vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) +"\n" \
-            + "\t"+name+'.vm.synced_folder ' + quote(template_path) + " " + quote("/home/vagrant/cnf_templates") + "\n" \
+            + "\t"+name+'.vm.synced_folder ' + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + "\n" \
             + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
@@ -121,9 +121,11 @@ Vagrant.configure(2) do |config|
   end
 
   #
-  def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, instance_type, provisioned)
+  def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, instance_type, template_path, provisioned)
 
-    awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
+    awsdef = "config.vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync") + "\n" \
+
+    awsdef += "\n#  -> Begin definition for machine: " + name +"\n"\
            + "config.vm.define :"+ name +" do |" + name + "|\n" \
            + "\t" + name + ".vm.provider :aws do |aws,override|\n" \
            + "\t\taws.ami = " + quote(boxurl) + "\n"\
@@ -282,9 +284,8 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
 
   if (provisioned)
     product = node[1]['product']
+    template_path = product['cnf_template_path']
   end
-
-  template_path = node[1]['product']['cnf_template_path']
 
   # generate node definition and role
   machine = ''
@@ -293,7 +294,7 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
       when 'virtualbox'
         machine = getVmDef(cookbook_path, name, host, boxurl, vm_mem, template_path, provisioned)
       when 'aws'
-        machine = getAWSVmDef(cookbook_path, name, amiurl, user, instance, provisioned)
+        machine = getAWSVmDef(cookbook_path, name, amiurl, user, instance, template_path, provisioned)
       else
         $out.warning 'WARNING: Configuration has not support AWS, config file or other vm provision'
     end
