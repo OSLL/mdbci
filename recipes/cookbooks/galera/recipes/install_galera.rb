@@ -46,26 +46,26 @@ end
 # iptables rules
 case node[:platform_family]
   when "debian", "ubuntu", "rhel", "fedora", "centos", "suse"
-    bash 'Opening MariaDB ports' do
-    code <<-EOF
-      iptables -I INPUT -p tcp -m tcp --dport 4567 -j ACCEPT
-      iptables -I INPUT -p tcp -m tcp --dport 4568 -j ACCEPT
-      iptables -I INPUT -p tcp -m tcp --dport 4444 -j ACCEPT
-      iptables -I INPUT -p tcp -m tcp --dport 3306 -j ACCEPT
-      iptables -I INPUT -p tcp -m tcp --dport 4006 -j ACCEPT
-      iptables -I INPUT -p tcp -m tcp --dport 4008 -j ACCEPT
-      iptables -I INPUT -p tcp -m tcp --dport 4009 -j ACCEPT
-      iptables -I INPUT -p tcp -m tcp --dport 4442 -j ACCEPT
-      iptables -I INPUT -p tcp -m tcp --dport 6444 -j ACCEPT
-      iptables -I INPUT -m state --state RELATED,ESTABLISHED, -j ACEPT 
-      iptables -I INPUT -p tcp --dport 3306 -j ACCEPT -m state --state NEW
-      iptables -I INPUT -p tcp --dport 4006 -j ACCEPT -m state --state NEW
-      iptables -I INPUT -p tcp --dport 4008 -j ACCEPT -m state --state NEW
-      iptables -I INPUT -p tcp --dport 4009 -j ACCEPT -m state --state NEW
-      iptables -I INPUT -p tcp --dport 4442 -j ACCEPT -m state --state NEW
-      iptables -I INPUT -p tcp --dport 6444 -j ACCEPT -m state --state NEW
-    EOF
+
+    ports = ["4567", "4568", "4444", "3306", "4006", "4008", "4009", "4442", "6444"]
+    ports.each do |port|
+      iptables_cmd = "iptables -I INPUT -p tcp -m tcp --dport "+ port +" -j ACCEPT"
+      execute "Opening MariaDB ports." do
+        command iptables_cmd
+      end
     end
+
+    execute "Opening MariaDB ports.." do
+      command "iptables -I INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
+    end
+    
+    ports.each do |port|
+      iptables_cmd = "iptables -I INPUT -p tcp --dport "+ port +" -j ACCEPT -m state --state NEW"
+      execute "Opening MariaDB ports..." do
+        command iptables_cmd
+      end
+    end
+
 end # iptables rules
 
 # TODO: check saving iptables rules after reboot
@@ -175,7 +175,7 @@ case node[:platform_family]
       if [[ "$user" == "admin" || "$user" == "ubuntu" ]]; then
         node_address=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
       else
-        node_address=$(/sbin/ifconfig eth0 | grep "inet ")
+        node_address=$(/sbin/ifconfig eth0 | grep "inet " | grep -o -P '(?<=addr:).*(?=  Bcast)')
       fi
       echo "ADDR: $node_address"
       sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
@@ -186,17 +186,20 @@ case node[:platform_family]
 
   when "rhel", "fedora", "centos", "suse"
 
+    # this block run from "ROOT" 
+    # TODO: with execute and point user
     bash 'Configure Galera server.cnf' do
     code <<-EOF
       galera_lib_path=$(rpm -ql galera | grep so)
       sed -i "s|###GALERA-LIB-PATH###|$galera_lib_path|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
 
+      # RUN WITHOUT -- ROOT  !!!
       user=$(whoami)
       echo "USER: $user"
       if [[ "$user" == "ec2-user" || "$user" == "fedora" ]]; then
         node_address=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
       else
-        node_address=$(/sbin/ifconfig eth0 | grep "inet ")
+        node_address=$(/sbin/ifconfig eth0 | grep "inet " | grep -o -P '(?<=inet ).*(?=  netmask)')
       fi
       echo "ADDR: $node_address"
       sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
