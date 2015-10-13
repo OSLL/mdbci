@@ -1,6 +1,7 @@
 require 'json'
 require 'fileutils'
 require 'uri'
+require 'open3'
 
 require_relative 'generator'
 require_relative 'network'
@@ -21,6 +22,7 @@ class Session
   attr_accessor :repoDir
   attr_accessor :nodes
   attr_accessor :currentProvider   # current configuration provider
+  attr_accessor :attempts
 
   def initialize
     @repoDir = './repo.d'
@@ -210,4 +212,39 @@ class Session
     end
   end
 
+  # Deploy configurations
+  def up(args)
+    std_q_attampts = 4
+    std_err_val = 1
+
+    if args.nil?
+      $out.info 'Command \'up\' needs one argument, found zero'
+      return std_err_val
+    end
+
+    if @attempts.nil?
+      @attempts = std_q_attampts
+    end
+
+    pwd = Dir.pwd
+    config = args.split('/')
+    up_type = config.length > 1 ? true : false
+    Dir.chdir config[0]
+    (1..@attempts.to_i).each { |i|
+      $out.info 'Bringing up ' +
+                    (up_type ? 'node ' : 'configuration ') + args +
+                    ', attempt: ' + i.to_s
+      cmd = 'vagrant up --destroy-on-error ' + (up_type ? config[1]:'')
+      stdout, stderr, exit_status = Open3.capture3(cmd)
+      if exit_status.success?
+        $out.info 'Bringing up info: ' + stdout
+	Dir.chdir pwd
+        return 0
+      end
+      $out.info 'Bringing up failed'
+      $out.info stderr
+    }
+    Dir.chdir pwd
+    return std_err_val
+  end
 end
