@@ -167,17 +167,20 @@ case node[:platform_family]
 
     bash 'Configure Galera server.cnf' do
     code <<-EOF
-      lib_path=$(dpkg -L galera | grep so)
-      sed -i "s/###GALERA-LIB-PATH###/$lib_path/g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      lib_path="/usr/lib/galera/$(ls /usr/lib/galera | grep so)"
+      sed -i "s|###GALERA-LIB-PATH###|$lib_path|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
 
-      # for VBox
-      # TODO: check if machine is AWS and get it IP address
-      node_address=$(/sbin/ifconfig eth0 | grep "inet ")
-      sed -i "s/###NODE-ADDRESS###/$node_address/g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      user=$(whoami)
+      echo "USER: $user"
+      if [[ "$user" == "admin" || "$user" == "ubuntu" ]]; then
+        node_address=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+      else
+        node_address=$(/sbin/ifconfig eth0 | grep "inet ")
+      fi
+      echo "ADDR: $node_address"
+      sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
 
-      # TODO
-      node_name=$() # node name from node definition
-      sed -i "s/###NODE-NAME###/$node_name/g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 
@@ -186,15 +189,19 @@ case node[:platform_family]
     bash 'Configure Galera server.cnf' do
     code <<-EOF
       galera_lib_path=$(rpm -ql galera | grep so)
-      sed -i "s/###GALERA-LIB-PATH###/$galera_lib_path/g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      sed -i "s|###GALERA-LIB-PATH###|$galera_lib_path|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
 
-      # for VBox
-      # TODO: check if machine is AWS and get it IP address
-      node_address=$(/sbin/ifconfig eth0 | grep "inet ")
-      sed -i "s/###NODE-ADDRESS###/$node_address/g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      user=$(whoami)
+      echo "USER: $user"
+      if [[ "$user" == "ec2-user" || "$user" == "fedora" ]]; then
+        node_address=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+      else
+        node_address=$(/sbin/ifconfig eth0 | grep "inet ")
+      fi
+      echo "ADDR: $node_address"
+      sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
 
-      node_name=$() # node name from node definition
-      sed -i "s/###NODE-NAME###/$node_name/g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 
