@@ -54,6 +54,7 @@ case node[:platform_family]
       iptables -I INPUT -p tcp -m tcp --dport 5306 -j ACCEPT
       iptables -I INPUT -p tcp -m tcp --dport 4442 -j ACCEPT
       iptables -I INPUT -p tcp -m tcp --dport 6444 -j ACCEPT
+      iptables -I INPUT -p tcp -m tcp --dport 6603 -j ACCEPT
       iptables -I INPUT -m state --state RELATED,ESTABLISHED, -j ACEPT 
       iptables -I INPUT -p tcp --dport 3306 -j ACCEPT -m state --state NEW
       iptables -I INPUT -p tcp --dport 4006 -j ACCEPT -m state --state NEW
@@ -63,6 +64,7 @@ case node[:platform_family]
       iptables -I INPUT -p tcp --dport 5306 -j ACCEPT -m state --state NEW
       iptables -I INPUT -p tcp --dport 4442 -j ACCEPT -m state --state NEW
       iptables -I INPUT -p tcp --dport 6444 -j ACCEPT -m state --state NEW
+      iptables -I INPUT -p tcp --dport 6603 -j ACCEPT -m state --state NEW
     EOF
     end
 end # iptables rules
