@@ -231,18 +231,24 @@ class Session
     up_type = config.length > 1 ? true : false
     Dir.chdir config[0]
     (1..@attempts.to_i).each { |i|
+      $out.info 'Removing temporary file from previous try'
+      FileUtils.rm_rf(Dir.glob(File.expand_path('~') + '/.vagrant.d/tmp/*'))
       $out.info 'Bringing up ' +
                     (up_type ? 'node ' : 'configuration ') + args +
                     ', attempt: ' + i.to_s
       cmd = 'vagrant up --destroy-on-error ' + (up_type ? config[1]:'')
-      stdout, stderr, exit_status = Open3.capture3(cmd)
-      if exit_status.success?
-        $out.info 'Bringing up info: ' + stdout
-	Dir.chdir pwd
-        return 0
+      Open3.popen3(cmd) do |stdin, stdout, stderr, wthr|
+        stdin.close
+        stdout.each_line { |line| $out.info line }
+        stdout.close
+        if wthr.value.success?
+          Dir.chdir pwd
+          return 0
+        end
+        $out.error 'Bringing up failed'
+        stderr.each_line { |line| $out.error line }
+        stderr.close
       end
-      $out.info 'Bringing up failed'
-      $out.info stderr
     }
     Dir.chdir pwd
     return std_err_val
