@@ -234,6 +234,10 @@ class Session
       $out.info 'Bringing up ' +
                     (up_type ? 'node ' : 'configuration ') + args +
                     ', attempt: ' + i.to_s
+      $out.info 'Destroying current'
+      cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
+      exec_cmd_destr = `#{cmd_destr}`
+      $out.info exec_cmd_destr
       cmd = 'vagrant up --destroy-on-error ' + (up_type ? config[1]:'')
       Open3.popen3(cmd) do |stdin, stdout, stderr, wthr|
         stdin.close
