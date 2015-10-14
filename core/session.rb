@@ -231,8 +231,6 @@ class Session
     up_type = config.length > 1 ? true : false
     Dir.chdir config[0]
     (1..@attempts.to_i).each { |i|
-      $out.info 'Removing temporary file from previous try'
-      FileUtils.rm_rf(Dir.glob(File.expand_path('~') + '/.vagrant.d/tmp/*'))
       $out.info 'Bringing up ' +
                     (up_type ? 'node ' : 'configuration ') + args +
                     ', attempt: ' + i.to_s
