@@ -1,4 +1,5 @@
 require 'scanf'
+require 'yaml'
 
 require_relative  '../core/out'
 
@@ -46,7 +47,9 @@ class Node
         @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
       when '(aws)'
         if curlCheck
-          cmd = 'vagrant ssh '+@name+' -c "curl http://169.254.169.254/latest/meta-data/public-ipv4"'
+          aws_config = YAML.load_file("../aws-config.yml")['aws']
+          cmd = 'vagrant ssh '+@name+' -c "'+aws_config["elastic_ip_service"]+'"'
+          p "COMMAND: " + cmd
           vagrant_out = `#{cmd}`
           ip = vagrant_out.scanf('%s')
           @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')
