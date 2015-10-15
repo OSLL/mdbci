@@ -1,4 +1,5 @@
 require 'scanf'
+require 'yaml'
 
 require_relative  '../core/out'
 
@@ -40,13 +41,11 @@ class Node
         cmd = 'vagrant ssh '+@name+' -c "/sbin/ifconfig eth1 | grep \"inet \" "'
         vagrant_out = `#{cmd}`
         ip = vagrant_out.scanf('inet addr:%s Bcast')
-
         $out.info 'Node.GetIp '+cmd
-
         @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
       when '(aws)'
         if curlCheck
-          cmd = 'vagrant ssh '+@name+' -c "curl http://169.254.169.254/latest/meta-data/public-ipv4"'
+          cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["elastic_ip_service"]+'"'
           vagrant_out = `#{cmd}`
           ip = vagrant_out.scanf('%s')
           @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')
