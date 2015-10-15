@@ -166,23 +166,25 @@ case node[:platform_family]
   when "debian", "ubuntu"
 
     libpathcmd = 'sed -i "s|###GALERA-LIB-PATH###|/usr/lib/galera/$(ls /usr/lib/galera | grep so)|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node["galera"]["cnf_template"])}'
-    execute "Configure Galera server.cnf - LIB_PATH" do
+    execute "Configure Galera server.cnf - Get/Set Galera LIB_PATH" do
       command libpathcmd
     end
 
-    bash 'Configure Galera server.cnf - NODE_ADDRESS' do
-      user 'vagrant'
-      code <<-EOF
-      user=$(whoami)
-      echo "USER: $user"
-      if [[ "$user" == "admin" || "$user" == "ubuntu" ]]; then
+    provider = IO.read("vagrant/#{Shellwords.escape(node['galera']['cnf_template'])}_provider")
+    if provider == "aws"
+      bash 'Configure Galera server.cnf - Get AWS node IP address' do
+        code <<-EOF
         node_address=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
-      else
+        sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        EOF
+      end
+    elsif provider == "virtualbox"
+      bash 'Configure Galera server.cnf - Get Virtualbox node IP address' do
+        code <<-EOF
         node_address=$(/sbin/ifconfig eth1 | grep "inet " | grep -o -P '(?<=addr:).*(?=  Bcast)')
-      fi
-      echo "ADDR: $node_address"
-      sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
-      EOF
+        sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        EOF
+      end
     end
 
     nodenamecmd = 'sed -i "s|###NODE-NAME###|#{Shellwords.escape(node["galera"]["node_name"])}|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node["galera"]["cnf_template"])}'
@@ -192,54 +194,33 @@ case node[:platform_family]
 
   when "rhel", "fedora", "centos", "suse"
 
-    #libpathcmd = "sed -i \"s|###GALERA-LIB-PATH###|$(rpm -ql galera | grep so)|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}"
-    #execute "Configure Galera server.cnf - LIB_PATH" do
-    #  command libpathcmd
-    #end
-
-    bash 'Configure Galera server.cnf - NODE_LIBS' do
+    bash 'Configure Galera server.cnf - Get/Set Galera LIB_PATH' do
       code <<-EOF
       sed -i \"s|###GALERA-LIB-PATH###|$(rpm -ql galera | grep so)|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 
-    # TODO: this block run from "ROOT" - CHANGE USER !!!
-    bash 'Configure Galera server.cnf - NODE_ADDRESS' do
-      code <<-EOF
-      user=$(whoami)
-      if [[ "$user" == "ec2-user" || "$user" == "fedora" ]]; then
+    provider = IO.read("/vagrant/#{Shellwords.escape(node['galera']['node_name'])}_provider")
+    if provider == "aws"
+      bash 'Configure Galera server.cnf - Get AWS node IP address' do
+        code <<-EOF
         node_address=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
-      else
+        sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        EOF
+      end
+    elsif provider == "virtualbox"
+      bash 'Configure Galera server.cnf - Get Virtualbox node IP address' do
+        code <<-EOF
         node_address=$(/sbin/ifconfig eth1 | grep "inet " | grep -o -P '(?<=inet ).*(?=  netmask)')
-      fi
-      sed -i \"s|###NODE-ADDRESS###|$node_address|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
-      EOF
-      #not_if "sed -i \"s|###NODE-ADDRESS###|$node_address|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}", :user => 'root'
+        sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        EOF
+      end
     end
 
-    #getaddresscmd = "if [[ \"$(whoami)\" == \"ec2-user\" || \"$(whoami)\" == \"fedora\" ]]; then node['galera']['node_address']=$(curl http://169.254.169.254/latest/meta-data/public-ipv4) else node['galera']['node_address']=$(/sbin/ifconfig eth1 | grep \"inet \" | grep -o -P '(?<=inet ).*(?=  netmask)') fi"
-    #execute "Configure Galera server.cnf - GET NODE_ADDRESS" do
-    #  user 'vagrant'
-    #  command getaddresscmd
-    #end  
-
-    #nodeaddresscmd = "sed -i \"s|###NODE-ADDRESS###|#{Shellwords.escape(node['galera']['node_address'])}|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}"
-    #execute "Configure Galera server.cnf - SET NODE_ADDRESS" do
-    #  command nodeaddresscmd
-    #end  
-    #not_if "sed -i \"s|###NODE-ADDRESS###|$node_address|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}", :user => 'root'
-    #end
-
-    #nodenamecmd = "sed -i \"s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}"
-    #execute "Configure Galera server.cnf - NODE_NAME" do
-    #  command nodenamecmd
-    #send
-
-    bash 'Configure Galera server.cnf - NODE_NAME' do
+    bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
       code <<-EOF
       sed -i \"s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
-
 
 end
