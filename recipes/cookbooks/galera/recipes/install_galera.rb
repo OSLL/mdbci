@@ -170,7 +170,7 @@ case node[:platform_family]
       command libpathcmd
     end
 
-    provider = IO.read("vagrant/#{Shellwords.escape(node['galera']['cnf_template'])}_provider")
+    provider = IO.read("vagrant/#{Shellwords.escape(node['galera']['node_name'])}_provider")
     if provider == "aws"
       bash 'Configure Galera server.cnf - Get AWS node IP address' do
         code <<-EOF
