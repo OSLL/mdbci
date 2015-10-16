@@ -88,6 +88,30 @@ end # save iptables rules
 
 system 'echo Platform family: '+node[:platform_family]
 
+# Install default packages
+case node[:platform_family]
+  when "suse"
+    execute "install" do
+      command "zypper install netcat-openbsd rsync sudo"\
+        "sed coreutils util-linux curl grep findutils gawk socat iproute"
+    end
+  when "rhel", "fedora", "centos"
+    execute "install" do
+      command "yum install netcat-openbsd rsync sudo"\
+        "sed coreutils util-linux curl grep findutils gawk socat iproute"
+    end
+  else # debian
+    [
+      "netcat-openbsd", "rsync", "sudo", "sed", 
+      "coreutils", "util-linux", "curl", "grep", 
+      "findutils", "gawk", "socat", "iproute"
+    ].each do |pkg|
+        package pkg
+    end
+  else
+    package 'MariaDB-Galera-server'
+end
+
 
 # Install packages
 case node[:platform_family]
