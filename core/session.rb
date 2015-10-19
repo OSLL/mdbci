@@ -19,12 +19,12 @@ class Session
   attr_accessor :awsConfig
   attr_accessor :repos
   attr_accessor :repoDir
-  attr_accessor :nodes
-  attr_accessor :currentProvider   # current configuration provider
+  attr_accessor :mdbciNodes # mdbci nodes
+  attr_accessor :provider   # current configuration provider
 
   def initialize
     @repoDir = './repo.d'
-    @nodes = Hash.new
+    @mdbciNodes = Hash.new
   end
 
 =begin
@@ -41,6 +41,16 @@ class Session
 
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
+
+    $out.info 'Load nodes configuration from '+$session.configFile
+    @configs = JSON.parse(IO.read($session.configFile))
+
+    # TODO: Load vbox and aws nodes params to runtime variables
+
+    $out.info 'Load mdbci nodes configuration from '+$session.configFile
+    LoadMdbciNodes(@configs)
+    $out.info 'MDBCI nodes: ' + @mdbciNodes.to_s
+
   end
 
    def inspect
@@ -109,18 +119,25 @@ class Session
       return
     end
 
+    # TODO: check if one word
     params = args.split('/')
 
-    pwd = Dir.pwd
-    Dir.chdir params[0]
+    if @provider == "mdbci"
+      node = @mdbciNodes.find { |elem| elem.name == params[0]}
+      p "NODE params: " + node["IP"].to_s + ", " + node["user"].to_s
+      #cmd = 'ssh '+node["user"]+"@"+node["IP"]
+    else
+      pwd = Dir.pwd
+      Dir.chdir params[0]
+      cmd = 'vagrant ssh '+params[1]+' -c "'+$session.command+'"'
+      $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
 
-    cmd = 'vagrant ssh '+params[1]+' -c "'+$session.command+'"'
-    $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+      vagrant_out = `#{cmd}`
+      $out.out vagrant_out
 
-    vagrant_out = `#{cmd}`
-    $out.out vagrant_out
+      Dir.chdir pwd
+    end
 
-    Dir.chdir pwd
 
   end
 
@@ -169,20 +186,17 @@ class Session
   def LoadMdbciNodes(configs)
 
     mdbciConfig = Hash.new
-
     configs.each do |node|
       host = node[1]['hostname'].to_s
       box = node[1]['box'].to_s
       if !box.empty?
         box_params = boxes[box]
-        provider = box_params["provider"].to_s
-        if provider == "mdbci"
-          @currentProvider = provider.to_s
+        box_provider = box_params["provider"].to_s
+        if box_provider == @provider
           box_params.each do |key, value|
             mdbciConfig[key] = value
           end
-          $session.nodes[host] = mdbciConfig
-          $out.info 'MDBCI definition for host: '+host+', with parameters: ' + $session.nodes.to_s
+          @mdbciNodes[host] = mdbciConfig
         end
       end
     end
@@ -196,13 +210,11 @@ class Session
     else
       path +='/'+name.to_s
     end
-
-    @configs = JSON.parse(IO.read($session.configFile))
-    LoadMdbciNodes(configs)
+    #
     aws_config = $session.configs.find { |value| value.to_s.match(/aws_config/) }
     awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
-    if currentProvider != "mdbci"
+    if @provider != "mdbci"
       Generator.generate(path,configs,boxes,isOverride,awsConfig)
       $out.info 'Generating config in ' + path
     else

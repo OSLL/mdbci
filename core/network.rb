@@ -90,6 +90,7 @@ class Network
     args = name.split('/')
 
     network = Network.new
+    # если name из одного слова, то это имя ноды, если из двух слов то имя папки + имя ноды
     network.loadNodes args[0] # load nodes from dir
 
     if args[1].nil? # No node argument, show all config
