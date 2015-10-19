@@ -219,7 +219,19 @@ Product block definition looks like as an example:
     }
 ```
 
-If you want to use non standard configuration for box/product (for instance, you need to install centos6 package with mariadb to cenos7 with some particular version) you can use hard repo name link like 
+For Galera product defined some additional parameters for galera server.cnf configuration, for example:
+
+```
+    "product" : {
+      "name": "galera",
+      "version": "10.0",
+      "cnf_template" : "server1.cnf",
+      "cnf_template_path" : "../cnf",
+      "node_name" : "galera0"
+    }
+```
+
+If you want to use non standard configuration for box/product (for instance, you need to install centos6 package with mariadb to centos7 with some particular version) you can use hard repo name link like 
 
 ```
     "product" : {
@@ -241,6 +253,7 @@ This file contains parameters which are required for access to Amazon machines. 
 * region -- AWS region
 * pemfile -- pem file
 * user_data -- extra user parameters
+* elastic_ip_service -- curl to aws metadata for ip address
 
 Here is an example
 
@@ -252,7 +265,8 @@ aws:
    security_groups : [ 'default', 'vagrant' ]
    region : 'eu-west-1'	
    pemfile : '../maxscale.pem' 		# your private key
-   user_data : "#!/bin/bash\nsed -i -e 's/^Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers"		
+   user_data : "#!/bin/bash\nsed -i -e 's/^Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers"
+   elastic_ip_service : "curl http://169.254.169.254/latest/meta-data/public-ipv4"
 ```
 
 ### Box, products, versions
@@ -339,16 +353,19 @@ mdbci [options] <show | setup | generate>
   
   sudo --command 'command arguments' config/node
 
+  ssh --command 'command arguments' config/node
+
 ### Examples:
 
 Run command inside of VM
 
 ```
   ./mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
-```  
+  ./mdbci ssh --command "cat anaconda.syslog" T/node0 --silent
+```
   
 Show repos with using alternative repo.d repository
-```  
+```
   mdbci --repo-dir /home/testbed/config/repos show repos
 ```
   
@@ -370,6 +387,7 @@ More information about vagrant features could be found in [vagrant documentation
 
 * Project leader: Sergey Balandin
 * Developers:
+  * Alexander Kaluzhniy
   * Kirill Krinkin
   * Kirill Yudenok
    
