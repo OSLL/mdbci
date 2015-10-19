@@ -1,5 +1,33 @@
 include_recipe "galera::galera_repos"
 
+
+# Install default packages
+[
+  "rsync", "sudo", "sed", 
+  "coreutils", "util-linux", "curl", "grep", 
+  "findutils", "gawk", "iproute"
+].each do |pkg|
+  package pkg
+end
+case node[:platform_family]
+  when "rhel", "fedora", "centos"
+    package "wget"
+    if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0 
+      execute "add_socat_repo_cantos_ge6" do
+        command "wget -P /etc/yum.repos.d http://www.convirture.com/repos/definitions/rhel/6.x/convirt.repo"
+      end
+    else
+      execute "add_socat_repo_cantos_le5" do
+        command "wget -P /etc/yum.repos.d http://www.convirture.com/repos/definitions/rhel/5.x/convirt.repo"
+      end
+    end
+    package "nc"
+  else # debian, suse
+    package "netcat"
+end
+package"socat"
+
+
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0 
   execute "Turn off SElinux" do
@@ -87,30 +115,6 @@ end # save iptables rules
 
 
 system 'echo Platform family: '+node[:platform_family]
-
-# Install default packages
-case node[:platform_family]
-  when "suse"
-    execute "install" do
-      command "zypper install netcat-openbsd rsync sudo"\
-        "sed coreutils util-linux curl grep findutils gawk socat iproute"
-    end
-  when "rhel", "fedora", "centos"
-    execute "install" do
-      command "yum install netcat-openbsd rsync sudo"\
-        "sed coreutils util-linux curl grep findutils gawk socat iproute"
-    end
-  else # debian
-    [
-      "netcat-openbsd", "rsync", "sudo", "sed", 
-      "coreutils", "util-linux", "curl", "grep", 
-      "findutils", "gawk", "socat", "iproute"
-    ].each do |pkg|
-        package pkg
-    end
-  else
-    package 'MariaDB-Galera-server'
-end
 
 
 # Install packages

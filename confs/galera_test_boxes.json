@@ -1,0 +1,16 @@
+{
+  "centos6": 
+  {
+    "provider": "virtualbox",
+    "box": "bento/centos-6.7",
+    "platform": "centos",
+    "platform_version": "6"
+  },
+  "suse13": 
+  {
+    "provider": "virtualbox",
+    "box": "webhippie/opensuse-13.2",
+    "platform": "opensuse",
+    "platform_version": "13"
+  }
+}

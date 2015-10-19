@@ -1,0 +1,22 @@
+{
+	"node0" :
+	{
+		"hostname" : "centos6",
+		"box" : "centos6",
+		"product" : 
+		{ 
+			"name": "galera",
+			"version"  : "10.0"
+		}
+	},
+	"node1" :
+	{
+		"hostname" : "suse13",
+		"box" : "suse13",
+		"product" : 
+		{ 
+			"name": "galera",
+			"version"  : "10.1"
+		}
+	}
+}
