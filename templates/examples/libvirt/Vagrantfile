@@ -1,0 +1,75 @@
+# !! Generated content, do not edit !!
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  #config.vm.network "private_network", type: "dhcp"
+
+  #config.ssh.username = "root"
+  #config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
+  
+  config.vm.boot_timeout = 360
+
+  # testvm1
+  config.vm.define :vm1 do |node1|
+
+    #node1.vm.box = "ubuntu/trusty64"
+    node1.vm.box = "s3than/trusty64"
+    node1.vm.hostname = 'vm1'
+    # not a fan of the synced_folder feature
+    #node1.vm.synced_folder '.', '/vagrant', :disabled => true
+
+    # eth1
+    node1.vm.network "private_network", ip: "10.0.0.10"
+
+    node1.vm.synced_folder './', '/vagrant', type: 'rsync'
+
+    node1.vm.provider :libvirt do |qemu|
+      #qemu.memory = 256
+      #qemu.nested = true
+      qemu.driver = "qemu" # kvm
+      #qemu.connect_via_ssh = true
+      #qemu.username = "root"
+      #qemu.storage_pool_name = "default"
+    end
+
+    node1.vm.provision "chef_solo" do |chef| 
+	chef.cookbooks_path = "../../../recipes/cookbooks/"
+	chef.roles_path = "."
+	chef.add_role "node1"
+    end #<-- end of chef binding
+   
+  end  
+
+  # testvm2
+#  config.vm.define :testvm2 do |node2|
+#
+ #   node2.vm.box = "ubuntu/trusty64"
+ #   node2.vm.hostname = 'testvm2'
+    # not a fan of the synced_folder feature
+    #node2.vm.synced_folder '.', '/vagrant', :disabled => true
+
+    # (testvm2)eth1 === eth1(testvm1)
+    #node2.vm.network :private_network,
+    #  :ip => '169.2.2.2/24', # bogus IP so tha vagrant-libvirt can create virt_network
+    #  :auto_config => false,
+    #  :libvirt__forward_mode => 'veryisolated',
+    #  :libvirt__dhcp_enabled => false,
+    #  :libvirt__network_name => 'test_network'
+
+#    node2.vm.provider :libvirt do |domain|
+#      domain.memory = 256
+#      domain.driver = "qemu"
+#      #domain.nested = true
+#    end
+
+#    node2.vm.provision "chef_solo" do |chef| 
+#	chef.cookbooks_path = "recipes/cookbooks/"
+#	chef.roles_path = "."
+#	chef.add_role "node2"
+ #   end #<-- end of chef binding
+
+#  end
+
+end

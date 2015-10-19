@@ -1,0 +1,18 @@
+{
+  "name": "node1",
+  "default_attributes": {
+  },
+  "override_attributes": {
+    "mariadb": {
+      "version": "10.0",
+      "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.0/ubuntu trusty main",
+      "repo_key": "0xcbcb082a1bb943db"
+    }
+  },
+  "json_class": "Chef::Role",
+  "description": "MariaDb instance install and run",
+  "chef_type": "role",
+  "run_list": [
+    "recipe[mdbc]"
+  ]
+}
