@@ -25,6 +25,12 @@
     "platform": "ubuntu",
     "platform_version": "utopic"
   },
+  "qemu_precise32": {
+    "provider": "libvirt",
+    "box": "hashicorp/precise32",
+    "platform": "ubuntu",
+    "platform_version": "precise"
+  },
   "ubuntu_precise": {
     "provider": "virtualbox",
     "box": "chef/ubuntu-12.04",

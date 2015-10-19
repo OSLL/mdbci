@@ -21,7 +21,7 @@ class Session
   attr_accessor :repos
   attr_accessor :repoDir
   attr_accessor :nodes
-  attr_accessor :currentProvider   # current configuration provider
+  attr_accessor :nodesProvider   # current nodes provider
 
   def initialize
     @repoDir = './repo.d'
@@ -169,25 +169,16 @@ class Session
     end
   end
 
-  # load mdbci boxes parameters from boxes.json
-  def LoadMdbciNodes(configs)
+  # TODO: 1. function to get box_params by box: box_params = boxes[box]
+  # TODO: 2. function to load MDBCI boxes parameters from boxes.json
 
-    mdbciConfig = Hash.new
-
+  # Function to check boxes PROVIDER in instance.json
+  def LoadNodesProvider(configs)
     configs.each do |node|
-      host = node[1]['hostname'].to_s
       box = node[1]['box'].to_s
       if !box.empty?
         box_params = boxes[box]
-        provider = box_params["provider"].to_s
-        if provider == "mdbci"
-          @currentProvider = provider.to_s
-          box_params.each do |key, value|
-            mdbciConfig[key] = value
-          end
-          $session.nodes[host] = mdbciConfig
-          $out.info 'MDBCI definition for host: '+host+', with parameters: ' + $session.nodes.to_s
-        end
+        @nodesProvider = box_params["provider"].to_s
       end
     end
   end
@@ -202,12 +193,12 @@ class Session
     end
 
     @configs = JSON.parse(IO.read($session.configFile))
-    LoadMdbciNodes(configs)
+    LoadNodesProvider(configs)
     aws_config = $session.configs.find { |value| value.to_s.match(/aws_config/) }
     aws_config_param = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
-    if currentProvider != "mdbci"
-      Generator.generate(path,configs,boxes,isOverride,aws_config_param)
+    if nodesProvider != "mdbci"
+      Generator.generate(path,configs,boxes,isOverride,aws_config_param,nodesProvider)
       $out.info 'Generating config in ' + path
     else
       $out.info "Using mdbci ppc64 box definition ..."
