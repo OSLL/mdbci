@@ -1,7 +1,7 @@
 {
   "cookbook_path" : "recipes/cookbooks/",
   "aws_config" : "../aws-config.yml",
-  "node0" :
+  "node0" : 
   {
     "hostname" : "node0",
     "box" : "centos7",

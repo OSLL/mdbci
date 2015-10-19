@@ -125,7 +125,7 @@ The file boxes.json contains definitions of available boxes. His format is comme
 {
 
   ## Example of VirtualBox definition
-  "debian" : { ## Box name  
+  "debian" : { ## Box name
     "provider": "virtualbox",
     "box": "https://atlas.hashicorp.com/.../virtualbox.box", ## Box URL
     "platform": "debian",
@@ -134,11 +134,11 @@ The file boxes.json contains definitions of available boxes. His format is comme
   
   ## Example of AWS Box Definition
   "ubuntu_vivid": {
-    "provider": "aws",   
+    "provider": "aws",
     "ami": "ami-b1443fc6",  ## Amazon Image ID
     "user": "ubuntu",       ## User which will be used for access to the box
     "default_instance_type": "m3.medium",  ## Amazon instance type
-    "platform": "ubuntu",                 
+    "platform": "ubuntu",       
     "platform_version": "vivid"
   }
 }
@@ -260,9 +260,9 @@ Here is an example
 
 ```
 aws:
-   access_key_id : 'DFGKJDHLGSKJDFGGGGD'
-   secret_access_key : '4VI93857398SJJJU8347634lksdf834sfs'
-   keypair_name	: 'maxscale'
+   access_key_id : 'your_access_key_id_from_aws'
+   secret_access_key : 'your_secret_access_key_from_aws'
+   keypair_name	: 'your_keypair_name'
    security_groups : [ 'default', 'vagrant' ]
    region : 'eu-west-1'	
    pemfile : '../maxscale.pem' 		# your private key
