@@ -17,6 +17,7 @@ Following features are under development and will be available in the next versi
 * Support remote Linux systems as tager nodes
 * Support PPC boxes
 * Support qemu images
+* Support kvm
 
 ## Architecture
 
