@@ -1,6 +1,7 @@
 require 'json'
 require 'fileutils'
 require 'uri'
+require 'open3'
 
 require_relative 'generator'
 require_relative 'network'
@@ -22,6 +23,7 @@ class Session
   attr_accessor :repoDir
   attr_accessor :nodes
   attr_accessor :currentProvider   # current configuration provider
+  attr_accessor :attempts
 
   def initialize
     @repoDir = './repo.d'
@@ -214,4 +216,47 @@ class Session
     end
   end
 
+  # Deploy configurations
+  def up(args)
+    std_q_attampts = 4
+    std_err_val = 1
+
+    if args.nil?
+      $out.info 'Command \'up\' needs one argument, found zero'
+      return std_err_val
+    end
+
+    if @attempts.nil?
+      @attempts = std_q_attampts
+    end
+
+    pwd = Dir.pwd
+    config = args.split('/')
+    up_type = config.length > 1 ? true : false
+    Dir.chdir config[0]
+    (1..@attempts.to_i).each { |i|
+      $out.info 'Bringing up ' +
+                    (up_type ? 'node ' : 'configuration ') + args +
+                    ', attempt: ' + i.to_s
+      $out.info 'Destroying current'
+      cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
+      exec_cmd_destr = `#{cmd_destr}`
+      $out.info exec_cmd_destr
+      cmd = 'vagrant up --destroy-on-error ' + (up_type ? config[1]:'')
+      Open3.popen3(cmd) do |stdin, stdout, stderr, wthr|
+        stdin.close
+        stdout.each_line { |line| $out.info line }
+        stdout.close
+        if wthr.value.success?
+          Dir.chdir pwd
+          return 0
+        end
+        $out.error 'Bringing up failed'
+        stderr.each_line { |line| $out.error line }
+        stderr.close
+      end
+    }
+    Dir.chdir pwd
+    return std_err_val
+  end
 end
