@@ -217,29 +217,83 @@ class Session
     std_q_attampts = 4
     std_err_val = 1
 
+    # No arguments provided
     if args.nil?
       $out.info 'Command \'up\' needs one argument, found zero'
       return std_err_val
     end
 
+    # No attempts provided
     if @attempts.nil?
       @attempts = std_q_attampts
     end
 
+    # Installing vagrant plugin for aws
+    vagrant_plugin_aws_installed = `#{'vagrant plugin  list | grep vagrant-aws'}`
+    if vagrant_plugin_aws_installed.empty?
+      aws_plugin = 'vagrant plugin install vagrant-aws'
+      Open3.popen3(aws_plugin) do |stdin, stdout, stderr, wthr|
+        stdin.close
+        stdout.each_line { |line| $out.info line }
+        stdout.close
+        stderr.each_line { |line| $out.error line }
+        stderr.close
+      end
+    end
+
     pwd = Dir.pwd
-    config = args.split('/')
-    up_type = config.length > 1 ? true : false
-    Dir.chdir config[0]
+
+    # Separating config_path from node
+    config = []
+    node = ''
+    up_type = false # Means no node specified
+    paths = args.split('/') # Get array of dirs
+    # Get path to vagrant instance directory
+    config_path = paths[0, paths.length - 1].join('/')
+    if !config_path.empty?
+      # So there may be node specified
+      node = paths[paths.length - 1]
+      config[0] = config_path
+      config[1] = node
+      up_type = true # Node specified
+    end
+
+    # Checking if vagrant instance derictory exists
+    if Dir.exist?(config[0].to_s) # to_s in case of 'nil'
+      up_type = true # node specified
+      $out.info 'Node is specified ' + config[1] + ' in ' + config[0]
+    else
+      up_type = false # node not specified
+      $out.info 'Node isn\'t specified in ' + args
+    end
+
+    up_type ? Dir.chdir(config[0]) : Dir.chdir(args)
+
+    # Setting provider: VirtualBox, AWS, (,libvirt)
+    vagrant_file = IO.read('Vagrantfile')
+    aws_config = vagrant_file.match(/AWS Provider/)
+    if !aws_config.to_s.empty?
+      $session.currentProvider = 'aws'
+    end
+
+    if !$session.currentProvider.to_s.empty?
+      $out.info 'Current provider: ' + $session.currentProvider
+    else 
+      $out.info 'Current provider: virtualbox'
+    end
+
     (1..@attempts.to_i).each { |i|
-      $out.info 'Bringing up ' +
-                    (up_type ? 'node ' : 'configuration ') + args +
-                    ', attempt: ' + i.to_s
-      $out.info 'Destroying current'
+      $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') + 
+        args + ', attempt: ' + i.to_s
+      $out.info 'Destroying current instance'
       cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
       exec_cmd_destr = `#{cmd_destr}`
       $out.info exec_cmd_destr
-      cmd = 'vagrant up --destroy-on-error ' + (up_type ? config[1]:'')
-      Open3.popen3(cmd) do |stdin, stdout, stderr, wthr|
+      cmd_up = 'vagrant up --destroy-on-error ' + 
+        ($session.currentProvider.to_s.empty? ? '': '--provider=' + $session.currentProvider) + ' ' + 
+        (up_type ? config[1]:'')
+      $out.info 'Actual command: ' + cmd_up
+      Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
         stdin.close
         stdout.each_line { |line| $out.info line }
         stdout.close
