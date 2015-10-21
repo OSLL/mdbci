@@ -67,15 +67,34 @@ class Network
 
     args = name.split('/')
 
-    pwd = Dir.pwd
-    Dir.chdir args[0]
+    # TODO: 21/10 - move to separate function!
+    if File.exist?(args[0]+'/mdbci_config.ini')
+      templateFile = IO.read(args[0]+'/mdbci_config.ini')
+      template = JSON.parse(IO.read(templateFile))
+      $session.boxes = JSON.parse(IO.read($session.boxesFile))
+      # read configuration
+      if args[1].nil?     # read keyfile for all nodes
+        template.each do |node|
+          host = node[1]['hostname'].to_s
+          box = node[1]['box'].to_s
+          if !box.empty?
+            box_params = $session.boxes[box]
+            $out.out 'Node ' + host.to_s + " keyfile: " + box_params['keyfile'].to_s
+          end
+        end
+      else # read file for node args[1]
+        $out.out 'Not defined yet!'
+      end
+    else
+      pwd = Dir.pwd
+      Dir.chdir args[0]
 
-    cmd = 'vagrant ssh-config '+args[1]+ ' |grep IdentityFile '
-    vagrant_out = `#{cmd}`
+      cmd = 'vagrant ssh-config '+args[1]+ ' |grep IdentityFile '
+      vagrant_out = `#{cmd}`
+      $out.out vagrant_out.split(' ')[1]
 
-    $out.out vagrant_out.split(' ')[1]
-
-    Dir.chdir pwd
+      Dir.chdir pwd
+    end
   end
 
   def self.show(name)
@@ -89,19 +108,38 @@ class Network
 
     args = name.split('/')
 
-    network = Network.new
-    # если name из одного слова, то это имя ноды, если из двух слов то имя папки + имя ноды
-    network.loadNodes args[0] # load nodes from dir
+    # mdbci nodes
+    if File.exist?(args[0]+'/mdbci_config.ini')
+      templateFile = IO.read(args[0]+'/mdbci_config.ini')
+      template = JSON.parse(IO.read(templateFile))
+      $session.boxes = JSON.parse(IO.read($session.boxesFile))
+      # read configuration
+      if args[1].nil?     # read keyfile for all nodes
+        template.each do |node|
+          host = node[1]['hostname'].to_s
+          box = node[1]['box'].to_s
+          if !box.empty?
+            box_params = $session.boxes[box]
+            $out.out 'Node ' + host.to_s + " IP address: " + box_params['IP'].to_s
+          end
+        end
+      else # read file for node args[1]
+        $out.out 'Not defined yet!'
+      end
+    else # aws, vbox nodes
+      network = Network.new
+      network.loadNodes args[0] # load nodes from dir
 
-    if args[1].nil? # No node argument, show all config
-      network.nodes.each do |node|
+      if args[1].nil? # No node argument, show all config
+        network.nodes.each do |node|
+          node.getIp(node.provider)
+          $out.out(node.ip.to_s)
+        end
+      else
+        node = network.nodes.find { |elem| elem.name == args[1]}
         node.getIp(node.provider)
         $out.out(node.ip.to_s)
       end
-    else
-      node = network.nodes.find { |elem| elem.name == args[1]}
-      node.getIp(node.provider)
-      $out.out(node.ip.to_s)
     end
 
     Dir.chdir pwd

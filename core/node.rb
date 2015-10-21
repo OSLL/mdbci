@@ -53,8 +53,6 @@ class Node
         else
           installCurl
         end
-      when 'mdbci'
-        # out ip by node name !
       else
         $out.warning('WARNING: Unknown machine type!')
     end

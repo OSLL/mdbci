@@ -303,7 +303,7 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
   return machine
 end
 
-def Generator.generate(path, config, boxes, override, aws_config)
+def Generator.generate(path, config, boxes, override, aws_config,provider)
   #TODO Errors check
   #TODO MariaDb Version Validator
 
@@ -331,7 +331,6 @@ def Generator.generate(path, config, boxes, override, aws_config)
       $out.info 'Generate AWS Node definition for ['+node[0]+']'
       vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
     end
-
     vagrant.puts Generator.vagrantConfigFooter
   else
     # Generate VBox Configuration
@@ -344,7 +343,6 @@ def Generator.generate(path, config, boxes, override, aws_config)
         vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
       end
     end
-
     vagrant.puts Generator.vagrantConfigFooter
   end
 

@@ -19,8 +19,8 @@ class Session
   attr_accessor :awsConfig
   attr_accessor :repos
   attr_accessor :repoDir
-  attr_accessor :mdbciNodes # mdbci nodes
-  attr_accessor :provider   # current configuration provider
+  attr_accessor :mdbciNodes       # mdbci nodes
+  attr_accessor :nodesProvider    # current configuration provider
 
   def initialize
     @repoDir = './repo.d'
@@ -42,14 +42,9 @@ class Session
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
 
-    $out.info 'Load nodes configuration from '+$session.configFile
-    @configs = JSON.parse(IO.read($session.configFile))
 
     # TODO: Load vbox and aws nodes params to runtime variables
 
-    $out.info 'Load mdbci nodes configuration from '+$session.configFile
-    LoadMdbciNodes(@configs)
-    $out.info 'MDBCI nodes: ' + @mdbciNodes.to_s
 
   end
 
@@ -122,11 +117,30 @@ class Session
     # TODO: check if one word
     params = args.split('/')
 
-    if @provider == "mdbci"
-      node = @mdbciNodes.find { |elem| elem.name == params[0]}
-      p "NODE params: " + node["IP"].to_s + ", " + node["user"].to_s
-      #cmd = 'ssh '+node["user"]+"@"+node["IP"]
-    else
+    # mdbci nodes
+    if File.exist?(params[0]+'/mdbci_config.ini')
+      templateFile = IO.read(params[0]+'/mdbci_config.ini')
+      template = JSON.parse(IO.read(templateFile))
+      $session.boxes = JSON.parse(IO.read($session.boxesFile))
+      # read configuration
+      if params[1].nil?     # read keyfile for all nodes
+        template.each do |node|
+          host = node[1]['hostname'].to_s
+          box = node[1]['box'].to_s
+          if !box.empty?
+            box_params = $session.boxes[box]
+            $out.out 'SSH command: ssh -i ' + box_params['keyfile'].to_s + " "\
+                      + host.to_s + "@" + box_params['IP'].to_s + " "\
+                      + "'" + $session.command + "'"
+          end
+        end
+      else # read file for node args[1]
+        #node = template.find { |elem| elem.name == params[0] }
+        #p "NODE params: " + node["IP"].to_s + ", " + node["user"].to_s
+        #cmd = 'ssh '+node["user"]+"@"+node["IP"]
+        $out.out 'Not defined yet!'
+      end
+    else # aws, vbox nodes
       pwd = Dir.pwd
       Dir.chdir params[0]
       cmd = 'vagrant ssh '+params[1]+' -c "'+$session.command+'"'
@@ -183,21 +197,12 @@ class Session
   end
 
   # load mdbci boxes parameters from boxes.json
-  def LoadMdbciNodes(configs)
-
-    mdbciConfig = Hash.new
+  def LoadNodesProvider(configs)
     configs.each do |node|
-      host = node[1]['hostname'].to_s
       box = node[1]['box'].to_s
       if !box.empty?
         box_params = boxes[box]
-        box_provider = box_params["provider"].to_s
-        if box_provider == @provider
-          box_params.each do |key, value|
-            mdbciConfig[key] = value
-          end
-          @mdbciNodes[host] = mdbciConfig
-        end
+        @nodesProvider = box_params["provider"].to_s
       end
     end
   end
@@ -211,14 +216,22 @@ class Session
       path +='/'+name.to_s
     end
     #
-    aws_config = $session.configs.find { |value| value.to_s.match(/aws_config/) }
+    @configs = JSON.parse(IO.read($session.configFile))
+    LoadNodesProvider(configs)
+    #
+    aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
     awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
-    if @provider != "mdbci"
-      Generator.generate(path,configs,boxes,isOverride,awsConfig)
+    if @nodesProvider != "mdbci"
+      Generator.generate(path,configs,boxes,isOverride,awsConfig,nodesProvider)
       $out.info 'Generating config in ' + path
     else
-      $out.info "Using mdbci ppc64 box definition ..."
+      $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_config.ini"
+      # TODO: dir already exist?
+      Dir.mkdir path unless File.exists? path
+      mdbci = File.new(path+'/mdbci_config.ini', 'w')
+      mdbci.print $session.configFile
+      mdbci.close
     end
   end
 
