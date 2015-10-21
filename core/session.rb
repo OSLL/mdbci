@@ -228,19 +228,7 @@ class Session
       @attempts = std_q_attampts
     end
 
-    # Installing vagrant plugin for aws
-    vagrant_plugin_aws_installed = `#{'vagrant plugin  list | grep vagrant-aws'}`
-    if vagrant_plugin_aws_installed.empty?
-      aws_plugin = 'vagrant plugin install vagrant-aws'
-      Open3.popen3(aws_plugin) do |stdin, stdout, stderr, wthr|
-        stdin.close
-        stdout.each_line { |line| $out.info line }
-        stdout.close
-        stderr.each_line { |line| $out.error line }
-        stderr.close
-      end
-    end
-
+    # Saving dir, do then to change it back
     pwd = Dir.pwd
 
     # Separating config_path from node
@@ -270,17 +258,8 @@ class Session
     up_type ? Dir.chdir(config[0]) : Dir.chdir(args)
 
     # Setting provider: VirtualBox, AWS, (,libvirt)
-    vagrant_file = IO.read('Vagrantfile')
-    aws_config = vagrant_file.match(/AWS Provider/)
-    if !aws_config.to_s.empty?
-      $session.currentProvider = 'aws'
-    end
-
-    if !$session.currentProvider.to_s.empty?
-      $out.info 'Current provider: ' + $session.currentProvider
-    else 
-      $out.info 'Current provider: virtualbox'
-    end
+    @currentProvider = File.read('provider')
+    $out.info 'Current provider: ' + @currentProvider
 
     (1..@attempts.to_i).each { |i|
       $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') + 
@@ -289,8 +268,7 @@ class Session
       cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
       exec_cmd_destr = `#{cmd_destr}`
       $out.info exec_cmd_destr
-      cmd_up = 'vagrant up --destroy-on-error ' + 
-        ($session.currentProvider.to_s.empty? ? '': '--provider=' + $session.currentProvider) + ' ' + 
+      cmd_up = 'vagrant up --destroy-on-error ' + '--provider=' + @currentProvider + ' ' + 
         (up_type ? config[1]:'')
       $out.info 'Actual command: ' + cmd_up
       Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|

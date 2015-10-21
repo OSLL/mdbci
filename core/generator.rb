@@ -325,8 +325,10 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
     IO.write(roleFileName(path, name), role)
     #
     # write node provider to file for galera recipe
-    if product['name'] == "galera"
-      File.open(path+"/"+name.to_s+"_provider", 'w') { |f| f.write(provider.to_s) }
+    # all nodes must have only one same provider
+    privider_file = path+"/provider"
+    if !File.exist?(privider_file)
+      File.open(path+"/provider", 'w') { |f| f.write(provider.to_s) }
     end
   end
 
