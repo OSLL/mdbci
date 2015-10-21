@@ -44,27 +44,26 @@ end
 # iptables rules
 case node[:platform_family]
   when "debian", "ubuntu", "rhel", "fedora", "centos", "suse"
-    bash 'Opening MariaDB ports' do
-    code <<-EOF
-      iptables -I INPUT -p tcp -m tcp --dport 3306 -j ACCEPT
-      iptables -I INPUT -p tcp -m tcp --dport 4006 -j ACCEPT
-      iptables -I INPUT -p tcp -m tcp --dport 4008 -j ACCEPT
-      iptables -I INPUT -p tcp -m tcp --dport 4009 -j ACCEPT
-      iptables -I INPUT -p tcp -m tcp --dport 4016 -j ACCEPT
-      iptables -I INPUT -p tcp -m tcp --dport 5306 -j ACCEPT
-      iptables -I INPUT -p tcp -m tcp --dport 4442 -j ACCEPT
-      iptables -I INPUT -p tcp -m tcp --dport 6444 -j ACCEPT
-      iptables -I INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT 
-      iptables -I INPUT -p tcp --dport 3306 -j ACCEPT -m state --state NEW
-      iptables -I INPUT -p tcp --dport 4006 -j ACCEPT -m state --state NEW
-      iptables -I INPUT -p tcp --dport 4008 -j ACCEPT -m state --state NEW
-      iptables -I INPUT -p tcp --dport 4009 -j ACCEPT -m state --state NEW
-      iptables -I INPUT -p tcp --dport 4016 -j ACCEPT -m state --state NEW
-      iptables -I INPUT -p tcp --dport 5306 -j ACCEPT -m state --state NEW
-      iptables -I INPUT -p tcp --dport 4442 -j ACCEPT -m state --state NEW
-      iptables -I INPUT -p tcp --dport 6444 -j ACCEPT -m state --state NEW
-    EOF
+    
+    ports = ["3306", "4006", "4008", "4009", "4016", "5306", "4442", "6444", "6603"]
+    ports.each do |port|
+      iptables_cmd = "iptables -I INPUT -p tcp -m tcp --dport "+ port +" -j ACCEPT"
+      execute "Opening MariaDB-Maxscale ports." do
+        command iptables_cmd
+      end
     end
+
+    execute "Opening MariaDB-Maxscale ports.." do
+      command "iptables -I INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
+    end
+    
+    ports.each do |port|
+      iptables_cmd = "iptables -I INPUT -p tcp --dport "+ port +" -j ACCEPT -m state --state NEW"
+      execute "Opening MariaDB-Maxscale ports..." do
+        command iptables_cmd
+      end
+    end
+
 end # iptables rules
 
 # TODO: check saving iptables rules after reboot

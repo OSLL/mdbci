@@ -14,10 +14,11 @@ class Session
   attr_accessor :versions
   attr_accessor :configFile
   attr_accessor :boxesFile
+  attr_accessor :awsConfigFile
+  attr_accessor :awsConfig
   attr_accessor :isOverride
   attr_accessor :isSilent
   attr_accessor :command
-  attr_accessor :awsConfig
   attr_accessor :repos
   attr_accessor :repoDir
   attr_accessor :nodes
@@ -40,6 +41,9 @@ class Session
     $out.info 'Load boxes from ' + $session.boxesFile
     @boxes = JSON.parse(IO.read($session.boxesFile))
     $out.info 'Found boxes: ' + $session.boxes.size().to_s
+
+    $out.info 'Load AWS config from ' + @awsConfigFile
+    @awsConfig = YAML.load_file(@awsConfigFile)['aws']
 
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
@@ -202,10 +206,10 @@ class Session
     @configs = JSON.parse(IO.read($session.configFile))
     LoadMdbciNodes(configs)
     aws_config = $session.configs.find { |value| value.to_s.match(/aws_config/) }
-    awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
+    aws_config_param = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if currentProvider != "mdbci"
-      Generator.generate(path,configs,boxes,isOverride,awsConfig)
+      Generator.generate(path,configs,boxes,isOverride,aws_config_param)
       $out.info 'Generating config in ' + path
     else
       $out.info "Using mdbci ppc64 box definition ..."

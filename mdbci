@@ -22,6 +22,7 @@ opts = GetoptLong.new(
 $session = Session.new
 $session.configFile='instance.json'
 $session.boxesFile='boxes.json'
+$session.awsConfigFile='aws-config.yml'
 
 $out = Out.new
 

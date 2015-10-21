@@ -58,9 +58,13 @@ MDBCI uses vagrant with set of plugins as the VM backend manager. It's written w
 #apt-get install virtualbox-4.3
 
 #apt-get install ruby
+#apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev
 #wget https://dl.bintray.com/mitchellh/vagrant/vagrant_1.7.2_x86_64.deb
 #dpkg -i vagrant_1.7.2_x86_64.deb
 #vagrant plugin install vagrant-vbguest
+#vagrant plugin install vagrant-aws
+#vagrant plugin install vagrant-libvirt
+#vagrant plugin install vagrant-mutate
 </pre>
 
 #### Install mdbci
@@ -125,7 +129,7 @@ The file boxes.json contains definitions of available boxes. His format is comme
 {
 
   ## Example of VirtualBox definition
-  "debian" : { ## Box name  
+  "debian" : { ## Box name
     "provider": "virtualbox",
     "box": "https://atlas.hashicorp.com/.../virtualbox.box", ## Box URL
     "platform": "debian",
@@ -134,11 +138,11 @@ The file boxes.json contains definitions of available boxes. His format is comme
   
   ## Example of AWS Box Definition
   "ubuntu_vivid": {
-    "provider": "aws",   
+    "provider": "aws",
     "ami": "ami-b1443fc6",  ## Amazon Image ID
     "user": "ubuntu",       ## User which will be used for access to the box
     "default_instance_type": "m3.medium",  ## Amazon instance type
-    "platform": "ubuntu",                 
+    "platform": "ubuntu",       
     "platform_version": "vivid"
   }
 }
@@ -220,7 +224,19 @@ Product block definition looks like as an example:
     }
 ```
 
-If you want to use non standard configuration for box/product (for instance, you need to install centos6 package with mariadb to cenos7 with some particular version) you can use hard repo name link like 
+For Galera product defined some additional parameters for galera server.cnf configuration, for example:
+
+```
+    "product" : {
+      "name": "galera",
+      "version": "10.0",
+      "cnf_template" : "server1.cnf",
+      "cnf_template_path" : "../cnf",
+      "node_name" : "galera0"
+    }
+```
+
+If you want to use non standard configuration for box/product (for instance, you need to install centos6 package with mariadb to centos7 with some particular version) you can use hard repo name link like 
 
 ```
     "product" : {
@@ -242,18 +258,20 @@ This file contains parameters which are required for access to Amazon machines. 
 * region -- AWS region
 * pemfile -- pem file
 * user_data -- extra user parameters
+* elastic_ip_service -- curl to aws metadata for ip address
 
 Here is an example
 
 ```
 aws:
-   access_key_id : 'DFGKJDHLGSKJDFGGGGD'
-   secret_access_key : '4VI93857398SJJJU8347634lksdf834sfs'
-   keypair_name	: 'maxscale'
+   access_key_id : 'your_access_key_id_from_aws'
+   secret_access_key : 'your_secret_access_key_from_aws'
+   keypair_name	: 'your_keypair_name'
    security_groups : [ 'default', 'vagrant' ]
    region : 'eu-west-1'	
    pemfile : '../maxscale.pem' 		# your private key
-   user_data : "#!/bin/bash\nsed -i -e 's/^Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers"		
+   user_data : "#!/bin/bash\nsed -i -e 's/^Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers"
+   elastic_ip_service : "curl http://169.254.169.254/latest/meta-data/public-ipv4"
 ```
 
 ### Box, products, versions
@@ -340,16 +358,19 @@ mdbci [options] <show | setup | generate>
   
   sudo --command 'command arguments' config/node
 
+  ssh --command 'command arguments' config/node
+
 ### Examples:
 
 Run command inside of VM
 
 ```
   ./mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
-```  
+  ./mdbci ssh --command "cat anaconda.syslog" T/node0 --silent
+```
   
 Show repos with using alternative repo.d repository
-```  
+```
   mdbci --repo-dir /home/testbed/config/repos show repos
 ```
   
@@ -371,6 +392,7 @@ More information about vagrant features could be found in [vagrant documentation
 
 * Project leader: Sergey Balandin
 * Developers:
+  * Alexander Kaluzhniy
   * Kirill Krinkin
   * Kirill Yudenok
    
