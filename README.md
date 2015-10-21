@@ -58,9 +58,13 @@ MDBCI uses vagrant with set of plugins as the VM backend manager. It's written w
 #apt-get install virtualbox-4.3
 
 #apt-get install ruby
+#apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev
 #wget https://dl.bintray.com/mitchellh/vagrant/vagrant_1.7.2_x86_64.deb
 #dpkg -i vagrant_1.7.2_x86_64.deb
 #vagrant plugin install vagrant-vbguest
+#vagrant plugin install vagrant-aws
+#vagrant plugin install vagrant-libvirt
+#vagrant plugin install vagrant-mutate
 </pre>
 
 #### Install mdbci
