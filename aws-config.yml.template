@@ -9,4 +9,4 @@ aws:
    region : 'xxxxxxxxxx'	# your AWS region
    pemfile : 'xxxxxxxxxxxxxxxx' # your private key
    user_data : 'xxxxxxx'	# your command, that you want to run in ami
-   elastic_ip_service : "curl http://169.254.169.254/latest/meta-data/public-ipv4"			# service for getting aws ip address
+   private_ip_service : "curl http://169.254.169.254/latest/meta-data/public-ipv4"	# service for getting aws ip address

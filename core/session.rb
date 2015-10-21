@@ -13,15 +13,16 @@ class Session
   attr_accessor :versions
   attr_accessor :configFile
   attr_accessor :boxesFile
-  attr_accessor :awsConfigFile
-  attr_accessor :awsConfig
+  attr_accessor :awsConfigFile    # aws-config.yml file
+  attr_accessor :awsConfig        # aws-config parameters
+  attr_accessor :awsConfigOption  # aws-config option from template.json
   attr_accessor :isOverride
   attr_accessor :isSilent
   attr_accessor :command
   attr_accessor :repos
   attr_accessor :repoDir
-  attr_accessor :nodes
-  attr_accessor :nodesProvider   # current nodes provider
+  attr_accessor :nodes            #
+  attr_accessor :nodesProvider    # current nodes provider from configuration
 
   def initialize
     @repoDir = './repo.d'
@@ -30,7 +31,9 @@ class Session
 
 =begin
      Load collections from json files:
-      - boxes.json.json
+      - boxes.json
+      - template.json
+      - aws-config.yml
       - versions.json
 =end
 
@@ -194,13 +197,15 @@ class Session
 
     @configs = JSON.parse(IO.read($session.configFile))
     LoadNodesProvider(configs)
-    aws_config = $session.configs.find { |value| value.to_s.match(/aws_config/) }
-    aws_config_param = aws_config.to_s.empty? ? '' : aws_config[1].to_s
+
+    aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
+    @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if nodesProvider != "mdbci"
-      Generator.generate(path,configs,boxes,isOverride,aws_config_param,nodesProvider)
+      Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
+      # TODO: create dir with node_config and file with provider
       $out.info "Using mdbci ppc64 box definition ..."
     end
   end

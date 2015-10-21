@@ -360,7 +360,7 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
   return machine
 end
 
-def Generator.generate(path, config, boxes, override, aws_config, provider)
+def Generator.generate(path, config, boxes, override, provider)
   #TODO Errors check
   #TODO MariaDb Version Validator
 
@@ -378,9 +378,9 @@ def Generator.generate(path, config, boxes, override, aws_config, provider)
 
   vagrant.puts vagrantFileHeader
 
-  unless (aws_config.to_s.empty?)
+  unless ($session.awsConfigOption.to_s.empty?)
     # Generate AWS Configuration
-    vagrant.puts Generator.awsProviderConfigImport(aws_config)
+    vagrant.puts Generator.awsProviderConfigImport($session.awsConfigOption)
     vagrant.puts Generator.vagrantConfigHeader
 
     vagrant.puts Generator.awsProviderConfig
