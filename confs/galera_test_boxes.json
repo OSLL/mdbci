@@ -1,16 +1,18 @@
 {
-  "centos6": 
-  {
-    "provider": "virtualbox",
-    "box": "bento/centos-6.7",
-    "platform": "centos",
-    "platform_version": "6"
+  "ubuntu_vivid": {
+    "provider": "aws",
+    "ami": "ami-b1443fc6",
+    "user": "ubuntu",
+    "default_instance_type": "m3.medium",
+    "platform": "ubuntu",
+    "platform_version": "vivid"
   },
-  "suse13": 
-  {
-    "provider": "virtualbox",
-    "box": "webhippie/opensuse-13.2",
-    "platform": "opensuse",
-    "platform_version": "13"
+  "centos7" : {
+    "provider": "aws",
+    "ami": "ami-1c2e8b6b",
+    "user": "ec2-user",
+    "default_instance_type": "t1.micro",
+    "platform": "centos",
+    "platform_version": "7"
   }
 }
