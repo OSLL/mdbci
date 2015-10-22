@@ -35,7 +35,7 @@ class Node
     end
   end
 
-  def getIp(provider)
+  def getIp(provider, isPrivate)
     case provider
       when '(virtualbox)'
         cmd = 'vagrant ssh '+@name+' -c "/sbin/ifconfig eth1 | grep \"inet \" "'
@@ -45,7 +45,11 @@ class Node
         @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
       when '(aws)'
         if curlCheck
-          cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["elastic_ip_service"]+'"'
+          if isPrivate
+            cmd = 'vagrant ssh '+@name+' -c "/sbin/ifconfig eth0 | grep \"inet \" "'
+          else
+            cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["elastic_ip_service"]+'"'
+          end
           vagrant_out = `#{cmd}`
           ip = vagrant_out.scanf('%s')
           @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')

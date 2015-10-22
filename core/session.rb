@@ -20,12 +20,12 @@ class Session
   attr_accessor :command
   attr_accessor :repos
   attr_accessor :repoDir
-  attr_accessor :nodes
-  attr_accessor :currentProvider   # current configuration provider
+  attr_accessor :mdbciNodes       # mdbci nodes
+  attr_accessor :nodesProvider   # current configuration provider
 
   def initialize
     @repoDir = './repo.d'
-    @nodes = Hash.new
+    @mdbciNodes = Hash.new
   end
 
 =begin
@@ -103,6 +103,14 @@ class Session
     Dir.chdir pwd
   end
 
+  # load mdbci nodes
+  def loadMdbciNodes(path)
+    templateFile = IO.read(path+'/mdbci_config.ini')
+    $out.info 'Read template file ' + templateFile.to_s
+    @mdbciNodes = JSON.parse(IO.read(templateFile))
+    $session.boxes = JSON.parse(IO.read($session.boxesFile))
+  end
+
   # ./mdbci ssh command for AWS and VBox machines
   #     VBox, AWS: mdbci ssh --command "touch file.txt" config_dir/node0 --silent
   # TODO: for PPC64 box - execute ssh -i keyfile.pem user@ip
@@ -127,6 +135,7 @@ class Session
     Dir.chdir pwd
 
   end
+
 
   def platformKey(box_name)
     key = @boxes.keys.select {|value| value == box_name }
@@ -158,6 +167,9 @@ class Session
       when 'network'
         Network.show(ARGV.shift)
 
+      when 'private_ip'
+        Network.private_ip(ARGV.shift)
+
       when 'keyfile'
         Network.showKeyFile(ARGV.shift)
 
@@ -170,24 +182,12 @@ class Session
   end
 
   # load mdbci boxes parameters from boxes.json
-  def LoadMdbciNodes(configs)
-
-    mdbciConfig = Hash.new
-
+  def LoadNodesProvider(configs)
     configs.each do |node|
-      host = node[1]['hostname'].to_s
       box = node[1]['box'].to_s
       if !box.empty?
         box_params = boxes[box]
-        provider = box_params["provider"].to_s
-        if provider == "mdbci"
-          @currentProvider = provider.to_s
-          box_params.each do |key, value|
-            mdbciConfig[key] = value
-          end
-          $session.nodes[host] = mdbciConfig
-          $out.info 'MDBCI definition for host: '+host+', with parameters: ' + $session.nodes.to_s
-        end
+        @nodesProvider = box_params["provider"].to_s
       end
     end
   end
@@ -200,17 +200,23 @@ class Session
     else
       path +='/'+name.to_s
     end
-
+#
     @configs = JSON.parse(IO.read($session.configFile))
-    LoadMdbciNodes(configs)
-    aws_config = $session.configs.find { |value| value.to_s.match(/aws_config/) }
-    aws_config_param = aws_config.to_s.empty? ? '' : aws_config[1].to_s
-    #
-    if currentProvider != "mdbci"
-      Generator.generate(path,configs,boxes,isOverride,aws_config_param)
+    LoadNodesProvider(configs)
+#
+    aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
+    awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
+#
+    if @nodesProvider != "mdbci"
+      Generator.generate(path,configs,boxes,isOverride,awsConfig,nodesProvider)
       $out.info 'Generating config in ' + path
     else
-      $out.info "Using mdbci ppc64 box definition ..."
+      $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_config.ini"
+      # TODO: dir already exist?
+      Dir.mkdir path unless File.exists? path
+      mdbci = File.new(path+'/mdbci_config.ini', 'w')
+      mdbci.print $session.configFile
+      mdbci.close
     end
   end
 
