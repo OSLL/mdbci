@@ -104,9 +104,17 @@ class Session
     Dir.chdir pwd
   end
 
-  # ./mdbci ssh command for AWS and VBox machines
-  #     VBox, AWS: mdbci ssh --command "touch file.txt" config_dir/node0 --silent
-  # TODO: for PPC64 box - execute ssh -i keyfile.pem user@ip
+  # load mdbci nodes
+  def loadMdbciNodes(path)
+    templateFile = IO.read(path+'/mdbci_config.ini')
+    $out.info 'Read template file ' + templateFile.to_s
+    @mdbciNodes = JSON.parse(IO.read(templateFile))
+    $session.boxes = JSON.parse(IO.read($session.boxesFile))
+  end
+
+  # ./mdbci ssh command for AWS, VBox and PPC64 machines
+  #     VBox, AWS: ./mdbci ssh --command "touch file.txt" config_dir/node0 --silent
+  #     MDBCI PPC64: ./mdbci ssh --command "touch file.txt" config_dir or config_dir/node0
   def ssh(args)
 
     if args.nil?
@@ -114,31 +122,38 @@ class Session
       return
     end
 
-    # TODO: check if one word
     params = args.split('/')
 
-    # mdbci nodes
+    # mdbci ppc64 boxes
     if File.exist?(params[0]+'/mdbci_config.ini')
-      templateFile = IO.read(params[0]+'/mdbci_config.ini')
-      template = JSON.parse(IO.read(templateFile))
-      $session.boxes = JSON.parse(IO.read($session.boxesFile))
-      # read configuration
-      if params[1].nil?     # read keyfile for all nodes
-        template.each do |node|
-          host = node[1]['hostname'].to_s
+      loadMdbciNodes params[0]
+      if params[1].nil?     # ssh for all nodes
+        @mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           if !box.empty?
-            box_params = $session.boxes[box]
-            $out.out 'SSH command: ssh -i ' + box_params['keyfile'].to_s + " "\
-                      + host.to_s + "@" + box_params['IP'].to_s + " "\
-                      + "'" + $session.command + "'"
+            mdbci_box_params = $session.boxes[box]
+            cmd = 'ssh -i ' + mdbci_box_params['keyfile'].to_s + " "\
+                            + mdbci_box_params['user'].to_s + "@"\
+                            + mdbci_box_params['IP'].to_s + " "\
+                            + "'" + $session.command + "'"
+            $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+            vagrant_out = `#{cmd}`
+            $out.out vagrant_out
           end
         end
-      else # read file for node args[1]
-        #node = template.find { |elem| elem.name == params[0] }
-        #p "NODE params: " + node["IP"].to_s + ", " + node["user"].to_s
-        #cmd = 'ssh '+node["user"]+"@"+node["IP"]
-        $out.out 'Not defined yet!'
+      else
+        mdbci_node = @mdbciNodes.find { |elem| elem[1]['hostname'].to_s == params[1] }
+        box = mdbci_node[1]['box'].to_s
+        if !box.empty?
+          mdbci_params = $session.boxes[box]
+          cmd = 'ssh -i ' + mdbci_params['keyfile'].to_s + " "\
+                          + mdbci_params['user'].to_s + "@"\
+                          + mdbci_params['IP'].to_s + " "\
+                          + "'" + $session.command + "'"
+          $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+          vagrant_out = `#{cmd}`
+          $out.out vagrant_out
+        end
       end
     else # aws, vbox nodes
       pwd = Dir.pwd

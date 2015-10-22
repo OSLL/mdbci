@@ -67,14 +67,11 @@ class Network
 
     args = name.split('/')
 
-    # TODO: 21/10 - move to separate function!
+    # mdbci ppc64 boxes
     if File.exist?(args[0]+'/mdbci_config.ini')
-      templateFile = IO.read(args[0]+'/mdbci_config.ini')
-      template = JSON.parse(IO.read(templateFile))
-      $session.boxes = JSON.parse(IO.read($session.boxesFile))
-      # read configuration
-      if args[1].nil?     # read keyfile for all nodes
-        template.each do |node|
+      $session.loadMdbciNodes args[0]
+      if args[1].nil?
+        $session.mdbciNodes.each do |node|
           host = node[1]['hostname'].to_s
           box = node[1]['box'].to_s
           if !box.empty?
@@ -82,8 +79,13 @@ class Network
             $out.out 'Node ' + host.to_s + " keyfile: " + box_params['keyfile'].to_s
           end
         end
-      else # read file for node args[1]
-        $out.out 'Not defined yet!'
+      else
+        mdbci_node = $session.mdbciNodes.find { |elem| elem[1]['hostname'].to_s == args[1] }
+        box = mdbci_node[1]['box'].to_s
+        if !box.empty?
+          mdbci_params = $session.boxes[box]
+          $out.out 'User ' + mdbci_params['user'].to_s + ' keyfile: ' + mdbci_params['keyfile'].to_s
+        end
       end
     else
       pwd = Dir.pwd
@@ -108,12 +110,9 @@ class Network
 
     args = name.split('/')
 
-    # mdbci nodes
+    # mdbci ppc64 boxes
     if File.exist?(args[0]+'/mdbci_config.ini')
-      templateFile = IO.read(args[0]+'/mdbci_config.ini')
-      template = JSON.parse(IO.read(templateFile))
-      $session.boxes = JSON.parse(IO.read($session.boxesFile))
-      # read configuration
+      $session.loadMdbciNodes args[0]
       if args[1].nil?     # read keyfile for all nodes
         template.each do |node|
           host = node[1]['hostname'].to_s
@@ -123,8 +122,13 @@ class Network
             $out.out 'Node ' + host.to_s + " IP address: " + box_params['IP'].to_s
           end
         end
-      else # read file for node args[1]
-        $out.out 'Not defined yet!'
+      else
+        mdbci_node = $session.mdbciNodes.find { |elem| elem[1]['hostname'].to_s == args[1] }
+        box = mdbci_node[1]['box'].to_s
+        if !box.empty?
+          mdbci_params = $session.boxes[box]
+          $out.out 'User ' + mdbci_params['user'].to_s + ' IP address: ' + mdbci_params['IP'].to_s
+        end
       end
     else # aws, vbox nodes
       network = Network.new
