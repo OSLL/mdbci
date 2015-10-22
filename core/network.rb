@@ -76,7 +76,8 @@ class Network
           box = node[1]['box'].to_s
           if !box.empty?
             box_params = $session.boxes[box]
-            $out.out 'Node ' + host.to_s + " keyfile: " + box_params['keyfile'].to_s
+            $out.out 'Node: ' + host.to_s
+            $out.out "Keyfile: " + box_params['keyfile'].to_s
           end
         end
       else
@@ -84,7 +85,7 @@ class Network
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
-          $out.out 'User ' + mdbci_params['user'].to_s + ' keyfile: ' + mdbci_params['keyfile'].to_s
+          $out.out 'Keyfile: ' + mdbci_params['keyfile'].to_s
         end
       end
     else
@@ -113,13 +114,14 @@ class Network
     # mdbci ppc64 boxes
     if File.exist?(args[0]+'/mdbci_config.ini')
       $session.loadMdbciNodes args[0]
-      if args[1].nil?     # read keyfile for all nodes
-        template.each do |node|
+      if args[1].nil?
+        $session.mdbciNodes.each do |node|
           host = node[1]['hostname'].to_s
           box = node[1]['box'].to_s
           if !box.empty?
             box_params = $session.boxes[box]
-            $out.out 'Node ' + host.to_s + " IP address: " + box_params['IP'].to_s
+            $out.out 'Node: ' + host.to_s
+            $out.out "IP: " + box_params['IP'].to_s
           end
         end
       else
@@ -127,7 +129,7 @@ class Network
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
-          $out.out 'User ' + mdbci_params['user'].to_s + ' IP address: ' + mdbci_params['IP'].to_s
+          $out.out 'IP: ' + mdbci_params['IP'].to_s
         end
       end
     else # aws, vbox nodes
