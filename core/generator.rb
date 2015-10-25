@@ -230,12 +230,16 @@ def Generator.getRoleDef(name, product, box)
 
   config = Hash.new
 
+  # edit recipe attributes in role
   config['version'] = repo['version']
   config['repo'] = repo['repo']
   config['repo_key'] = repo['repo_key']
   if !product['cnf_template'].nil? && !product['cnf_template_path'].nil?
     config['cnf_template'] = product['cnf_template']
     config['cnf_template_path'] = product['cnf_template_path']
+  end
+  if !product['node_name'].nil?
+    config['node_name'] = product['node_name']
   end
   productConfig[product_name] = config
 
@@ -355,6 +359,13 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
     $out.info 'Machine '+name+' is provisioned by '+product.to_s
     role = getRoleDef(name, product, box)
     IO.write(roleFileName(path, name), role)
+    #
+    # write node provider to file for galera recipe
+    # all nodes must have only one same provider
+    privider_file = path+"/provider"
+    if !File.exist?(privider_file)
+      File.open(path+"/provider", 'w') { |f| f.write(provider.to_s) }
+    end
   end
 
   return machine

@@ -1,3 +1,5 @@
+require 'shellwords'
+
 include_recipe "galera::galera_repos"
 
 # Turn off SElinux
@@ -44,7 +46,7 @@ end
 # iptables rules
 case node[:platform_family]
   when "debian", "ubuntu", "rhel", "fedora", "centos", "suse"
-    
+
     ports = ["4567", "4568", "4444", "3306", "4006", "4008", "4009", "4442", "6444"]
     ports.each do |port|
       iptables_cmd = "iptables -I INPUT -p tcp -m tcp --dport "+ port +" -j ACCEPT"
@@ -163,21 +165,64 @@ case node[:platform_family]
 
   when "debian", "ubuntu"
 
-    # 1. find ###GALERA-LIB-PATH### and replace with proper path to libgalera_smm.so. use dpkg or yum for list package so libs
-    #galera_lib_path=$()
-    #sed -i "s/###GALERA-LIB-PATH###/$galera_lib_path/g" /etc/mysql/my.cnf.d/mdbci_server.cnf
+    bash 'Configure Galera server.cnf - Get/Set Galera LIB_PATH' do
+      code <<-EOF
+      sed -i "s|###GALERA-LIB-PATH###|/usr/lib/galera/$(ls /usr/lib/galera | grep so)|g\" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      EOF
+    end
 
-    # 2. find ###NODE-ADDRESS### and replace with private IP address
-    # (IP address of node for VBox/Qemu and output of curl http://169.254.169.254/latest/meta-data/local-ipv4 for AWS
-    #node_address=$()
-    #sed -i "s/###NODE-ADDRESS###/$node_address/g" /etc/mysql/my.cnf.d/mdbci_server.cnf
+    provider = IO.read("vagrant/provider")
+    if provider == "aws"
+      bash 'Configure Galera server.cnf - Get AWS node IP address' do
+        code <<-EOF
+        node_address=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+        sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        EOF
+      end
+    elsif provider == "virtualbox"
+      bash 'Configure Galera server.cnf - Get Virtualbox node IP address' do
+        code <<-EOF
+        node_address=$(/sbin/ifconfig eth1 | grep "inet " | grep -o -P '(?<=addr:).*(?=  Bcast)')
+        sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        EOF
+      end
+    end
 
-    # 3. ###NODE-NAME### string have to be replaced with node name from node definition
-    #node_name=$()
-    #sed -i "s/###NODE-NAME###/$node_name/g" /etc/mysql/my.cnf.d/mdbci_server.cnf
+    bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
+      code <<-EOF
+      sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g\" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      EOF
+    end
 
   when "rhel", "fedora", "centos", "suse"
 
-    # same as
-   
+    bash 'Configure Galera server.cnf - Get/Set Galera LIB_PATH' do
+      code <<-EOF
+      sed -i "s|###GALERA-LIB-PATH###|$(rpm -ql galera | grep so)|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      EOF
+    end
+
+    provider = IO.read("/vagrant/provider")
+    if provider == "aws"
+      bash 'Configure Galera server.cnf - Get AWS node IP address' do
+        code <<-EOF
+        node_address=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+        sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        EOF
+      end
+    elsif provider == "virtualbox"
+      bash 'Configure Galera server.cnf - Get Virtualbox node IP address' do
+        code <<-EOF
+        node_address=$(/sbin/ifconfig eth1 | grep "inet " | grep -o -P '(?<=addr:).*(?=  Bcast)')
+        sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        EOF
+      end
+    end
+
+    bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
+      code <<-EOF
+      sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      EOF
+    end
+
 end
