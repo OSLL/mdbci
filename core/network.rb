@@ -106,6 +106,7 @@ class Network
     Dir.chdir pwd
   end
 
+  # TODO - move mdbci box definition to new class - MdbciNode < Node
   def self.private_ip(name)
     pwd = Dir.pwd
 
@@ -116,10 +117,10 @@ class Network
 
     args = name.split('/')
 
-    # mdbci ppc64 boxes
+    # mdbci box
     if File.exist?(args[0]+'/mdbci_config.ini')
       $session.loadMdbciNodes args[0]
-      if args[1].nil?     # read keyfile for all nodes
+      if args[1].nil?     # read ip for all nodes
         $session.mdbciNodes.each do |node|
           host = node[1]['hostname'].to_s
           box = node[1]['box'].to_s
