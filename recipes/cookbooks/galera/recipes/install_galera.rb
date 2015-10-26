@@ -17,7 +17,7 @@ case node[:platform_family]
         command "wget -P /etc/yum.repos.d http://www.convirture.com/repos/definitions/rhel/6.x/convirt.repo"
       end
     else
-      execute "add_socat_repo_cantos_le5" do
+      execute "add_socat_repo_centos_le5" do
         command "wget -P /etc/yum.repos.d http://www.convirture.com/repos/definitions/rhel/5.x/convirt.repo"
       end
     end
