@@ -12,13 +12,15 @@ end
 case node[:platform_family]
   when "rhel", "fedora", "centos"
     package "wget"
-    if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0 
-      execute "add_socat_repo_cantos_ge6" do
-        command "wget -P /etc/yum.repos.d http://www.convirture.com/repos/definitions/rhel/6.x/convirt.repo"
-      end
-    else
-      execute "add_socat_repo_centos_le5" do
-        command "wget -P /etc/yum.repos.d http://www.convirture.com/repos/definitions/rhel/5.x/convirt.repo"
+    if node[:platform] == "centos"
+      if node["platform_version"].to_f >= 6.0 
+        execute "add_socat_repo_cantos_ge6" do
+          command "wget -P /etc/yum.repos.d http://www.convirture.com/repos/definitions/rhel/6.x/convirt.repo"
+        end
+      else
+        execute "add_socat_repo_centos_le5" do
+          command "wget -P /etc/yum.repos.d http://www.convirture.com/repos/definitions/rhel/5.x/convirt.repo"
+        end
       end
     end
     package "nc"
