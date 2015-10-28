@@ -1,5 +1,5 @@
 {
-	"name": "docker",
+	"name": "docker0",
   	"default_attributes": { },
   	"override_attributes": { 
 		"mariadb": { 

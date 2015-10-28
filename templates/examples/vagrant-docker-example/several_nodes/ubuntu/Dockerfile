@@ -1,24 +1,21 @@
 FROM ubuntu:14.04
 MAINTAINER OSLL "osll@osll.com"
 
-# ------------------------------------------------------------------------
-# Let's Nodes configuration has always one OS, ubuntu or centos or sles!!!
-# ------------------------------------------------------------------------
-
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update && \
-    apt-get install -y sudo ssh iptables && \
+    apt-get install -y sudo ssh wget iptables && \
     apt-get clean
 
 RUN mkdir /var/run/sshd
 
 # Create and configure vagrant user
-RUN groupadd vagrant
-RUN useradd -c "Vagrant" -g vagrant -d /home/vagrant -m -s /bin/bash vagrant
-RUN echo 'root:vagrant' | chpasswd
-
-# Enable passwordless sudo for vagrant 
-RUN echo 'vagrant ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN sed -i 's/.*requiretty$/Defaults !requiretty/' /etc/sudoers && \
+    groupadd vagrant && \
+    useradd -c "Vagrant" -g vagrant -d /home/vagrant -m -s /bin/bash vagrant && \
+    echo 'vagrant:vagrant' | chpasswd && \
+    mkdir -p /etc/sudoers.d && \
+    echo 'vagrant	ALL=(ALL)	NOPASSWD:ALL' >> /etc/sudoers.d/vagrant && \
+    chmod 0440 /etc/sudoers.d/vagrant 
 
 # Configure SSH access
 RUN mkdir -p /home/vagrant/.ssh
