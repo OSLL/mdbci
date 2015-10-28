@@ -63,38 +63,33 @@ case node[:platform_family]
     end
 end
 
-# 
-#if ENV['VAGRANT_DEFAULT_PROVIDER'] != 'docker'
-#  # iptables rules
-#  case node[:platform_family]
-#    when "debian", "ubuntu", "rhel", "fedora", "centos", "suse"
-#      execute "Opening MariaDB ports" do
-#        command "iptables -I INPUT -p tcp -m tcp --dport 3306 -j ACCEPT"
-#        command "iptables -I INPUT -p tcp --dport 3306 -j ACCEPT -m state --state NEW"
-#      end
-#  end # iptables rules
+# iptables rules
+case node[:platform_family]
+  when "debian", "ubuntu", "rhel", "fedora", "centos", "suse"
+    execute "Opening MariaDB ports" do
+      command "iptables -I INPUT -p tcp -m tcp --dport 3306 -j ACCEPT"
+      command "iptables -I INPUT -p tcp --dport 3306 -j ACCEPT -m state --state NEW"
+    end
+end # iptables rules
 
-  # TODO: check saving iptables rules after reboot
-  # save iptables rules
-#  case node[:platform_family]
-#    when "debian", "ubuntu"
-#      execute "Save MariaDB iptables rules" do
-#        command "iptables-save > /etc/iptables/rules.v4"
-#        #command "/usr/sbin/service iptables-persistent save"
-#      end
-#    when "rhel", "centos", "fedora"
-#      execute "Save MariaDB iptables rules" do
-#        command "/sbin/service iptables save"
-#      end
-      # service iptables restart
-#    when "suse"
-#      execute "Save MariaDB iptables rules" do
-#        command "iptables-save > /etc/sysconfig/iptables"
-#      end
-#  end # save iptables rules
-#else
-#  system "echo USING DOCKERFILE ..................................."
-#end
+# TODO: check saving iptables rules after reboot
+# save iptables rules
+case node[:platform_family]
+  when "debian", "ubuntu"
+    execute "Save MariaDB iptables rules" do
+      command "iptables-save > /etc/iptables/rules.v4"
+      #command "/usr/sbin/service iptables-persistent save"
+    end
+  when "rhel", "centos", "fedora"
+    execute "Save MariaDB iptables rules" do
+      command "/sbin/service iptables save"
+    end
+  # service iptables restart
+  when "suse"
+    execute "Save MariaDB iptables rules" do
+      command "iptables-save > /etc/sysconfig/iptables"
+    end
+end # save iptables rules
 
 # Install packages
 case node[:platform_family]
@@ -117,37 +112,37 @@ else
 end
 
 # cnf_template configuration
-#case node[:platform_family]
+case node[:platform_family]
 
-#  when "debian", "ubuntu"
+  when "debian", "ubuntu"
   
-#    createcmd = "mkdir /etc/mysql/my.cnf.d"
-#    execute "Create cnf_template directory" do
-#      command createcmd
-#    end
+    createcmd = "mkdir /etc/mysql/my.cnf.d"
+    execute "Create cnf_template directory" do
+      command createcmd
+    end
 
-#    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/mysql/my.cnf.d'
-#    execute "Copy mdbci_server.cnf to cnf_template directory" do
-#      command copycmd
-#    end
+    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/mysql/my.cnf.d/'
+    execute "Copy mdbci_server.cnf to cnf_template directory" do
+      command copycmd
+    end
 
     # /etc/mysql/my.cnf.d -- dir for *.cnf files
-#    addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
-#    execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-#      command addlinecmd
-#    end
+    addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
+    execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
+      command addlinecmd
+    end
 
-#  when "rhel", "fedora", "centos", "suse"
+  when "rhel", "fedora", "centos", "suse"
 
     # /etc/my.cnf.d -- dir for *.cnf files
-#    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/my.cnf.d'
-#    execute "Copy mdbci_server.cnf to cnf_template directory" do
-#      command copycmd
-#    end
+    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/my.cnf.d'
+    execute "Copy mdbci_server.cnf to cnf_template directory" do
+      command copycmd
+    end
 
     # TODO: check if line already exist !!!
     #addlinecmd = "replace '!includedir /etc/my.cnf.d' '!includedir " + node['mariadb']['cnf_template'] + "' -- /etc/my.cnf"
     #execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
     #  command addlinecmd
     #end
-#end
+end

@@ -10,11 +10,18 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   ENV['VAGRANT_DEFAULT_PROVIDER'] = 'docker'
 
+#  config.ssh.username = 'root'
   config.ssh.port = 22
+
+  config.vm.synced_folder "cnf/", "/home/vagrant/cnf_templates"
+
+#  config.vm.network :forwarded_port, host: 3306, guest: 3306
 
   config.vm.provider "docker" do |d|
     d.build_dir = "."
     d.has_ssh = true
+#    d.ports = ["3306:3306"]
+    d.privileged = true
   end
 
   config.vm.provision "chef_solo" do |chef|
