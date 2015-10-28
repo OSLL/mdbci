@@ -2,7 +2,44 @@ require 'shellwords'
 
 include_recipe "mariadb::mdbcrepos"
 
+case node[:platform_family]
+  when "debian", "ubuntu", "mint"
 
+    release_name = '$(lsb_release -cs)'
+    system 'echo OS: ' + node[:platform_family] +' : ' + release_name
+    
+    # Config master-slave /etc/mysql/my.cnf
+    bash 'Config mariadb my.cnf' do
+    code <<-EOF
+      sed -i "s/bind-address/#bind-address/g" /etc/mysql/my.cnf
+      sed -i "s/#server-id\t\t= 1/server-id\t\t= #{Shellwords.escape(node['mariadb']['server_id'])}/g" /etc/mysql/my.cnf
+      sed -i "s/#log_bin/log_bin/g" /etc/mysql/my.cnf
+      line=$(grep --line-number log_bin_index /etc/mysql/my.cnf | sed -e s/\:.*//)
+      sed -i $line'ibinlog_do_db\t\t= #{Shellwords.escape(node['mariadb']['database'])}' /etc/mysql/my.cnf
+      EOF
+    end
+
+  when "rhel", "fedora", "centos", "suse"
+
+    # Config master-slave /etc/my.cnf
+    bash 'Config mariadb my.cnf' do
+    code <<-EOF
+      sed -i 6"i[mysqld]" /etc/my.cnf
+      sed -i 7"i#bind-address = 127.0.0.1" /etc/my.cnf
+      sed -i 8"iserver-id = #{Shellwords.escape(node['mariadb']['server_id'])}" /etc/my.cnf
+      sed -i 9'ibinlog-do-db = #{Shellwords.escape(node['mariadb']['database'])}' /etc/my.cnf
+      sed -i 10"irelay_log = /var/lib/mysql/mysql-relay-bin" /etc/my.cnf
+      sed -i 11"irelay-log-index = /var/lib/mysql/mysql-relay-bin.index" /etc/my.cnf
+      sed -i 12"ilog-error = /var/lib/mysql/mysql.err" /etc/my.cnf
+      sed -i 13"imaster-info-file = /var/lib/mysql/mysql-master.info" /etc/my.cnf
+      sed -i 14"irelay-log-info-file = /var/lib/mysql/mysql-relay-log.info" /etc/my.cnf
+      sed -i 15"ilog-bin = /var/lib/mysql/mysql-bin" /etc/my.cnf
+      EOF
+    end
+    # slave - replicate-do-db
+
+    
+end
 # TODO: BUG: #6309 Check if SElinux already disabled!
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
@@ -145,4 +182,38 @@ case node[:platform_family]
     #execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
     #  command addlinecmd
     #end
+end
+
+# Config master-slave /etc/my.cnf.d/server.cnf
+bash 'Config mariadb server.cnf' do
+code <<-EOF
+  sed -i 13"ilog-basename=mar" /etc/my.cnf.d/server.cnf
+  sed -i 14"ilog-bin" /etc/my.cnf.d/server.cnf
+  sed -i 15"ibinlog-format=STATEMENT" /etc/my.cnf.d/server.cnf
+  sed -i 16"iserver_id=#{Shellwords.escape(node['mariadb']['server_id'])}" /etc/my.cnf.d/server.cnf
+EOF
+end
+
+bash 'Restart mariadb service' do
+  code "service mysql restart"
+end
+# 
+bash 'Create mariadb users' do
+  code <<-EOF
+  /usr/bin/mysql -e 'CREATE USER repl@'%' IDENTIFIED BY 'repl';'
+  /usr/bin/mysql -e 'GRANT replication slave ON *.* TO repl@'%' IDENTIFIED BY 'repl';'
+  /usr/bin/mysql -e 'CREATE USER skysql@'%' IDENTIFIED BY 'skysql';'
+  /usr/bin/mysql -e 'CREATE USER skysql@'localhost' IDENTIFIED BY 'skysql';'
+  /usr/bin/mysql -e 'GRANT ALL PRIVILEGES ON *.* TO skysql@'%' WITH GRANT OPTION;'
+  /usr/bin/mysql -e 'GRANT ALL PRIVILEGES ON *.* TO skysql@'localhost' WITH GRANT OPTION;'
+  /usr/bin/mysql -e 'CREATE USER maxuser@'%' identified by 'maxpwd';'
+  /usr/bin/mysql -e 'CREATE USER maxuser@'localhost' identified by 'maxpwd';'
+  /usr/bin/mysql -e 'GRANT ALL PRIVILEGES ON *.* TO maxuser@'%' WITH GRANT OPTION;'
+  /usr/bin/mysql -e 'GRANT ALL PRIVILEGES ON *.* TO maxuser@'localhost' WITH GRANT OPTION;'
+  /usr/bin/mysql -e 'FLUSH PRIVILEGES;'
+  EOF
+end
+#
+bash 'Create test database' do
+  code "/usr/bin/mysql -e 'CREATE DATABASE IF NOT EXISTS test;'"
 end
