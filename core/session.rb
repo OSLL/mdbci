@@ -1,6 +1,7 @@
 require 'json'
 require 'fileutils'
 require 'uri'
+require 'open3'
 
 require_relative 'generator'
 require_relative 'network'
@@ -13,14 +14,16 @@ class Session
   attr_accessor :versions
   attr_accessor :configFile
   attr_accessor :boxesFile
+  attr_accessor :awsConfigFile
+  attr_accessor :awsConfig
   attr_accessor :isOverride
   attr_accessor :isSilent
   attr_accessor :command
-  attr_accessor :awsConfig
   attr_accessor :repos
   attr_accessor :repoDir
   attr_accessor :nodes
   attr_accessor :currentProvider   # current configuration provider
+  attr_accessor :attempts
 
   def initialize
     @repoDir = './repo.d'
@@ -38,6 +41,9 @@ class Session
     $out.info 'Load boxes from ' + $session.boxesFile
     @boxes = JSON.parse(IO.read($session.boxesFile))
     $out.info 'Found boxes: ' + $session.boxes.size().to_s
+
+    $out.info 'Load AWS config from ' + @awsConfigFile
+    @awsConfig = YAML.load_file(@awsConfigFile)['aws']
 
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
@@ -200,14 +206,89 @@ class Session
     @configs = JSON.parse(IO.read($session.configFile))
     LoadMdbciNodes(configs)
     aws_config = $session.configs.find { |value| value.to_s.match(/aws_config/) }
-    awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
+    aws_config_param = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if currentProvider != "mdbci"
-      Generator.generate(path,configs,boxes,isOverride,awsConfig)
+      Generator.generate(path,configs,boxes,isOverride,aws_config_param)
       $out.info 'Generating config in ' + path
     else
       $out.info "Using mdbci ppc64 box definition ..."
     end
   end
 
+  # Deploy configurations
+  def up(args)
+    std_q_attampts = 4
+    std_err_val = 1
+
+    # No arguments provided
+    if args.nil?
+      $out.info 'Command \'up\' needs one argument, found zero'
+      return std_err_val
+    end
+
+    # No attempts provided
+    if @attempts.nil?
+      @attempts = std_q_attampts
+    end
+
+    # Saving dir, do then to change it back
+    pwd = Dir.pwd
+
+    # Separating config_path from node
+    config = []
+    node = ''
+    up_type = false # Means no node specified
+    paths = args.split('/') # Get array of dirs
+    # Get path to vagrant instance directory
+    config_path = paths[0, paths.length - 1].join('/')
+    if !config_path.empty?
+      # So there may be node specified
+      node = paths[paths.length - 1]
+      config[0] = config_path
+      config[1] = node
+      up_type = true # Node specified
+    end
+
+    # Checking if vagrant instance derictory exists
+    if Dir.exist?(config[0].to_s) # to_s in case of 'nil'
+      up_type = true # node specified
+      $out.info 'Node is specified ' + config[1] + ' in ' + config[0]
+    else
+      up_type = false # node not specified
+      $out.info 'Node isn\'t specified in ' + args
+    end
+
+    up_type ? Dir.chdir(config[0]) : Dir.chdir(args)
+
+    # Setting provider: VirtualBox, AWS, (,libvirt)
+    @currentProvider = File.read('provider')
+    $out.info 'Current provider: ' + @currentProvider
+
+    (1..@attempts.to_i).each { |i|
+      $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') + 
+        args + ', attempt: ' + i.to_s
+      $out.info 'Destroying current instance'
+      cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
+      exec_cmd_destr = `#{cmd_destr}`
+      $out.info exec_cmd_destr
+      cmd_up = 'vagrant up --destroy-on-error ' + '--provider=' + @currentProvider + ' ' + 
+        (up_type ? config[1]:'')
+      $out.info 'Actual command: ' + cmd_up
+      Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
+        stdin.close
+        stdout.each_line { |line| $out.info line }
+        stdout.close
+        if wthr.value.success?
+          Dir.chdir pwd
+          return 0
+        end
+        $out.error 'Bringing up failed'
+        stderr.each_line { |line| $out.error line }
+        stderr.close
+      end
+    }
+    Dir.chdir pwd
+    return std_err_val
+  end
 end

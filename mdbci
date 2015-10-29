@@ -15,12 +15,14 @@ opts = GetoptLong.new(
     ['--boxes', '-b', GetoptLong::REQUIRED_ARGUMENT],
     ['--override', '-w', GetoptLong::NO_ARGUMENT],
     ['--silent', '-s', GetoptLong::NO_ARGUMENT],
-    ['--repo-dir','-r',GetoptLong::REQUIRED_ARGUMENT]
+    ['--repo-dir','-r',GetoptLong::REQUIRED_ARGUMENT],
+    ['--attempts','-a',GetoptLong::REQUIRED_ARGUMENT]
 )
 
 $session = Session.new
 $session.configFile='instance.json'
 $session.boxesFile='boxes.json'
+$session.awsConfigFile='aws-config.yml'
 
 $out = Out.new
 
@@ -50,8 +52,12 @@ opts.each do |opt, arg|
 
     when '--silent'
       $session.isSilent =true
+
     when '--repo-dir'
       $session.repoDir = arg
+
+	  when '--attempts'
+	    $session.attempts = arg
 
     else
       $out.error 'Option are not supported:'+opt
@@ -80,9 +86,9 @@ case ARGV.shift
     $session.setup(ARGV.shift)
   when 'generate'
     $session.generate(ARGV.shift)
+  when 'up'
+    $session.up(ARGV.shift)
   else
     puts 'ERR: Something wrong with command line'
     Help.display
 end
-
-
