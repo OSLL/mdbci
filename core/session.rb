@@ -268,7 +268,11 @@ class Session
     up_type ? Dir.chdir(config[0]) : Dir.chdir(args)
 
     # Setting provider: VirtualBox, AWS, (,libvirt)
-    @nodesProvider = File.read('provider')
+    if File.exist?('provider')
+      @nodesProvider = File.read('provider')
+    else
+      $out.warning 'File "provider" does not found! Try to regenerate your configuration!'
+    end
     $out.info 'Current provider: ' + @nodesProvider
 
     (1..@attempts.to_i).each { |i|
