@@ -323,12 +323,11 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
     $out.info 'Machine '+name+' is provisioned by '+product.to_s
     role = getRoleDef(name, product, box)
     IO.write(roleFileName(path, name), role)
-    #
-    # write nodes provider to file
-    provider_file = path+"/provider"
-    if !File.exists?(provider_file)
-      File.open(path+"/provider", 'w') { |f| f.write(provider.to_s) }
-    end
+  end
+  # write nodes provider to file
+  provider_file = path+"/provider"
+  if !File.exists?(provider_file)
+    File.open(path+"/provider", 'w') { |f| f.write(provider.to_s) }
   end
 
   return machine
