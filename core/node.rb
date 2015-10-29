@@ -45,7 +45,7 @@ class Node
         @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
       when '(aws)'
         if curlCheck
-          cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["elastic_ip_service"]+'"'
+          cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["private_ip_service"]+'"'
           vagrant_out = `#{cmd}`
           ip = vagrant_out.scanf('%s')
           @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')
