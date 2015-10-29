@@ -94,15 +94,67 @@ class Network
 
     if args[1].nil? # No node argument, show all config
       network.nodes.each do |node|
-        node.getIp(node.provider)
+        node.getIp(node.provider, false)
         $out.out(node.ip.to_s)
       end
     else
       node = network.nodes.find { |elem| elem.name == args[1]}
-      node.getIp(node.provider)
+      node.getIp(node.provider, false)
       $out.out(node.ip.to_s)
     end
 
     Dir.chdir pwd
   end
+
+  # TODO - move mdbci box definition to new class - MdbciNode < Node
+  def self.private_ip(name)
+    pwd = Dir.pwd
+
+    if name.nil?
+      $out.error 'Configuration name is required'
+      return
+    end
+
+    args = name.split('/')
+
+    # mdbci box
+    if File.exist?(args[0]+'/mdbci_config.ini')
+      $session.loadMdbciNodes args[0]
+      if args[1].nil?     # read ip for all nodes
+        $session.mdbciNodes.each do |node|
+          host = node[1]['hostname'].to_s
+          box = node[1]['box'].to_s
+          if !box.empty?
+            box_params = $session.boxes[box]
+            $out.out 'Node: ' + host.to_s
+            $out.out "IP: " + box_params['IP'].to_s
+          end
+        end
+      else
+        mdbci_node = $session.mdbciNodes.find { |elem| elem[1]['hostname'].to_s == args[1] }
+        box = mdbci_node[1]['box'].to_s
+        if !box.empty?
+          mdbci_params = $session.boxes[box]
+          $out.out 'IP: ' + mdbci_params['IP'].to_s
+        end
+      end
+    else # aws, vbox nodes
+      network = Network.new
+      network.loadNodes args[0] # load nodes from dir
+
+      if args[1].nil? # No node argument, show all config
+        network.nodes.each do |node|
+          node.getIp(node.provider, true)
+          $out.out(node.ip.to_s)
+        end
+      else
+        node = network.nodes.find { |elem| elem.name == args[1]}
+        node.getIp(node.provider, true)
+        $out.out(node.ip.to_s)
+      end
+    end
+
+    Dir.chdir pwd
+  end
+
 end
