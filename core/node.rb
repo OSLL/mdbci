@@ -53,7 +53,7 @@ class Node
           if is_private
             getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
           else
-            cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["private_ip_service"]+'"' # public_ip_...
+            cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["public_ip_service"]+'"'
             vagrant_out = `#{cmd}`
             ip = vagrant_out.scanf('%s')
             # get ip from command output
