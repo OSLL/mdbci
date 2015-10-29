@@ -2,44 +2,7 @@ require 'shellwords'
 
 include_recipe "mariadb::mdbcrepos"
 
-case node[:platform_family]
-  when "debian", "ubuntu", "mint"
 
-    release_name = '$(lsb_release -cs)'
-    system 'echo OS: ' + node[:platform_family] +' : ' + release_name
-    
-    # Config master-slave /etc/mysql/my.cnf
-    bash 'Config mariadb my.cnf' do
-    code <<-EOF
-      sed -i "s/bind-address/#bind-address/g" /etc/mysql/my.cnf
-      sed -i "s/#server-id\t\t= 1/server-id\t\t= #{Shellwords.escape(node['mariadb']['server_id'])}/g" /etc/mysql/my.cnf
-      sed -i "s/#log_bin/log_bin/g" /etc/mysql/my.cnf
-      line=$(grep --line-number log_bin_index /etc/mysql/my.cnf | sed -e s/\:.*//)
-      sed -i $line'ibinlog_do_db\t\t= #{Shellwords.escape(node['mariadb']['database'])}' /etc/mysql/my.cnf
-      EOF
-    end
-
-  when "rhel", "fedora", "centos", "suse"
-
-    # Config master-slave /etc/my.cnf
-    bash 'Config mariadb my.cnf' do
-    code <<-EOF
-      sed -i 6"i[mysqld]" /etc/my.cnf
-      sed -i 7"i#bind-address = 127.0.0.1" /etc/my.cnf
-      sed -i 8"iserver-id = #{Shellwords.escape(node['mariadb']['server_id'])}" /etc/my.cnf
-      sed -i 9'ibinlog-do-db = #{Shellwords.escape(node['mariadb']['database'])}' /etc/my.cnf
-      sed -i 10"irelay_log = /var/lib/mysql/mysql-relay-bin" /etc/my.cnf
-      sed -i 11"irelay-log-index = /var/lib/mysql/mysql-relay-bin.index" /etc/my.cnf
-      sed -i 12"ilog-error = /var/lib/mysql/mysql.err" /etc/my.cnf
-      sed -i 13"imaster-info-file = /var/lib/mysql/mysql-master.info" /etc/my.cnf
-      sed -i 14"irelay-log-info-file = /var/lib/mysql/mysql-relay-log.info" /etc/my.cnf
-      sed -i 15"ilog-bin = /var/lib/mysql/mysql-bin" /etc/my.cnf
-      EOF
-    end
-    # slave - replicate-do-db
-
-    
-end
 # TODO: BUG: #6309 Check if SElinux already disabled!
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
@@ -149,6 +112,7 @@ else
 end
 
 # cnf_template configuration
+ cnf_template configuration
 case node[:platform_family]
 
   when "debian", "ubuntu"
@@ -163,7 +127,6 @@ case node[:platform_family]
       command copycmd
     end
 
-    # /etc/mysql/my.cnf.d -- dir for *.cnf files
     addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
     execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
       command addlinecmd
@@ -171,7 +134,6 @@ case node[:platform_family]
 
   when "rhel", "fedora", "centos", "suse"
 
-    # /etc/my.cnf.d -- dir for *.cnf files
     copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/my.cnf.d'
     execute "Copy mdbci_server.cnf to cnf_template directory" do
       command copycmd
@@ -184,14 +146,20 @@ case node[:platform_family]
     #end
 end
 
-# Config master-slave /etc/my.cnf.d/server.cnf
-bash 'Config mariadb server.cnf' do
-code <<-EOF
-  sed -i 13"ilog-basename=mar" /etc/my.cnf.d/server.cnf
-  sed -i 14"ilog-bin" /etc/my.cnf.d/server.cnf
-  sed -i 15"ibinlog-format=STATEMENT" /etc/my.cnf.d/server.cnf
-  sed -i 16"iserver_id=#{Shellwords.escape(node['mariadb']['server_id'])}" /etc/my.cnf.d/server.cnf
-EOF
+# Adding server.cnf to my.cnf
+case node[:platform_family]
+  when "debian", "ubuntu", "mint"
+    release_name = '$(lsb_release -cs)'
+    system 'echo OS: ' + node[:platform_family] +' : ' + release_name
+    execute "Config mariadb my.cnf" do
+      comand "echo !includedir /etc/mysql/my.cnf.d/" + node['mariadb']['cnf_template'] + " /etc/mysql/my.cnf" 
+    end
+  when "rhel", "fedora", "centos", "suse"
+    release_name = '$(lsb_release -cs)'
+    system 'echo OS: ' + node[:platform_family] +' : ' + release_name
+    execute "Config mariadb my.cnf" do
+      comand "echo !includedir /etc/my.cnf.d/" + node['mariadb']['cnf_template'] + " /etc/my.cnf" 
+    end    
 end
 
 bash 'Restart mariadb service' do
