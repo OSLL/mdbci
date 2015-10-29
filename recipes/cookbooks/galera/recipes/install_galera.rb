@@ -171,7 +171,7 @@ case node[:platform_family]
       EOF
     end
 
-    provider = IO.read("vagrant/#{Shellwords.escape(node['galera']['node_name'])}_provider")
+    provider = IO.read("vagrant/provider")
     if provider == "aws"
       bash 'Configure Galera server.cnf - Get AWS node IP address' do
         code <<-EOF
@@ -202,7 +202,7 @@ case node[:platform_family]
       EOF
     end
 
-    provider = IO.read("/vagrant/#{Shellwords.escape(node['galera']['node_name'])}_provider")
+    provider = IO.read("/vagrant/provider")
     if provider == "aws"
       bash 'Configure Galera server.cnf - Get AWS node IP address' do
         code <<-EOF
