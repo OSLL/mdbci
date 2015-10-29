@@ -112,7 +112,6 @@ else
 end
 
 # cnf_template configuration
- cnf_template configuration
 case node[:platform_family]
 
   when "debian", "ubuntu"
