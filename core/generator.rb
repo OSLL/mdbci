@@ -335,7 +335,7 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
   return machine
 end
 
-def Generator.generate(path, config, boxes, override, aws_config)
+def Generator.generate(path, config, boxes, override, aws_config, provider)
   #TODO Errors check
   #TODO MariaDb Version Validator
 
