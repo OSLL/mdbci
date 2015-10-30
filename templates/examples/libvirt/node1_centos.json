@@ -1,0 +1,20 @@
+{
+  "name": "node1_centos",
+  "default_attributes": {
+  },
+  "override_attributes": {
+    "mariadb": {
+      "version": "5.5",
+      "repo": "http://yum.mariadb.org/5.5/centos6-amd64",
+      "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+      "cnf_template" : "skysql-galera.cnf", 
+      "cnf_template_path" : "cnf/"
+    }
+  },
+  "json_class": "Chef::Role",
+  "description": "MariaDb instance install and run",
+  "chef_type": "role",
+  "run_list": [
+    "recipe[mdbc]"
+  ]
+}

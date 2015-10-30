@@ -8,12 +8,16 @@ Vagrant.configure("2") do |config|
   
   config.vm.boot_timeout = 360
 
+  config.ssh.pty = true
+
+  config.vm.synced_folder "cnf/", "/home/vagrant/cnf_templates", type: "rsync"
+
   # vm1
   config.vm.define :vm1 do |node1|
 
-    #node1.vm.box = "ubuntu/trusty64"
+    node1.vm.box = "dliappis/centos65minlibvirt"
     #node1.vm.box = "s3than/trusty64"
-    node1.vm.box = "hashicorp/precise32"
+    #node1.vm.box = "ubuntu-14.04-ppc64"
     node1.vm.hostname = 'vm1'
 
     node1.vm.synced_folder './', '/vagrant', type: 'rsync'
@@ -21,25 +25,28 @@ Vagrant.configure("2") do |config|
     node1.vm.provider :libvirt do |qemu|
       #qemu.memory = 256
       #qemu.nested = true
-      qemu.driver = "qemu" # kvm
+      qemu.driver = "kvm" # kvm
+      #qemu.connect_via_ssh = false
+      #qemu.username = "root"
       #qemu.storage_pool_name = "default"
     end
 
     node1.vm.provision "chef_solo" do |chef| 
 	chef.cookbooks_path = "../../../recipes/cookbooks/"
 	chef.roles_path = "."
-	chef.add_role "node1"
+	chef.add_role "node1_centos"
     end
    
   end  
 
   # vm2
-  config.vm.define :vm2 do |node2|
+#  config.vm.define :vm2 do |node2|
 
-    node2.vm.box = "hashicorp/precise32"
-    node2.vm.hostname = 'vm2'
+#    node2.vm.box = "s3than/trusty64"
+#    #node2.vm.box = "bento/ubuntu-14.04"
+#    node2.vm.hostname = 'vm2'
 
-    node2.vm.synced_folder './', '/vagrant', type: 'rsync'
+#    node2.vm.synced_folder './', '/vagrant', type: 'rsync'
 
     #node2.vm.network :private_network,
     #  :ip => '169.2.2.2/24',
@@ -48,18 +55,18 @@ Vagrant.configure("2") do |config|
     #  :libvirt__dhcp_enabled => false,
     #  :libvirt__network_name => 'test_network'
 
-    node2.vm.provider :libvirt do |domain|
-      #domain.memory = 256
-      domain.driver = "qemu"
-      #domain.nested = true
-    end
+#    node2.vm.provider :libvirt do |domain|
+#      #domain.memory = 256
+#      domain.driver = "kvm"
+#      #domain.nested = true
+#    end
 
-    node2.vm.provision "chef_solo" do |chef| 
-	chef.cookbooks_path = "../../../recipes/cookbooks/"
-	chef.roles_path = "."
-	chef.add_role "node2"
-    end
+#    node2.vm.provision "chef_solo" do |chef| 
+#	chef.cookbooks_path = "../../../recipes/cookbooks/"
+#	chef.roles_path = "."
+#	chef.add_role "node2"
+#    end
 
-  end
+#  end
 
 end

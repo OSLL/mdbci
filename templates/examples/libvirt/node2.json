@@ -5,7 +5,7 @@
   "override_attributes": {
     "mariadb": {
       "version": "10.0",
-      "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.0/ubuntu precise main",
+      "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.0/ubuntu trusty main",
       "repo_key": "0xcbcb082a1bb943db"
     }
   },
