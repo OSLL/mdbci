@@ -35,20 +35,30 @@ class Node
     end
   end
 
-  def getIp(provider)
+  # get node ip address from ifconfig interface
+  def getInterfaceBoxIp(node_name, iface, parse_str)
+    cmd = 'vagrant ssh '+node_name+' -c "/sbin/ifconfig '+iface+' | grep \"inet \" "'
+    vagrant_out = `#{cmd}`
+    ip = vagrant_out.scanf(parse_str.to_s)
+    $out.info 'Node.GetIp '+cmd
+    @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
+  end
+
+  def getIp(provider, is_private)
     case provider
       when '(virtualbox)'
-        cmd = 'vagrant ssh '+@name+' -c "/sbin/ifconfig eth1 | grep \"inet \" "'
-        vagrant_out = `#{cmd}`
-        ip = vagrant_out.scanf('inet addr:%s Bcast')
-        $out.info 'Node.GetIp '+cmd
-        @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
+        getInterfaceBoxIp(@name, "eth1", "inet addr:%s Bcast")
       when '(aws)'
         if curlCheck
-          cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["private_ip_service"]+'"'
-          vagrant_out = `#{cmd}`
-          ip = vagrant_out.scanf('%s')
-          @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')
+          if is_private
+            getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
+          else
+            cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["public_ip_service"]+'"'
+            vagrant_out = `#{cmd}`
+            ip = vagrant_out.scanf('%s')
+            # get ip from command output
+            @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')
+          end
         else
           installCurl
         end
