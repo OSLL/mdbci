@@ -310,9 +310,9 @@ class Session
     if $session.boxes.has_key?(name)
       box_params = $session.boxes[name]
       provider = box_params["provider"].to_s
-      $out.out name.to_s+" box provider: "+provider
+      $out.out provider
     else
-      $out.warning name.to_s+" box does not exist! Please check box name!"
+      $out.warning name.to_s+" box does not exist! Please, check box name!"
     end
   end
 
