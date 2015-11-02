@@ -1,13 +1,17 @@
 FROM centos:centos6.7
-MAINTAINER OSLL "osll@osll.com"
+MAINTAINER OSLL "osll@osll.ru"
 
+ENV SHELL /bin/bash
 
 RUN yum update -y; yum clean all
-RUN yum install -y openssh-server sudo wget iptables; yum clean all
+RUN yum install -y openssh-server sudo curl wget iptables; yum clean all
 
-RUN /etc/init.d/sshd start
+#CMD ["systemctl", "enable", "sshd.service"]
+#RUN /etc/init.d/sshd start
+CMD ["/etc/init.d/sshd", "start"]
 
-RUN sed -i 's/.*requiretty$/Defaults !requiretty/' /etc/sudoers
+#RUN sed -i 's/.*requiretty$/Defaults !requiretty/' /etc/sudoers
+CMD ["sed", "-i", "'s/.*requiretty$/Defaults !requiretty/'", "/etc/sudoers"]
 
 # Create and configure vagrant user
 RUN groupadd vagrant && \
@@ -17,6 +21,8 @@ RUN groupadd vagrant && \
     echo 'vagrant	ALL=(ALL)	NOPASSWD:ALL' >> /etc/sudoers.d/vagrant && \
     chmod 0440 /etc/sudoers.d/vagrant
 
+#RUN ssh-keygen -A
+
 # Configure SSH access
 RUN mkdir -pm 700 /home/vagrant/.ssh && \
     echo 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== vagrant insecure public key' > /home/vagrant/.ssh/authorized_keys && \
@@ -24,13 +30,20 @@ RUN mkdir -pm 700 /home/vagrant/.ssh && \
     chown -R vagrant /home/vagrant/.ssh
 
 # Install chef
-RUN wget -O - https://www.opscode.com/chef/install.sh | bash
+CMD ["curl", "-L", "https://www.opscode.com/chef/install.sh"]
+CMD ["/bin/bash"]
+#RUN wget -O - https://www.opscode.com/chef/install.sh | /bin/bash
 
-ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/chef/bin:/opt/chef/embedded/bin
-CMD ["bash"]
+ENV PATH $PATH:/opt/chef/bin:/opt/chef/embedded/bin
+#RUN PATH "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/chef/bin:/opt/chef/embedded/bin"
+RUN echo "export PATH=$PATH" >> /home/vagrant/.bashrc
+RUN echo $PATH
+#CMD ["bash"]
+
+#RUN /opt/chef/embedded/bin/gem install berkshelf
 
 # Clean up when done.
 RUN yum clean all
 
-CMD ["/usr/sbin/sshd", "-D", "-e"]
 EXPOSE 22
+CMD ["/usr/sbin/sshd", "-D", "-e"]

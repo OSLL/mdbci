@@ -10,8 +10,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   ENV['VAGRANT_DEFAULT_PROVIDER'] = 'docker'
 
-  config.ssh.port = 22
+  #config.ssh.port = 22
+  #config.vm.synced_folder ".", "/vagrant", type: "nfs"
   config.vm.synced_folder "cnf/", "/home/vagrant/cnf_templates"
+
+  config.vm.network "private_network", type: "dhcp"
 
 #  config.vm.network :forwarded_port, host: 3306, guest: 3306
 
@@ -33,36 +36,36 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 #  end
 
   # node1 - CentOS 6.6
-#  config.vm.define "node1" do |node1|
-#    node1.vm.provider "docker" do |d|
-#      d.build_dir = "centos/"
-#      d.has_ssh = true
-#      #d.ports = ["3306:3306"]
-#      d.privileged = true
-#      #d.remains_running = false
-#    end    
-
-#    node1.vm.provision "chef_solo" do |chef|
-#      chef.cookbooks_path = "../../../../recipes/cookbooks"
-#      chef.roles_path = "."
-#      chef.add_role "docker1"
-#    end
-#  end
-
-  # node2 - OpenSuSE 13
-  config.vm.define "node0" do |node2|
-    node2.vm.provider "docker" do |d|
-      d.build_dir = "sles/"
+  config.vm.define "node1" do |node1|
+    node1.vm.provider "docker" do |d|
+      d.build_dir = "centos/"
       d.has_ssh = true
       #d.ports = ["3306:3306"]
       d.privileged = true
+      #d.remains_running = false
     end    
 
-    node2.vm.provision "chef_solo" do |chef|
+    node1.vm.provision "chef_solo" do |chef|
       chef.cookbooks_path = "../../../../recipes/cookbooks"
       chef.roles_path = "."
-      chef.add_role "docker2"
+      chef.add_role "docker1"
     end
   end
+
+  # node2 - OpenSuSE 13
+#  config.vm.define "node0" do |node2|
+#    node2.vm.provider "docker" do |d|
+#      d.build_dir = "sles/"
+#      d.has_ssh = true
+#      #d.ports = ["3306:3306"]
+#      d.privileged = true
+#    end    
+
+#    node2.vm.provision "chef_solo" do |chef|
+#      chef.cookbooks_path = "../../../../recipes/cookbooks"
+#      chef.roles_path = "."
+#      chef.add_role "docker2"
+#    end
+#  end
   
 end
