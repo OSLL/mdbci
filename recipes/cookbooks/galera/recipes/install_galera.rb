@@ -175,7 +175,7 @@ case node[:platform_family]
     if provider == "aws"
       bash 'Configure Galera server.cnf - Get AWS node IP address' do
         code <<-EOF
-        node_address=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+        node_address=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
         sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
         EOF
       end
@@ -206,7 +206,7 @@ case node[:platform_family]
     if provider == "aws"
       bash 'Configure Galera server.cnf - Get AWS node IP address' do
         code <<-EOF
-        node_address=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+        node_address=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
         sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
         EOF
       end
