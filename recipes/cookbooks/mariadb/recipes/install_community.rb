@@ -133,38 +133,26 @@ case node[:platform_family]
 
   when "rhel", "fedora", "centos", "suse"
 
+    createcmd = "mkdir -p /etc/my.cnf.d"
+    execute "Create cnf_template directory" do
+      command createcmd
+    end
+
     copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/my.cnf.d'
     execute "Copy mdbci_server.cnf to cnf_template directory" do
       command copycmd
     end
 
-    # TODO: check if line already exist !!!
-    #addlinecmd = "replace '!includedir /etc/my.cnf.d' '!includedir " + node['mariadb']['cnf_template'] + "' -- /etc/my.cnf"
-    #execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-    #  command addlinecmd
-    #end
-end
-
-# Adding server.cnf to my.cnf
-case node[:platform_family]
-  when "debian", "ubuntu", "mint"
-    release_name = '$(lsb_release -cs)'
-    system 'echo OS: ' + node[:platform_family] +' : ' + release_name
-    execute "Config mariadb my.cnf" do
-      comand "echo !includedir /etc/mysql/my.cnf.d/" + node['mariadb']['cnf_template'] + " /etc/mysql/my.cnf" 
+    addlinecmd = 'echo "!includedir /etc/my.cnf.d" >> /etc/my.cnf'
+    execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
+      command addlinecmd
     end
-  when "rhel", "fedora", "centos", "suse"
-    release_name = '$(lsb_release -cs)'
-    system 'echo OS: ' + node[:platform_family] +' : ' + release_name
-    execute "Config mariadb my.cnf" do
-      comand "echo !includedir /etc/my.cnf.d/" + node['mariadb']['cnf_template'] + " /etc/my.cnf" 
-    end    
 end
 
 bash 'Restart mariadb service' do
   code "service mysql restart"
 end
-# 
+
 bash 'Create mariadb users' do
   code <<-EOF
   /usr/bin/mysql -e 'CREATE USER repl@'%' IDENTIFIED BY 'repl';'
@@ -180,7 +168,7 @@ bash 'Create mariadb users' do
   /usr/bin/mysql -e 'FLUSH PRIVILEGES;'
   EOF
 end
-#
+
 bash 'Create test database' do
   code "/usr/bin/mysql -e 'CREATE DATABASE IF NOT EXISTS test;'"
 end

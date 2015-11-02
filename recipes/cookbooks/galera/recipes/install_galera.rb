@@ -126,40 +126,6 @@ else
   package 'MariaDB-Galera-server'
 end
 
-# cnf_template configuration
-case node[:platform_family]
-
-  when "debian", "ubuntu"
-  
-    createcmd = "mkdir /etc/mysql/my.cnf.d"
-    execute "Create cnf_template directory" do
-      command createcmd
-    end
-
-    copycmd = 'cp /home/vagrant/cnf_templates/' + node['galera']['cnf_template'] + ' /etc/mysql/my.cnf.d'
-    execute "Copy mdbci_server.cnf to cnf_template directory" do
-      command copycmd
-    end
-
-    addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
-    execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-      command addlinecmd
-    end
-
-  when "rhel", "fedora", "centos", "suse"
-
-    copycmd = 'cp /home/vagrant/cnf_templates/' + node['galera']['cnf_template'] + ' /etc/my.cnf.d'
-    execute "Copy mdbci_server.cnf to cnf_template directory" do
-      command copycmd
-    end
-
-    # TODO: check if line already exist !!!
-    #addlinecmd = "replace '!includedir /etc/my.cnf.d' '!includedir " + node['mariadb']['cnf_template'] + "' -- /etc/my.cnf"
-    #execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-    #  command addlinecmd
-    #end
-end
-
 # configure galera server.cnf file
 case node[:platform_family]
 
@@ -217,12 +183,101 @@ case node[:platform_family]
         sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
         EOF
       end
-    end
+  end
 
-    bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
-      code <<-EOF
-      sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
-      EOF
-    end
+  bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
+    code <<-EOF
+    sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+    EOF
+  end
 
+  # cnf_template configuration
+  case node[:platform_family]
+
+    when "debian", "ubuntu"
+    
+      createcmd = "mkdir /etc/mysql/my.cnf.d"
+      execute "Create cnf_template directory" do
+        command createcmd
+      end
+
+      copycmd = 'cp /home/vagrant/cnf_templates/' + node['galera']['cnf_template'] + ' /etc/mysql/my.cnf.d'
+      execute "Copy mdbci_server.cnf to cnf_template directory" do
+        command copycmd
+      end
+
+      addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
+      execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
+        command addlinecmd
+      end
+
+    when "rhel", "fedora", "centos", "suse"
+
+      copycmd = 'cp /home/vagrant/cnf_templates/' + node['galera']['cnf_template'] + ' /etc/my.cnf.d'
+      execute "Copy mdbci_server.cnf to cnf_template directory" do
+        command copycmd
+      end
+
+      addlinecmd = 'echo "!includedir /etc/my.cnf.d" >> /etc/my.cnf'
+      execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
+        command addlinecmd
+      end
+  end
+
+  # cnf_template configuration
+  case node[:platform_family]
+
+    when "debian", "ubuntu"
+    
+      createcmd = "mkdir /etc/mysql/my.cnf.d"
+      execute "Create cnf_template directory" do
+        command createcmd
+      end
+
+      copycmd = 'cp /home/vagrant/cnf_templates/' + node['galera']['cnf_template'] + ' /etc/mysql/my.cnf.d'
+      execute "Copy mdbci_server.cnf to cnf_template directory" do
+        command copycmd
+      end
+
+      addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
+      execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
+        command addlinecmd
+      end
+
+    when "rhel", "fedora", "centos", "suse"
+
+      copycmd = 'cp /home/vagrant/cnf_templates/' + node['galera']['cnf_template'] + ' /etc/my.cnf.d'
+      execute "Copy mdbci_server.cnf to cnf_template directory" do
+        command copycmd
+      end
+
+      addlinecmd = 'echo "!includedir /etc/my.cnf.d" >> /etc/my.cnf'
+      execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
+        command addlinecmd
+      end
+  end
+
+  bash 'Restart mariadb service' do
+    code "service mysql restart"
+  end
+
+  bash 'Create mariadb users' do
+    code <<-EOF
+    /usr/bin/mysql -e 'CREATE USER repl@'%' IDENTIFIED BY 'repl';'
+    /usr/bin/mysql -e 'GRANT replication slave ON *.* TO repl@'%' IDENTIFIED BY 'repl';'
+    /usr/bin/mysql -e 'CREATE USER skysql@'%' IDENTIFIED BY 'skysql';'
+    /usr/bin/mysql -e 'CREATE USER skysql@'localhost' IDENTIFIED BY 'skysql';'
+    /usr/bin/mysql -e 'GRANT ALL PRIVILEGES ON *.* TO skysql@'%' WITH GRANT OPTION;'
+    /usr/bin/mysql -e 'GRANT ALL PRIVILEGES ON *.* TO skysql@'localhost' WITH GRANT OPTION;'
+    /usr/bin/mysql -e 'CREATE USER maxuser@'%' identified by 'maxpwd';'
+    /usr/bin/mysql -e 'CREATE USER maxuser@'localhost' identified by 'maxpwd';'
+    /usr/bin/mysql -e 'GRANT ALL PRIVILEGES ON *.* TO maxuser@'%' WITH GRANT OPTION;'
+    /usr/bin/mysql -e 'GRANT ALL PRIVILEGES ON *.* TO maxuser@'localhost' WITH GRANT OPTION;'
+    /usr/bin/mysql -e 'FLUSH PRIVILEGES;'
+    EOF
+  end
+
+  bash 'Create test database' do
+    code "/usr/bin/mysql -e 'CREATE DATABASE IF NOT EXISTS test;'"
+  end
 end
