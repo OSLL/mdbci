@@ -62,6 +62,7 @@ require 'yaml'
 #Network autoconfiguration
 config.vm.network "private_network", type: "dhcp"
 
+config.ssh.pty = true
     EOF
     return config
   end
