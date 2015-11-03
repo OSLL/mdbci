@@ -130,7 +130,8 @@ Vagrant.configure(2) do |config|
   def Generator.getQemuDef(cookbook_path, name, host, boxurl, template_path, provisioned)
 
     if template_path
-      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote("/home/vagrant/cnf_templates")
+      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote("/home/vagrant/cnf_templates") \
+                    +", type:"+quote("rsync")
     else
       templatedef = ""
     end
@@ -139,9 +140,10 @@ Vagrant.configure(2) do |config|
       vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) +"\n" \
+            + "\t"+name+'.vm.synced_folder '+quote("./")+", "+quote("/vagrant")+", type: "+quote("rsync")+"\n" \
             + templatedef  + "\n"\
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
-            + "\t\t"+'qemu.driver = ' + quote("qemu") + "\n\tend" \
+            + "\t\t"+'qemu.driver = ' + quote("kvm") + "\n\tend" \
             + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
@@ -152,7 +154,7 @@ Vagrant.configure(2) do |config|
             + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
             + templatedef + "\n"\
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
-            + "\t\t"+'qemu.driver = ' + quote("qemu") + "\n\tend"
+            + "\t\t"+'qemu.driver = ' + quote("kvm") + "\n\tend"
     end
 
     vmdef += "\nend # <-- end of Qemu definition>\n"
