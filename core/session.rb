@@ -181,6 +181,9 @@ class Session
       when 'boxkeys'
         showBoxKeys
 
+      when 'provider'
+        showProvider(ARGV.shift)
+
       else
         $out.error 'Unknown collection: '+collection
     end
@@ -304,4 +307,16 @@ class Session
     Dir.chdir pwd
     return std_err_val
   end
+
+  def showProvider(name)
+    $session.boxes = JSON.parse(IO.read($session.boxesFile))
+    if $session.boxes.has_key?(name)
+      box_params = $session.boxes[name]
+      provider = box_params["provider"].to_s
+      $out.out provider
+    else
+      $out.warning name.to_s+" box does not exist! Please, check box name!"
+    end
+  end
+
 end
