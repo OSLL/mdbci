@@ -14,9 +14,8 @@ class Session
   attr_accessor :versions
   attr_accessor :configFile
   attr_accessor :boxesFile
-  attr_accessor :awsConfigFile    # aws-config.yml file
   attr_accessor :awsConfig        # aws-config parameters
-  attr_accessor :awsConfigOption  # aws-config option from template.json
+  attr_accessor :awsConfigFile    # aws-config.yml file
   attr_accessor :isOverride
   attr_accessor :isSilent
   attr_accessor :command
@@ -213,10 +212,10 @@ class Session
     LoadNodesProvider(configs)
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
-    awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
+    @awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if @nodesProvider != "mdbci"
-      Generator.generate(path,configs,boxes,isOverride,awsConfig,nodesProvider)
+      Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
       $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_config.ini"

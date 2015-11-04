@@ -167,13 +167,13 @@ Vagrant.configure(2) do |config|
   def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, instance_type, template_path, provisioned)
 
     if template_path
-      awsdef = "config.vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync") + "\n" \
-    else
-      awsdef = ""
+      mountdef = "config.vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync") + "\n" \
+    else mountdef = ""
     end
 
-    awsdef += "\n#  -> Begin definition for machine: " + name +"\n"\
+    awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
            + "config.vm.define :"+ name +" do |" + name + "|\n" \
+           + mountdef  + "\n"\
            + "\t" + name + ".vm.provider :aws do |aws,override|\n" \
            + "\t\taws.ami = " + quote(boxurl) + "\n"\
            + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
@@ -186,10 +186,10 @@ Vagrant.configure(2) do |config|
            + "\t\tchef.roles_path = "+ quote('.') + "\n" \
            + "\t\tchef.add_role "+ quote(name) + "\n" \
            + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend #<-- end of chef binding\n"
+    end
+    awsdef +="\nend #  -> End definition for machine: " + name +"\n\n"
+    return awsdef
   end
-  awsdef +="\nend #  -> End definition for machine: " + name +"\n\n"
-  return awsdef
-end
 
 def Generator.getRoleDef(name, product, box)
 
@@ -372,7 +372,7 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
   return machine
 end
 
-def Generator.generate(path, config, boxes, override, aws_config, provider)
+def Generator.generate(path, config, boxes, override, provider)
   #TODO Errors check
   #TODO MariaDb Version Validator
 
@@ -390,9 +390,9 @@ def Generator.generate(path, config, boxes, override, aws_config, provider)
 
   vagrant.puts vagrantFileHeader
 
-  unless ($session.awsConfigOption.to_s.empty?)
+  unless ($session.awsConfig.to_s.empty?)
     # Generate AWS Configuration
-    vagrant.puts Generator.awsProviderConfigImport($session.awsConfigOption)
+    vagrant.puts Generator.awsProviderConfigImport($session.awsConfig)
     vagrant.puts Generator.vagrantConfigHeader
 
     vagrant.puts Generator.awsProviderConfig
