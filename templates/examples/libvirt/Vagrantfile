@@ -2,6 +2,10 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+#
+# Configuration with 2 node: 
+#   Ubuntu 14.04 with MariaDB 5.5 and CentOS 7.0 with MariaDB 10.0
+#
 Vagrant.configure("2") do |config|
 
   config.vm.network "private_network", type: "dhcp"
@@ -12,15 +16,14 @@ Vagrant.configure("2") do |config|
 
   config.vm.synced_folder "cnf/", "/home/vagrant/cnf_templates", type: "rsync"
 
-  # vm1
-  config.vm.define :vm4 do |node1|
+  # Ubuntu 14.04 with MariaDB 5.5
+  # TODO #6510 - mysqld don't start after installation 
+  config.vm.define :vm1 do |node1|
 
     #node1.vm.box = "bento/ubuntu-14.04"
     #node1.vm.box = "ubuntu_precise64_kvm"
-    #node1.vm.box = "dliappis/centos65minlibvirt"	# centos 6.5
     node1.vm.box = "s3than/trusty64"			# ubuntu 14.04
     #node1.vm.box = "ubuntu-14.04-ppc64"		# no access
-    #node1.vm.box = "uvsmtid/centos-7.0-minimal"
     node1.vm.hostname = 'vm1'
 
     node1.vm.synced_folder './', '/vagrant', type: 'rsync'
@@ -28,26 +31,22 @@ Vagrant.configure("2") do |config|
     node1.vm.provider :libvirt do |qemu|
       #qemu.memory = 256
       #qemu.nested = true
-      qemu.driver = "kvm" # kvm
-      #qemu.connect_via_ssh = false
-      #qemu.username = "root"
-      #qemu.storage_pool_name = "default"
+      qemu.driver = "kvm" # qemu slowly
     end
 
     node1.vm.provision "chef_solo" do |chef| 
 	chef.cookbooks_path = "../../../recipes/cookbooks/"
 	chef.roles_path = "."
-	chef.add_role "node1_ubuntu"
+	chef.add_role "node_ubuntu"
     end
    
-  end  
+  end
 
-  # vm2
+  # Centos 7.0 with MariaDB 10.0
   config.vm.define :vm2 do |node2|
 
-    node2.vm.box = "uvsmtid/centos-7.0-minimal"
-    #node2.vm.box = "s3than/trusty64"
-    #node2.vm.box = "bento/ubuntu-14.04"
+    node2.vm.box = "uvsmtid/centos-7.0-minimal"		# centos 7.0
+    #node2.vm.box = "dliappis/centos65minlibvirt"	# centos 6.5
     node2.vm.hostname = 'vm2'
 
     node2.vm.synced_folder './', '/vagrant', type: 'rsync'
@@ -61,7 +60,7 @@ Vagrant.configure("2") do |config|
     node2.vm.provision "chef_solo" do |chef| 
 	chef.cookbooks_path = "../../../recipes/cookbooks/"
 	chef.roles_path = "."
-	chef.add_role "node1_centos"
+	chef.add_role "node_centos"
     end
 
   end
