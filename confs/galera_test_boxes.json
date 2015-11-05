@@ -1,0 +1,18 @@
+{
+  "ubuntu_vivid": {
+    "provider": "aws",
+    "ami": "ami-b1443fc6",
+    "user": "ubuntu",
+    "default_instance_type": "m3.medium",
+    "platform": "ubuntu",
+    "platform_version": "vivid"
+  },
+  "centos7" : {
+    "provider": "aws",
+    "ami": "ami-1c2e8b6b",
+    "user": "ec2-user",
+    "default_instance_type": "t1.micro",
+    "platform": "centos",
+    "platform_version": "7"
+  }
+}

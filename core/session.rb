@@ -1,6 +1,7 @@
 require 'json'
 require 'fileutils'
 require 'uri'
+require 'open3'
 
 require_relative 'generator'
 require_relative 'network'
@@ -13,14 +14,16 @@ class Session
   attr_accessor :versions
   attr_accessor :configFile
   attr_accessor :boxesFile
+  attr_accessor :awsConfig        # aws-config parameters
+  attr_accessor :awsConfigFile    # aws-config.yml file
   attr_accessor :isOverride
   attr_accessor :isSilent
   attr_accessor :command
-  attr_accessor :awsConfig
   attr_accessor :repos
   attr_accessor :repoDir
   attr_accessor :mdbciNodes       # mdbci nodes
-  attr_accessor :nodesProvider    # current configuration provider
+  attr_accessor :nodesProvider   # current configuration provider
+  attr_accessor :attempts
 
   def initialize
     @repoDir = './repo.d'
@@ -29,7 +32,9 @@ class Session
 
 =begin
      Load collections from json files:
-      - boxes.json.json
+      - boxes.json
+      - template.json
+      - aws-config.yml
       - versions.json
 =end
 
@@ -38,6 +43,9 @@ class Session
     $out.info 'Load boxes from ' + $session.boxesFile
     @boxes = JSON.parse(IO.read($session.boxesFile))
     $out.info 'Found boxes: ' + $session.boxes.size().to_s
+
+    $out.info 'Load AWS config from ' + @awsConfigFile
+    @awsConfig = YAML.load_file(@awsConfigFile)['aws']
 
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
@@ -170,6 +178,7 @@ class Session
 
   end
 
+
   def platformKey(box_name)
     key = @boxes.keys.select {|value| value == box_name }
     return key.nil? ? "UNKNOWN" : @boxes[key[0]]['platform'] + '^' +@boxes[key[0]]['platform_version']
@@ -200,11 +209,17 @@ class Session
       when 'network'
         Network.show(ARGV.shift)
 
+      when 'private_ip'
+        Network.private_ip(ARGV.shift)
+
       when 'keyfile'
         Network.showKeyFile(ARGV.shift)
 
       when 'boxkeys'
         showBoxKeys
+
+      when 'provider'
+        showProvider(ARGV.shift)
 
       else
         $out.error 'Unknown collection: '+collection
@@ -235,10 +250,10 @@ class Session
     LoadNodesProvider(configs)
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
-    awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
+    @awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if @nodesProvider != "mdbci"
-      Generator.generate(path,configs,boxes,isOverride,awsConfig,nodesProvider)
+      Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
       $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_config.ini"
@@ -247,6 +262,97 @@ class Session
       mdbci = File.new(path+'/mdbci_config.ini', 'w')
       mdbci.print $session.configFile
       mdbci.close
+    end
+  end
+
+  # Deploy configurations
+  def up(args)
+    std_q_attampts = 4
+    std_err_val = 1
+
+    # No arguments provided
+    if args.nil?
+      $out.info 'Command \'up\' needs one argument, found zero'
+      return std_err_val
+    end
+
+    # No attempts provided
+    if @attempts.nil?
+      @attempts = std_q_attampts
+    end
+
+    # Saving dir, do then to change it back
+    pwd = Dir.pwd
+
+    # Separating config_path from node
+    config = []
+    node = ''
+    up_type = false # Means no node specified
+    paths = args.split('/') # Get array of dirs
+    # Get path to vagrant instance directory
+    config_path = paths[0, paths.length - 1].join('/')
+    if !config_path.empty?
+      # So there may be node specified
+      node = paths[paths.length - 1]
+      config[0] = config_path
+      config[1] = node
+      up_type = true # Node specified
+    end
+
+    # Checking if vagrant instance derictory exists
+    if Dir.exist?(config[0].to_s) # to_s in case of 'nil'
+      up_type = true # node specified
+      $out.info 'Node is specified ' + config[1] + ' in ' + config[0]
+    else
+      up_type = false # node not specified
+      $out.info 'Node isn\'t specified in ' + args
+    end
+
+    up_type ? Dir.chdir(config[0]) : Dir.chdir(args)
+
+    # Setting provider: VirtualBox, AWS, (,libvirt)
+    if File.exist?('provider')
+      @nodesProvider = File.read('provider')
+    else
+      $out.warning 'File "provider" does not found! Try to regenerate your configuration!'
+    end
+    $out.info 'Current provider: ' + @nodesProvider
+
+    (1..@attempts.to_i).each { |i|
+      $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') + 
+        args + ', attempt: ' + i.to_s
+      $out.info 'Destroying current instance'
+      cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
+      exec_cmd_destr = `#{cmd_destr}`
+      $out.info exec_cmd_destr
+      cmd_up = 'vagrant up --destroy-on-error ' + '--provider=' + @nodesProvider + ' ' +
+        (up_type ? config[1]:'')
+      $out.info 'Actual command: ' + cmd_up
+      Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
+        stdin.close
+        stdout.each_line { |line| $out.info line }
+        stdout.close
+        if wthr.value.success?
+          Dir.chdir pwd
+          return 0
+        end
+        $out.error 'Bringing up failed'
+        stderr.each_line { |line| $out.error line }
+        stderr.close
+      end
+    }
+    Dir.chdir pwd
+    return std_err_val
+  end
+
+  def showProvider(name)
+    $session.boxes = JSON.parse(IO.read($session.boxesFile))
+    if $session.boxes.has_key?(name)
+      box_params = $session.boxes[name]
+      provider = box_params["provider"].to_s
+      $out.out provider
+    else
+      $out.warning name.to_s+" box does not exist! Please, check box name!"
     end
   end
 

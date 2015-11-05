@@ -11,3 +11,6 @@ default["mariadb"]["repo"] = "http://yum.mariadb.org/"
 # mariadb repo key for rhel/fedora/centos/suse
 #default["mariadb"]["repo_key"] = "http://mirror.mephi.ru/mariadb/yum"
 default["mariadb"]["repo_key"] = " http://yum.mariadb.org/"
+
+# path for server.cnf file
+default["mariadb"]["cnf_template"] = " server1.cnf"

@@ -54,16 +54,17 @@ require 'yaml'
     EOF
   end
 
-  def Generator.vboxProviderConfig
-    vboxConfig = <<-EOF
+  def Generator.providerConfig
+    config = <<-EOF
 
-### Default (VBox) Provider config ###
-######################################
+### Default (VBox, Qemu) Provider config ###
+############################################
 #Network autoconfiguration
 config.vm.network "private_network", type: "dhcp"
 
+config.ssh.pty = true
     EOF
-    return vboxConfig
+    return config
   end
 
   def Generator.vagrantConfigHeader
@@ -92,12 +93,19 @@ Vagrant.configure(2) do |config|
     IO.write(name, content)
   end
 
-  def Generator.getVmDef(cookbook_path, name, host, boxurl, vm_mem, provisioned)
+  def Generator.getVmDef(cookbook_path, name, host, boxurl, vm_mem, template_path, provisioned)
+
+    if template_path
+      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote("/home/vagrant/cnf_templates")
+    else
+      templatedef = ""
+    end
 
     if provisioned
       vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) +"\n" \
+            + templatedef  + "\n"\
             + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
@@ -105,7 +113,8 @@ Vagrant.configure(2) do |config|
     else
       vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
-            + "\t"+name+'.vm.hostname = ' + quote(host)
+            + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
+            + templatedef
     end
 
     if vm_mem
@@ -119,10 +128,52 @@ Vagrant.configure(2) do |config|
   end
 
   #
-  def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, instance_type, provisioned)
+  def Generator.getQemuDef(cookbook_path, name, host, boxurl, template_path, provisioned)
+
+    if template_path
+      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote("/home/vagrant/cnf_templates") \
+                    +", type:"+quote("rsync")
+    else
+      templatedef = ""
+    end
+
+    if provisioned
+      vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
+            + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
+            + "\t"+name+'.vm.hostname = ' + quote(host) +"\n" \
+            + "\t"+name+'.vm.synced_folder '+quote("./")+", "+quote("/vagrant")+", type: "+quote("rsync")+"\n" \
+            + templatedef  + "\n"\
+            + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
+            + "\t\t"+'qemu.driver = ' + quote("kvm") + "\n\tend" \
+            + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
+            + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
+            + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
+            + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
+    else
+      vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
+            + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
+            + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
+            + templatedef + "\n"\
+            + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
+            + "\t\t"+'qemu.driver = ' + quote("kvm") + "\n\tend"
+    end
+
+    vmdef += "\nend # <-- end of Qemu definition>\n"
+
+    return vmdef
+  end
+
+  #
+  def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, instance_type, template_path, provisioned)
+
+    if template_path
+      mountdef = "config.vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync") + "\n" \
+    else mountdef = ""
+    end
 
     awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
            + "config.vm.define :"+ name +" do |" + name + "|\n" \
+           + mountdef  + "\n"\
            + "\t" + name + ".vm.provider :aws do |aws,override|\n" \
            + "\t\taws.ami = " + quote(boxurl) + "\n"\
            + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
@@ -135,10 +186,10 @@ Vagrant.configure(2) do |config|
            + "\t\tchef.roles_path = "+ quote('.') + "\n" \
            + "\t\tchef.add_role "+ quote(name) + "\n" \
            + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend #<-- end of chef binding\n"
+    end
+    awsdef +="\nend #  -> End definition for machine: " + name +"\n\n"
+    return awsdef
   end
-  awsdef +="\nend #  -> End definition for machine: " + name +"\n\n"
-  return awsdef
-end
 
 def Generator.getRoleDef(name, product, box)
 
@@ -182,9 +233,17 @@ def Generator.getRoleDef(name, product, box)
 
   config = Hash.new
 
+  # edit recipe attributes in role
   config['version'] = repo['version']
   config['repo'] = repo['repo']
   config['repo_key'] = repo['repo_key']
+  if !product['cnf_template'].nil? && !product['cnf_template_path'].nil?
+    config['cnf_template'] = product['cnf_template']
+    config['cnf_template_path'] = product['cnf_template_path']
+  end
+  if !product['node_name'].nil?
+    config['node_name'] = product['node_name']
+  end
   productConfig[product_name] = config
 
   role['name'] = name
@@ -276,6 +335,9 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
 
   if (provisioned)
     product = node[1]['product']
+    if !product['cnf_template_path'].nil?
+      template_path = product['cnf_template_path']
+    end
   end
 
   # generate node definition and role
@@ -283,11 +345,18 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
   if Generator.boxValid?(box, boxes)
     case provider
       when 'virtualbox'
-        machine = getVmDef(cookbook_path, name, host, boxurl, vm_mem, provisioned)
+        machine = getVmDef(cookbook_path, name, host, boxurl, vm_mem, template_path, provisioned)
       when 'aws'
-        machine = getAWSVmDef(cookbook_path, name, amiurl, user, instance, provisioned)
+        machine = getAWSVmDef(cookbook_path, name, amiurl, user, instance, template_path, provisioned)
+      when 'libvirt'
+        machine = getQemuDef(cookbook_path, name, host, boxurl, template_path, provisioned)
       else
         $out.warning 'WARNING: Configuration has not support AWS, config file or other vm provision'
+    end
+    # write nodes provider to file
+    provider_file = path+"/provider"
+    if !File.exists?(provider_file)
+      File.open(path+"/provider", 'w') { |f| f.write(provider.to_s) }
     end
   else
     $out.warning 'WARNING: Box '+box+'is not installed or configured ->SKIPPING'
@@ -303,7 +372,7 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
   return machine
 end
 
-def Generator.generate(path, config, boxes, override, aws_config,provider)
+def Generator.generate(path, config, boxes, override, provider)
   #TODO Errors check
   #TODO MariaDb Version Validator
 
@@ -314,15 +383,16 @@ def Generator.generate(path, config, boxes, override, aws_config,provider)
     cookbook_path = config['cookbook_path']
   end
 
-  $out.info 'Global cookbook_path=' + cookbook_path
+  $out.info 'Global cookbook_path = ' + cookbook_path
+  $out.info 'Nodes provider = ' + provider
 
   vagrant = File.open(path+'/Vagrantfile', 'w')
 
   vagrant.puts vagrantFileHeader
 
-  unless (aws_config.to_s.empty?)
+  unless ($session.awsConfig.to_s.empty?)
     # Generate AWS Configuration
-    vagrant.puts Generator.awsProviderConfigImport(aws_config)
+    vagrant.puts Generator.awsProviderConfigImport($session.awsConfig)
     vagrant.puts Generator.vagrantConfigHeader
 
     vagrant.puts Generator.awsProviderConfig
@@ -333,19 +403,18 @@ def Generator.generate(path, config, boxes, override, aws_config,provider)
     end
     vagrant.puts Generator.vagrantConfigFooter
   else
-    # Generate VBox Configuration
+    # Generate VBox/Qemu Configuration
     vagrant.puts Generator.vagrantConfigHeader
-    vagrant.puts Generator.vboxProviderConfig
+    vagrant.puts Generator.providerConfig
 
     config.each do |node|
       unless (node[1]['box'].nil?)
-        $out.info 'Generate VBox Node definition for ['+node[0]+']'
+        $out.info 'Generate VBox/Qemu Node definition for ['+node[0]+']'
         vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
       end
     end
     vagrant.puts Generator.vagrantConfigFooter
   end
-
   vagrant.close
 end
 
