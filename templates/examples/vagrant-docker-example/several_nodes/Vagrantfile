@@ -18,6 +18,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 #  config.vm.network :forwarded_port, host: 3306, guest: 3306
 
+  # install Chef via plugin
+  #config.omnibus.chef_version = "12.5.1"
+
   # node0 - Ubuntu 14.04
 #  config.vm.define "node0" do |node0|  
 #    node0.vm.provider "docker" do |d|
