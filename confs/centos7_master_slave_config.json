@@ -1,9 +1,9 @@
 {
   "cookbook_path" : "../recipes/cookbooks/",
-  "centos6master" : 
+  "centos7master" : 
   {
     "hostname" : "mariadbmaster",
-    "box" : "centos6",
+    "box" : "centos7",
     "product" : {
       "name": "mariadb",
       "version": "10.1",
@@ -13,10 +13,10 @@
       "node_name" : "mariadbmaster"
     }
   },
-  "centos6slave" : 
+  "centos7slave" : 
   {
     "hostname" : "mariadbslave",
-    "box" : "centos6",
+    "box" : "centos7",
     "product" : {
       "name": "mariadb",
       "version": "10.1",
