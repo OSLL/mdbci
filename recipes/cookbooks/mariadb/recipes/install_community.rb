@@ -98,8 +98,16 @@ when "suse"
     command "zypper -n install --from mariadb MariaDB-server MariaDB-client &> /vagrant/log"
   end
 when "debian"
-  package 'mariadb-server'
-  package 'mariadb-client'
+  #bash "MariaDB install" do
+  execute "MariaDB installation process" do
+    command "DEBIAN_FRONTEND=noninteractive apt-get -y install mariadb-client mariadb-server > x"
+  end
+  #package 'mariadb-server'
+  #package 'mariadb-client'
+  # 6510
+  #execute "6510 configure mariadb-server" do
+  #  command "dpkg --configure -a"
+  #end
 when "windows"
   windows_package "MariaDB" do
     source "#{Chef::Config[:file_cache_path]}/mariadb.msi"
@@ -110,6 +118,7 @@ else
   package 'MariaDB-server'
   package 'MariaDB-client'
 end
+
 
 # cnf_template configuration
 case node[:platform_family]
