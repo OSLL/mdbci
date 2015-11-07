@@ -1,0 +1,29 @@
+{
+  "cookbook_path" : "../recipes/cookbooks/",
+  "centos6master" : 
+  {
+    "hostname" : "mariadbmaster",
+    "box" : "centos6",
+    "product" : {
+      "name": "mariadb",
+      "version": "10.1",
+      "cnf_template" : "mariadb_master_my.cnf",
+      "my_cnf_template" : "my.cnf",
+      "cnf_template_path" : "../cnf",
+      "node_name" : "mariadbmaster"
+    }
+  },
+  "centos6slave" : 
+  {
+    "hostname" : "mariadbslave",
+    "box" : "centos6",
+    "product" : {
+      "name": "mariadb",
+      "version": "10.1",
+      "cnf_template" : "mariadb_slave_my.cnf",
+      "my_cnf_template" : "my.cnf",
+      "cnf_template_path" : "../cnf",
+      "node_name" : "mariadbslave"
+    }
+  }
+}
