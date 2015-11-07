@@ -2,6 +2,10 @@ require 'shellwords'
 
 include_recipe "mariadb::mdbcrepos"
 
+execute "Turn off SElinux" do
+    command "echo " + node['mariadb']['cnf_template']
+end
+
 
 # TODO: BUG: #6309 Check if SElinux already disabled!
 # Turn off SElinux
@@ -143,10 +147,10 @@ case node[:platform_family]
       command copycmd
     end
 
-    addlinecmd = 'echo "!includedir /etc/my.cnf.d" >> /etc/my.cnf'
-    execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-      command addlinecmd
-    end
+    #addlinecmd = 'echo "!includedir /etc/my.cnf.d" >> /etc/my.cnf'
+    #execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
+    #  command addlinecmd
+    #end
 end
 
 bash 'Restart mariadb service' do
@@ -155,17 +159,17 @@ end
 
 bash 'Create mariadb users' do
   code <<-EOF
-  /usr/bin/mysql -e 'CREATE USER repl@'%' IDENTIFIED BY 'repl';'
-  /usr/bin/mysql -e 'GRANT replication slave ON *.* TO repl@'%' IDENTIFIED BY 'repl';'
-  /usr/bin/mysql -e 'CREATE USER skysql@'%' IDENTIFIED BY 'skysql';'
-  /usr/bin/mysql -e 'CREATE USER skysql@'localhost' IDENTIFIED BY 'skysql';'
-  /usr/bin/mysql -e 'GRANT ALL PRIVILEGES ON *.* TO skysql@'%' WITH GRANT OPTION;'
-  /usr/bin/mysql -e 'GRANT ALL PRIVILEGES ON *.* TO skysql@'localhost' WITH GRANT OPTION;'
-  /usr/bin/mysql -e 'CREATE USER maxuser@'%' identified by 'maxpwd';'
-  /usr/bin/mysql -e 'CREATE USER maxuser@'localhost' identified by 'maxpwd';'
-  /usr/bin/mysql -e 'GRANT ALL PRIVILEGES ON *.* TO maxuser@'%' WITH GRANT OPTION;'
-  /usr/bin/mysql -e 'GRANT ALL PRIVILEGES ON *.* TO maxuser@'localhost' WITH GRANT OPTION;'
-  /usr/bin/mysql -e 'FLUSH PRIVILEGES;'
+  /usr/bin/mysql -u root -e "CREATE USER 'repl'@'%' IDENTIFIED BY 'repl';"
+  /usr/bin/mysql -u root -e "GRANT replication slave ON *.* TO 'repl'@'%' IDENTIFIED BY 'repl';"
+  /usr/bin/mysql -u root -e "CREATE USER 'skysql'@'%' IDENTIFIED BY 'skysql';"
+  /usr/bin/mysql -u root -e "CREATE USER 'skysql'@'localhost' IDENTIFIED BY 'skysql';"
+  /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'skysql'@'%' WITH GRANT OPTION;"
+  /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'skysql'@'localhost' WITH GRANT OPTION;"
+  /usr/bin/mysql -u root -e "CREATE USER 'maxuser'@'%' identified by 'maxpwd';"
+  /usr/bin/mysql -u root -e "CREATE USER 'maxuser'@'localhost' identified by 'maxpwd';"
+  /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'maxuser'@'%' WITH GRANT OPTION;"
+  /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'maxuser'@'localhost' WITH GRANT OPTION;"
+  /usr/bin/mysql -u root -e "FLUSH PRIVILEGES;"
   EOF
 end
 
