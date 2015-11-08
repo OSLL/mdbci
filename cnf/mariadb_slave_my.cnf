@@ -15,8 +15,7 @@ log-bin = /var/lib/mysql/mysql-bin
 binlog_format = ROW
 [mysqld]
 #bind-address = 127.0.0.1
-server-id = ''
-binlog-do-db = 
+server-id = 2
 relay_log = /var/lib/mysql/mysql-relay-bin
 relay-log-index = /var/lib/mysql/mysql-relay-bin.index
 log-error = /var/lib/mysql/mysql.err
