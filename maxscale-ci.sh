@@ -6,4 +6,8 @@
 dest=$2
 ci=$1
 
-~/mdbci-repository-config/maxscale.sh http://maxscale-jenkins.mariadb.com/ci-repository/$ci/mariadb-maxscale/ $dest
+if [ -z $ci_url ]; then
+	export ci_url="http://maxscale-jenkins.mariadb.com/ci-repository/"
+fi
+
+~/mdbci-repository-config/maxscale.sh $ci_url/$ci/mariadb-maxscale/ $dest
