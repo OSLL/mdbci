@@ -1,12 +1,14 @@
 {
-  "name": "node2",
+  "name": "node1_centos",
   "default_attributes": {
   },
   "override_attributes": {
     "mariadb": {
       "version": "10.0",
-      "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.0/ubuntu precise main",
-      "repo_key": "0xcbcb082a1bb943db"
+      "repo": "http://yum.mariadb.org/10.0/centos7-amd64",
+      "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+      "cnf_template" : "skysql-galera.cnf", 
+      "cnf_template_path" : "cnf/"
     }
   },
   "json_class": "Chef::Role",
