@@ -54,10 +54,21 @@ require 'yaml'
     EOF
   end
 
-  def Generator.providerConfig
+  def Generator.providerVBoxConfig
     config = <<-EOF
 
-### Default (VBox, Qemu) Provider config ###
+### Default (VBox) Provider config ###
+############################################
+#Network autoconfiguration
+config.vm.network "private_network", type: "dhcp"
+    EOF
+    return config
+  end
+
+  def Generator.providerQemuConfig
+    config = <<-EOF
+
+### Default (Qemu) Provider config ###
 ############################################
 #Network autoconfiguration
 config.vm.network "private_network", type: "dhcp"
@@ -372,7 +383,7 @@ def Generator.nodeDefinition(node, boxes, path, cookbook_path)
   return machine
 end
 
-def Generator.generate(path, config, boxes, override, aws_config, provider)
+def Generator.generate(path, config, boxes, override, provider)
   #TODO Errors check
   #TODO MariaDb Version Validator
 
@@ -389,10 +400,10 @@ def Generator.generate(path, config, boxes, override, aws_config, provider)
   vagrant = File.open(path+'/Vagrantfile', 'w')
 
   vagrant.puts vagrantFileHeader
-
+  
   unless ($session.awsConfigOption.to_s.empty?)
     # Generate AWS Configuration
-    vagrant.puts Generator.awsProviderConfigImport($session.awsConfigOption)
+    vagrant.puts Generator.awsProviderConfigImport($session.awsConfigFile)
     vagrant.puts Generator.vagrantConfigHeader
 
     vagrant.puts Generator.awsProviderConfig
@@ -405,7 +416,11 @@ def Generator.generate(path, config, boxes, override, aws_config, provider)
   else
       # Generate VBox/Qemu Configuration
       vagrant.puts Generator.vagrantConfigHeader
-      vagrant.puts Generator.providerConfig
+      if $session.nodesProvider == "virtualbox"
+        vagrant.puts Generator.providerVBoxConfig
+      else
+        vagrant.puts Generator.providerQemuConfig
+      end
 
       config.each do |node|
         unless (node[1]['box'].nil?)

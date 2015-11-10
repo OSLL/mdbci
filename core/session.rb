@@ -213,10 +213,10 @@ class Session
     LoadNodesProvider(configs)
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
-    awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
+    @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if @nodesProvider != "mdbci"
-      Generator.generate(path,configs,boxes,isOverride,awsConfig,nodesProvider)
+      Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
       $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_config.ini"
