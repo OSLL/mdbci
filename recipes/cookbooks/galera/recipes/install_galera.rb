@@ -126,6 +126,39 @@ else
   package 'MariaDB-Galera-server'
 end
 
+  # cnf_template configuration
+case node[:platform_family]
+
+  when "debian", "ubuntu"
+  
+    createcmd = "mkdir /etc/mysql/my.cnf.d"
+    execute "Create cnf_template directory" do
+      command createcmd
+    end
+
+    copycmd = 'cp /home/vagrant/cnf_templates/' + node['galera']['cnf_template'] + ' /etc/mysql/my.cnf.d'
+    execute "Copy mdbci_server.cnf to cnf_template directory" do
+      command copycmd
+    end
+
+    addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
+    execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
+      command addlinecmd
+    end
+
+  when "rhel", "fedora", "centos", "suse"
+
+    copycmd = 'cp /home/vagrant/cnf_templates/' + node['galera']['cnf_template'] + ' /etc/my.cnf.d'
+    execute "Copy mdbci_server.cnf to cnf_template directory" do
+      command copycmd
+    end
+
+    #addlinecmd = 'echo "!includedir /etc/my.cnf.d" >> /etc/my.cnf'
+    #execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
+    #  command addlinecmd
+    #end
+end
+
 # configure galera server.cnf file
 case node[:platform_family]
 
@@ -189,72 +222,6 @@ case node[:platform_family]
     code <<-EOF
     sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
     EOF
-  end
-
-  # cnf_template configuration
-  case node[:platform_family]
-
-    when "debian", "ubuntu"
-    
-      createcmd = "mkdir /etc/mysql/my.cnf.d"
-      execute "Create cnf_template directory" do
-        command createcmd
-      end
-
-      copycmd = 'cp /home/vagrant/cnf_templates/' + node['galera']['cnf_template'] + ' /etc/mysql/my.cnf.d'
-      execute "Copy mdbci_server.cnf to cnf_template directory" do
-        command copycmd
-      end
-
-      addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
-      execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-        command addlinecmd
-      end
-
-    when "rhel", "fedora", "centos", "suse"
-
-      copycmd = 'cp /home/vagrant/cnf_templates/' + node['galera']['cnf_template'] + ' /etc/my.cnf.d'
-      execute "Copy mdbci_server.cnf to cnf_template directory" do
-        command copycmd
-      end
-
-      addlinecmd = 'echo "!includedir /etc/my.cnf.d" >> /etc/my.cnf'
-      execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-        command addlinecmd
-      end
-  end
-
-  # cnf_template configuration
-  case node[:platform_family]
-
-    when "debian", "ubuntu"
-    
-      createcmd = "mkdir /etc/mysql/my.cnf.d"
-      execute "Create cnf_template directory" do
-        command createcmd
-      end
-
-      copycmd = 'cp /home/vagrant/cnf_templates/' + node['galera']['cnf_template'] + ' /etc/mysql/my.cnf.d'
-      execute "Copy mdbci_server.cnf to cnf_template directory" do
-        command copycmd
-      end
-
-      addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
-      execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-        command addlinecmd
-      end
-
-    when "rhel", "fedora", "centos", "suse"
-
-      copycmd = 'cp /home/vagrant/cnf_templates/' + node['galera']['cnf_template'] + ' /etc/my.cnf.d'
-      execute "Copy mdbci_server.cnf to cnf_template directory" do
-        command copycmd
-      end
-
-      #addlinecmd = 'echo "!includedir /etc/my.cnf.d" >> /etc/my.cnf'
-      #execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-      #  command addlinecmd
-      #end
   end
 
   bash 'Restart mariadb service' do
