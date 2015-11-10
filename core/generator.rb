@@ -54,10 +54,21 @@ require 'yaml'
     EOF
   end
 
-  def Generator.providerConfig
+  def Generator.providerVboxConfig
     config = <<-EOF
 
-### Default (VBox, Qemu) Provider config ###
+### Default (VBox) Provider config ###
+############################################
+#Network autoconfiguration
+config.vm.network "private_network", type: "dhcp"
+    EOF
+    return config
+  end
+
+  def Generator.providerQemuConfig
+    config = <<-EOF
+
+### Default (Qemu) Provider config ###
 ############################################
 #Network autoconfiguration
 config.vm.network "private_network", type: "dhcp"
@@ -405,7 +416,11 @@ def Generator.generate(path, config, boxes, override, provider)
   else
       # Generate VBox/Qemu Configuration
       vagrant.puts Generator.vagrantConfigHeader
-      vagrant.puts Generator.providerConfig
+      if $session.nodesProvider == "virtualbox"
+        vagrant.puts Generator.providerVboxConfig
+      else
+        vagrant.puts Generator.providerQemuConfig
+      end
 
       config.each do |node|
         unless (node[1]['box'].nil?)
