@@ -94,15 +94,18 @@ system 'echo Platform family: '+node[:platform_family]
 # Install packages
 case node[:platform_family]
   when "suse"
-  if node['galera']['version'] == "10.1"
-    execute "install" do
-      command "zypper -n install MariaDB-server"
+    if node['galera']['version'] == "10.1"
+      execute "install" do
+        command "zypper -n install MariaDB-server"
+      end
+    else
+      execute "install" do
+        command "zypper -n install MariaDB-Galera-server"
+      end
     end
-  else
     execute "install" do
-      command "zypper -n install MariaDB-Galera-server"
+      command "zypper -n install galera"
     end
-  end
 
   when "rhel", "fedora", "centos"
     system 'echo shell install on: '+node[:platform_family]
@@ -115,6 +118,9 @@ case node[:platform_family]
         command "yum --assumeyes -c /etc/yum.repos.d/galera.repo install MariaDB-Galera-server"
       end
     end
+    execute "install" do
+      command "yum --assumeyes -c /etc/yum.repos.d/galera.repo install galera"
+    end
  
   when "debian"
     if node['galera']['version'] == "10.1"
@@ -122,8 +128,10 @@ case node[:platform_family]
     else
       package 'mariadb-galera-server'
     end
+    package 'galera'
 else
   package 'MariaDB-Galera-server'
+  package 'galera'
 end
 
   # cnf_template configuration
@@ -193,6 +201,13 @@ case node[:platform_family]
       EOF
     end
 
+    bash 'Configure Galera server.cnf - Get/Set Galera REP-USERNAME, REP-PASSWORD' do
+      code <<-EOF
+      sed -i "s|###REP-USERNAME###|repl|g\" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      sed -i "s|###REP-PASSWORD###|repl|g\" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      EOF
+    end
+
   when "rhel", "fedora", "centos", "suse"
 
     bash 'Configure Galera server.cnf - Get/Set Galera LIB_PATH' do
@@ -216,12 +231,19 @@ case node[:platform_family]
         sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
         EOF
       end
-  end
 
-  bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
-    code <<-EOF
-    sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
-    EOF
+    bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
+      code <<-EOF
+      sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      EOF
+    end
+
+    bash 'Configure Galera server.cnf - Get/Set Galera REP-USERNAME, REP-PASSWORD' do
+      code <<-EOF
+      sed -i "s|###REP-USERNAME###|repl|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      sed -i "s|###REP-PASSWORD###|repl|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      EOF
+    end
   end
 
   bash 'Restart mariadb service' do
