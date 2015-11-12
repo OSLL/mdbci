@@ -129,9 +129,9 @@ case node[:platform_family]
       package 'mariadb-galera-server'
     end
     package 'galera'
-else
-  package 'MariaDB-Galera-server'
-  package 'galera'
+  else
+    package 'MariaDB-Galera-server'
+    package 'galera'
 end
 
   # cnf_template configuration
@@ -232,7 +232,7 @@ case node[:platform_family]
         EOF
       end
     end
-    
+
     bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
       code <<-EOF
       sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
@@ -245,29 +245,28 @@ case node[:platform_family]
       sed -i "s|###REP-PASSWORD###|repl|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
-  
+end
 
-  bash 'Restart mariadb service' do
-    code "service mysql restart"
-  end
+bash 'Restart mariadb service' do
+  code "service mysql restart"
+end
 
-  bash 'Create mariadb users' do
-    code <<-EOF
-    /usr/bin/mysql -u root -e "CREATE USER 'repl'@'%' IDENTIFIED BY 'repl';"
-    /usr/bin/mysql -u root -e "GRANT replication slave ON *.* TO 'repl'@'%' IDENTIFIED BY 'repl';"
-    /usr/bin/mysql -u root -e "CREATE USER 'skysql'@'%' IDENTIFIED BY 'skysql';"
-    /usr/bin/mysql -u root -e "CREATE USER 'skysql'@'localhost' IDENTIFIED BY 'skysql';"
-    /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'skysql'@'%' WITH GRANT OPTION;"
-    /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'skysql'@'localhost' WITH GRANT OPTION;"
-    /usr/bin/mysql -u root -e "CREATE USER 'maxuser'@'%' identified by 'maxpwd';"
-    /usr/bin/mysql -u root -e "CREATE USER 'maxuser'@'localhost' identified by 'maxpwd';"
-    /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'maxuser'@'%' WITH GRANT OPTION;"
-    /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'maxuser'@'localhost' WITH GRANT OPTION;"
-    /usr/bin/mysql -u root -e "FLUSH PRIVILEGES;"
-    EOF
-  end
+bash 'Create mariadb users' do
+  code <<-EOF
+  /usr/bin/mysql -u root -e "CREATE USER 'repl'@'%' IDENTIFIED BY 'repl';"
+  /usr/bin/mysql -u root -e "GRANT replication slave ON *.* TO 'repl'@'%' IDENTIFIED BY 'repl';"
+  /usr/bin/mysql -u root -e "CREATE USER 'skysql'@'%' IDENTIFIED BY 'skysql';"
+  /usr/bin/mysql -u root -e "CREATE USER 'skysql'@'localhost' IDENTIFIED BY 'skysql';"
+  /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'skysql'@'%' WITH GRANT OPTION;"
+  /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'skysql'@'localhost' WITH GRANT OPTION;"
+  /usr/bin/mysql -u root -e "CREATE USER 'maxuser'@'%' identified by 'maxpwd';"
+  /usr/bin/mysql -u root -e "CREATE USER 'maxuser'@'localhost' identified by 'maxpwd';"
+  /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'maxuser'@'%' WITH GRANT OPTION;"
+  /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'maxuser'@'localhost' WITH GRANT OPTION;"
+  /usr/bin/mysql -u root -e "FLUSH PRIVILEGES;"
+  EOF
+end
 
-  bash 'Create test database' do
-    code "/usr/bin/mysql -e 'CREATE DATABASE IF NOT EXISTS test;'"
-  end
+bash 'Create test database' do
+  code "/usr/bin/mysql -e 'CREATE DATABASE IF NOT EXISTS test;'"
 end
