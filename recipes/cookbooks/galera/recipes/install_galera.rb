@@ -174,7 +174,7 @@ case node[:platform_family]
 
     bash 'Configure Galera server.cnf - Get/Set Galera LIB_PATH' do
       code <<-EOF
-      sed -i "s|###GALERA-LIB-PATH###|/usr/lib/galera/$(ls /usr/lib/galera | grep so)|g\" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      sed -i "s|###GALERA-LIB-PATH###|/usr/lib/galera/$(ls /usr/lib/galera | grep so)|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 
@@ -197,14 +197,14 @@ case node[:platform_family]
 
     bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
       code <<-EOF
-      sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g\" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 
     bash 'Configure Galera server.cnf - Get/Set Galera REP-USERNAME, REP-PASSWORD' do
       code <<-EOF
-      sed -i "s|###REP-USERNAME###|repl|g\" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
-      sed -i "s|###REP-PASSWORD###|repl|g\" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      sed -i "s|###REP-USERNAME###|repl|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      sed -i "s|###REP-PASSWORD###|repl|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 
@@ -212,7 +212,7 @@ case node[:platform_family]
 
     bash 'Configure Galera server.cnf - Get/Set Galera LIB_PATH' do
       code <<-EOF
-      sed -i "s|###GALERA-LIB-PATH###|$(rpm -ql galera | grep so)|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      sed -i "s|###GALERA-LIB-PATH###|$(rpm -ql galera | grep so)|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 
@@ -234,14 +234,14 @@ case node[:platform_family]
 
     bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
       code <<-EOF
-      sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 
     bash 'Configure Galera server.cnf - Get/Set Galera REP-USERNAME, REP-PASSWORD' do
       code <<-EOF
-      sed -i "s|###REP-USERNAME###|repl|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
-      sed -i "s|###REP-PASSWORD###|repl|g\" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      sed -i "s|###REP-USERNAME###|repl|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      sed -i "s|###REP-PASSWORD###|repl|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
   end
