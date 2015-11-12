@@ -231,12 +231,21 @@ case node[:platform_family]
       EOF
     end
 
-    bash 'Configure Galera server.cnf - Get/Set Galera REP-USERNAME, REP-PASSWORD' do
+    bash 'Configure Galera server.cnf - Set Galera REP-USERNAME, REP-PASSWORD' do
       code <<-EOF
       sed -i "s|###REP-USERNAME###|repl|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       sed -i "s|###REP-PASSWORD###|repl|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
+
+    bash 'Configure Galera server.cnf - Set Galera pif-file, log-file' do
+      code <<-EOF
+        echo "[mysqld_safe]" >> /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        echo "log-error=/var/log/mysqld.log" >> /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        echo "pid-file=/var/lib/mysql/server01.reisforum.info.pid" >> /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      EOF
+    end
+
 
   when "rhel", "fedora", "centos", "suse"
 
@@ -269,10 +278,18 @@ case node[:platform_family]
       EOF
     end
 
-    bash 'Configure Galera server.cnf - Get/Set Galera REP-USERNAME, REP-PASSWORD' do
+    bash 'Configure Galera server.cnf - Set Galera REP-USERNAME, REP-PASSWORD' do
       code <<-EOF
       sed -i "s|###REP-USERNAME###|repl|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       sed -i "s|###REP-PASSWORD###|repl|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+      EOF
+    end
+
+    bash 'Configure Galera server.cnf - Set Galera pif-file, log-file' do
+      code <<-EOF
+        echo "[mysqld_safe]" >> /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        echo "log-error=/var/log/mysqld.log" >> /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        echo "pid-file=/var/lib/mysql/server01.reisforum.info.pid" >> /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 end
