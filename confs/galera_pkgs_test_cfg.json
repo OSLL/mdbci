@@ -1,0 +1,30 @@
+{
+	"cookbook_path" : "../recipes/cookbooks/",
+	"aws_config" : "../aws-config.yml",
+	"node0" :
+	{
+		"hostname" : "galeraCentos7",
+		"box" : "centos7",
+		"product" : 
+		{ 
+			"name": "galera",
+			"version"  : "10.0",
+			"cnf_template" : "server1.cnf",
+			"cnf_template_path" : "../cnf",
+			"node_name" : "galeraCentos7"
+		}
+	},
+	"node1" :
+	{
+		"hostname" : "galeraUbuntuVivid",
+		"box" : "ubuntu_vivid",
+		"product" : 
+		{ 
+			"name": "galera",
+			"version"  : "10.1",
+			"cnf_template" : "server1.cnf",
+			"cnf_template_path" : "../cnf",
+			"node_name" : "galeraUbuntuVivid"
+		}
+	}
+}

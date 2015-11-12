@@ -14,8 +14,9 @@ class Session
   attr_accessor :versions
   attr_accessor :configFile
   attr_accessor :boxesFile
-  attr_accessor :awsConfigFile
-  attr_accessor :awsConfig
+  attr_accessor :awsConfigFile    # aws-config.yml file
+  attr_accessor :awsConfig        # aws-config parameters
+  attr_accessor :awsConfigOption  # aws-config option from template.json
   attr_accessor :isOverride
   attr_accessor :isSilent
   attr_accessor :command
@@ -32,7 +33,9 @@ class Session
 
 =begin
      Load collections from json files:
-      - boxes.json.json
+      - boxes.json
+      - template.json
+      - aws-config.yml
       - versions.json
 =end
 
@@ -178,6 +181,9 @@ class Session
       when 'boxkeys'
         showBoxKeys
 
+      when 'provider'
+        showProvider(ARGV.shift)
+
       else
         $out.error 'Unknown collection: '+collection
     end
@@ -205,12 +211,12 @@ class Session
 #
     @configs = JSON.parse(IO.read($session.configFile))
     LoadNodesProvider(configs)
-#
+    #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
-    awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
-#
+    @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
+    #
     if @nodesProvider != "mdbci"
-      Generator.generate(path,configs,boxes,isOverride,awsConfig,nodesProvider)
+      Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
       $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_config.ini"
@@ -301,4 +307,16 @@ class Session
     Dir.chdir pwd
     return std_err_val
   end
+
+  def showProvider(name)
+    $session.boxes = JSON.parse(IO.read($session.boxesFile))
+    if $session.boxes.has_key?(name)
+      box_params = $session.boxes[name]
+      provider = box_params["provider"].to_s
+      $out.out provider
+    else
+      $out.warning name.to_s+" box does not exist! Please, check box name!"
+    end
+  end
+
 end
