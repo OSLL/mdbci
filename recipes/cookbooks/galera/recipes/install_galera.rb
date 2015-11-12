@@ -231,7 +231,8 @@ case node[:platform_family]
         sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
         EOF
       end
-
+    end
+    
     bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
       code <<-EOF
       sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
@@ -244,7 +245,7 @@ case node[:platform_family]
       sed -i "s|###REP-PASSWORD###|repl|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
-  end
+  
 
   bash 'Restart mariadb service' do
     code "service mysql restart"
