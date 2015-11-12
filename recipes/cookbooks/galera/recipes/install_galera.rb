@@ -169,7 +169,7 @@ case node[:platform_family]
 
   when "debian", "ubuntu"
   
-    createcmd = "mkdir /etc/mysql/my.cnf.d"
+    createcmd = "mkdir -p /etc/mysql/my.cnf.d"
     execute "Create cnf_template directory" do
       command createcmd
     end
@@ -179,22 +179,28 @@ case node[:platform_family]
       command copycmd
     end
 
-    addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
+    addlinecmd = 'grep -q -F "!includedir /etc/mysql/my.cnf.d" /etc/mysql/my.cnf || echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
     execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
       command addlinecmd
     end
 
   when "rhel", "fedora", "centos", "suse"
 
+    createcmd = "mkdir -p /etc/my.cnf.d"
+    execute "Create cnf_template directory if not exists" do
+      command createcmd
+    end
+
     copycmd = 'cp /home/vagrant/cnf_templates/' + node['galera']['cnf_template'] + ' /etc/my.cnf.d'
     execute "Copy mdbci_server.cnf to cnf_template directory" do
       command copycmd
     end
 
-    #addlinecmd = 'echo "!includedir /etc/my.cnf.d" >> /etc/my.cnf'
-    #execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-    #  command addlinecmd
-    #end
+    addinclude = 'grep -q -F "!includedir /etc/my.cnf.d" /etc/my.cnf || echo "!includedir /etc/my.cnf.d" >> /etc/my.cnf'
+    execute "Copy mdbci_server.cnf to cnf_template directory" do
+      command addinclude
+    end
+
 end
 
 # configure galera server.cnf file
