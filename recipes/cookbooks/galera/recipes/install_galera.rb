@@ -170,7 +170,7 @@ case node[:platform_family]
   when "debian", "ubuntu"
   
     createcmd = "mkdir -p /etc/mysql/my.cnf.d"
-    execute "Create cnf_template directory" do
+    execute "Create cnf_template directory if not exists" do
       command createcmd
     end
 
@@ -244,15 +244,6 @@ case node[:platform_family]
       EOF
     end
 
-    bash 'Configure Galera server.cnf - Set Galera pif-file, log-file' do
-      code <<-EOF
-        echo "[mysqld_safe]" >> /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
-        echo "log-error=/var/log/mysqld.log" >> /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
-        echo "pid-file=/var/run/mysqld/mysqld.pid" >> /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
-      EOF
-    end
-
-
   when "rhel", "fedora", "centos", "suse"
 
     bash 'Configure Galera server.cnf - Get/Set Galera LIB_PATH' do
@@ -291,13 +282,6 @@ case node[:platform_family]
       EOF
     end
 
-    bash 'Configure Galera server.cnf - Set Galera pif-file, log-file' do
-      code <<-EOF
-        echo "[mysqld_safe]" >> /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
-        echo "log-error=/var/log/mysqld.log" >> /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
-        echo "pid-file=/var/run/mysqld/mysqld.pid" >> /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
-      EOF
-    end
 end
 
 bash 'Restart mariadb service' do
