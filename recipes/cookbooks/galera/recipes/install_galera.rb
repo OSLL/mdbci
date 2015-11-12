@@ -248,7 +248,7 @@ case node[:platform_family]
       code <<-EOF
         echo "[mysqld_safe]" >> /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
         echo "log-error=/var/log/mysqld.log" >> /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
-        echo "pid-file=/var/lib/mysql/server01.reisforum.info.pid" >> /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        echo "pid-file=/var/run/mysqld/mysqld.pid" >> /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 
@@ -295,7 +295,7 @@ case node[:platform_family]
       code <<-EOF
         echo "[mysqld_safe]" >> /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
         echo "log-error=/var/log/mysqld.log" >> /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
-        echo "pid-file=/var/lib/mysql/server01.reisforum.info.pid" >> /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        echo "pid-file=/var/run/mysqld/mysqld.pid" >> /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 end
