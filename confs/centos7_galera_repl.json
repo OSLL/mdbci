@@ -7,7 +7,7 @@
     "box" : "centos7",
     "product" : {
       "name": "mariadb",
-      "version": "10.1",
+      "version": "5.5",
       "cnf_template" : "mariadb_master.cnf",
       "my_cnf_template" : "my.cnf",
       "cnf_template_path" : "../cnf",
@@ -20,7 +20,7 @@
     "box" : "centos7",
     "product" : {
       "name": "galera",
-      "version": "10.1",
+      "version": "5.5",
       "cnf_template" : "galera_node.cnf",
       "my_cnf_template" : "my.cnf",
       "cnf_template_path" : "../cnf",
@@ -33,7 +33,7 @@
     "box" : "centos7",
     "product" : {
       "name": "galera",
-      "version": "10.1",
+      "version": "5.5",
       "cnf_template" : "galera_node.cnf",
       "my_cnf_template" : "my.cnf",
       "cnf_template_path" : "../cnf",
