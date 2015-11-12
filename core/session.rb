@@ -16,6 +16,7 @@ class Session
   attr_accessor :boxesFile
   attr_accessor :awsConfig        # aws-config parameters
   attr_accessor :awsConfigFile    # aws-config.yml file
+  attr_accessor :awsConfigOption  # path to aws-config.yml in template file
   attr_accessor :isOverride
   attr_accessor :isSilent
   attr_accessor :command
@@ -212,7 +213,7 @@ class Session
     LoadNodesProvider(configs)
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
-    @awsConfig = aws_config.to_s.empty? ? '' : aws_config[1].to_s
+    @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if @nodesProvider != "mdbci"
       Generator.generate(path,configs,boxes,isOverride,nodesProvider)
