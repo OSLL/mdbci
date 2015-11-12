@@ -391,7 +391,6 @@ Vagrant.configure(2) do |config|
 
     vagrant.puts vagrantFileHeader
 
-
     unless ($session.awsConfigOption.to_s.empty?)
       # Generate AWS Configuration
       vagrant.puts Generator.awsProviderConfigImport($session.awsConfigOption)

@@ -50,6 +50,11 @@ class Session
 
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
+
+
+    # TODO: Load vbox and aws nodes params to runtime variables
+
+
   end
 
    def inspect
@@ -116,9 +121,9 @@ class Session
     $session.boxes = JSON.parse(IO.read($session.boxesFile))
   end
 
-  # ./mdbci ssh command for AWS and VBox machines
-  #     VBox, AWS: mdbci ssh --command "touch file.txt" config_dir/node0 --silent
-  # TODO: for PPC64 box - execute ssh -i keyfile.pem user@ip
+  # ./mdbci ssh command for AWS, VBox and PPC64 machines
+  #     VBox, AWS: ./mdbci ssh --command "touch file.txt" config_dir/node0 --silent
+  #     MDBCI PPC64: ./mdbci ssh --command "touch file.txt" config_dir or config_dir/node0
   def ssh(args)
 
     if args.nil?
@@ -128,16 +133,49 @@ class Session
 
     params = args.split('/')
 
-    pwd = Dir.pwd
-    Dir.chdir params[0]
+    # mdbci ppc64 boxes
+    if File.exist?(params[0]+'/mdbci_config.ini')
+      loadMdbciNodes params[0]
+      if params[1].nil?     # ssh for all nodes
+        @mdbciNodes.each do |node|
+          box = node[1]['box'].to_s
+          if !box.empty?
+            mdbci_box_params = $session.boxes[box]
+            cmd = 'ssh -i ' + mdbci_box_params['keyfile'].to_s + " "\
+                            + mdbci_box_params['user'].to_s + "@"\
+                            + mdbci_box_params['IP'].to_s + " "\
+                            + "'" + $session.command + "'"
+            $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+            vagrant_out = `#{cmd}`
+            $out.out vagrant_out
+          end
+        end
+      else
+        mdbci_node = @mdbciNodes.find { |elem| elem[1]['hostname'].to_s == params[1] }
+        box = mdbci_node[1]['box'].to_s
+        if !box.empty?
+          mdbci_params = $session.boxes[box]
+          cmd = 'ssh -i ' + mdbci_params['keyfile'].to_s + " "\
+                          + mdbci_params['user'].to_s + "@"\
+                          + mdbci_params['IP'].to_s + " "\
+                          + "'" + $session.command + "'"
+          $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+          vagrant_out = `#{cmd}`
+          $out.out vagrant_out
+        end
+      end
+    else # aws, vbox nodes
+      pwd = Dir.pwd
+      Dir.chdir params[0]
+      cmd = 'vagrant ssh '+params[1]+' -c "'+$session.command+'"'
+      $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
 
-    cmd = 'vagrant ssh '+params[1]+' -c "'+$session.command+'"'
-    $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+      vagrant_out = `#{cmd}`
+      $out.out vagrant_out
 
-    vagrant_out = `#{cmd}`
-    $out.out vagrant_out
+      Dir.chdir pwd
+    end
 
-    Dir.chdir pwd
 
   end
 
@@ -208,7 +246,7 @@ class Session
     else
       path +='/'+name.to_s
     end
-#
+    #
     @configs = JSON.parse(IO.read($session.configFile))
     LoadNodesProvider(configs)
     #

@@ -67,15 +67,37 @@ class Network
 
     args = name.split('/')
 
-    pwd = Dir.pwd
-    Dir.chdir args[0]
+    # mdbci ppc64 boxes
+    if File.exist?(args[0]+'/mdbci_config.ini')
+      $session.loadMdbciNodes args[0]
+      if args[1].nil?
+        $session.mdbciNodes.each do |node|
+          host = node[1]['hostname'].to_s
+          box = node[1]['box'].to_s
+          if !box.empty?
+            box_params = $session.boxes[box]
+            $out.out 'Node: ' + host.to_s
+            $out.out "Keyfile: " + box_params['keyfile'].to_s
+          end
+        end
+      else
+        mdbci_node = $session.mdbciNodes.find { |elem| elem[1]['hostname'].to_s == args[1] }
+        box = mdbci_node[1]['box'].to_s
+        if !box.empty?
+          mdbci_params = $session.boxes[box]
+          $out.out 'Keyfile: ' + mdbci_params['keyfile'].to_s
+        end
+      end
+    else
+      pwd = Dir.pwd
+      Dir.chdir args[0]
 
-    cmd = 'vagrant ssh-config '+args[1]+ ' |grep IdentityFile '
-    vagrant_out = `#{cmd}`
+      cmd = 'vagrant ssh-config '+args[1]+ ' |grep IdentityFile '
+      vagrant_out = `#{cmd}`
+      $out.out vagrant_out.split(' ')[1]
 
-    $out.out vagrant_out.split(' ')[1]
-
-    Dir.chdir pwd
+      Dir.chdir pwd
+    end
   end
 
   def self.show(name)
@@ -89,18 +111,41 @@ class Network
 
     args = name.split('/')
 
-    network = Network.new
-    network.loadNodes args[0] # load nodes from dir
+    # mdbci ppc64 boxes
+    if File.exist?(args[0]+'/mdbci_config.ini')
+      $session.loadMdbciNodes args[0]
+      if args[1].nil?
+        $session.mdbciNodes.each do |node|
+          host = node[1]['hostname'].to_s
+          box = node[1]['box'].to_s
+          if !box.empty?
+            box_params = $session.boxes[box]
+            $out.out 'Node: ' + host.to_s
+            $out.out "IP: " + box_params['IP'].to_s
+          end
+        end
+      else
+        mdbci_node = $session.mdbciNodes.find { |elem| elem[1]['hostname'].to_s == args[1] }
+        box = mdbci_node[1]['box'].to_s
+        if !box.empty?
+          mdbci_params = $session.boxes[box]
+          $out.out 'IP: ' + mdbci_params['IP'].to_s
+        end
+      end
+    else # aws, vbox nodes
+      network = Network.new
+      network.loadNodes args[0] # load nodes from dir
 
-    if args[1].nil? # No node argument, show all config
-      network.nodes.each do |node|
-        node.getIp(node.provider, false)
+      if args[1].nil? # No node argument, show all config
+        network.nodes.each do |node|
+          node.getIp(node.provider)
+          $out.out(node.ip.to_s)
+        end
+      else
+        node = network.nodes.find { |elem| elem.name == args[1]}
+        node.getIp(node.provider)
         $out.out(node.ip.to_s)
       end
-    else
-      node = network.nodes.find { |elem| elem.name == args[1]}
-      node.getIp(node.provider, false)
-      $out.out(node.ip.to_s)
     end
 
     Dir.chdir pwd
