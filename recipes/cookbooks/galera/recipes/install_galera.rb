@@ -271,21 +271,33 @@ case node[:platform_family]
 
     bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
       code <<-EOF
-      sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 
     bash 'Configure Galera server.cnf - Set Galera REP-USERNAME, REP-PASSWORD' do
       code <<-EOF
-      sed -i "s|###REP-USERNAME###|repl|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
-      sed -i "s|###REP-PASSWORD###|repl|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        sed -i "s|###REP-USERNAME###|repl|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        sed -i "s|###REP-PASSWORD###|repl|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 
 end
 
+bash 'Prepare Galera' do
+  code <<-EOF
+    mkdir -p /var/run/mysql
+    touch mysql.pid
+    chown mysql:mysql mysqld.pid
+    mysql_install_db
+  EOF
+end
+
 bash 'Restart mariadb service' do
-  code "service mysql restart"
+  code <<-EOF
+    service mysql stop
+    service mysql start --pid-file /var/run/mysql/mysqld.pid
+  EOF
 end
 
 bash 'Create mariadb users' do
