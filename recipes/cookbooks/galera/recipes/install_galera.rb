@@ -117,10 +117,6 @@ case node[:platform_family]
     end
 end # save iptables rules
 
-
-system 'echo Platform family: '+node[:platform_family]
-
-
 # Install packages
 case node[:platform_family]
   when "suse"
@@ -210,7 +206,7 @@ case node[:platform_family]
 
     bash 'Configure Galera server.cnf - Get/Set Galera LIB_PATH' do
       code <<-EOF
-      sed -i "s|###GALERA-LIB-PATH###|/usr/lib/galera/$(ls /usr/lib/galera | grep so)|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        sed -i "s|###GALERA-LIB-PATH###|/usr/lib/galera/$(ls /usr/lib/galera | grep so)|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 
@@ -233,7 +229,7 @@ case node[:platform_family]
 
     bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
       code <<-EOF
-      sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        sed -i "s|###NODE-NAME###|#{Shellwords.escape(node['galera']['node_name'])}|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 
@@ -248,7 +244,7 @@ case node[:platform_family]
 
     bash 'Configure Galera server.cnf - Get/Set Galera LIB_PATH' do
       code <<-EOF
-      sed -i "s|###GALERA-LIB-PATH###|$(rpm -ql galera | grep so)|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        sed -i "s|###GALERA-LIB-PATH###|$(rpm -ql galera | grep so)|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
       EOF
     end
 
@@ -292,49 +288,10 @@ bash 'Prepare Galera' do
   EOF
 end
 
-results = "/tmp/output.txt"
-cmd = "free -m"
-
-file results do
-  action :delete
-end
-bash cmd do
-  code <<-EOH
-    #{cmd} &> #{results}
-  EOH
-end
-ruby_block "Results" do
-  only_if { ::File.exists?(results) }
-  block do
-    print "\n"
-    File.open(results).each do |line|
-      print line
-    end
-  end
-end
-
 bash 'Restart mariadb service' do
   code <<-EOF
     service mysql restart
   EOF
-end
-
-file results do
-  action :delete
-end
-bash cmd do
-  code <<-EOH
-    #{cmd} &> #{results}
-  EOH
-end
-ruby_block "Results" do
-  only_if { ::File.exists?(results) }
-  block do
-    print "\n"
-    File.open(results).each do |line|
-      print line
-    end
-  end
 end
 
 bash 'Create mariadb users' do
