@@ -284,38 +284,33 @@ case node[:platform_family]
 
 end
 
-=begin
 bash 'Prepare Galera' do
   code <<-EOF
     mkdir -p /var/run/mysql
-    touch mysql.pid
-    chown mysql:mysql mysqld.pid
-    mysql_install_db
+    mysql_install_db 
+    chown -R mysql:mysql /var/lib/mysql
   EOF
 end
-=end
-
 
 results = "/tmp/output.txt"
-file results do
-    action :delete
-end
-
 cmd = "free -m"
-bash cmd do
-    code <<-EOH
-    #{cmd} &> #{results}
-    EOH
-end
 
+file results do
+  action :delete
+end
+bash cmd do
+  code <<-EOH
+    #{cmd} &> #{results}
+  EOH
+end
 ruby_block "Results" do
-    only_if { ::File.exists?(results) }
-    block do
-        print "\n"
-        File.open(results).each do |line|
-            print line
-        end
+  only_if { ::File.exists?(results) }
+  block do
+    print "\n"
+    File.open(results).each do |line|
+      print line
     end
+  end
 end
 
 bash 'Restart mariadb service' do
@@ -324,26 +319,22 @@ bash 'Restart mariadb service' do
   EOF
 end
 
-results = "/tmp/output.txt"
 file results do
-    action :delete
+  action :delete
 end
-
-cmd = "free -m"
 bash cmd do
-    code <<-EOH
+  code <<-EOH
     #{cmd} &> #{results}
-    EOH
+  EOH
 end
-
 ruby_block "Results" do
-    only_if { ::File.exists?(results) }
-    block do
-        print "\n"
-        File.open(results).each do |line|
-            print line
-        end
+  only_if { ::File.exists?(results) }
+  block do
+    print "\n"
+    File.open(results).each do |line|
+      print line
     end
+  end
 end
 
 bash 'Create mariadb users' do
