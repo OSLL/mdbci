@@ -284,6 +284,7 @@ case node[:platform_family]
 
 end
 
+=begin
 bash 'Prepare Galera' do
   code <<-EOF
     mkdir -p /var/run/mysql
@@ -292,11 +293,11 @@ bash 'Prepare Galera' do
     mysql_install_db
   EOF
 end
+=end
 
 bash 'Restart mariadb service' do
   code <<-EOF
-    service mysql stop
-    service mysql start --pid-file /var/run/mysql/mysqld.pid
+    service mysql restart
   EOF
 end
 
