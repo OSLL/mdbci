@@ -1,8 +1,4 @@
 [mysqld]
-datadir=/var/lib/mysql
-socket=/var/lib/mysql/mysql.sock
-pid-file=/var/run/mysqld/mysqld.pid
-user=mysql
 #bind-address = 127.0.0.1
 server-id = 101
 relay_log = /var/lib/mysql/mysql-relay-bin
@@ -12,4 +8,7 @@ master-info-file = /var/lib/mysql/mysql-master.info
 relay-log-info-file = /var/lib/mysql/mysql-relay-log.info
 log-bin = /var/lib/mysql/mysql-bin
 binlog_format = ROW
-symbolic-links=0
+
+[mysqld_safe]
+log-error=/var/log/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid
