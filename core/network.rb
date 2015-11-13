@@ -138,13 +138,13 @@ class Network
 
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
-          node.getIp(node.provider)
-          $out.out(node.ip.to_s)
+          node.getIp(node.provider, false)
+          $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
-        node.getIp(node.provider)
-        $out.out(node.ip.to_s)
+        node.getIp(node.provider, false)
+        $out.out node.ip.to_s
       end
     end
 
@@ -190,12 +190,12 @@ class Network
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
           node.getIp(node.provider, true)
-          $out.out(node.ip.to_s)
+          $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
         node.getIp(node.provider, true)
-        $out.out(node.ip.to_s)
+        $out.out node.ip.to_s
       end
     end
 
