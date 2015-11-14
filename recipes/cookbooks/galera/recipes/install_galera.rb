@@ -288,6 +288,28 @@ bash 'Prepare Galera' do
   EOF
 end
 
+results = "/tmp/output.txt"
+file results do
+    action :delete
+end
+
+cmd = "top -bn1"
+bash cmd do
+    code <<-EOH
+    #{cmd} &> #{results}
+    EOH
+end
+
+ruby_block "Results" do
+    only_if { ::File.exists?(results) }
+    block do
+        print "\n"
+        File.open(results).each do |line|
+            print line
+        end
+    end
+end
+
 bash 'Restart mariadb service' do
   code <<-EOF
     service mysql restart
