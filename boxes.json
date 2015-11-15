@@ -179,25 +179,31 @@
     "platform": "rhel_ppc",
     "platform_version" : "7"
   },
-  "ubuntu_precise32_kvm": {
+  "ubuntu_precise_libvirt": {
     "provider": "libvirt",
-    "box": "hashicorp/precise32",
-    "platform": "ubuntu",
-    "platform_version": "precise"
-  },
-  "ubuntu_trusty_kvm": {
-    "provider": "libvirt",
-    "box": "s3than/trusty64",
+    "box": "bento/ubuntu-12.04",
     "platform": "ubuntu",
     "platform_version": "trusty"
   },
-  "centos_7.0_kvm": {
+  "ubuntu_trusty64_libvirt": {
+    "provider": "libvirt",
+    "box": "baremettle/ubuntu-14.04",
+    "platform": "ubuntu",
+    "platform_version": "trusty"
+  },
+  "debian_7.5_libvirt": {
+    "provider": "libvirt",
+    "box": "baremettle/debian-7.5",
+    "platform": "ubuntu",
+    "platform_version": "trusty"
+  },
+  "centos_7.0_qemu": {
     "provider": "libvirt",
     "box": "uvsmtid/centos-7.0-minimal",
     "platform": "centos",
     "platform_version": "7"
   },
-  "centos_6.5_kvm": {
+  "centos_6.5_qemu": {
     "provider": "libvirt",
     "box": "dliappis/centos65minlibvirt",
     "platform": "centos",

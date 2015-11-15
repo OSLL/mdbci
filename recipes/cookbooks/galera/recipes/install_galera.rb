@@ -15,7 +15,11 @@ case node[:platform_family]
   when "rhel", "fedora", "centos"
     package "wget"
     if node[:platform] == "centos"
-      if node["platform_version"].to_f >= 6.0 
+      if node["platform_version"].to_f >= 7.0
+        execute "Install ifconfig" do
+          command "yum --assumeyes install net-tools"
+        end
+      elsif node["platform_version"].to_f >= 6.0 
         execute "add_socat_repo_centos_ge6" do
           command "wget -P /etc/yum.repos.d http://www.convirture.com/repos/definitions/rhel/6.x/convirt.repo"
         end
@@ -29,7 +33,7 @@ case node[:platform_family]
   else # debian, suse
     package "netcat"
 end
-package"socat"
+package "socat"
 
 
 # Turn off SElinux

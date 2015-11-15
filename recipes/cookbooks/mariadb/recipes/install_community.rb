@@ -33,6 +33,16 @@ end
 
 system 'echo Platform family: '+node[:platform_family]
 
+# install ifconfig
+case node[:platform_family]
+  when "centos"
+    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
+      execute "Install ifconfig" do
+        command "yum --assumeyes install net-tools"
+      end
+    end
+end
+
 # check and install iptables
 case node[:platform_family]
   when "debian", "ubuntu"
@@ -98,16 +108,8 @@ when "suse"
     command "zypper -n install --from mariadb MariaDB-server MariaDB-client &> /vagrant/log"
   end
 when "debian"
-  #bash "MariaDB install" do
-  execute "MariaDB installation process" do
-    command "DEBIAN_FRONTEND=noninteractive apt-get -y install mariadb-client mariadb-server > x"
-  end
-  #package 'mariadb-server'
-  #package 'mariadb-client'
-  # 6510
-  #execute "6510 configure mariadb-server" do
-  #  command "dpkg --configure -a"
-  #end
+  package 'mariadb-server'
+  package 'mariadb-client'
 when "windows"
   windows_package "MariaDB" do
     source "#{Chef::Config[:file_cache_path]}/mariadb.msi"

@@ -128,7 +128,7 @@ class Session
     params = args.split('/')
 
     pwd = Dir.pwd
-    Dir.chdir params[0]
+    Dir.chdir params[0].to_s
 
     cmd = 'vagrant ssh '+params[1]+' -c "'+$session.command+'"'
     $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]

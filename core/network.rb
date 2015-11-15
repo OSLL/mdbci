@@ -17,7 +17,7 @@ class Network
   def loadNodes(config)
     $out.info 'Load configuration nodes from vagrant status ...'
 
-    Dir.chdir config
+    Dir.chdir config.to_s
 
     vagrant_out = `vagrant status`
     list = vagrant_out.split("\n")
@@ -68,9 +68,9 @@ class Network
     args = name.split('/')
 
     pwd = Dir.pwd
-    Dir.chdir args[0]
+    Dir.chdir args[0].to_s
 
-    cmd = 'vagrant ssh-config '+args[1]+ ' |grep IdentityFile '
+    cmd = 'vagrant ssh-config '+args[1]+' | grep IdentityFile '
     vagrant_out = `#{cmd}`
 
     $out.out vagrant_out.split(' ')[1]
@@ -108,6 +108,7 @@ class Network
 
   # TODO - move mdbci box definition to new class - MdbciNode < Node
   def self.private_ip(name)
+
     pwd = Dir.pwd
 
     if name.nil?
