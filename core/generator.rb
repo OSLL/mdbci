@@ -54,18 +54,18 @@ require 'yaml'
     EOF
   end
 
+
   def Generator.providerConfig
     config = <<-EOF
 
-### Default (VBox, Qemu) Provider config ###
+### Default (VBox, Libvirt) Provider config ###
 ############################################
 #Network autoconfiguration
 config.vm.network "private_network", type: "dhcp"
-
-config.ssh.pty = true
     EOF
     return config
   end
+
 
   def Generator.vagrantConfigHeader
 
@@ -167,18 +167,18 @@ Vagrant.configure(2) do |config|
   def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, instance_type, template_path, provisioned)
 
     if template_path
-      mountdef = "config.vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync") + "\n" \
+      mountdef = "\t" + name + ".vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync")
     else mountdef = ""
     end
 
     awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
            + "config.vm.define :"+ name +" do |" + name + "|\n" \
-           + mountdef  + "\n"\
            + "\t" + name + ".vm.provider :aws do |aws,override|\n" \
            + "\t\taws.ami = " + quote(boxurl) + "\n"\
            + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
            + "\t\toverride.ssh.username = " + quote(user) + "\n" \
-           + "\tend\n"
+           + "\tend\n" \
+           + mountdef + "\n"
     if provisioned
       awsdef += "##--- Chef binding ---\n"\
            + "\t" + name + ".vm.provision "+ quote('chef_solo')+" do |chef| \n"\
@@ -191,232 +191,233 @@ Vagrant.configure(2) do |config|
     return awsdef
   end
 
-def Generator.getRoleDef(name, product, box)
 
-  errorMock = "#NONE, due invalid repo name \n"
-  role = Hash.new
-  productConfig = Hash.new
-  product_name = nil
-  repoName = nil
-  repo = nil
+  def Generator.getRoleDef(name, product, box)
 
-  if !product['repo'].nil?
+    errorMock = "#NONE, due invalid repo name \n"
+    role = Hash.new
+    productConfig = Hash.new
+    product_name = nil
+    repoName = nil
+    repo = nil
 
-    repoName = product['repo']
+    if !product['repo'].nil?
 
-    $out.info "Repo name: "+repoName
+      repoName = product['repo']
 
-    unless $session.repos.knownRepo?(repoName)
-      $out.warning 'Unknown key for repo '+repoName+' will be skipped'
+      $out.info "Repo name: "+repoName
+
+      unless $session.repos.knownRepo?(repoName)
+        $out.warning 'Unknown key for repo '+repoName+' will be skipped'
+        return errorMock
+      end
+
+      $out.info 'Repo specified ['+repoName.to_s+'] (CORRECT), other product params will be ignored'
+      repo = $session.repos.getRepo(repoName)
+
+      product_name = $session.repos.productName(repoName)
+    else
+      product_name = product['name']
+    end
+
+    recipe_name = $session.repos.recipeName(product_name)
+
+    $out.info 'Recipe '+recipe_name
+
+    if repo.nil?
+      repo = $session.repos.findRepo(product_name, product, box)
+    end
+
+    if repo.nil?
       return errorMock
     end
 
-    $out.info 'Repo specified ['+repoName.to_s+'] (CORRECT), other product params will be ignored'
-    repo = $session.repos.getRepo(repoName)
+    config = Hash.new
 
-    product_name = $session.repos.productName(repoName)
-  else
-    product_name = product['name']
-  end
-
-  recipe_name = $session.repos.recipeName(product_name)
-
-  $out.info 'Recipe '+recipe_name
-
-  if repo.nil?
-    repo = $session.repos.findRepo(product_name, product, box)
-  end
-
-  if repo.nil?
-    return errorMock
-  end
-
-  config = Hash.new
-
-  # edit recipe attributes in role
-  config['version'] = repo['version']
-  config['repo'] = repo['repo']
-  config['repo_key'] = repo['repo_key']
-  if !product['cnf_template'].nil? && !product['cnf_template_path'].nil?
-    config['cnf_template'] = product['cnf_template']
-    config['cnf_template_path'] = product['cnf_template_path']
-  end
-  if !product['node_name'].nil?
-    config['node_name'] = product['node_name']
-  end
-  productConfig[product_name] = config
-
-  role['name'] = name
-  role['default_attributes'] = {}
-  role['override_attributes'] = productConfig
-  role['json_class'] = 'Chef::Role'
-  role['description'] = 'MariaDb instance install and run'
-  role['chef_type'] = 'role'
-  role['run_list'] = ['recipe['+recipe_name+']']
-
-  roledef = JSON.pretty_generate(role)
-  return roledef
-
-  #todo uncomment
-  if false
-
-    # TODO: form string for several box recipes for maridb, maxscale, mysql
-
-    roledef = '{ '+"\n"+' "name" :' + quote(name)+",\n"+ \
-      <<-EOF
-      "default_attributes": { },
-    EOF
-
-    roledef += " #{quote('override_attributes')}: { #{quote(package)}: #{mdbversion} },\n"
-
-    roledef += <<-EOF
-      "json_class": "Chef::Role",
-      "description": "MariaDb instance install and run",
-      "chef_type": "role",
-    EOF
-    roledef += quote('run_list') + ": [ " + quote("recipe[" + recipe_name + "]") + " ]\n"
-    roledef += "}"
-  end
-  return roledef
-end
-
-def Generator.checkPath(path, override)
-  if Dir.exist?(path) && !override
-    $out.error 'ERR: folder already exists:' + path
-    $out.error 'Please specify another name or delete'
-    exit -1
-  end
-  FileUtils.rm_rf(path)
-  Dir.mkdir(path)
-end
-
-def Generator.boxValid?(box, boxes)
-  !boxes[box].nil?
-end
-
-def Generator.nodeDefinition(node, boxes, path, cookbook_path)
-
-  vm_mem = node[1]['memory_size'].nil? ? '1024' : node[1]['memory_size']
-
-  # cookbook path dir
-  if node[0]['cookbook_path']
-    cookbook_path = node[1].to_s
-  end
-
-  # configuration parameters
-  name = node[0].to_s
-  host = node[1]['hostname'].to_s
-
-  $out.info 'Requested memory ' + vm_mem
-
-  box = node[1]['box'].to_s
-  if !box.empty?
-    box_params = boxes[box]
-
-    provider = box_params["provider"].to_s
-    case provider
-      when "aws"
-        amiurl = box_params['ami'].to_s
-        user = box_params['user'].to_s
-        instance = box_params['default_instance_type'].to_s
-        $out.info 'AWS definition for host:'+host+', ami:'+amiurl+', user:'+user+', instance:'+instance
-      when "mdbci"
-        box_params.each do |key, value|
-          $session.nodes[key] = value
-        end
-        $out.info 'MDBCI definition for host:'+host+', with parameters: ' + $session.nodes.to_s
-      else
-        boxurl = box_params['box'].to_s
-        p boxurl
+    # edit recipe attributes in role
+    config['version'] = repo['version']
+    config['repo'] = repo['repo']
+    config['repo_key'] = repo['repo_key']
+    if !product['cnf_template'].nil? && !product['cnf_template_path'].nil?
+      config['cnf_template'] = product['cnf_template']
+      config['cnf_template_path'] = product['cnf_template_path']
     end
-  end
-
-  provisioned = !node[1]['product'].nil?
-
-  if (provisioned)
-    product = node[1]['product']
-    if !product['cnf_template_path'].nil?
-      template_path = product['cnf_template_path']
+    if !product['node_name'].nil?
+      config['node_name'] = product['node_name']
     end
-  end
+    productConfig[product_name] = config
 
-  # generate node definition and role
-  machine = ''
-  if Generator.boxValid?(box, boxes)
-    case provider
-      when 'virtualbox'
-        machine = getVmDef(cookbook_path, name, host, boxurl, vm_mem, template_path, provisioned)
-      when 'aws'
-        machine = getAWSVmDef(cookbook_path, name, amiurl, user, instance, template_path, provisioned)
-      when 'libvirt'
-        machine = getQemuDef(cookbook_path, name, host, boxurl, template_path, provisioned)
-      else
-        $out.warning 'WARNING: Configuration has not support AWS, config file or other vm provision'
+    role['name'] = name
+    role['default_attributes'] = {}
+    role['override_attributes'] = productConfig
+    role['json_class'] = 'Chef::Role'
+    role['description'] = 'MariaDb instance install and run'
+    role['chef_type'] = 'role'
+    role['run_list'] = ['recipe['+recipe_name+']']
+
+    roledef = JSON.pretty_generate(role)
+    return roledef
+
+    #todo uncomment
+    if false
+
+      # TODO: form string for several box recipes for maridb, maxscale, mysql
+
+      roledef = '{ '+"\n"+' "name" :' + quote(name)+",\n"+ \
+        <<-EOF
+        "default_attributes": { },
+      EOF
+
+      roledef += " #{quote('override_attributes')}: { #{quote(package)}: #{mdbversion} },\n"
+
+      roledef += <<-EOF
+        "json_class": "Chef::Role",
+        "description": "MariaDb instance install and run",
+        "chef_type": "role",
+      EOF
+      roledef += quote('run_list') + ": [ " + quote("recipe[" + recipe_name + "]") + " ]\n"
+      roledef += "}"
     end
-    # write nodes provider to file
-    provider_file = path+"/provider"
-    if !File.exists?(provider_file)
-      File.open(path+"/provider", 'w') { |f| f.write(provider.to_s) }
+    return roledef
+  end
+
+  def Generator.checkPath(path, override)
+    if Dir.exist?(path) && !override
+      $out.error 'ERR: folder already exists:' + path
+      $out.error 'Please specify another name or delete'
+      exit -1
     end
-  else
-    $out.warning 'WARNING: Box '+box+'is not installed or configured ->SKIPPING'
+    FileUtils.rm_rf(path)
+    Dir.mkdir(path)
   end
 
-  # box with mariadb, maxscale provision - create role
-  if provisioned
-    $out.info 'Machine '+name+' is provisioned by '+product.to_s
-    role = getRoleDef(name, product, box)
-    IO.write(roleFileName(path, name), role)
+  def Generator.boxValid?(box, boxes)
+    !boxes[box].nil?
   end
 
-  return machine
-end
+  def Generator.nodeDefinition(node, boxes, path, cookbook_path)
 
-def Generator.generate(path, config, boxes, override, provider)
-  #TODO Errors check
-  #TODO MariaDb Version Validator
+    vm_mem = node[1]['memory_size'].nil? ? '1024' : node[1]['memory_size']
 
-  checkPath(path, override)
-
-  cookbook_path = '../recipes/cookbooks/' # default cookbook path
-  unless (config['cookbook_path'].nil?)
-    cookbook_path = config['cookbook_path']
-  end
-
-  $out.info 'Global cookbook_path = ' + cookbook_path
-  $out.info 'Nodes provider = ' + provider
-
-  vagrant = File.open(path+'/Vagrantfile', 'w')
-
-  vagrant.puts vagrantFileHeader
-
-  unless ($session.awsConfig.to_s.empty?)
-    # Generate AWS Configuration
-    vagrant.puts Generator.awsProviderConfigImport($session.awsConfig)
-    vagrant.puts Generator.vagrantConfigHeader
-
-    vagrant.puts Generator.awsProviderConfig
-
-    config.each do |node|
-      $out.info 'Generate AWS Node definition for ['+node[0]+']'
-      vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
+    # cookbook path dir
+    if node[0]['cookbook_path']
+      cookbook_path = node[1].to_s
     end
-    vagrant.puts Generator.vagrantConfigFooter
-  else
-      # Generate VBox/Qemu Configuration
+
+    # configuration parameters
+    name = node[0].to_s
+    host = node[1]['hostname'].to_s
+
+    $out.info 'Requested memory ' + vm_mem
+
+    box = node[1]['box'].to_s
+    if !box.empty?
+      box_params = boxes[box]
+
+      provider = box_params["provider"].to_s
+      case provider
+        when "aws"
+          amiurl = box_params['ami'].to_s
+          user = box_params['user'].to_s
+          instance = box_params['default_instance_type'].to_s
+          $out.info 'AWS definition for host:'+host+', ami:'+amiurl+', user:'+user+', instance:'+instance
+        when "mdbci"
+          box_params.each do |key, value|
+            $session.nodes[key] = value
+          end
+          $out.info 'MDBCI definition for host:'+host+', with parameters: ' + $session.nodes.to_s
+        else
+          boxurl = box_params['box'].to_s
+          p boxurl
+      end
+    end
+
+    provisioned = !node[1]['product'].nil?
+
+    if (provisioned)
+      product = node[1]['product']
+      if !product['cnf_template_path'].nil?
+        template_path = product['cnf_template_path']
+      end
+    end
+
+    # generate node definition and role
+    machine = ''
+    if Generator.boxValid?(box, boxes)
+      case provider
+        when 'virtualbox'
+          machine = getVmDef(cookbook_path, name, host, boxurl, vm_mem, template_path, provisioned)
+        when 'aws'
+          machine = getAWSVmDef(cookbook_path, name, amiurl, user, instance, template_path, provisioned)
+        when 'libvirt'
+          machine = getQemuDef(cookbook_path, name, host, boxurl, template_path, provisioned)
+        else
+          $out.warning 'WARNING: Configuration has not support AWS, config file or other vm provision'
+      end
+      # write nodes provider to file
+      provider_file = path+"/provider"
+      if !File.exists?(provider_file)
+        File.open(path+"/provider", 'w') { |f| f.write(provider.to_s) }
+      end
+    else
+      $out.warning 'WARNING: Box '+box+'is not installed or configured ->SKIPPING'
+    end
+
+    # box with mariadb, maxscale provision - create role
+    if provisioned
+      $out.info 'Machine '+name+' is provisioned by '+product.to_s
+      role = getRoleDef(name, product, box)
+      IO.write(roleFileName(path, name), role)
+    end
+
+    return machine
+  end
+
+  def Generator.generate(path, config, boxes, override, provider)
+    #TODO Errors check
+    #TODO MariaDb Version Validator
+
+    checkPath(path, override)
+
+    cookbook_path = '../recipes/cookbooks/' # default cookbook path
+    unless (config['cookbook_path'].nil?)
+      cookbook_path = config['cookbook_path']
+    end
+
+    $out.info 'Global cookbook_path = ' + cookbook_path
+    $out.info 'Nodes provider = ' + provider
+
+    vagrant = File.open(path+'/Vagrantfile', 'w')
+
+    vagrant.puts vagrantFileHeader
+
+    unless ($session.awsConfigOption.to_s.empty?)
+      # Generate AWS Configuration
+      vagrant.puts Generator.awsProviderConfigImport($session.awsConfigOption)
       vagrant.puts Generator.vagrantConfigHeader
-      vagrant.puts Generator.providerConfig
+
+      vagrant.puts Generator.awsProviderConfig
 
       config.each do |node|
-        unless (node[1]['box'].nil?)
-          $out.info 'Generate VBox/Qemu Node definition for ['+node[0]+']'
-          vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
-        end
+        $out.info 'Generate AWS Node definition for ['+node[0]+']'
+        vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
       end
       vagrant.puts Generator.vagrantConfigFooter
-  end
+    else
+        # Generate VBox/Qemu Configuration
+        vagrant.puts Generator.vagrantConfigHeader
+        vagrant.puts Generator.providerConfig
 
-  vagrant.close
-end
+        config.each do |node|
+          unless (node[1]['box'].nil?)
+            $out.info 'Generate VBox/Qemu Node definition for ['+node[0]+']'
+            vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
+          end
+        end
+        vagrant.puts Generator.vagrantConfigFooter
+    end
+
+    vagrant.close
+  end
 
 end
