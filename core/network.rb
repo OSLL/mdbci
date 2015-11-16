@@ -70,7 +70,7 @@ class Network
     pwd = Dir.pwd
     Dir.chdir args[0].to_s
 
-    cmd = 'vagrant ssh-config '+args[1]+' | grep IdentityFile '
+    cmd = 'vagrant ssh-config '+args[1].to_s+' | grep IdentityFile '
     vagrant_out = `#{cmd}`
 
     $out.out vagrant_out.split(' ')[1]

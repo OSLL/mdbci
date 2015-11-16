@@ -35,7 +35,7 @@ system 'echo Platform family: '+node[:platform_family]
 
 # install ifconfig
 case node[:platform_family]
-  when "centos"
+  when "rhel", "centos"
     if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
       execute "Install ifconfig" do
         command "yum --assumeyes install net-tools"
