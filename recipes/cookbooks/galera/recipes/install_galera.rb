@@ -193,7 +193,7 @@ case node[:platform_family]
     end
 
     addinclude = 'grep -q -F "!includedir /etc/my.cnf.d" /etc/my.cnf || echo "!includedir /etc/my.cnf.d" >> /etc/my.cnf'
-    execute "Copy mdbci_server.cnf to cnf_template directory" do
+    execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
       command addinclude
     end
 
@@ -280,20 +280,12 @@ case node[:platform_family]
 
 end
 
-bash 'Prepare Galera' do
+bash 'Prepare Galera, start mysql, create test database' do
   code <<-EOF
-    mkdir -p /var/run/mysql
+    /usr/bin/mysql -p /var/run/mysql
     mysql_install_db 
     chown -R mysql:mysql /var/lib/mysql
-  EOF
-end
-
-bash 'Restart mariadb service' do
-  code <<-EOF
     service mysql restart
+    /usr/bin/mysql -u root -e 'CREATE DATABASE IF NOT EXISTS test;'
   EOF
-end
-
-bash 'Create test database' do
-  code "/usr/bin/mysql -u root -e 'CREATE DATABASE IF NOT EXISTS test;'"
 end
