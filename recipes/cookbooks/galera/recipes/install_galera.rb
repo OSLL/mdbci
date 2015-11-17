@@ -286,6 +286,5 @@ bash 'Prepare Galera, start mysql, create test database' do
     mysql_install_db 
     chown -R mysql:mysql /var/lib/mysql
     service mysql restart
-    /usr/bin/mysql -u root -e 'CREATE DATABASE IF NOT EXISTS test;'
   EOF
 end
