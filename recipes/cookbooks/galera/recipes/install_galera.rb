@@ -288,50 +288,12 @@ bash 'Prepare Galera' do
   EOF
 end
 
-results = "/tmp/output.txt"
-file results do
-    action :delete
-end
-
-cmd = "top -bn1"
-bash cmd do
-    code <<-EOH
-    #{cmd} &> #{results}
-    EOH
-end
-
-ruby_block "Results" do
-    only_if { ::File.exists?(results) }
-    block do
-        print "\n"
-        File.open(results).each do |line|
-            print line
-        end
-    end
-end
-
 bash 'Restart mariadb service' do
   code <<-EOF
     service mysql restart
   EOF
 end
 
-bash 'Create mariadb users' do
-  code <<-EOF
-  /usr/bin/mysql -u root -e "CREATE USER 'repl'@'%' IDENTIFIED BY 'repl';"
-  /usr/bin/mysql -u root -e "GRANT replication slave ON *.* TO 'repl'@'%' IDENTIFIED BY 'repl';"
-  /usr/bin/mysql -u root -e "CREATE USER 'skysql'@'%' IDENTIFIED BY 'skysql';"
-  /usr/bin/mysql -u root -e "CREATE USER 'skysql'@'localhost' IDENTIFIED BY 'skysql';"
-  /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'skysql'@'%' WITH GRANT OPTION;"
-  /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'skysql'@'localhost' WITH GRANT OPTION;"
-  /usr/bin/mysql -u root -e "CREATE USER 'maxuser'@'%' identified by 'maxpwd';"
-  /usr/bin/mysql -u root -e "CREATE USER 'maxuser'@'localhost' identified by 'maxpwd';"
-  /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'maxuser'@'%' WITH GRANT OPTION;"
-  /usr/bin/mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO 'maxuser'@'localhost' WITH GRANT OPTION;"
-  /usr/bin/mysql -u root -e "FLUSH PRIVILEGES;"
-  EOF
-end
-
 bash 'Create test database' do
-  code "/usr/bin/mysql -e 'CREATE DATABASE IF NOT EXISTS test;'"
+  code "/usr/bin/mysql -u root -e 'CREATE DATABASE IF NOT EXISTS test;'"
 end
