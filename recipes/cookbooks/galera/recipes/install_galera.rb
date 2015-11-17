@@ -282,7 +282,7 @@ end
 
 bash 'Prepare Galera, start mysql, create test database' do
   code <<-EOF
-    /usr/bin/mysql -p /var/run/mysql
+    mkdir -p /var/run/mysql
     mysql_install_db 
     chown -R mysql:mysql /var/lib/mysql
     service mysql restart
