@@ -4,7 +4,7 @@ MAINTAINER OSLL <osll@osll.ru>
 #ENV SHELL /bin/bash
 
 RUN yum update -y && \
-    yum --assumeyes install openssh-server openssh-clients sudo curl wget iptables glibc-devel gcc gcc-g++ g++ tar && \
+    yum --assumeyes install openssh-server openssh-clients sudo curl wget iptables which ruby1.9.1 ruby1.9.1-dev make && \
     yum clean all
 
 RUN /etc/init.d/sshd start
@@ -40,7 +40,7 @@ RUN mkdir -pm 700 /home/vagrant/.ssh && \
 
 
 #ADD /home/vagrant/solo.rb /etc/chef/solo.rb
-ENV PATH $PATH:/opt/chef/bin/:/opt/chef/embedded/bin/
+#ENV PATH $PATH:/opt/chef/bin/:/opt/chef/embedded/bin/
 #RUN echo 'export PATH="/opt/chef/embedded/bin:$PATH"' >> ~/.bash_profile && \ 
 #    source ~/.bash_profile
 #RUN PATH "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/chef/bin:/opt/chef/embedded/bin"
@@ -54,6 +54,5 @@ ENV PATH $PATH:/opt/chef/bin/:/opt/chef/embedded/bin/
 
 # daemonize sshd
 #RUN /usr/sbin/sshd -D -e
-#EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D", "-e"]
 EXPOSE 22
