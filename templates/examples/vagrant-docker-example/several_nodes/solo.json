@@ -1,0 +1,3 @@
+{
+   "run_list" : [ "recipe[mariadb::install_community]" ]
+}

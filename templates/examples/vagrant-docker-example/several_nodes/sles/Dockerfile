@@ -1,12 +1,11 @@
-FROM opensuse:latest
-MAINTAINER OSLL
+FROM opensuse:tumbleweed
+MAINTAINER OSLL <osll@osll.ru>
 
-RUN zypper -n --gpg-auto-import-keys ar http://download.opensuse.org/factory/repo/oss/ OSS
+#RUN zypper -n --gpg-auto-import-keys ar http://download.opensuse.org/factory/repo/oss/ OSS
 
 RUN zypper -n ref && \
     zypper -n up --skip-interactive && \
     zypper --non-interactive --gpg-auto-import-keys install -y openSSH sudo wget iptables SuSEfirewall2
-#    apt-get clean
 
 ENV SHELL /bin/bash
 
@@ -14,7 +13,6 @@ ENV SHELL /bin/bash
 #RUN /etc/init.d/sshd start
 #CMD ["/bin/bash", "-c", "systemctl enable sshd"]
 #CMD ["/bin/bash", "-c", "systemctl start sshd"]
-
 #CMD ["/bin/bash", "-c", "chkconfig sshd on"]
 #CMD ["/bin/bash", "-c", "insserv sshd"]
 #CMD ["/bin/bash", "-c", "rcsshd start"]
@@ -47,7 +45,7 @@ RUN mkdir -p /home/vagrant/.ssh && \
     chmod 0700 /home/vagrant/.ssh
 
 # Install chef
-#RUN wget -O - https://www.opscode.com/chef/install.sh | /bin/bash
+RUN curl -L https://www.opscode.com/chef/install.sh | /bin/bash
 
 # Clean up APT when done.
 #zypper clean
@@ -55,5 +53,6 @@ RUN mkdir -p /home/vagrant/.ssh && \
 
 #CMD ["/bin/bash", "-c", "systemctl restart sshd"]
 
-EXPOSE 22
+#EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
+EXPOSE 22

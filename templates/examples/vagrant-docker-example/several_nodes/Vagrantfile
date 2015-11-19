@@ -2,13 +2,13 @@
 # vi: set ft=ruby :
 
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
-VAGRANTFILE_API_VERSION = "2"
+#VAGRANTFILE_API_VERSION = "2"
 #Check if you have the good Vagrant version to use docker provider...
-Vagrant.require_version ">= 1.6.0"
+#Vagrant.require_version ">= 1.6.0"
 
-Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+Vagrant.configure("2") do |config|
 
-  ENV['VAGRANT_DEFAULT_PROVIDER'] = 'docker'
+#  ENV['VAGRANT_DEFAULT_PROVIDER'] = 'docker'
 
   #config.ssh.port = 22
   #config.vm.synced_folder ".", "/vagrant", type: "nfs"
@@ -19,9 +19,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 #  config.vm.network :forwarded_port, host: 3306, guest: 3306
 
   # install Chef via plugin
-  #config.omnibus.chef_version = "12.5.1"
+#  config.omnibus.chef_version = "12.5.1"
 
-  # node0 - Ubuntu 14.04
+  # node0 - Ubuntu 14.04 -- WORKS!
 #  config.vm.define "node0" do |node0|  
 #    node0.vm.provider "docker" do |d|
 #      d.build_dir = "ubuntu/"
@@ -38,7 +38,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 #    end
 #  end
 
-  # node1 - CentOS 6.6
+  # node1 - CentOS 6.7
   config.vm.define "node1" do |node1|
     node1.vm.provider "docker" do |d|
       d.build_dir = "centos/"
@@ -48,15 +48,25 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       #d.remains_running = false
     end    
 
-    node1.vm.provision "chef_solo" do |chef|
-      chef.cookbooks_path = "../../../../recipes/cookbooks"
-      chef.roles_path = "."
-      chef.add_role "docker1"
-    end
+    node1.vm.provision "shell", path: "./install_recipe.sh"
+    
+    # hack 
+#    node1.vm.provision :shell do |sh|
+#      sh.inline = "#!/bin/bash 
+#        export PATH=$PATH:/opt/chef/bin:/opt/chef/embedded/bin"
+#      sh.privileged = true
+#    end
+
+#    node1.vm.provision "chef_solo" do |chef|
+#      chef.cookbooks_path = "../../../../recipes/cookbooks"
+#      chef.roles_path = "."
+#      chef.add_role "docker1"
+#    end
+
   end
 
   # node2 - OpenSuSE 13
-#  config.vm.define "node0" do |node2|
+#  config.vm.define "node2" do |node2|
 #    node2.vm.provider "docker" do |d|
 #      d.build_dir = "sles/"
 #      d.has_ssh = true
