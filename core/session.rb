@@ -43,7 +43,7 @@ class Session
 
     $out.info 'Load boxes from ' + $session.boxesFile
     boxesFileContent = $exception_handler.handle('BOXES configuration file not found'){IO.read($session.boxesFile)}
-    @boxes = $exception_handler.handle('BOXES configuration file is invalid'){JSON.parse(boxesFileContent)}
+    @boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(boxesFileContent)}
     $out.info 'Found boxes: ' + $session.boxes.size().to_s
 
     $out.info 'Load AWS config from ' + @awsConfigFile
@@ -52,20 +52,15 @@ class Session
     @repos = RepoManager.new($session.repoDir)
   end
 
-   def inspect
-     @boxes.to_json
-   end
-
   def setup(what)
     case what
       when 'boxes'
         $out.info 'Adding boxes to vagrant'
-        boxes = JSON.parse(inspect) # json to hash
-        boxes.each do |key, value|
+        @boxes.each do |key, value|
           next if value['provider'] == "aws" # skip 'aws' block
           next if value['provider'] == "mdbci" # skip 'mdbci' block
           #
-          if value['box'].to_s =~ URI::regexp
+          if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
             puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
             shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
           else
@@ -73,7 +68,7 @@ class Session
             shell = 'vagrant box add --provider virtualbox '+value['box'].to_s
           end
 
-          system shell
+          system shell # THERE CAN BE DONE CUSTOM EXCEPTION
         end
       else
         $out.warn 'Cannot setup '+what
@@ -110,9 +105,10 @@ class Session
 
   # load mdbci nodes
   def loadMdbciNodes(path)
-    templateFile = IO.read(path+'/mdbci_config.ini')
+    templateFile = $exception_handler.handle('MDBCI configuration file not found') {IO.read(path+'/mdbci_config.ini')}
     $out.info 'Read template file ' + templateFile.to_s
-    @mdbciNodes = JSON.parse(IO.read(templateFile))
+    @mdbciNodes =  $exception_handler.handle('MDBCI configuration file invalid') {JSON.parse(IO.read(templateFile))}
+    # DUPLICATE FROM loadCollections FUNCTION
     $session.boxes = JSON.parse(IO.read($session.boxesFile))
   end
 
@@ -208,8 +204,9 @@ class Session
     else
       path +='/'+name.to_s
     end
-#
-    @configs = JSON.parse(IO.read($session.configFile))
+    #
+    instanceConfigFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read($session.configFile)}
+    @configs = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(instanceConfigFile)}
     LoadNodesProvider(configs)
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
@@ -309,7 +306,8 @@ class Session
   end
 
   def showProvider(name)
-    $session.boxes = JSON.parse(IO.read($session.boxesFile))
+    providerBoxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read($session.boxesFile)}
+    $session.boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(providerBoxesFile)}
     if $session.boxes.has_key?(name)
       box_params = $session.boxes[name]
       provider = box_params["provider"].to_s
