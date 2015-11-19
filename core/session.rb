@@ -42,12 +42,12 @@ class Session
   def loadCollections
 
     $out.info 'Load boxes from ' + $session.boxesFile
-    @boxes = JSON.parse(IO.read($session.boxesFile))
+    boxesFileContent = $exception_handler.handle('BOXES configuration file not found'){IO.read($session.boxesFile)}
+    @boxes = $exception_handler.handle('BOXES configuration file is invalid'){JSON.parse(boxesFileContent)}
     $out.info 'Found boxes: ' + $session.boxes.size().to_s
 
     $out.info 'Load AWS config from ' + @awsConfigFile
-    @awsConfig = YAML.load_file(@awsConfigFile)['aws']
-
+    @awsConfig = $exception_handler.handle('AWS configuration file not found') {YAML.load_file(@awsConfigFile)['aws']}
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
   end

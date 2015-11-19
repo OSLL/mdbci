@@ -6,6 +6,7 @@ require_relative 'core/help'
 require_relative 'core/generator'
 require_relative 'core/session'
 require_relative 'core/out'
+require_relative 'core/exception_handler'
 
 #Reading options
 opts = GetoptLong.new(
@@ -23,6 +24,7 @@ $session = Session.new
 $session.configFile='instance.json'
 $session.boxesFile='boxes.json'
 $session.awsConfigFile='aws-config.yml'
+$exception_handler = ExceptionHandler.new
 
 $out = Out.new
 
