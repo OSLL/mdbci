@@ -5,17 +5,10 @@ MAINTAINER OSLL <osll@osll.ru>
 
 RUN zypper -n ref && \
     zypper -n up --skip-interactive && \
-    zypper --non-interactive --gpg-auto-import-keys install -y openSSH sudo wget iptables SuSEfirewall2
+    zypper --non-interactive --gpg-auto-import-keys install -y openSSH sudo wget iptables SuSEfirewall2 curl
 
 ENV SHELL /bin/bash
 
-# start openssh
-#RUN /etc/init.d/sshd start
-#CMD ["/bin/bash", "-c", "systemctl enable sshd"]
-#CMD ["/bin/bash", "-c", "systemctl start sshd"]
-#CMD ["/bin/bash", "-c", "chkconfig sshd on"]
-#CMD ["/bin/bash", "-c", "insserv sshd"]
-#CMD ["/bin/bash", "-c", "rcsshd start"]
 
 RUN sed -i 's/UsePAM no/UsePAM yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#PubkeyAuthentication no/PubkeyAuthentication yes/' /etc/ssh/sshd_config
@@ -44,15 +37,12 @@ RUN mkdir -p /home/vagrant/.ssh && \
     chown -R vagrant:vagrant /home/vagrant/.ssh && \
     chmod 0700 /home/vagrant/.ssh
 
-# Install chef
-RUN curl -L https://www.opscode.com/chef/install.sh | /bin/bash
-
 # Clean up APT when done.
 #zypper clean
 #RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-#CMD ["/bin/bash", "-c", "systemctl restart sshd"]
+# install Chef-Solo
+RUN curl -k -L https://www.opscode.com/chef/install.sh | /bin/bash -s -- -P container
 
-#EXPOSE 22
 CMD ["/usr/sbin/sshd", "-D"]
 EXPOSE 22
