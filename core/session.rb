@@ -14,9 +14,9 @@ class Session
   attr_accessor :versions
   attr_accessor :configFile
   attr_accessor :boxesFile
-  attr_accessor :awsConfigFile    # aws-config.yml file
   attr_accessor :awsConfig        # aws-config parameters
-  attr_accessor :awsConfigOption  # aws-config option from template.json
+  attr_accessor :awsConfigFile    # aws-config.yml file
+  attr_accessor :awsConfigOption  # path to aws-config.yml in template file
   attr_accessor :isOverride
   attr_accessor :isSilent
   attr_accessor :command
@@ -42,30 +42,30 @@ class Session
   def loadCollections
 
     $out.info 'Load boxes from ' + $session.boxesFile
-    @boxes = JSON.parse(IO.read($session.boxesFile))
+    boxesFileContent = $exception_handler.handle('BOXES configuration file not found'){IO.read($session.boxesFile)}
+    @boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(boxesFileContent)}
     $out.info 'Found boxes: ' + $session.boxes.size().to_s
 
     $out.info 'Load AWS config from ' + @awsConfigFile
-    @awsConfig = YAML.load_file(@awsConfigFile)['aws']
-
+    @awsConfig = $exception_handler.handle('AWS configuration file not found') {YAML.load_file(@awsConfigFile)['aws']}
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
-  end
 
-   def inspect
-     @boxes.to_json
-   end
+
+    # TODO: Load vbox and aws nodes params to runtime variables
+
+
+  end
 
   def setup(what)
     case what
       when 'boxes'
         $out.info 'Adding boxes to vagrant'
-        boxes = JSON.parse(inspect) # json to hash
-        boxes.each do |key, value|
+        @boxes.each do |key, value|
           next if value['provider'] == "aws" # skip 'aws' block
           next if value['provider'] == "mdbci" # skip 'mdbci' block
           #
-          if value['box'].to_s =~ URI::regexp
+          if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
             puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
             shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
           else
@@ -73,7 +73,7 @@ class Session
             shell = 'vagrant box add --provider virtualbox '+value['box'].to_s
           end
 
-          system shell
+          system shell # THERE CAN BE DONE CUSTOM EXCEPTION
         end
       else
         $out.warn 'Cannot setup '+what
@@ -110,15 +110,16 @@ class Session
 
   # load mdbci nodes
   def loadMdbciNodes(path)
-    templateFile = IO.read(path+'/mdbci_config.ini')
+    templateFile = $exception_handler.handle('MDBCI configuration file not found') {IO.read(path+'/mdbci_config.ini')}
     $out.info 'Read template file ' + templateFile.to_s
-    @mdbciNodes = JSON.parse(IO.read(templateFile))
+    @mdbciNodes =  $exception_handler.handle('MDBCI configuration file invalid') {JSON.parse(IO.read(templateFile))}
+    # DUPLICATE FROM loadCollections FUNCTION
     $session.boxes = JSON.parse(IO.read($session.boxesFile))
   end
 
-  # ./mdbci ssh command for AWS and VBox machines
-  #     VBox, AWS: mdbci ssh --command "touch file.txt" config_dir/node0 --silent
-  # TODO: for PPC64 box - execute ssh -i keyfile.pem user@ip
+  # ./mdbci ssh command for AWS, VBox and PPC64 machines
+  #     VBox, AWS: ./mdbci ssh --command "touch file.txt" config_dir/node0 --silent
+  #     MDBCI PPC64: ./mdbci ssh --command "touch file.txt" config_dir or config_dir/node0
   def ssh(args)
 
     if args.nil?
@@ -128,16 +129,49 @@ class Session
 
     params = args.split('/')
 
-    pwd = Dir.pwd
-    Dir.chdir params[0]
+    # mdbci ppc64 boxes
+    if File.exist?(params[0]+'/mdbci_config.ini')
+      loadMdbciNodes params[0]
+      if params[1].nil?     # ssh for all nodes
+        @mdbciNodes.each do |node|
+          box = node[1]['box'].to_s
+          if !box.empty?
+            mdbci_box_params = $session.boxes[box]
+            cmd = 'ssh -i ' + mdbci_box_params['keyfile'].to_s + " "\
+                            + mdbci_box_params['user'].to_s + "@"\
+                            + mdbci_box_params['IP'].to_s + " "\
+                            + "'" + $session.command + "'"
+            $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+            vagrant_out = `#{cmd}`
+            $out.out vagrant_out
+          end
+        end
+      else
+        mdbci_node = @mdbciNodes.find { |elem| elem[1]['hostname'].to_s == params[1] }
+        box = mdbci_node[1]['box'].to_s
+        if !box.empty?
+          mdbci_params = $session.boxes[box]
+          cmd = 'ssh -i ' + mdbci_params['keyfile'].to_s + " "\
+                          + mdbci_params['user'].to_s + "@"\
+                          + mdbci_params['IP'].to_s + " "\
+                          + "'" + $session.command + "'"
+          $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+          vagrant_out = `#{cmd}`
+          $out.out vagrant_out
+        end
+      end
+    else # aws, vbox nodes
+      pwd = Dir.pwd
+      Dir.chdir params[0]
+      cmd = 'vagrant ssh '+params[1].to_s+' -c "'+$session.command+'"'
+      $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
 
-    cmd = 'vagrant ssh '+params[1]+' -c "'+$session.command+'"'
-    $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+      vagrant_out = `#{cmd}`
+      $out.out vagrant_out
 
-    vagrant_out = `#{cmd}`
-    $out.out vagrant_out
+      Dir.chdir pwd
+    end
 
-    Dir.chdir pwd
 
   end
 
@@ -208,8 +242,9 @@ class Session
     else
       path +='/'+name.to_s
     end
-#
-    @configs = JSON.parse(IO.read($session.configFile))
+    #
+    instanceConfigFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read($session.configFile)}
+    @configs = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(instanceConfigFile)}
     LoadNodesProvider(configs)
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
@@ -274,11 +309,7 @@ class Session
     up_type ? Dir.chdir(config[0]) : Dir.chdir(args)
 
     # Setting provider: VirtualBox, AWS, (,libvirt)
-    if File.exist?('provider')
-      @nodesProvider = File.read('provider')
-    else
-      $out.warning 'File "provider" does not found! Try to regenerate your configuration!'
-    end
+    @nodesProvider = $exception_handler.handle("File with PROVIDER info not found"){File.read('provider')}
     $out.info 'Current provider: ' + @nodesProvider
 
     (1..@attempts.to_i).each { |i|
@@ -309,7 +340,8 @@ class Session
   end
 
   def showProvider(name)
-    $session.boxes = JSON.parse(IO.read($session.boxesFile))
+    providerBoxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read($session.boxesFile)}
+    $session.boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(providerBoxesFile)}
     if $session.boxes.has_key?(name)
       box_params = $session.boxes[name]
       provider = box_params["provider"].to_s
