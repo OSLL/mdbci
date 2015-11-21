@@ -31,15 +31,11 @@ $out = Out.new
 opts.each do |opt, arg|
   case opt
     when '--template'
-      if arg != ''
-        $session.configFile= arg
-      end
+      if arg != ''; $session.configFile = arg; end
       $out.info 'Using template name '+$session.configFile
 
     when '--boxes'
-      if arg != ''
-        $session.boxesFile= arg
-      end
+      if arg != ''; $session.boxesFile = arg; end
       $out.info 'Using boxes name '+$session.boxesFile
 
     when '--help'
@@ -47,13 +43,13 @@ opts.each do |opt, arg|
       exit
 
     when '--override'
-      $session.isOverride =true
+      $session.isOverride = true
 
     when '--command'
-      $session.command =arg
+      $session.command = arg
 
     when '--silent'
-      $session.isSilent =true
+      $session.isSilent = true
 
     when '--repo-dir'
       $session.repoDir = arg
