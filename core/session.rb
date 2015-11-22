@@ -1,6 +1,7 @@
 require 'json'
 require 'fileutils'
 require 'uri'
+require 'open3'
 
 require_relative 'generator'
 require_relative 'network'
@@ -13,24 +14,28 @@ class Session
   attr_accessor :versions
   attr_accessor :configFile
   attr_accessor :boxesFile
-  attr_accessor :awsConfigFile
-  attr_accessor :awsConfig
+  attr_accessor :awsConfig        # aws-config parameters
+  attr_accessor :awsConfigFile    # aws-config.yml file
+  attr_accessor :awsConfigOption  # path to aws-config.yml in template file
   attr_accessor :isOverride
   attr_accessor :isSilent
   attr_accessor :command
   attr_accessor :repos
   attr_accessor :repoDir
-  attr_accessor :nodes
-  attr_accessor :currentProvider   # current configuration provider
+  attr_accessor :mdbciNodes       # mdbci nodes
+  attr_accessor :nodesProvider   # current configuration provider
+  attr_accessor :attempts
 
   def initialize
     @repoDir = './repo.d'
-    @nodes = Hash.new
+    @mdbciNodes = Hash.new
   end
 
 =begin
      Load collections from json files:
-      - boxes.json.json
+      - boxes.json
+      - template.json
+      - aws-config.yml
       - versions.json
 =end
 
@@ -45,6 +50,11 @@ class Session
 
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
+
+
+    # TODO: Load vbox and aws nodes params to runtime variables
+
+
   end
 
    def inspect
@@ -103,9 +113,17 @@ class Session
     Dir.chdir pwd
   end
 
-  # ./mdbci ssh command for AWS and VBox machines
-  #     VBox, AWS: mdbci ssh --command "touch file.txt" config_dir/node0 --silent
-  # TODO: for PPC64 box - execute ssh -i keyfile.pem user@ip
+  # load mdbci nodes
+  def loadMdbciNodes(path)
+    templateFile = IO.read(path+'/mdbci_config.ini')
+    $out.info 'Read template file ' + templateFile.to_s
+    @mdbciNodes = JSON.parse(IO.read(templateFile))
+    $session.boxes = JSON.parse(IO.read($session.boxesFile))
+  end
+
+  # ./mdbci ssh command for AWS, VBox and PPC64 machines
+  #     VBox, AWS: ./mdbci ssh --command "touch file.txt" config_dir/node0 --silent
+  #     MDBCI PPC64: ./mdbci ssh --command "touch file.txt" config_dir or config_dir/node0
   def ssh(args)
 
     if args.nil?
@@ -115,18 +133,52 @@ class Session
 
     params = args.split('/')
 
-    pwd = Dir.pwd
-    Dir.chdir params[0]
+    # mdbci ppc64 boxes
+    if File.exist?(params[0]+'/mdbci_config.ini')
+      loadMdbciNodes params[0]
+      if params[1].nil?     # ssh for all nodes
+        @mdbciNodes.each do |node|
+          box = node[1]['box'].to_s
+          if !box.empty?
+            mdbci_box_params = $session.boxes[box]
+            cmd = 'ssh -i ' + mdbci_box_params['keyfile'].to_s + " "\
+                            + mdbci_box_params['user'].to_s + "@"\
+                            + mdbci_box_params['IP'].to_s + " "\
+                            + "'" + $session.command + "'"
+            $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+            vagrant_out = `#{cmd}`
+            $out.out vagrant_out
+          end
+        end
+      else
+        mdbci_node = @mdbciNodes.find { |elem| elem[1]['hostname'].to_s == params[1] }
+        box = mdbci_node[1]['box'].to_s
+        if !box.empty?
+          mdbci_params = $session.boxes[box]
+          cmd = 'ssh -i ' + mdbci_params['keyfile'].to_s + " "\
+                          + mdbci_params['user'].to_s + "@"\
+                          + mdbci_params['IP'].to_s + " "\
+                          + "'" + $session.command + "'"
+          $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+          vagrant_out = `#{cmd}`
+          $out.out vagrant_out
+        end
+      end
+    else # aws, vbox nodes
+      pwd = Dir.pwd
+      Dir.chdir params[0]
+      cmd = 'vagrant ssh '+params[1].to_s+' -c "'+$session.command+'"'
+      $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
 
-    cmd = 'vagrant ssh '+params[1]+' -c "'+$session.command+'"'
-    $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+      vagrant_out = `#{cmd}`
+      $out.out vagrant_out
 
-    vagrant_out = `#{cmd}`
-    $out.out vagrant_out
+      Dir.chdir pwd
+    end
 
-    Dir.chdir pwd
 
   end
+
 
   def platformKey(box_name)
     key = @boxes.keys.select {|value| value == box_name }
@@ -158,11 +210,17 @@ class Session
       when 'network'
         Network.show(ARGV.shift)
 
+      when 'private_ip'
+        Network.private_ip(ARGV.shift)
+
       when 'keyfile'
         Network.showKeyFile(ARGV.shift)
 
       when 'boxkeys'
         showBoxKeys
+
+      when 'provider'
+        showProvider(ARGV.shift)
 
       else
         $out.error 'Unknown collection: '+collection
@@ -170,24 +228,12 @@ class Session
   end
 
   # load mdbci boxes parameters from boxes.json
-  def LoadMdbciNodes(configs)
-
-    mdbciConfig = Hash.new
-
+  def LoadNodesProvider(configs)
     configs.each do |node|
-      host = node[1]['hostname'].to_s
       box = node[1]['box'].to_s
       if !box.empty?
         box_params = boxes[box]
-        provider = box_params["provider"].to_s
-        if provider == "mdbci"
-          @currentProvider = provider.to_s
-          box_params.each do |key, value|
-            mdbciConfig[key] = value
-          end
-          $session.nodes[host] = mdbciConfig
-          $out.info 'MDBCI definition for host: '+host+', with parameters: ' + $session.nodes.to_s
-        end
+        @nodesProvider = box_params["provider"].to_s
       end
     end
   end
@@ -200,17 +246,114 @@ class Session
     else
       path +='/'+name.to_s
     end
-
-    @configs = JSON.parse(IO.read($session.configFile))
-    LoadMdbciNodes(configs)
-    aws_config = $session.configs.find { |value| value.to_s.match(/aws_config/) }
-    aws_config_param = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
-    if currentProvider != "mdbci"
-      Generator.generate(path,configs,boxes,isOverride,aws_config_param)
+    @configs = JSON.parse(IO.read($session.configFile))
+    LoadNodesProvider(configs)
+    #
+    aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
+    @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
+    #
+    if @nodesProvider != "mdbci"
+      Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
-      $out.info "Using mdbci ppc64 box definition ..."
+      $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_config.ini"
+      # TODO: dir already exist?
+      Dir.mkdir path unless File.exists? path
+      mdbci = File.new(path+'/mdbci_config.ini', 'w')
+      mdbci.print $session.configFile
+      mdbci.close
+    end
+  end
+
+  # Deploy configurations
+  def up(args)
+    std_q_attampts = 4
+    std_err_val = 1
+
+    # No arguments provided
+    if args.nil?
+      $out.info 'Command \'up\' needs one argument, found zero'
+      return std_err_val
+    end
+
+    # No attempts provided
+    if @attempts.nil?
+      @attempts = std_q_attampts
+    end
+
+    # Saving dir, do then to change it back
+    pwd = Dir.pwd
+
+    # Separating config_path from node
+    config = []
+    node = ''
+    up_type = false # Means no node specified
+    paths = args.split('/') # Get array of dirs
+    # Get path to vagrant instance directory
+    config_path = paths[0, paths.length - 1].join('/')
+    if !config_path.empty?
+      # So there may be node specified
+      node = paths[paths.length - 1]
+      config[0] = config_path
+      config[1] = node
+      up_type = true # Node specified
+    end
+
+    # Checking if vagrant instance derictory exists
+    if Dir.exist?(config[0].to_s) # to_s in case of 'nil'
+      up_type = true # node specified
+      $out.info 'Node is specified ' + config[1] + ' in ' + config[0]
+    else
+      up_type = false # node not specified
+      $out.info 'Node isn\'t specified in ' + args
+    end
+
+    up_type ? Dir.chdir(config[0]) : Dir.chdir(args)
+
+    # Setting provider: VirtualBox, AWS, (,libvirt)
+    if File.exist?('provider')
+      @nodesProvider = File.read('provider')
+    else
+      $out.warning 'File "provider" does not found! Try to regenerate your configuration!'
+    end
+    $out.info 'Current provider: ' + @nodesProvider
+
+    (1..@attempts.to_i).each { |i|
+      $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') + 
+        args + ', attempt: ' + i.to_s
+      $out.info 'Destroying current instance'
+      cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
+      exec_cmd_destr = `#{cmd_destr}`
+      $out.info exec_cmd_destr
+      cmd_up = 'vagrant up --destroy-on-error ' + '--provider=' + @nodesProvider + ' ' +
+        (up_type ? config[1]:'')
+      $out.info 'Actual command: ' + cmd_up
+      Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
+        stdin.close
+        stdout.each_line { |line| $out.info line }
+        stdout.close
+        if wthr.value.success?
+          Dir.chdir pwd
+          return 0
+        end
+        $out.error 'Bringing up failed'
+        stderr.each_line { |line| $out.error line }
+        stderr.close
+      end
+    }
+    Dir.chdir pwd
+    return std_err_val
+  end
+
+  def showProvider(name)
+    $session.boxes = JSON.parse(IO.read($session.boxesFile))
+    if $session.boxes.has_key?(name)
+      box_params = $session.boxes[name]
+      provider = box_params["provider"].to_s
+      $out.out provider
+    else
+      $out.warning name.to_s+" box does not exist! Please, check box name!"
     end
   end
 
