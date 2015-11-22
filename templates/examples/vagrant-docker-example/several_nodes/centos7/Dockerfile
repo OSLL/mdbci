@@ -1,14 +1,16 @@
-FROM centos:centos7
+FROM centos:7
 MAINTAINER OSLL <osll@osll.ru>
 
 #ENV SHELL /bin/bash
 
 RUN yum update -y && \
-    yum --assumeyes install openssh-server openssh-clients sudo curl wget iptables which ruby1.9.1 ruby1.9.1-dev make && \
+    yum --assumeyes install openssh-server openssh-clients sudo curl wget && \
     yum clean all
 
-CMD ["/etc/init.d/sshd", "start"]
-#RUN /etc/init.d/sshd start
+RUN sed -i 's/#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+
+# centos 7
+CMD ["/bin/bash", "service", "start", "sshd"]
 RUN sed -i 's/.*requiretty$/Defaults !requiretty/' /etc/sudoers
 
 
@@ -20,6 +22,8 @@ RUN groupadd vagrant && \
     echo 'vagrant	ALL=(ALL)	NOPASSWD:ALL' >> /etc/sudoers.d/vagrant && \
     chmod 0440 /etc/sudoers.d/vagrant
 
+# generate ssh keys
+RUN ssh-keygen -A
 
 # Configure SSH access
 RUN mkdir -pm 700 /home/vagrant/.ssh && \

@@ -7,6 +7,7 @@ RUN yum update -y && \
     yum --assumeyes install openssh-server openssh-clients sudo curl wget iptables which ruby1.9.1 ruby1.9.1-dev make && \
     yum clean all
 
+# centos 6.7
 RUN /etc/init.d/sshd start
 RUN sed -i 's/.*requiretty$/Defaults !requiretty/' /etc/sudoers
 
