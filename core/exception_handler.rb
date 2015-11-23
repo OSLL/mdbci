@@ -1,7 +1,7 @@
 require_relative 'out'
 
 class ExceptionHandler
-	def handle(info=nil)
+  def handle(info=nil)
     begin
       return yield
     rescue Exception => details
