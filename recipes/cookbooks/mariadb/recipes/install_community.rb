@@ -5,19 +5,19 @@ include_recipe "mariadb::mdbcrepos"
 
 # TODO: BUG: #6309 Check if SElinux already disabled!
 # Turn off SElinux
-if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
+#if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
 #  execute "SElinux status" do
 #  	command "/usr/sbin/selinuxenabled && echo enabled || echo disabled"
 #	returns [1, 0]
 #  end
-  execute "Turn off SElinux" do
-      command "/usr/sbin/setenforce 0"
-  end
-  cookbook_file 'selinux.config' do
-    path "/etc/selinux/config"
-    action :create
-  end
-end  # Turn off SElinux
+#  execute "Turn off SElinux" do
+#      command "/usr/sbin/setenforce 0"
+#  end
+#  cookbook_file 'selinux.config' do
+#    path "/etc/selinux/config"
+#    action :create
+#  end
+#end  # Turn off SElinux
 
 # Remove mysql-libs for MariaDB-Server 5.1
 if node['mariadb']['version'] == "5.1"
@@ -81,9 +81,24 @@ case node[:platform_family]
       #command "/usr/sbin/service iptables-persistent save"
     end
   when "rhel", "centos", "fedora"
-    execute "Save MariaDB iptables rules" do
-      command "/sbin/service iptables save"
+    when "rhel", "centos", "fedora"
+    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
+      bash 'Save iptables rules' do
+      code <<-EOF
+        # TODO #6541: use firewalld
+      EOF
+      end
+    else
+      bash 'Save iptables rules' do
+      code <<-EOF
+        /sbin/service iptables save
+      EOF
+      end
     end
+    # TODO: don't work centos7 docker
+    #execute "Save MariaDB iptables rules" do
+    #  command "service iptables save"
+    #end
     # service iptables restart
   when "suse"
     execute "Save MariaDB iptables rules" do
