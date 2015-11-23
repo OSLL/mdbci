@@ -196,5 +196,23 @@
     "box": "dliappis/centos65minlibvirt",
     "platform": "centos",
     "platform_version": "6"
+  },
+  "ubuntu_trusty_docker": {
+    "provider": "docker",
+    "box": "ubuntu:ubuntu14.04",
+    "platform": "ubuntu",
+    "platform_version": "trusty"
+  },
+  "centos_6.7_docker": {
+    "provider": "docker",
+    "box": "centos:6.7",
+    "platform": "centos",
+    "platform_version": "6"
+  },
+  "centos_7_docker": {
+    "provider": "docker",
+    "box": "centos:7",
+    "platform": "centos",
+    "platform_version": "7"
   }
 }
