@@ -7,14 +7,13 @@ RUN zypper -n ref && \
     zypper -n up --skip-interactive && \
     zypper --non-interactive --gpg-auto-import-keys install -y openSSH sudo wget iptables SuSEfirewall2 curl
 
-ENV SHELL /bin/bash
+ENV SHELL /bin/sh
 
 
 RUN sed -i 's/UsePAM no/UsePAM yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#PubkeyAuthentication no/PubkeyAuthentication yes/' /etc/ssh/sshd_config
 #RUN sed -i 's/#ChallengeResponseAuthentication no/ChallengeREsponseAuthentication yes/' /etc/ssh/sshd_config
 RUN sed -i 's/#PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
-#RUN echo 'root:13579Rh' | chpasswd
 
 CMD ["/bin/bash", "-c", "rcsshd restart"]
 
@@ -37,12 +36,14 @@ RUN mkdir -p /home/vagrant/.ssh && \
     chown -R vagrant:vagrant /home/vagrant/.ssh && \
     chmod 0700 /home/vagrant/.ssh
 
-# Clean up APT when done.
-#zypper clean
-#RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # install Chef-Solo
-RUN curl -k -L https://www.opscode.com/chef/install.sh | /bin/bash -s -- -P container
+#ADD install.sh /home/vagrant/
+RUN wget --no-check-certificate https://www.opscode.com/chef/install.sh -P /home/vagrant
+RUN chmod +x /home/vagrant/install.sh
+#RUN /home/vagrant/install.sh 
+#| /bin/sh -s -- -P container
 
+# daemonize sshd
 CMD ["/usr/sbin/sshd", "-D"]
 EXPOSE 22

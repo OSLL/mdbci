@@ -15,40 +15,40 @@ Vagrant.configure("2") do |config|
   config.vm.network "private_network", type: "dhcp"
 
   # node0 - Ubuntu 14.04
-  config.vm.define "node0" do |node0|  
-    node0.vm.provider "docker" do |d|
-      d.build_dir = "ubuntu/"
-      d.has_ssh = true
-      #d.ports = ["3306:3306"]
-      d.privileged = true
-      #d.remains_running = false
-    end    
+#  config.vm.define "node0" do |node0|  
+#    node0.vm.provider "docker" do |d|
+#      d.build_dir = "ubuntu/"
+#      d.has_ssh = true
+#      #d.ports = ["3306:3306"]
+#      d.privileged = true
+#      #d.remains_running = false
+#    end    
 
-    node0.vm.provision "chef_solo" do |chef|
-      chef.cookbooks_path = "../../../../recipes/cookbooks"
-      chef.roles_path = "."
-      chef.add_role "docker0"
-    end
-  end
+#    node0.vm.provision "chef_solo" do |chef|
+#      chef.cookbooks_path = "../../../../recipes/cookbooks"
+#      chef.roles_path = "."
+#      chef.add_role "docker0"
+#    end
+#  end
 
 
   # node1 - CentOS 6.7
-  config.vm.define "node1" do |node1|
-    node1.vm.provider "docker" do |d|
-      d.build_dir = "centos6.7/"
-      d.has_ssh = true
-      #d.ports = ["3306:3306"]
-      d.privileged = true
-    end    
+#  config.vm.define "node1" do |node1|
+#    node1.vm.provider "docker" do |d|
+#      d.build_dir = "centos6.7/"
+#      d.has_ssh = true
+#      #d.ports = ["3306:3306"]
+#      d.privileged = true
+#    end    
 
 #    node1.vm.provision "shell", path: "./install_recipe.sh"
     
-    node1.vm.provision "chef_solo" do |chef|
-      chef.cookbooks_path = "../../../../recipes/cookbooks"
-      chef.roles_path = "."
-      chef.add_role "docker1"
-    end
-  end
+#    node1.vm.provision "chef_solo" do |chef|
+#      chef.cookbooks_path = "../../../../recipes/cookbooks"
+#      chef.roles_path = "."
+#      chef.add_role "docker1"
+#    end
+#  end
 
 
   # node2 - CentOS 7
@@ -65,6 +65,7 @@ Vagrant.configure("2") do |config|
       chef.roles_path = "."
       chef.add_role "docker2"
     end
+
   end
 
   # TODO 6539: fix chef-container
@@ -84,6 +85,7 @@ Vagrant.configure("2") do |config|
 #      chef.roles_path = "."
 #      chef.add_role "docker3"
 #    end
+
 #  end    
 
 end

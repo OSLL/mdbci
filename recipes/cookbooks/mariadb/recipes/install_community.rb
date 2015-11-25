@@ -3,23 +3,26 @@ require 'shellwords'
 include_recipe "mariadb::mdbcrepos"
 
 
-# TODO: BUG: #6309 Check if SElinux already disabled!
 # Turn off SElinux
-#if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
-#  execute "SElinux status" do
-#  	command "/usr/sbin/selinuxenabled && echo enabled || echo disabled"
-#	returns [1, 0]
-#  end
+if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
+  # TODO: centos7 don't have selinux
+  bash 'Turn off SElinux on CentOS >= 6.0' do
+  code <<-EOF
+    selinuxenabled && flag=enabled || flag=disabled
+    if [[ $flag == 'enabled' ]];
+    then
+      /usr/sbin/setenforce 0
+    else
+      echo "SElinux already disabled!"
+    fi
+  EOF
+  end
 
-#  execute "Turn off SElinux" do
-#      command "/usr/sbin/setenforce 0"
-#  end
-
-#  cookbook_file 'selinux.config' do
-#    path "/etc/selinux/config"
-#    action :create
-#  end
-#end  # Turn off SElinux
+  cookbook_file 'selinux.config' do
+    path "/etc/selinux/config"
+    action :create
+  end
+end  # Turn off SElinux
 
 # Remove mysql-libs for MariaDB-Server 5.1
 if node['mariadb']['version'] == "5.1"
@@ -84,23 +87,18 @@ case node[:platform_family]
     end
   when "rhel", "centos", "fedora"
     if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
-      bash 'Save iptables rules' do
+      bash 'Save iptables rules on CentOS 7' do
       code <<-EOF
-        # TODO: use firewalld
+        iptables-save > /etc/sysconfig/iptables
       EOF
       end
     else
-      bash 'Save iptables rules' do
+      bash 'Save iptables rules on CentOS >= 6.0' do
       code <<-EOF
         /sbin/service iptables save
       EOF
       end
     end
-    # TODO: not work centos7 docker
-    #execute "Save MariaDB iptables rules" do
-    #  command "service iptables save"
-    #end
-  # service iptables restart
   when "suse"
     execute "Save MariaDB iptables rules" do
       command "iptables-save > /etc/sysconfig/iptables"

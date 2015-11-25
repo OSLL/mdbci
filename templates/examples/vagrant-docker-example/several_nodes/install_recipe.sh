@@ -29,7 +29,7 @@ function installChef()
 function installRecipe()
 {
     /opt/chef/bin/chef-solo -c /vagrant/solo.rb -j /vagrant/solo.json
-    #/opt/chef/bin/chef-solo -c /vagrant/solo.rb --override-runlist "role["/vagrant/docker1"],recipe["mariadb::install_community"]"
+    /opt/chef/bin/chef-solo -c /vagrant/solo.rb --override-runlist "role["/vagrant/docker1"],recipe["mariadb::install_community"]"
 }
 
 function main()
