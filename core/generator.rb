@@ -328,7 +328,6 @@ Vagrant.configure(2) do |config|
           $out.info 'MDBCI definition for host:'+host+', with parameters: ' + $session.nodes.to_s
         else
           boxurl = box_params['box'].to_s
-          p boxurl
       end
     end
 
@@ -353,11 +352,6 @@ Vagrant.configure(2) do |config|
           machine = getQemuDef(cookbook_path, name, host, boxurl, template_path, provisioned)
         else
           $out.warning 'WARNING: Configuration has not support AWS, config file or other vm provision'
-      end
-      # write nodes provider to file
-      provider_file = path+"/provider"
-      if !File.exists?(provider_file)
-        File.open(path+"/provider", 'w') { |f| f.write(provider.to_s) }
       end
     else
       $out.warning 'WARNING: Box '+box+'is not installed or configured ->SKIPPING'

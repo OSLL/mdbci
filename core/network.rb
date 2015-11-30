@@ -40,7 +40,7 @@ class Network
 =end
 
     count = 0
-    provider = ["virtualbox", "aws", "mdbci"]
+    provider = ["virtualbox", "aws", "mdbci", "libvirt"]
     list.each do |line|
       provider.each do |item|
         count += 1 if line.to_s.include?(item)
@@ -68,7 +68,7 @@ class Network
     args = name.split('/')
 
     # mdbci ppc64 boxes
-    if File.exist?(args[0]+'/mdbci_config.ini')
+    if File.exist?(args[0]+'/mdbci_template')
       $session.loadMdbciNodes args[0]
       if args[1].nil?
         $session.mdbciNodes.each do |node|
@@ -77,7 +77,7 @@ class Network
           if !box.empty?
             box_params = $session.boxes[box]
             $out.out 'Node: ' + host.to_s
-            $out.out "Keyfile: " + box_params['keyfile'].to_s
+            $out.out box_params['keyfile'].to_s
           end
         end
       else
@@ -85,14 +85,15 @@ class Network
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
-          $out.out 'Keyfile: ' + mdbci_params['keyfile'].to_s
+          $out.out 'Node: ' + args[1].to_s
+          $out.out mdbci_params['keyfile'].to_s
         end
       end
     else
       pwd = Dir.pwd
       Dir.chdir args[0]
 
-      cmd = 'vagrant ssh-config '+args[1].to_s+ ' |grep IdentityFile '
+      cmd = 'vagrant ssh-config '+args[1].to_s+ ' | grep IdentityFile '
       vagrant_out = `#{cmd}`
       $out.out vagrant_out.split(' ')[1]
 
@@ -112,7 +113,7 @@ class Network
     args = name.split('/')
 
     # mdbci ppc64 boxes
-    if File.exist?(args[0]+'/mdbci_config.ini')
+    if File.exist?(args[0]+'/mdbci_template')
       $session.loadMdbciNodes args[0]
       if args[1].nil?
         $session.mdbciNodes.each do |node|
@@ -121,7 +122,7 @@ class Network
           if !box.empty?
             box_params = $session.boxes[box]
             $out.out 'Node: ' + host.to_s
-            $out.out "IP: " + box_params['IP'].to_s
+            $out.out box_params['IP'].to_s
           end
         end
       else
@@ -129,7 +130,8 @@ class Network
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
-          $out.out 'IP: ' + mdbci_params['IP'].to_s
+          $out.out 'Node: ' + args[1].to_s
+          $out.out mdbci_params['IP'].to_s
         end
       end
     else # aws, vbox nodes
@@ -164,7 +166,7 @@ class Network
     args = name.split('/')
 
     # mdbci box
-    if File.exist?(args[0]+'/mdbci_config.ini')
+    if File.exist?(args[0]+'/mdbci_template')
       $session.loadMdbciNodes args[0]
       if args[1].nil?     # read ip for all nodes
         $session.mdbciNodes.each do |node|
@@ -173,7 +175,7 @@ class Network
           if !box.empty?
             box_params = $session.boxes[box]
             $out.out 'Node: ' + host.to_s
-            $out.out "IP: " + box_params['IP'].to_s
+            $out.out box_params['IP'].to_s
           end
         end
       else
@@ -181,7 +183,8 @@ class Network
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
-          $out.out 'IP: ' + mdbci_params['IP'].to_s
+          $out.out 'Node: ' + args[1].to_s
+          $out.out mdbci_params['IP'].to_s
         end
       end
     else # aws, vbox nodes

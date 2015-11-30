@@ -45,9 +45,6 @@ class Session
     @boxes = JSON.parse(IO.read($session.boxesFile))
     $out.info 'Found boxes: ' + $session.boxes.size().to_s
 
-    $out.info 'Load AWS config from ' + @awsConfigFile
-    @awsConfig = YAML.load_file(@awsConfigFile)['aws']
-
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
 
@@ -115,7 +112,7 @@ class Session
 
   # load mdbci nodes
   def loadMdbciNodes(path)
-    templateFile = IO.read(path+'/mdbci_config.ini')
+    templateFile = IO.read(path+'/mdbci_template')
     $out.info 'Read template file ' + templateFile.to_s
     @mdbciNodes = JSON.parse(IO.read(templateFile))
     $session.boxes = JSON.parse(IO.read($session.boxesFile))
@@ -134,7 +131,7 @@ class Session
     params = args.split('/')
 
     # mdbci ppc64 boxes
-    if File.exist?(params[0]+'/mdbci_config.ini')
+    if File.exist?(params[0]+'/mdbci_template')
       loadMdbciNodes params[0]
       if params[1].nil?     # ssh for all nodes
         @mdbciNodes.each do |node|
@@ -254,20 +251,30 @@ class Session
     @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if @nodesProvider != "mdbci"
+      if @nodesProvider == 'aws'    
+        $out.info 'Load AWS config from ' + @awsConfigFile
+        @awsConfig = YAML.load_file(@awsConfigFile)['aws']
+      end
       Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
-      $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_config.ini"
+      $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_template"
       # TODO: dir already exist?
       Dir.mkdir path unless File.exists? path
-      mdbci = File.new(path+'/mdbci_config.ini', 'w')
+      mdbci = File.new(path+'/mdbci_template', 'w')
       mdbci.print $session.configFile
       mdbci.close
+    end
+    # write nodes provider to configuration nodes dir file
+    provider_file = path+"/provider"
+    if !File.exists?(provider_file)
+      File.open(path+"/provider", 'w') { |f| f.write(@nodesProvider.to_s) }
     end
   end
 
   # Deploy configurations
   def up(args)
+
     std_q_attampts = 4
     std_err_val = 1
 
@@ -318,32 +325,35 @@ class Session
       $out.warning 'File "provider" does not found! Try to regenerate your configuration!'
     end
     $out.info 'Current provider: ' + @nodesProvider
-
-    (1..@attempts.to_i).each { |i|
-      $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') + 
-        args + ', attempt: ' + i.to_s
-      $out.info 'Destroying current instance'
-      cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
-      exec_cmd_destr = `#{cmd_destr}`
-      $out.info exec_cmd_destr
-      cmd_up = 'vagrant up --destroy-on-error ' + '--provider=' + @nodesProvider + ' ' +
-        (up_type ? config[1]:'')
-      $out.info 'Actual command: ' + cmd_up
-      Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
-        stdin.close
-        stdout.each_line { |line| $out.info line }
-        stdout.close
-        if wthr.value.success?
-          Dir.chdir pwd
-          return 0
+    if @nodesProvider == 'mdbci'
+      $out.warning 'You are using mdbci nodes template. ./mdbci up command doesn\'t supported for this boxes!'
+    else 
+      (1..@attempts.to_i).each { |i|
+        $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') + 
+          args + ', attempt: ' + i.to_s
+        $out.info 'Destroying current instance'
+        cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
+        exec_cmd_destr = `#{cmd_destr}`
+        $out.info exec_cmd_destr
+        cmd_up = 'vagrant up --destroy-on-error ' + '--provider=' + @nodesProvider + ' ' +
+          (up_type ? config[1]:'')
+        $out.info 'Actual command: ' + cmd_up
+        Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
+          stdin.close
+          stdout.each_line { |line| $out.info line }
+          stdout.close
+          if wthr.value.success?
+            Dir.chdir pwd
+            return 0
+          end
+          $out.error 'Bringing up failed'
+          stderr.each_line { |line| $out.error line }
+          stderr.close
         end
-        $out.error 'Bringing up failed'
-        stderr.each_line { |line| $out.error line }
-        stderr.close
-      end
-    }
-    Dir.chdir pwd
-    return std_err_val
+      }
+      Dir.chdir pwd
+      return std_err_val
+    end
   end
 
   def showProvider(name)
