@@ -1,5 +1,6 @@
 {
   "cookbook_path" : "../recipes/cookbooks/",
+
   "galera3" : 
   {
     "hostname" : "galera1",
