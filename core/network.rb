@@ -1,5 +1,8 @@
+require 'find'
+
 require_relative  'node'
 require_relative  '../core/out'
+
 
 class Network
 
@@ -56,9 +59,11 @@ class Network
 
   end
 
+
   def self.showKeyFile(name)
 
     #TODO refactor with show
+    pwd = Dir.pwd
 
     if name.nil?
       $out.error 'Configuration name is required'
@@ -76,7 +81,9 @@ class Network
           if !box.empty?
             box_params = $session.boxes[box]
             $out.info 'Node: ' + node[0].to_s
-            $out.out box_params['keyfile'].to_s
+            Dir.glob(pwd+'/**/'+box_params['keyfile'].to_s, File::FNM_DOTMATCH) do |file|
+              $out.out file
+            end
           end
         end
       else
@@ -85,11 +92,12 @@ class Network
         if !box.empty?
           mdbci_params = $session.boxes[box]
           $out.info 'Node: ' + args[1].to_s
-          $out.out mdbci_params['keyfile'].to_s
+          Dir.glob(pwd+'/**/'+mdbci_params['keyfile'].to_s, File::FNM_DOTMATCH) do |file|
+            $out.out file
+          end
         end
       end
     else
-      pwd = Dir.pwd
       Dir.chdir args[0]
 
       cmd = 'vagrant ssh-config '+args[1].to_s+ ' | grep IdentityFile '
