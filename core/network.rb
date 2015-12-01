@@ -72,16 +72,16 @@ class Network
       $session.loadMdbciNodes args[0]
       if args[1].nil?
         $session.mdbciNodes.each do |node|
-          host = node[1]['hostname'].to_s
+          #host = node[1]['hostname'].to_s
           box = node[1]['box'].to_s
           if !box.empty?
             box_params = $session.boxes[box]
-            $out.out 'Node: ' + host.to_s
+            $out.out 'Node: ' + node[0].to_s
             $out.out box_params['keyfile'].to_s
           end
         end
       else
-        mdbci_node = $session.mdbciNodes.find { |elem| elem[1]['hostname'].to_s == args[1] }
+        mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
@@ -117,16 +117,15 @@ class Network
       $session.loadMdbciNodes args[0]
       if args[1].nil?
         $session.mdbciNodes.each do |node|
-          host = node[1]['hostname'].to_s
           box = node[1]['box'].to_s
           if !box.empty?
             box_params = $session.boxes[box]
-            $out.out 'Node: ' + host.to_s
+            $out.out 'Node: ' + node[0].to_s
             $out.out box_params['IP'].to_s
           end
         end
       else
-        mdbci_node = $session.mdbciNodes.find { |elem| elem[1]['hostname'].to_s == args[1] }
+        mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
@@ -170,16 +169,15 @@ class Network
       $session.loadMdbciNodes args[0]
       if args[1].nil?     # read ip for all nodes
         $session.mdbciNodes.each do |node|
-          host = node[1]['hostname'].to_s
           box = node[1]['box'].to_s
           if !box.empty?
             box_params = $session.boxes[box]
-            $out.out 'Node: ' + host.to_s
+            $out.out 'Node: ' + node[0].to_s
             $out.out box_params['IP'].to_s
           end
         end
       else
-        mdbci_node = $session.mdbciNodes.find { |elem| elem[1]['hostname'].to_s == args[1] }
+        mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]

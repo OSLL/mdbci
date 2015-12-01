@@ -142,13 +142,13 @@ class Session
                             + mdbci_box_params['user'].to_s + "@"\
                             + mdbci_box_params['IP'].to_s + " "\
                             + "'" + $session.command + "'"
-            $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+            $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
             vagrant_out = `#{cmd}`
             $out.out vagrant_out
           end
         end
       else
-        mdbci_node = @mdbciNodes.find { |elem| elem[1]['hostname'].to_s == params[1] }
+        mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == params[1] }
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
@@ -156,7 +156,7 @@ class Session
                           + mdbci_params['user'].to_s + "@"\
                           + mdbci_params['IP'].to_s + " "\
                           + "'" + $session.command + "'"
-          $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+          $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
           vagrant_out = `#{cmd}`
           $out.out vagrant_out
         end
