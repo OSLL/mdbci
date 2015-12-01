@@ -72,11 +72,10 @@ class Network
       $session.loadMdbciNodes args[0]
       if args[1].nil?
         $session.mdbciNodes.each do |node|
-          #host = node[1]['hostname'].to_s
           box = node[1]['box'].to_s
           if !box.empty?
             box_params = $session.boxes[box]
-            $out.out 'Node: ' + node[0].to_s
+            $out.info 'Node: ' + node[0].to_s
             $out.out box_params['keyfile'].to_s
           end
         end
@@ -85,7 +84,7 @@ class Network
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
-          $out.out 'Node: ' + args[1].to_s
+          $out.info 'Node: ' + args[1].to_s
           $out.out mdbci_params['keyfile'].to_s
         end
       end
@@ -120,7 +119,7 @@ class Network
           box = node[1]['box'].to_s
           if !box.empty?
             box_params = $session.boxes[box]
-            $out.out 'Node: ' + node[0].to_s
+            $out.info 'Node: ' + node[0].to_s
             $out.out box_params['IP'].to_s
           end
         end
@@ -129,7 +128,7 @@ class Network
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
-          $out.out 'Node: ' + args[1].to_s
+          $out.info 'Node: ' + args[1].to_s
           $out.out mdbci_params['IP'].to_s
         end
       end
@@ -172,7 +171,7 @@ class Network
           box = node[1]['box'].to_s
           if !box.empty?
             box_params = $session.boxes[box]
-            $out.out 'Node: ' + node[0].to_s
+            $out.info 'Node: ' + node[0].to_s
             $out.out box_params['IP'].to_s
           end
         end
@@ -181,7 +180,7 @@ class Network
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
-          $out.out 'Node: ' + args[1].to_s
+          $out.info 'Node: ' + args[1].to_s
           $out.out mdbci_params['IP'].to_s
         end
       end
