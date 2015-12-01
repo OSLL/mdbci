@@ -179,6 +179,24 @@
     "platform": "rhel_ppc",
     "platform_version" : "7"
   },
+  "ubuntu_precise_libvirt": {
+    "provider": "libvirt",
+    "box": "bento/ubuntu-12.04",
+    "platform": "ubuntu",
+    "platform_version": "trusty"
+  },
+  "ubuntu_trusty64_libvirt": {
+    "provider": "libvirt",
+    "box": "baremettle/ubuntu-14.04",
+    "platform": "ubuntu",
+    "platform_version": "trusty"
+  },
+  "debian_7.5_libvirt": {
+    "provider": "libvirt",
+    "box": "baremettle/debian-7.5",
+    "platform": "ubuntu",
+    "platform_version": "trusty"
+  },
   "ubuntu_trusty_libvirt": {
     "provider": "libvirt",
     "box": "baremettle/ubuntu-14.04",
@@ -187,7 +205,7 @@
   },
   "centos_7.0_libvirt": {
     "provider": "libvirt",
-    "box": "uvsmtid/centos-7.0-minimal",
+    "box": "centos/7",
     "platform": "centos",
     "platform_version": "7"
   },

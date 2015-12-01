@@ -48,6 +48,8 @@ class Node
     case provider
       when '(virtualbox)'
         getInterfaceBoxIp(@name, "eth1", "inet addr:%s Bcast")
+      when '(libvirt)'
+        getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
       when '(aws)'
         if curlCheck
           if is_private
