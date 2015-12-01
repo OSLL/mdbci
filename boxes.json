@@ -171,14 +171,6 @@
     "platform": "ubuntu",
     "platform_version" : "trusty"
   },
-  "rhel7_ppc64" : {
-    "provider": "mdbci",
-    "IP": "172.78.1.100",
-    "user": "admin",
-    "keyfile": "rhel7ppc.pem",
-    "platform": "rhel",
-    "platform_version" : "7"
-  },
   "ubuntu_precise_libvirt": {
     "provider": "libvirt",
     "box": "bento/ubuntu-12.04",
