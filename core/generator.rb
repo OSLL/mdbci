@@ -220,42 +220,56 @@ Vagrant.configure(2) do |config|
       product_name = product['name']
     end
 
-    recipe_name = $session.repos.recipeName(product_name)
+    # TODO: implement support of multiple recipes in role file
+    if product_name != 'packages'
+      recipe_name = $session.repos.recipeName(product_name)
 
-    $out.info 'Recipe '+recipe_name
+      $out.info 'Recipe '+recipe_name.to_s
 
-    if repo.nil?
-      repo = $session.repos.findRepo(product_name, product, box)
+      if repo.nil?
+        repo = $session.repos.findRepo(product_name, product, box)
+      end
+
+      if repo.nil?
+        return errorMock
+      end
+
+      config = Hash.new
+      # edit recipe attributes in role
+      config['version'] = repo['version']
+      config['repo'] = repo['repo']
+      config['repo_key'] = repo['repo_key']
+      if !product['cnf_template'].nil? && !product['cnf_template_path'].nil?
+        config['cnf_template'] = product['cnf_template']
+        config['cnf_template_path'] = product['cnf_template_path']
+      end
+      if !product['node_name'].nil?
+        config['node_name'] = product['node_name']
+      end
+      productConfig[product_name] = config
+
+      role['name'] = name
+      role['default_attributes'] = {}
+      role['override_attributes'] = productConfig
+      role['json_class'] = 'Chef::Role'
+      role['description'] = 'MariaDb instance install and run'
+      role['chef_type'] = 'role'
+      role['run_list'] = ['recipe['+recipe_name+']']
+    else
+      recipe_name = $session.repos.recipeName(product_name)
+      $out.info 'Recipe '+recipe_name.to_s
+
+      role['name'] = name
+      role['default_attributes'] = {}
+      role['override_attributes'] = {}
+      role['json_class'] = 'Chef::Role'
+      role['description'] = 'packages recipe for all nodes'
+      role['chef_type'] = 'role'
+      role['run_list'] = ['recipe['+recipe_name+']']
     end
-
-    if repo.nil?
-      return errorMock
-    end
-
-    config = Hash.new
-
-    # edit recipe attributes in role
-    config['version'] = repo['version']
-    config['repo'] = repo['repo']
-    config['repo_key'] = repo['repo_key']
-    if !product['cnf_template'].nil? && !product['cnf_template_path'].nil?
-      config['cnf_template'] = product['cnf_template']
-      config['cnf_template_path'] = product['cnf_template_path']
-    end
-    if !product['node_name'].nil?
-      config['node_name'] = product['node_name']
-    end
-    productConfig[product_name] = config
-
-    role['name'] = name
-    role['default_attributes'] = {}
-    role['override_attributes'] = productConfig
-    role['json_class'] = 'Chef::Role'
-    role['description'] = 'MariaDb instance install and run'
-    role['chef_type'] = 'role'
-    role['run_list'] = ['recipe['+recipe_name+']']
 
     roledef = JSON.pretty_generate(role)
+
     return roledef
 
     #todo uncomment
@@ -278,7 +292,7 @@ Vagrant.configure(2) do |config|
       roledef += quote('run_list') + ": [ " + quote("recipe[" + recipe_name + "]") + " ]\n"
       roledef += "}"
     end
-    return roledef
+
   end
 
   def Generator.checkPath(path, override)
