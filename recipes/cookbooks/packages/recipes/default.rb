@@ -16,7 +16,7 @@ case node[:platform_family]
   when "rhel", "fedora", "centos"
     # install packages for rhel
     if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
-      execute "install galera 10.1" do
+      execute "install net-tools for centos 7.0" do
         command "yum --assumeyes install net-tools"
       end
     end

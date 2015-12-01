@@ -342,7 +342,6 @@ Vagrant.configure(2) do |config|
           $out.info 'MDBCI definition for host:'+host+', with parameters: ' + $session.nodes.to_s
         else
           boxurl = box_params['box'].to_s
-          p boxurl
       end
     end
 

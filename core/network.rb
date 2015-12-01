@@ -40,7 +40,7 @@ class Network
 =end
 
     count = 0
-    provider = ["virtualbox", "aws", "mdbci"]
+    provider = ["virtualbox", "aws", "mdbci", "libvirt"]
     list.each do |line|
       provider.each do |item|
         count += 1 if line.to_s.include?(item)
