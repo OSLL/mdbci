@@ -158,11 +158,15 @@ case node[:platform_family]
   when "rhel", "fedora", "centos"
     system 'echo shell install on: '+node[:platform_family]
     if node['galera']['version'] == "10.1"
-      execute "install" do
+      execute "install galera 10.1" do
         command "yum --assumeyes -c /etc/yum.repos.d/galera.repo install MariaDB-server"
       end
+    elsif node['galera']['version'] == "10.0"
+      execute "install galera 10.0" do
+        command "yum --assumeyes -c /etc/yum.repos.d/galera.repo install MariaDB-Galera-server && yum --assumeyes install galera"
+      end
     else
-      execute "install" do
+      execute "install galera" do
         command "yum --assumeyes -c /etc/yum.repos.d/galera.repo install MariaDB-Galera-server"
       end
     end
