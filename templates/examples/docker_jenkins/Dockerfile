@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM ubuntu:14.04
 
 # Preparin dependencies
 RUN apt-get -y install wget
