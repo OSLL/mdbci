@@ -220,6 +220,13 @@ case node[:platform_family]
         sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
         EOF
       end
+    elsif provider == "libvirt"
+      bash 'Configure Galera server.cnf - Get Libvirt node IP address' do
+        code <<-EOF
+        node_address=$(/sbin/ifconfig eth0 | grep -o -P '(?<=inet ).*(?=  netmask)')
+        sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        EOF
+      end
     end
 
     bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
@@ -248,6 +255,13 @@ case node[:platform_family]
       bash 'Configure Galera server.cnf - Get Virtualbox node IP address' do
         code <<-EOF
         node_address=$(/sbin/ifconfig eth1 | grep "inet " | grep -o -P '(?<=addr:).*(?=  Bcast)')
+        sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        EOF
+      end
+    elsif provider == "libvirt"
+      bash 'Configure Galera server.cnf - Get Libvirt node IP address' do
+        code <<-EOF
+        node_address=$(/sbin/ifconfig eth0 | grep -o -P '(?<=inet ).*(?=  netmask)')
         sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
         EOF
       end

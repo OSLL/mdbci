@@ -8,16 +8,17 @@
 
 ### Current version
 
-Current version of mdbci is 0.4 (beta)
+Current version of mdbci is 0.6 (beta)
 
 ### Roadmap
 
 Following features are under development and will be available in the next versions of **mdbci**:
 
-* Support remote Linux systems as tager nodes
+* Support remote Linux systems as mdbci nodes
 * Support PPC boxes
-* Support qemu images
-* Support kvm
+* Support qemu images (libvirt)
+* Support kvm (libvirt)
+* Support Docker nodes
 
 ## Architecture
 
@@ -309,7 +310,27 @@ MDBCI supports next VM providers:
 
 * VirtualBox 4.3 and upper
 * Amason EC2
-* _Remote PPC Boxes (under development)_
+* Remote PPC boxes (mdbci)
+* Libvirt boxes (kvm)
+* Docker boxes for Ubuntu Trusty, CentOs 6.7 and 7.0
+
+### Libvirt nodes
+
+Installation steps: https://github.com/pradels/vagrant-libvirt
+
+While testing libvirt nodes, do not forget to add the current system/server user to libvirtd group and logout. If you use Jenkins, restart it to.
+
+### Docker nodes
+
+The docker provisioner can automatically install Docker, pull Docker containers, and configure certain containers to run on boot.
+
+All Dockerfiles store in /mdbci/templates/dockerfiles directory.
+
+Currently supported following containers:
+
+* Ubuntu 14.04 (trusty)
+* CentOS 6.7
+* CentOS 7.0
 
 ## MDBCI Syntax
 
