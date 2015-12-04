@@ -1,4 +1,5 @@
 require 'date'
+require 'fileutils'
 
 require_relative '../core/out'
 
@@ -58,9 +59,9 @@ require 'yaml'
   def Generator.providerConfig
     config = <<-EOF
 
-### Default (VBox, Libvirt) Provider config ###
-############################################
-#Network autoconfiguration
+### Default (VBox, Libvirt, Docker) Provider config ###
+#######################################################
+# Network autoconfiguration
 config.vm.network "private_network", type: "dhcp"
     EOF
     return config
@@ -93,6 +94,7 @@ Vagrant.configure(2) do |config|
     IO.write(name, content)
   end
 
+  # Vagrantfile for Vbox provider
   def Generator.getVmDef(cookbook_path, name, host, boxurl, vm_mem, template_path, provisioned)
 
     if template_path
@@ -127,7 +129,7 @@ Vagrant.configure(2) do |config|
     return vmdef
   end
 
-  #
+  # Vagrantfile for Libvirt provider
   def Generator.getQemuDef(cookbook_path, name, host, boxurl, template_path, provisioned)
 
     if template_path
@@ -163,7 +165,78 @@ Vagrant.configure(2) do |config|
     return vmdef
   end
 
-  #
+  # Vagrantfile for Docker provider + Dockerfiles
+  def Generator.getDockerDef(cookbook_path, name, template_path, provisioned)
+
+    if template_path
+      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote("/home/vagrant/cnf_templates")
+    else
+      templatedef = ""
+    end
+
+    if provisioned
+      docker_def = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
+            + templatedef  + "\n"\
+            + "\t"+name+'.vm.provider "docker" do |d|' + "\n" \
+            + "\t\t"+'d.build_dir = ' + quote(name+"/") + "\n" \
+            + "\t\t"+'d.has_ssh = true' + "\n" \
+            + "\t\t"+'d.privileged = true' + "\n\tend" \
+            + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
+            + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
+            + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
+            + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
+    else
+      docker_def = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
+            + templatedef  + "\n"\
+            + "\t"+name+'.vm.provider "docker" do |d|' + "\n" \
+            + "\t\t"+'d.build_dir = ' + quote(name+"/") + "/\n" \
+            + "\t\t"+'d.has_ssh = true' + "\n" \
+            + "\t\t"+'d.privileged = true' + "\n\tend"
+    end
+
+    docker_def += "\nend # <-- end of Docker definition>\n"
+
+    return docker_def
+  end
+  # generate Dockerfiles
+  def Generator.copyDockerfiles(path, name, platform, platform_version)
+    # dir for Dockerfile
+    node_path = path + "/" + name
+    if Dir.exist?(node_path)
+      $out.error "Folder already exists: " + node_path
+    elsif
+      #FileUtils.rm_rf(node_path)
+      Dir.mkdir(node_path)
+    end
+
+    # TODO: make other solution, avoid multi IF
+    # copy Dockerfiles to configuration dir nodes
+    dockerfile_path = $session.mdbciDir+"/templates/dockerfiles/"
+    case platform
+      when "ubuntu"
+        if platform_version == "trusty"
+          dockerfile_path += "ubuntu/trusty/Dockerfile"
+        else
+          dockerfile_path += "ubuntu/precise/Dockerfile"
+        end
+      when "centos"
+        if platform_version == "6"
+          dockerfile_path += "centos/6/Dockerfile"
+        elsif platform_version == "7"
+          dockerfile_path += "centos/7/Dockerfile"
+        end
+      when "suse"
+        # gen for suse
+        p "Platform: " + platform.to_s
+      else
+        p "Platform: " + platform.to_s
+    end
+
+    FileUtils.cp_r dockerfile_path, node_path
+
+  end
+
+  #  Vagrantfile for AWS provider
   def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, instance_type, template_path, provisioned)
 
     if template_path
@@ -328,6 +401,8 @@ Vagrant.configure(2) do |config|
           $out.info 'MDBCI definition for host:'+host+', with parameters: ' + $session.nodes.to_s
         else
           boxurl = box_params['box'].to_s
+          platform = box_params['platform'].to_s
+          platform_version = box_params['platform_version'].to_s
       end
     end
 
@@ -350,6 +425,9 @@ Vagrant.configure(2) do |config|
           machine = getAWSVmDef(cookbook_path, name, amiurl, user, instance, template_path, provisioned)
         when 'libvirt'
           machine = getQemuDef(cookbook_path, name, host, boxurl, template_path, provisioned)
+        when 'docker'
+          machine = getDockerDef(cookbook_path, name, template_path, provisioned)
+          copyDockerfiles(path, name, platform, platform_version)
         else
           $out.warning 'WARNING: Configuration has not support AWS, config file or other vm provision'
       end
@@ -404,7 +482,7 @@ Vagrant.configure(2) do |config|
 
         config.each do |node|
           unless (node[1]['box'].nil?)
-            $out.info 'Generate VBox/Qemu Node definition for ['+node[0]+']'
+            $out.info 'Generate VBox|Libvirt|Docker Node definition for ['+node[0]+']'
             vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
           end
         end

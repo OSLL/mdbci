@@ -25,6 +25,7 @@ class Session
   attr_accessor :mdbciNodes       # mdbci nodes
   attr_accessor :nodesProvider   # current configuration provider
   attr_accessor :attempts
+  attr_accessor :mdbciDir
 
   def initialize
     @repoDir = './repo.d'
@@ -40,6 +41,8 @@ class Session
 =end
 
   def loadCollections
+
+    @mdbciDir = Dir.pwd
 
     $out.info 'Load boxes from ' + $session.boxesFile
     @boxes = JSON.parse(IO.read($session.boxesFile))
