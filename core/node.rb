@@ -53,14 +53,14 @@ class Node
       when '(aws)'
         if curlCheck
           if is_private
-            getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
+            cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["private_ip_service"]+'"'
           else
             cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["public_ip_service"]+'"'
-            vagrant_out = `#{cmd}`
-            ip = vagrant_out.scanf('%s')
-            # get ip from command output
-            @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')
-          end
+          end 
+          vagrant_out = `#{cmd}`
+          ip = vagrant_out.scanf('%s')
+          # get ip from command output
+          @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')
         else
           installCurl
         end
