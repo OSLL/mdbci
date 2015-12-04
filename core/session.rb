@@ -48,6 +48,8 @@ class Session
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
 
+    $out.info 'Load AWS config from ' + @awsConfigFile
+    @awsConfig = YAML.load_file(@awsConfigFile)['aws']
 
     # TODO: Load vbox and aws nodes params to runtime variables
 
@@ -251,10 +253,6 @@ class Session
     @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if @nodesProvider != "mdbci"
-      if @nodesProvider == 'aws'    
-        $out.info 'Load AWS config from ' + @awsConfigFile
-        @awsConfig = YAML.load_file(@awsConfigFile)['aws']
-      end
       Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
