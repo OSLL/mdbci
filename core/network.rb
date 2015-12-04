@@ -81,7 +81,7 @@ class Network
           if !box.empty?
             box_params = $session.boxes[box]
             $out.info 'Node: ' + node[0].to_s
-            Dir.glob(pwd+'/**/'+box_params['keyfile'].to_s, File::FNM_DOTMATCH) do |file|
+            Dir.glob(pwd+'/KEYS/'+box_params['keyfile'].to_s, File::FNM_DOTMATCH) do |file|
               $out.out file
             end
           end
@@ -92,7 +92,7 @@ class Network
         if !box.empty?
           mdbci_params = $session.boxes[box]
           $out.info 'Node: ' + args[1].to_s
-          Dir.glob(pwd+'/**/'+mdbci_params['keyfile'].to_s, File::FNM_DOTMATCH) do |file|
+          Dir.glob(pwd+'/KEYS/'+mdbci_params['keyfile'].to_s, File::FNM_DOTMATCH) do |file|
             $out.out file
           end
         end
