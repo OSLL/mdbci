@@ -3,21 +3,26 @@ require 'shellwords'
 include_recipe "mariadb::mdbcrepos"
 
 
-# TODO: BUG: #6309 Check if SElinux already disabled!
 # Turn off SElinux
-#if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
-#  execute "SElinux status" do
-#  	command "/usr/sbin/selinuxenabled && echo enabled || echo disabled"
-#	returns [1, 0]
-#  end
-#  execute "Turn off SElinux" do
-#      command "/usr/sbin/setenforce 0"
-#  end
-#  cookbook_file 'selinux.config' do
-#    path "/etc/selinux/config"
-#    action :create
-#  end
-#end  # Turn off SElinux
+if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
+  # TODO: centos7 don't have selinux
+  bash 'Turn off SElinux on CentOS >= 6.0' do
+  code <<-EOF
+    selinuxenabled && flag=enabled || flag=disabled
+    if [[ $flag == 'enabled' ]];
+    then
+      /usr/sbin/setenforce 0
+    else
+      echo "SElinux already disabled!"
+    fi
+  EOF
+  end
+
+  cookbook_file 'selinux.config' do
+    path "/etc/selinux/config"
+    action :create
+  end
+end  # Turn off SElinux
 
 # Remove mysql-libs for MariaDB-Server 5.1
 if node['mariadb']['version'] == "5.1"
@@ -91,15 +96,14 @@ case node[:platform_family]
       #command "/usr/sbin/service iptables-persistent save"
     end
   when "rhel", "centos", "fedora"
-    when "rhel", "centos", "fedora"
     if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
-      bash 'Save iptables rules' do
+      bash 'Save iptables rules on CentOS 7' do
       code <<-EOF
-        # TODO #6541: use firewalld
+        iptables-save > /etc/sysconfig/iptables
       EOF
       end
     else
-      bash 'Save iptables rules' do
+      bash 'Save iptables rules on CentOS >= 6.0' do
       code <<-EOF
         /sbin/service iptables save
       EOF
@@ -147,7 +151,7 @@ case node[:platform_family]
       command createcmd
     end
 
-    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/mysql/my.cnf.d'
+    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/mysql/my.cnf.d/'
     execute "Copy mdbci_server.cnf to cnf_template directory" do
       command copycmd
     end
