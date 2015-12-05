@@ -368,9 +368,9 @@ Vagrant.configure(2) do |config|
 
   end
 
-  def Generator.checkPath(path, override)
+def Generator.checkPath(path, override)
     if Dir.exist?(path) && !override
-      $out.error 'ERR: folder already exists:' + path
+      $out.error 'Folder already exists: ' + path
       $out.error 'Please specify another name or delete'
       exit -1
     end
