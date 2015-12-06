@@ -17,7 +17,7 @@ class Network
   def loadNodes(config)
     $out.info 'Load configuration nodes from vagrant status ...'
 
-    Dir.chdir config
+    Dir.chdir config.to_s
 
     vagrant_out = `vagrant status`
     list = vagrant_out.split("\n")
@@ -40,7 +40,7 @@ class Network
 =end
 
     count = 0
-    provider = ["virtualbox", "aws", "mdbci"]
+    provider = ["virtualbox", "aws", "mdbci", "libvirt"]
     list.each do |line|
       provider.each do |item|
         count += 1 if line.to_s.include?(item)
@@ -76,8 +76,8 @@ class Network
           box = node[1]['box'].to_s
           if !box.empty?
             box_params = $session.boxes[box]
-            $out.out 'Node: ' + host.to_s
-            $out.out "Keyfile: " + box_params['keyfile'].to_s
+            $out.info 'Node: ' + host.to_s
+            $out.out box_params['keyfile'].to_s
           end
         end
       else
@@ -85,7 +85,7 @@ class Network
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
-          $out.out 'Keyfile: ' + mdbci_params['keyfile'].to_s
+          $out.out mdbci_params['keyfile'].to_s
         end
       end
     else
@@ -120,8 +120,8 @@ class Network
           box = node[1]['box'].to_s
           if !box.empty?
             box_params = $session.boxes[box]
-            $out.out 'Node: ' + host.to_s
-            $out.out "IP: " + box_params['IP'].to_s
+            $out.info 'Node: ' + host.to_s
+            $out.out box_params['IP'].to_s
           end
         end
       else
@@ -129,7 +129,7 @@ class Network
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
-          $out.out 'IP: ' + mdbci_params['IP'].to_s
+          $out.out mdbci_params['IP'].to_s
         end
       end
     else # aws, vbox nodes
@@ -153,6 +153,7 @@ class Network
 
   # TODO - move mdbci box definition to new class - MdbciNode < Node
   def self.private_ip(name)
+
     pwd = Dir.pwd
 
     if name.nil?
@@ -171,8 +172,8 @@ class Network
           box = node[1]['box'].to_s
           if !box.empty?
             box_params = $session.boxes[box]
-            $out.out 'Node: ' + host.to_s
-            $out.out "IP: " + box_params['IP'].to_s
+            $out.info 'Node: ' + host.to_s
+            $out.out box_params['IP'].to_s
           end
         end
       else
@@ -180,7 +181,7 @@ class Network
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
-          $out.out 'IP: ' + mdbci_params['IP'].to_s
+          $out.out mdbci_params['IP'].to_s
         end
       end
     else # aws, vbox nodes
