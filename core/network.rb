@@ -76,8 +76,8 @@ class Network
           box = node[1]['box'].to_s
           if !box.empty?
             box_params = $session.boxes[box]
-            $out.out 'Node: ' + host.to_s
-            $out.out "Keyfile: " + box_params['keyfile'].to_s
+            $out.info 'Node: ' + host.to_s
+            $out.out box_params['keyfile'].to_s
           end
         end
       else
@@ -85,7 +85,7 @@ class Network
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
-          $out.out 'Keyfile: ' + mdbci_params['keyfile'].to_s
+          $out.out mdbci_params['keyfile'].to_s
         end
       end
     else
@@ -120,8 +120,8 @@ class Network
           box = node[1]['box'].to_s
           if !box.empty?
             box_params = $session.boxes[box]
-            $out.out 'Node: ' + host.to_s
-            $out.out "IP: " + box_params['IP'].to_s
+            $out.info 'Node: ' + host.to_s
+            $out.out box_params['IP'].to_s
           end
         end
       else
@@ -129,7 +129,7 @@ class Network
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
-          $out.out 'IP: ' + mdbci_params['IP'].to_s
+          $out.out mdbci_params['IP'].to_s
         end
       end
     else # aws, vbox nodes
@@ -139,12 +139,12 @@ class Network
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
           node.getIp(node.provider, false)
-          $out.out(node.ip.to_s)
+          $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
         node.getIp(node.provider, false)
-        $out.out(node.ip.to_s)
+        $out.out node.ip.to_s
       end
     end
 
@@ -191,12 +191,12 @@ class Network
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
           node.getIp(node.provider, true)
-          $out.out(node.ip.to_s)
+          $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
         node.getIp(node.provider, true)
-        $out.out(node.ip.to_s)
+        $out.out node.ip.to_s
       end
     end
 

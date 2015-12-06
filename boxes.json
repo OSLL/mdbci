@@ -205,7 +205,7 @@
   },
   "centos_7.0_libvirt": {
     "provider": "libvirt",
-    "box": "uvsmtid/centos-7.0-minimal",
+    "box": "centos/7",
     "platform": "centos",
     "platform_version": "7"
   },
