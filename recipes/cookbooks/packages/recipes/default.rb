@@ -12,18 +12,21 @@
 # install additional packages for all platform
 case node[:platform_family]
   when "debian", "ubuntu"
-    # install packages for ubuntu
+    execute "install net-tools" do
+      command "yum --assumeyes install net-tools"
+    end
   when "rhel", "fedora", "centos"
-    # install packages for rhel
-    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
-      execute "install net-tools for centos 7.0" do
-        command "yum --assumeyes install net-tools"
-      end
+    execute "install net-tools" do
+      command "yum --assumeyes install net-tools"
     end
   when "suse", "sles"
-    # install packages for sles
+    execute "install net-tools" do
+      command "yum --assumeyes install net-tools"
+    end
   else
-    # unknown platform
+    execute "wrong platform" do 
+      echo "unknown platform"
+    end
 end
 
 

@@ -15,7 +15,7 @@
   },
   "ubuntu_trusty": {
     "provider": "virtualbox",
-    "box": "chef/ubuntu-14.04",
+    "box": "bento/ubuntu-14.04",
     "platform": "ubuntu",
     "platform_version": "trusty"
   },
@@ -175,19 +175,13 @@
     "provider": "libvirt",
     "box": "bento/ubuntu-12.04",
     "platform": "ubuntu",
-    "platform_version": "trusty"
-  },
-  "ubuntu_trusty64_libvirt": {
-    "provider": "libvirt",
-    "box": "baremettle/ubuntu-14.04",
-    "platform": "ubuntu",
-    "platform_version": "trusty"
+    "platform_version": "precise"
   },
   "debian_7.5_libvirt": {
     "provider": "libvirt",
     "box": "baremettle/debian-7.5",
-    "platform": "ubuntu",
-    "platform_version": "trusty"
+    "platform": "debian",
+    "platform_version": "7.5"
   },
   "ubuntu_trusty_libvirt": {
     "provider": "libvirt",
