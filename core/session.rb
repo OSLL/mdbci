@@ -116,14 +116,17 @@ class Session
     templateFile = $exception_handler.handle('MDBCI configuration file not found') {IO.read(path+'/mdbci_template')}
     $out.info 'Read template file ' + templateFile.to_s
     @mdbciNodes =  $exception_handler.handle('MDBCI configuration file invalid') {JSON.parse(IO.read(templateFile))}
-    # DUPLICATE FROM loadCollections FUNCTION
-    $session.boxes = JSON.parse(IO.read($session.boxesFile))
+    # delete cookbook_path and aws_config
+    if @mdbciNodes.has_key?("cookbook_path") ; @mdbciNodes.delete("cookbook_path") ; end
+    if @mdbciNodes.has_key?("aws_config") ; @mdbciNodes.delete("aws_config") ; end
   end
 
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
   #     VBox, AWS: ./mdbci ssh --command "touch file.txt" config_dir/node0 --silent
   #     MDBCI PPC64: ./mdbci ssh --command "touch file.txt" config_dir or config_dir/node0
   def ssh(args)
+
+    pwd = Dir.pwd
 
     if args.nil?
       $out.error 'Configuration name is required'
@@ -140,7 +143,7 @@ class Session
           box = node[1]['box'].to_s
           if !box.empty?
             mdbci_box_params = $session.boxes[box]
-            cmd = 'ssh -i ' + mdbci_box_params['keyfile'].to_s + " "\
+            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_box_params['keyfile'].to_s + " "\
                             + mdbci_box_params['user'].to_s + "@"\
                             + mdbci_box_params['IP'].to_s + " "\
                             + "'" + $session.command + "'"
@@ -154,7 +157,7 @@ class Session
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
-          cmd = 'ssh -i ' + mdbci_params['keyfile'].to_s + " "\
+          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                           + mdbci_params['user'].to_s + "@"\
                           + mdbci_params['IP'].to_s + " "\
                           + "'" + $session.command + "'"
@@ -164,7 +167,6 @@ class Session
         end
       end
     else # aws, vbox nodes
-      pwd = Dir.pwd
       Dir.chdir params[0]
       cmd = 'vagrant ssh '+params[1].to_s+' -c "'+$session.command+'"'
       $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
@@ -264,10 +266,14 @@ class Session
       mdbci.print $session.configFile
       mdbci.close
     end
-    # write nodes provider to configuration nodes dir file
+    # write nodes provider and template to configuration nodes dir file
     provider_file = path+"/provider"
     if !File.exists?(provider_file)
       File.open(path+"/provider", 'w') { |f| f.write(@nodesProvider.to_s) }
+    end
+    template_file = path+"/template"
+    if !File.exists?(template_file)
+      File.open(path+"/template", 'w') { |f| f.write(configFile.to_s) }
     end
   end
 
@@ -352,8 +358,8 @@ class Session
   end
 
   def showProvider(name)
-    providerBoxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read($session.boxesFile)}
-    $session.boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(providerBoxesFile)}
+    boxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read($session.boxesFile)}
+    $session.boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(boxesFile)}
     if $session.boxes.has_key?(name)
       box_params = $session.boxes[name]
       provider = box_params["provider"].to_s
@@ -361,6 +367,29 @@ class Session
     else
       $out.warning name.to_s+" box does not exist! Please, check box name!"
     end
+  end
+
+  # load node platform by name
+  def loadNodePlatformBy(name, config_dir)
+
+    pwd = Dir.pwd
+    # boxes.json
+    boxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read(config_dir.to_s+"/boxes.json")}
+    $session.boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(boxesFile)}
+    # template file
+    templateFile = $exception_handler.handle('template file not found') {IO.read(pwd.to_s+'/template')}
+    templateNodes =  $exception_handler.handle('template configuration file invalid') {JSON.parse(IO.read(config_dir.to_s+"/"+templateFile))}
+    #
+    node = templateNodes.find { |elem| elem[0].to_s == name }
+    box = node[1]['box'].to_s
+    if $session.boxes.has_key?(box)
+      box_params = $session.boxes[box]
+      platform = box_params["platform"].to_s
+      return platform
+    else
+      $out.warning name.to_s+" platform does not exist! Please, check box name!"
+    end
+
   end
 
 end

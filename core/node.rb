@@ -44,12 +44,16 @@ class Node
     @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
   end
 
-  def getIp(provider, is_private)
+  def getIp(provider, platform, is_private)
     case provider
       when '(virtualbox)'
         getInterfaceBoxIp(@name, "eth1", "inet addr:%s Bcast")
       when '(libvirt)'
-        getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
+        if platform == "ubuntu"
+          getInterfaceBoxIp(@name, "eth0", "inet addr:%s  Bcast")
+        else
+          getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
+        end
       when '(aws)'
         if curlCheck
           if is_private

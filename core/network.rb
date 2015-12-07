@@ -1,8 +1,8 @@
 require 'find'
 
-require_relative  'node'
-require_relative  '../core/out'
-
+require_relative 'node'
+require_relative 'out'
+#require_relative 'session'
 
 class Network
 
@@ -43,7 +43,7 @@ class Network
 =end
 
     count = 0
-    provider = ["virtualbox", "aws", "mdbci", "libvirt"]
+    provider = ["virtualbox", "aws", "mdbci", "libvirt", "docker"]
     list.each do |line|
       provider.each do |item|
         count += 1 if line.to_s.include?(item)
@@ -78,23 +78,27 @@ class Network
       if args[1].nil?
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
-          if !box.empty?
-            box_params = $session.boxes[box]
-            $out.info 'Node: ' + node[0].to_s
-            Dir.glob(pwd+'/KEYS/'+box_params['keyfile'].to_s, File::FNM_DOTMATCH) do |file|
-              $out.out file
-            end
+          box_params = $session.boxes[box]
+          $out.info 'Node: ' + node[0].to_s
+          if File.exist?(pwd+'/KEYS/'+box_params['keyfile'].to_s) 
+            $out.out pwd+'/KEYS/'+box_params['keyfile'].to_s
+          else
+            $out.warning box_params['keyfile'].to_s+" keyfile not found!"
           end
         end
       else
-        mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
-        box = mdbci_node[1]['box'].to_s
-        if !box.empty?
-          mdbci_params = $session.boxes[box]
+        if $session.mdbciNodes.has_key?(args[1])
+          mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
+          box = mdbci_node[1]['box'].to_s
+          mdbci_params = $session.boxes[box]  
           $out.info 'Node: ' + args[1].to_s
-          Dir.glob(pwd+'/KEYS/'+mdbci_params['keyfile'].to_s, File::FNM_DOTMATCH) do |file|
-            $out.out file
+          if File.exist?(pwd+'/KEYS/'+mdbci_params['keyfile'].to_s) 
+            $out.out pwd+'/KEYS/'+mdbci_params['keyfile'].to_s
+          else
+            $out.warning mdbci_params['keyfile'].to_s+" keyfile not found!"
           end
+        else
+          $out.warning args[1].to_s+" mdbci node not found!"
         end
       end
     else
@@ -146,12 +150,14 @@ class Network
 
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
-          node.getIp(node.provider, false)
+          platform = $session.loadNodePlatformBy(node.name, pwd) 
+          node.getIp(node.provider, platform, false)
           $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
-        node.getIp(node.provider, false)
+        platform = $session.loadNodePlatformBy(node.name, pwd)  
+        node.getIp(node.provider, platform, false)
         $out.out node.ip.to_s
       end
     end
@@ -198,12 +204,14 @@ class Network
 
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
-          node.getIp(node.provider, true)
+          platform = $session.loadNodePlatformBy(node.name, pwd)
+          node.getIp(node.provider, platform, true)
           $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
-        node.getIp(node.provider, true)
+        platform = $session.loadNodePlatformBy(node.name, pwd)
+        node.getIp(node.provider, platform, true)
         $out.out node.ip.to_s
       end
     end
