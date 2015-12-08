@@ -47,7 +47,7 @@
   },
   "centos5": {
     "provider": "virtualbox",
-    "box": "chef/centos-5.11",
+    "box": "bento/centos-5.11",
     "platform": "centos",
     "platform_version": "5"
   },
