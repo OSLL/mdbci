@@ -5,6 +5,7 @@ require 'open3'
 
 require_relative 'generator'
 require_relative 'network'
+require_relative 'boxes_manager'
 require_relative 'repo_manager'
 
 class Session
@@ -25,8 +26,10 @@ class Session
   attr_accessor :mdbciNodes       # mdbci nodes
   attr_accessor :nodesProvider   # current configuration provider
   attr_accessor :attempts
+  attr_accessor :boxesDir
 
   def initialize
+    @boxesDir = './BOXES'
     @repoDir = './repo.d'
     @mdbciNodes = Hash.new
   end
@@ -41,9 +44,12 @@ class Session
 
   def loadCollections
 
-    $out.info 'Load boxes from ' + $session.boxesFile
-    @boxes = JSON.parse(IO.read($session.boxesFile))
-    $out.info 'Found boxes: ' + $session.boxes.size().to_s
+    #$out.info 'Load boxes from ' + $session.boxesFile
+    #@boxes = JSON.parse(IO.read($session.boxesFile))
+    #$out.info 'Found boxes: ' + $session.boxes.size().to_s
+
+    $out.info 'Load Boxes from '+$session.boxesDir
+    @boxes = BoxesManager.new($session.boxesDir)
 
     $out.info 'Load AWS config from ' + @awsConfigFile
     @awsConfig = YAML.load_file(@awsConfigFile)['aws']
@@ -232,7 +238,8 @@ class Session
     configs.each do |node|
       box = node[1]['box'].to_s
       if !box.empty?
-        box_params = boxes[box]
+        box_params = @boxes.getBox(box)
+        p box_params.to_s
         @nodesProvider = box_params["provider"].to_s
       end
     end

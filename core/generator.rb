@@ -292,7 +292,7 @@ Vagrant.configure(2) do |config|
   end
 
   def Generator.boxValid?(box, boxes)
-    !boxes[box].nil?
+    !boxes.getBox(box).nil?
   end
 
   def Generator.nodeDefinition(node, boxes, path, cookbook_path)
@@ -312,7 +312,7 @@ Vagrant.configure(2) do |config|
 
     box = node[1]['box'].to_s
     if !box.empty?
-      box_params = boxes[box]
+      box_params = boxes.getBox(box)
 
       provider = box_params["provider"].to_s
       case provider
