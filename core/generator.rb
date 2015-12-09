@@ -55,28 +55,15 @@ require 'yaml'
 
 
   def Generator.providerConfig
-
-    if $session.nodesProvider != 'virtualbox'
-      config = <<-EOF
+    config = <<-EOF
 
 ### Default (VBox, Libvirt, Docker) Provider config ###
 #######################################################
 # Network autoconfiguration
 config.vm.network "private_network", type: "dhcp"
+
+config.vm.boot_timeout = 60
     EOF
-    else
-     config = <<-EOF
-### Default (VBox, Libvirt, Docker) Provider config ###
-#######################################################
-# Network autoconfiguration
-config.vm.network "private_network", type: "dhcp"
-
-config.ssh.username = "vagrant"
-config.ssh.password = "vagrant"
-      EOF
-    end
-
-    return config
   end
 
 

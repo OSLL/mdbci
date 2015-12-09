@@ -284,7 +284,7 @@ class Session
   # Deploy configurations
   def up(args)
 
-    std_q_attampts = 4
+    std_q_attampts = 10
     std_err_val = 1
 
     # No arguments provided
