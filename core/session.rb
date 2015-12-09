@@ -44,10 +44,6 @@ class Session
 
   def loadCollections
 
-    #$out.info 'Load boxes from ' + $session.boxesFile
-    #@boxes = JSON.parse(IO.read($session.boxesFile))
-    #$out.info 'Found boxes: ' + $session.boxes.size().to_s
-
     $out.info 'Load Boxes from '+$session.boxesDir
     @boxes = BoxesManager.new($session.boxesDir)
 
@@ -57,9 +53,7 @@ class Session
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
 
-
     # TODO: Load vbox and aws nodes params to runtime variables
-
 
   end
 
@@ -264,7 +258,7 @@ class Session
       Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
-      $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_config.ini"
+      $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_config.ini'
       # TODO: dir already exist?
       Dir.mkdir path unless File.exists? path
       mdbci = File.new(path+'/mdbci_config.ini', 'w')

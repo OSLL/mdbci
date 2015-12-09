@@ -96,9 +96,9 @@ Vagrant.configure(2) do |config|
   def Generator.getVmDef(cookbook_path, name, host, boxurl, vm_mem, template_path, provisioned)
 
     if template_path
-      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote("/home/vagrant/cnf_templates")
+      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates')
     else
-      templatedef = ""
+      templatedef = ''
     end
 
     if provisioned
@@ -131,20 +131,20 @@ Vagrant.configure(2) do |config|
   def Generator.getQemuDef(cookbook_path, name, host, boxurl, template_path, provisioned)
 
     if template_path
-      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote("/home/vagrant/cnf_templates") \
-                    +", type:"+quote("rsync")
+      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates') \
+                    +", type:"+quote('rsync')
     else
-      templatedef = ""
+      templatedef = ''
     end
 
     if provisioned
       vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) +"\n" \
-            + "\t"+name+'.vm.synced_folder '+quote("./")+", "+quote("/vagrant")+", type: "+quote("rsync")+"\n" \
+            + "\t"+name+'.vm.synced_folder '+quote('./')+", "+quote('/vagrant')+", type: "+quote('rsync')+"\n" \
             + templatedef  + "\n"\
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
-            + "\t\t"+'qemu.driver = ' + quote("kvm") + "\n\tend" \
+            + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n\tend" \
             + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
@@ -155,7 +155,7 @@ Vagrant.configure(2) do |config|
             + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
             + templatedef + "\n"\
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
-            + "\t\t"+'qemu.driver = ' + quote("kvm") + "\n\tend"
+            + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n\tend"
     end
 
     vmdef += "\nend # <-- end of Qemu definition>\n"
@@ -168,7 +168,7 @@ Vagrant.configure(2) do |config|
 
     if template_path
       mountdef = "\t" + name + ".vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync")
-    else mountdef = ""
+    else mountdef = ''
     end
 
     awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
@@ -292,6 +292,7 @@ Vagrant.configure(2) do |config|
   end
 
   def Generator.boxValid?(box, boxes)
+    p boxes.to_s
     !boxes.getBox(box).nil?
   end
 
@@ -314,21 +315,20 @@ Vagrant.configure(2) do |config|
     if !box.empty?
       box_params = boxes.getBox(box)
 
-      provider = box_params["provider"].to_s
+      provider = box_params['provider'].to_s
       case provider
-        when "aws"
+        when 'aws'
           amiurl = box_params['ami'].to_s
           user = box_params['user'].to_s
           instance = box_params['default_instance_type'].to_s
           $out.info 'AWS definition for host:'+host+', ami:'+amiurl+', user:'+user+', instance:'+instance
-        when "mdbci"
+        when 'mdbci'
           box_params.each do |key, value|
             $session.nodes[key] = value
           end
           $out.info 'MDBCI definition for host:'+host+', with parameters: ' + $session.nodes.to_s
         else
           boxurl = box_params['box'].to_s
-          p boxurl
       end
     end
 
@@ -352,7 +352,7 @@ Vagrant.configure(2) do |config|
         when 'libvirt'
           machine = getQemuDef(cookbook_path, name, host, boxurl, template_path, provisioned)
         else
-          $out.warning 'WARNING: Configuration has not support AWS, config file or other vm provision'
+          $out.warning 'Configuration has not support AWS, config file or other vm provision!'
       end
       # write nodes provider to file
       provider_file = path+"/provider"
