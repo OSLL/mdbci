@@ -143,7 +143,7 @@ The file boxes.json contains definitions of available boxes. His format is comme
     "ami": "ami-b1443fc6",  ## Amazon Image ID
     "user": "ubuntu",       ## User which will be used for access to the box
     "default_instance_type": "m3.medium",  ## Amazon instance type
-    "platform": "ubuntu",       
+    "platform": "ubuntu",
     "platform_version": "vivid"
   }
 }
@@ -259,7 +259,8 @@ This file contains parameters which are required for access to Amazon machines. 
 * region -- AWS region
 * pemfile -- pem file
 * user_data -- extra user parameters
-* elastic_ip_service -- curl to aws metadata for ip address
+* public_ip_service -- curl to aws metadata for public ip4 address
+* private_ip_service -- curl to aws metadata for private ip4 address
 
 Here is an example
 
@@ -272,7 +273,8 @@ aws:
    region : 'eu-west-1'	
    pemfile : '../maxscale.pem' 		# your private key
    user_data : "#!/bin/bash\nsed -i -e 's/^Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers"
-   elastic_ip_service : "curl http://169.254.169.254/latest/meta-data/public-ipv4"
+   public_ip_service : "curl http://169.254.169.254/latest/meta-data/public-ipv4"
+   private_ip_service : "curl http://169.254.169.254/latest/meta-data/private-ipv4"
 ```
 
 ### Box, products, versions
@@ -312,15 +314,28 @@ MDBCI supports next VM providers:
 * Amason EC2
 * Remote PPC boxes (mdbci)
 * Libvirt boxes (kvm)
-* Docker boxes for Ubuntu Trusty, CentOs 6.7 and 7.0
+* Docker boxes
 
-### Libvirt nodes
+#### AWS nodes
+
+Don't forget add dummy box for vagrant aws provider by following command: vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
+
+#### Libvirt nodes
 
 Installation steps: https://github.com/pradels/vagrant-libvirt
 
-While testing libvirt nodes, do not forget to add the current system/server user to libvirtd group and logout. If you use Jenkins, restart it to.
+While testing libvirt nodes, do not forget to add the current system or server user to libvirtd group and logout. If you use Jenkins, restart it to.
 
-### Docker nodes
+Currently supported boxes:
+
+* Ubuntu 14.04 (trusty), 12.04 (precise)
+* Debian 7.5
+* CentOS 6.5
+* CentOS 7.0
+
+P.S. You may use vagrant-mutate plugin for converting yours vagrant boxes  (virtualbox, ...) to libvirt boxes.
+
+#### Docker nodes
 
 The docker provisioner can automatically install Docker, pull Docker containers, and configure certain containers to run on boot.
 
