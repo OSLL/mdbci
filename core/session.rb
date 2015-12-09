@@ -66,6 +66,9 @@ class Session
         $out.info 'Adding boxes to vagrant'
         @boxes.each do |key, value|
           next if value['provider'] == "aws" # skip 'aws' block
+          # TODO: add aws dummy box
+          # vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
+ 
           next if value['provider'] == "mdbci" # skip 'mdbci' block
           #
           if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
@@ -76,6 +79,7 @@ class Session
             shell = 'vagrant box add --provider virtualbox '+value['box'].to_s
           end
 
+          # TODO: resque Exeption
           system shell # THERE CAN BE DONE CUSTOM EXCEPTION
         end
       else

@@ -21,7 +21,7 @@
   },
   "ubuntu_utopic": {
     "provider": "virtualbox",
-    "box": "chef/ubuntu-14.10",
+    "box": "bento/ubuntu-14.10",
     "platform": "ubuntu",
     "platform_version": "utopic"
   },
