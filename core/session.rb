@@ -53,8 +53,6 @@ class Session
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
 
-    # TODO: Load vbox and aws nodes params to runtime variables
-
   end
 
    def inspect
@@ -233,7 +231,7 @@ class Session
       box = node[1]['box'].to_s
       if !box.empty?
         box_params = @boxes.getBox(box)
-        p box_params.to_s
+        #p box_params.to_s
         @nodesProvider = box_params["provider"].to_s
       end
     end

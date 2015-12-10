@@ -54,7 +54,6 @@ require 'yaml'
     EOF
   end
 
-
   def Generator.providerConfig
     config = <<-EOF
 
@@ -65,7 +64,6 @@ config.vm.network "private_network", type: "dhcp"
     EOF
     return config
   end
-
 
   def Generator.vagrantConfigHeader
 
@@ -168,7 +166,8 @@ Vagrant.configure(2) do |config|
 
     if template_path
       mountdef = "\t" + name + ".vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync")
-    else mountdef = ''
+    else
+      mountdef = ''
     end
 
     awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
@@ -292,8 +291,9 @@ Vagrant.configure(2) do |config|
   end
 
   def Generator.boxValid?(box, boxes)
-    p boxes.to_s
-    !boxes.getBox(box).nil?
+    if !box.empty?
+      !boxes.getBox(box).nil?
+    end
   end
 
   def Generator.nodeDefinition(node, boxes, path, cookbook_path)
@@ -360,7 +360,7 @@ Vagrant.configure(2) do |config|
         File.open(path+"/provider", 'w') { |f| f.write(provider.to_s) }
       end
     else
-      $out.warning 'WARNING: Box '+box+'is not installed or configured ->SKIPPING'
+      $out.warning 'Box '+box+'is not installed or configured ->SKIPPING'
     end
 
     # box with mariadb, maxscale provision - create role

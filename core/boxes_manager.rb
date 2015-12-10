@@ -3,7 +3,7 @@ require 'json'
 class BoxesManager
 
   attr_accessor :boxes
-  attr_accessor :providers  # product => recipe
+  attr_accessor :providers
 
   def initialize(path)
     @boxes= Hash.new
