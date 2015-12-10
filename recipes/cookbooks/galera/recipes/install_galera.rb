@@ -7,7 +7,7 @@ include_recipe "galera::galera_repos"
 [
   "rsync", "sudo", "sed", 
   "coreutils", "util-linux", "curl", "grep", 
-  "findutils", "gawk", "iproute"
+  "findutils", "gawk", "iproute, net-tools"
 ].each do |pkg|
   package pkg
 end
@@ -29,14 +29,24 @@ case node[:platform_family]
   else # debian, suse
     package "netcat"
 end
-package"socat"
+package "socat"
 
 
 # Turn off SElinux
-if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0 
-  execute "Turn off SElinux" do
-    command "setenforce 0"
+if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
+  # TODO: centos7 don't have selinux
+  bash 'Turn off SElinux on CentOS >= 6.0' do
+  code <<-EOF
+    selinuxenabled && flag=enabled || flag=disabled
+    if [[ $flag == 'enabled' ]];
+    then
+      /usr/sbin/setenforce 0
+    else
+      echo "SElinux already disabled!"
+    fi
+  EOF
   end
+
   cookbook_file 'selinux.config' do
     path "/etc/selinux/config"
     action :create
@@ -107,8 +117,19 @@ case node[:platform_family]
       #command "/usr/sbin/service iptables-persistent save"
     end
   when "rhel", "centos", "fedora"
-    execute "Save MariaDB iptables rules" do
-      command "/sbin/service iptables save"
+    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
+      bash 'Save iptables rules on CentOS 7' do
+      code <<-EOF
+        # TODO: use firewalld
+        iptables-save > /etc/sysconfig/iptables
+      EOF
+      end
+    else
+      bash 'Save iptables rules on CentOS >= 6.0' do
+      code <<-EOF
+        /sbin/service iptables save
+      EOF
+      end
     end
     # service iptables restart
   when "suse"
@@ -220,6 +241,13 @@ case node[:platform_family]
         sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
         EOF
       end
+    elsif provider == "libvirt"
+      bash 'Configure Galera server.cnf - Get Libvirt node IP address' do
+        code <<-EOF
+        node_address=$(/sbin/ifconfig eth0 | grep -o -P '(?<=inet ).*(?=  netmask)')
+        sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        EOF
+      end
     end
 
     bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
@@ -248,6 +276,13 @@ case node[:platform_family]
       bash 'Configure Galera server.cnf - Get Virtualbox node IP address' do
         code <<-EOF
         node_address=$(/sbin/ifconfig eth1 | grep "inet " | grep -o -P '(?<=addr:).*(?=  Bcast)')
+        sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        EOF
+      end
+    elsif provider == "libvirt"
+      bash 'Configure Galera server.cnf - Get Libvirt node IP address' do
+        code <<-EOF
+        node_address=$(/sbin/ifconfig eth0 | grep -o -P '(?<=inet ).*(?=  netmask)')
         sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
         EOF
       end
