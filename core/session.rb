@@ -124,8 +124,6 @@ class Session
   end
 
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
-  #     VBox, AWS: ./mdbci ssh --command "touch file.txt" config_dir/node0 --silent
-  #     MDBCI PPC64: ./mdbci ssh --command "touch file.txt" config_dir or config_dir/node0
   def ssh(args)
 
     pwd = Dir.pwd
@@ -236,7 +234,6 @@ class Session
       box = node[1]['box'].to_s
       if !box.empty?
         box_params = @boxes.getBox(box)
-        #p box_params.to_s
         @nodesProvider = box_params["provider"].to_s
       end
     end
@@ -377,17 +374,15 @@ class Session
   def loadNodePlatformBy(name, config_dir)
 
     pwd = Dir.pwd
-    # boxes
-    $out.info 'Load Boxes from '+$session.boxesDir
-    $session.boxes = BoxesManager.new($session.boxesDir)
+
     # template file
     templateFile = $exception_handler.handle('template file not found') {IO.read(pwd.to_s+'/template')}
     templateNodes =  $exception_handler.handle('template configuration file invalid') {JSON.parse(IO.read(config_dir.to_s+"/"+templateFile))}
     #
     node = templateNodes.find { |elem| elem[0].to_s == name }
     box = node[1]['box'].to_s
-    if $session.boxes.has_key?(box)
-      box_params = $session.boxes[box]
+    if $session.boxes.boxesManager.has_key?(box)
+      box_params = $session.boxes.getBox(box)
       platform = box_params["platform"].to_s
       return platform
     else
