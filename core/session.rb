@@ -27,6 +27,7 @@ class Session
   attr_accessor :nodesProvider   # current configuration provider
   attr_accessor :attempts
   attr_accessor :boxesDir
+  attr_accessor :mdbciDir
 
   def initialize
     @boxesDir = './BOXES'
@@ -44,31 +45,31 @@ class Session
 
   def loadCollections
 
+    @mdbciDir = Dir.pwd
+
     $out.info 'Load Boxes from '+$session.boxesDir
     @boxes = BoxesManager.new($session.boxesDir)
 
     $out.info 'Load AWS config from ' + @awsConfigFile
-    @awsConfig = YAML.load_file(@awsConfigFile)['aws']
+    @awsConfig = $exception_handler.handle('AWS configuration file not found') {YAML.load_file(@awsConfigFile)['aws']}
 
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
 
   end
 
-   def inspect
-     @boxes.to_json
-   end
-
   def setup(what)
     case what
       when 'boxes'
         $out.info 'Adding boxes to vagrant'
-        boxes = JSON.parse(inspect) # json to hash
-        boxes.each do |key, value|
+        @boxes.each do |key, value|
           next if value['provider'] == "aws" # skip 'aws' block
+          # TODO: add aws dummy box
+          # vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
+ 
           next if value['provider'] == "mdbci" # skip 'mdbci' block
           #
-          if value['box'].to_s =~ URI::regexp
+          if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
             puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
             shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
           else
@@ -76,7 +77,8 @@ class Session
             shell = 'vagrant box add --provider virtualbox '+value['box'].to_s
           end
 
-          system shell
+          # TODO: resque Exeption
+          system shell # THERE CAN BE DONE CUSTOM EXCEPTION
         end
       else
         $out.warn 'Cannot setup '+what
@@ -113,16 +115,20 @@ class Session
 
   # load mdbci nodes
   def loadMdbciNodes(path)
-    templateFile = IO.read(path+'/mdbci_config.ini')
+    templateFile = $exception_handler.handle('MDBCI configuration file not found') {IO.read(path+'/mdbci_template')}
     $out.info 'Read template file ' + templateFile.to_s
-    @mdbciNodes = JSON.parse(IO.read(templateFile))
-    $session.boxes = JSON.parse(IO.read($session.boxesFile))
+    @mdbciNodes =  $exception_handler.handle('MDBCI configuration file invalid') {JSON.parse(IO.read(templateFile))}
+    # delete cookbook_path and aws_config
+    if @mdbciNodes.has_key?("cookbook_path") ; @mdbciNodes.delete("cookbook_path") ; end
+    if @mdbciNodes.has_key?("aws_config") ; @mdbciNodes.delete("aws_config") ; end
   end
 
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
   #     VBox, AWS: ./mdbci ssh --command "touch file.txt" config_dir/node0 --silent
   #     MDBCI PPC64: ./mdbci ssh --command "touch file.txt" config_dir or config_dir/node0
   def ssh(args)
+
+    pwd = Dir.pwd
 
     if args.nil?
       $out.error 'Configuration name is required'
@@ -132,38 +138,37 @@ class Session
     params = args.split('/')
 
     # mdbci ppc64 boxes
-    if File.exist?(params[0]+'/mdbci_config.ini')
+    if File.exist?(params[0]+'/mdbci_template')
       loadMdbciNodes params[0]
       if params[1].nil?     # ssh for all nodes
         @mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           if !box.empty?
             mdbci_box_params = $session.boxes[box]
-            cmd = 'ssh -i ' + mdbci_box_params['keyfile'].to_s + " "\
+            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_box_params['keyfile'].to_s + " "\
                             + mdbci_box_params['user'].to_s + "@"\
                             + mdbci_box_params['IP'].to_s + " "\
                             + "'" + $session.command + "'"
-            $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+            $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
             vagrant_out = `#{cmd}`
             $out.out vagrant_out
           end
         end
       else
-        mdbci_node = @mdbciNodes.find { |elem| elem[1]['hostname'].to_s == params[1] }
+        mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == params[1] }
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes[box]
-          cmd = 'ssh -i ' + mdbci_params['keyfile'].to_s + " "\
+          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                           + mdbci_params['user'].to_s + "@"\
                           + mdbci_params['IP'].to_s + " "\
                           + "'" + $session.command + "'"
-          $out.info 'Running ['+cmd+'] on '+params[0]+'/'+params[1]
+          $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
           vagrant_out = `#{cmd}`
           $out.out vagrant_out
         end
       end
     else # aws, vbox nodes
-      pwd = Dir.pwd
       Dir.chdir params[0]
       cmd = 'vagrant ssh '+params[1].to_s+' -c "'+$session.command+'"'
       $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
@@ -246,7 +251,8 @@ class Session
       path +='/'+name.to_s
     end
     #
-    @configs = JSON.parse(IO.read($session.configFile))
+    instanceConfigFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read($session.configFile)}
+    @configs = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(instanceConfigFile)}
     LoadNodesProvider(configs)
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
@@ -256,18 +262,28 @@ class Session
       Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
-      $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_config.ini'
+      $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_template"
       # TODO: dir already exist?
       Dir.mkdir path unless File.exists? path
-      mdbci = File.new(path+'/mdbci_config.ini', 'w')
+      mdbci = File.new(path+'/mdbci_template', 'w')
       mdbci.print $session.configFile
       mdbci.close
+    end
+    # write nodes provider and template to configuration nodes dir file
+    provider_file = path+"/provider"
+    if !File.exists?(provider_file)
+      File.open(path+"/provider", 'w') { |f| f.write(@nodesProvider.to_s) }
+    end
+    template_file = path+"/template"
+    if !File.exists?(template_file)
+      File.open(path+"/template", 'w') { |f| f.write(configFile.to_s) }
     end
   end
 
   # Deploy configurations
   def up(args)
-    std_q_attampts = 4
+
+    std_q_attampts = 10
     std_err_val = 1
 
     # No arguments provided
@@ -310,43 +326,43 @@ class Session
 
     up_type ? Dir.chdir(config[0]) : Dir.chdir(args)
 
-    # Setting provider: VirtualBox, AWS, (,libvirt)
-    if File.exist?('provider')
-      @nodesProvider = File.read('provider')
-    else
-      $out.warning 'File "provider" does not found! Try to regenerate your configuration!'
-    end
+    # Setting provider: VBox, AWS, Libvirt, Docker
+    @nodesProvider = $exception_handler.handle("File with PROVIDER info not found"){File.read('provider')}
     $out.info 'Current provider: ' + @nodesProvider
-
-    (1..@attempts.to_i).each { |i|
-      $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') + 
-        args + ', attempt: ' + i.to_s
-      $out.info 'Destroying current instance'
-      cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
-      exec_cmd_destr = `#{cmd_destr}`
-      $out.info exec_cmd_destr
-      cmd_up = 'vagrant up --destroy-on-error ' + '--provider=' + @nodesProvider + ' ' +
-        (up_type ? config[1]:'')
-      $out.info 'Actual command: ' + cmd_up
-      Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
-        stdin.close
-        stdout.each_line { |line| $out.info line }
-        stdout.close
-        if wthr.value.success?
-          Dir.chdir pwd
-          return 0
+    if @nodesProvider == 'mdbci'
+      $out.warning 'You are using mdbci nodes template. ./mdbci up command doesn\'t supported for this boxes!'
+    else 
+      (1..@attempts.to_i).each { |i|
+        $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') + 
+          args + ', attempt: ' + i.to_s
+        $out.info 'Destroying current instance'
+        cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
+        exec_cmd_destr = `#{cmd_destr}`
+        $out.info exec_cmd_destr
+        cmd_up = 'vagrant up --destroy-on-error ' + '--provider=' + @nodesProvider + ' ' +
+          (up_type ? config[1]:'')
+        $out.info 'Actual command: ' + cmd_up
+        Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
+          stdin.close
+          stdout.each_line { |line| $out.info line }
+          stdout.close
+          if wthr.value.success?
+            Dir.chdir pwd
+            return 0
+          end
+          $out.error 'Bringing up failed'
+          stderr.each_line { |line| $out.error line }
+          stderr.close
         end
-        $out.error 'Bringing up failed'
-        stderr.each_line { |line| $out.error line }
-        stderr.close
-      end
-    }
-    Dir.chdir pwd
-    return std_err_val
+      }
+      Dir.chdir pwd
+      return std_err_val
+    end
   end
 
   def showProvider(name)
-    $session.boxes = JSON.parse(IO.read($session.boxesFile))
+    boxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read($session.boxesFile)}
+    $session.boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(boxesFile)}
     if $session.boxes.has_key?(name)
       box_params = $session.boxes[name]
       provider = box_params["provider"].to_s
@@ -354,6 +370,30 @@ class Session
     else
       $out.warning name.to_s+" box does not exist! Please, check box name!"
     end
+  end
+
+  # TODO: refactoring this function!
+  # load node platform by name
+  def loadNodePlatformBy(name, config_dir)
+
+    pwd = Dir.pwd
+    # boxes
+    $out.info 'Load Boxes from '+$session.boxesDir
+    $session.boxes = BoxesManager.new($session.boxesDir)
+    # template file
+    templateFile = $exception_handler.handle('template file not found') {IO.read(pwd.to_s+'/template')}
+    templateNodes =  $exception_handler.handle('template configuration file invalid') {JSON.parse(IO.read(config_dir.to_s+"/"+templateFile))}
+    #
+    node = templateNodes.find { |elem| elem[0].to_s == name }
+    box = node[1]['box'].to_s
+    if $session.boxes.has_key?(box)
+      box_params = $session.boxes[box]
+      platform = box_params["platform"].to_s
+      return platform
+    else
+      $out.warning name.to_s+" platform does not exist! Please, check box name!"
+    end
+
   end
 
 end

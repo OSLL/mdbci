@@ -1,19 +1,39 @@
 include_recipe "mariadb-maxscale::maxscale_repos"
 
 # Turn off SElinux
-if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0 
-  execute "Turn off SElinux" do
-    command "setenforce 0"
+if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
+  # TODO: centos7 don't have selinux
+  bash 'Turn off SElinux on CentOS >= 6.0' do
+  code <<-EOF
+    selinuxenabled && flag=enabled || flag=disabled
+    if [[ $flag == 'enabled' ]];
+    then
+      /usr/sbin/setenforce 0
+    else
+      echo "SElinux already disabled!"
+    fi
+  EOF
   end
+
   cookbook_file 'selinux.config' do
     path "/etc/selinux/config"
     action :create
   end
 end  # Turn off SElinux
 
+# install ifconfig
+case node[:platform_family]
+  when "rhel", "centos"
+    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
+      execute "Install ifconfig" do
+        command "yum --assumeyes install net-tools"
+      end
+    end
+end
+
 # check and install iptables
 case node[:platform_family]
-  when "debian", "ubuntu"
+  when "debian", "ubuntu"  
     execute "Install iptables-persistent" do
       command "DEBIAN_FRONTEND=noninteractive apt-get -y install iptables-persistent"
     end
@@ -75,8 +95,19 @@ case node[:platform_family]
       #command "/usr/sbin/service iptables-persistent save"
     end
   when "rhel", "centos", "fedora"
-    execute "Save MariaDB iptables rules" do
-      command "/sbin/service iptables save"
+    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
+      bash 'Save iptables rules on CentOS 7' do
+      code <<-EOF
+        # TODO: use firewalld
+        iptables-save > /etc/sysconfig/iptables
+      EOF
+      end
+    else
+      bash 'Save iptables rules on CentOS >= 6.0' do
+      code <<-EOF
+        /sbin/service iptables save
+      EOF
+      end
     end
     # service iptables restart
   when "suse"
