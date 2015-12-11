@@ -361,6 +361,42 @@ class Session
     end
   end
 
+  # copy ssh keys to config/node
+  def publicKeys(args)
+
+    pwd = Dir.pwd
+
+    if args.nil?
+      $out.error 'Configuration name is required'
+      return
+    end
+
+    params = args.split('/')
+
+    network = Network.new
+    network.loadNodes params[0] # load nodes from dir
+
+    if params[1].nil? # No node argument, copy keys to all nodes
+      network.nodes.each do |node|
+        #platform = $session.loadNodePlatformBy(node.name, pwd)
+        #node.getIp(node.provider, platform, true)
+        #$out.out node.ip.to_s
+
+        # get IP, KEY, USER
+        # scp -i key.pem user@ip:~/.ssh/authorized_keys
+
+      end
+    else
+      node = network.nodes.find { |elem| elem.name == params[1]}
+      platform = $session.loadNodePlatformBy(node.name, pwd)
+      node.getIp(node.provider, platform, true)
+      $out.out node.ip.to_s
+    end
+
+    Dir.chdir pwd
+
+  end
+
   def showProvider(name)
     boxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read($session.boxesFile)}
     $session.boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(boxesFile)}

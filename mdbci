@@ -86,6 +86,8 @@ case ARGV.shift
     $session.generate(ARGV.shift)
   when 'up'
     $session.up(ARGV.shift)
+  when 'publickeys'
+    $session.publicKeys(ARGV.shift)
   else
     puts 'ERR: Something wrong with command line'
     Help.display
