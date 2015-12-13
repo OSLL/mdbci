@@ -182,13 +182,13 @@ class Session
 
 
   def platformKey(box_name)
-    key = @boxes.keys.select {|value| value == box_name }
-    return key.nil? ? "UNKNOWN" : @boxes[key[0]]['platform'] + '^' +@boxes[key[0]]['platform_version']
+    key = $session.boxes.boxesManager.keys.select {|value| value == box_name }
+    return key.nil? ? "UNKNOWN" : $session.boxes.boxesManager[key[0]]['platform']+'^'+$session.boxes.boxesManager[key[0]]['platform_version']
   end
 
 
   def showBoxKeys
-    @boxes.values.each do |value|
+    $session.boxes.boxesManager.values.each do |value|
       $out.out value['$key']
     end
   end
