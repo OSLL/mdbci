@@ -184,7 +184,7 @@ class Network
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           if !box.empty?
-            box_params = $session.boxes[box]
+            box_params = $session.boxes[box]  # TODO: 6576
             $out.info 'Node: ' + node[0].to_s
             $out.out box_params['IP'].to_s
           end

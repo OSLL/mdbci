@@ -361,7 +361,10 @@ class Session
     end
   end
 
+  # TODO: several function parameters
+
   # copy ssh keys to config/node
+  # args[0] - keyfile, args[1] - template dir, args[2] - node name
   def publicKeys(args)
 
     pwd = Dir.pwd
@@ -371,30 +374,77 @@ class Session
       return
     end
 
-    params = args.split('/')
+    args = args.split('/')
 
-    network = Network.new
-    network.loadNodes params[0] # load nodes from dir
+    # mdbci box
+    if File.exist?(args[1]+'/mdbci_template')
+      loadMdbciNodes args[1]
+      if args[2].nil?     # read ip for all nodes
+        $session.mdbciNodes.each do |node|
+          box = node[1]['box'].to_s
+          if !box.empty?
+            mdbci_params = $session.boxes[box]  # TODO: 6576
 
-    if params[1].nil? # No node argument, copy keys to all nodes
-      network.nodes.each do |node|
-        #platform = $session.loadNodePlatformBy(node.name, pwd)
-        #node.getIp(node.provider, platform, true)
-        #$out.out node.ip.to_s
-
-        # get IP, KEY, USER
-        # scp -i key.pem user@ip:~/.ssh/authorized_keys
-
+            keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read(args[0])}
+            # add to the end of the authorized_keys file in ~/.ssh directory
+            command = 'echo "'+keyfile_content+'" >> ~/.ssh/authorized_keys'
+            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+                            + mdbci_params['user'].to_s + "@"\
+                            + mdbci_params['IP'].to_s + " "\
+                            + "'" + command + "'"
+            $out.info 'Running ['+cmd+'] on '+args[1].to_s+'/'+args[2].to_s
+            vagrant_out = `#{cmd}`
+            $out.out vagrant_out
+          end
+        end
+      else
+        mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == args[2] }
+        box = mdbci_node[1]['box'].to_s
+        if !box.empty?
+          mdbci_params = $session.boxes[box]
+          #
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read(args[0])}
+          # add to the end of the authorized_keys file in ~/.ssh directory
+          command = 'echo "'+keyfile_content+'" >> ~/.ssh/authorized_keys'
+          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+                          + mdbci_params['user'].to_s + "@"\
+                          + mdbci_params['IP'].to_s + " "\
+                          + "'" + command + "'"
+          $out.info 'Running ['+cmd+'] on '+args[1].to_s+'/'+args[2].to_s
+          vagrant_out = `#{cmd}`
+          $out.out vagrant_out
+        end
       end
-    else
-      node = network.nodes.find { |elem| elem.name == params[1]}
-      platform = $session.loadNodePlatformBy(node.name, pwd)
-      node.getIp(node.provider, platform, true)
-      $out.out node.ip.to_s
+    else # aws, vbox, libvirt, docker nodes
+      network = Network.new
+      network.loadNodes args[1] # load nodes from dir
+
+      if args[2].nil? # No node argument, copy keys to all nodes
+        network.nodes.each do |node|
+          #
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read(args[0])}
+          # add to the end of the authorized_keys file in ~/.ssh directory
+          command = 'echo "'+keyfile_content+'" >> ~/.ssh/authorized_keys'
+          cmd = 'vagrant ssh '+node+' -c "'+command+'"'
+          $out.info 'Running ['+cmd+'] on '+args[1].to_s+'/'+args[2].to_s
+          vagrant_out = `#{cmd}`
+          $out.out vagrant_out
+
+        end
+      else
+        node = network.nodes.find { |elem| elem.name == args[2]}
+        #
+        keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read(args[0])}
+        # add to the end of the authorized_keys file in ~/.ssh directory
+        command = 'echo "'+keyfile_content+'" >> ~/.ssh/authorized_keys'
+        cmd = 'vagrant ssh '+node+' -c "'+command+'"'
+        $out.info 'Running ['+cmd+'] on '+args[1].to_s+'/'+args[2].to_s
+        vagrant_out = `#{cmd}`
+        $out.out vagrant_out
+      end
     end
 
     Dir.chdir pwd
-
   end
 
   def showProvider(name)
