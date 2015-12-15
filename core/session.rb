@@ -385,14 +385,14 @@ class Session
           if !box.empty?
             mdbci_params = $session.boxes[box]  # TODO: 6576
 
-            keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read(args[0])}
+            keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read(pwd.to_s+'/'+args[0].to_s)}
             # add to the end of the authorized_keys file in ~/.ssh directory
-            command = 'echo "'+keyfile_content+'" >> ~/.ssh/authorized_keys'
+            command = 'echo "'+keyfile_content+'" >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
             cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                             + mdbci_params['user'].to_s + "@"\
                             + mdbci_params['IP'].to_s + " "\
                             + "'" + command + "'"
-            $out.info 'Running ['+cmd+'] on '+args[1].to_s+'/'+args[2].to_s
+            $out.info 'Copy keyfile '+args[0].to_s+' to '+node.to_s+'.'
             vagrant_out = `#{cmd}`
             $out.out vagrant_out
           end
@@ -403,30 +403,36 @@ class Session
         if !box.empty?
           mdbci_params = $session.boxes[box]
           #
-          keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read(args[0])}
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read(pwd.to_s+'/'+args[0].to_s)}
           # add to the end of the authorized_keys file in ~/.ssh directory
-          command = 'echo "'+keyfile_content+'" >> ~/.ssh/authorized_keys'
+          command = 'echo "'+keyfile_content+'" >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
           cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                           + mdbci_params['user'].to_s + "@"\
                           + mdbci_params['IP'].to_s + " "\
                           + "'" + command + "'"
-          $out.info 'Running ['+cmd+'] on '+args[1].to_s+'/'+args[2].to_s
+          $out.info 'Copy keyfile '+args[0].to_s+' to '+mdbci_node[0].to_s+'.'
           vagrant_out = `#{cmd}`
           $out.out vagrant_out
         end
       end
     else # aws, vbox, libvirt, docker nodes
       network = Network.new
+      p args[1]
       network.loadNodes args[1] # load nodes from dir
+      p network.nodes.to_s
 
       if args[2].nil? # No node argument, copy keys to all nodes
         network.nodes.each do |node|
           #
-          keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read(args[0])}
-          # add to the end of the authorized_keys file in ~/.ssh directory
-          command = 'echo "'+keyfile_content+'" >> ~/.ssh/authorized_keys'
-          cmd = 'vagrant ssh '+node+' -c "'+command+'"'
-          $out.info 'Running ['+cmd+'] on '+args[1].to_s+'/'+args[2].to_s
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read(pwd.to_s+'/'+args[0].to_s)}
+          # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
+	  p args[0].to_s
+ 	  p args[1].to_s
+          command = 'echo "'+keyfile_content.to_s+'" >> /home/vagrant/.ssh/authorized_keys'
+	  p node.name.to_s
+          cmd = 'vagrant ssh '+node.name.to_s+' -c "'+command+'"'
+          p cmd.to_s
+	  $out.info 'Copy keyfile '+args[0].to_s+' to '+node.name.to_s+'.'
           vagrant_out = `#{cmd}`
           $out.out vagrant_out
 
@@ -434,11 +440,13 @@ class Session
       else
         node = network.nodes.find { |elem| elem.name == args[2]}
         #
-        keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read(args[0])}
+	p args[2]
+        keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read(pwd.to_s+'/'+args[0].to_s)}
         # add to the end of the authorized_keys file in ~/.ssh directory
-        command = 'echo "'+keyfile_content+'" >> ~/.ssh/authorized_keys'
-        cmd = 'vagrant ssh '+node+' -c "'+command+'"'
-        $out.info 'Running ['+cmd+'] on '+args[1].to_s+'/'+args[2].to_s
+        command = 'echo "'+keyfile_content.to_s+'" >> /home/vagrant/.ssh/authorized_keys'
+	p command
+        cmd = 'vagrant ssh '+node.name.to_s+' -c "'+command+'"'
+        $out.info 'Copy keyfile '+args[0].to_s+' to '+node.name.to_s+'.'
         vagrant_out = `#{cmd}`
         $out.out vagrant_out
       end

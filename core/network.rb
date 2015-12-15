@@ -23,14 +23,17 @@ class Network
     Dir.chdir config.to_s
 
     vagrant_out = `vagrant status`
+    p vagrant_out.to_s
     list = vagrant_out.split("\n")
 
 =begin
   Vagrant prints node info in next format:
   >Current machine states:
   >
+  >
   >node0                     running (virtualbox)
   >node1                     running (virtualbox)
+  >
   >
   >This environment represents multiple VMs. The VMs are all listed
   >above with their current state. For more information about a specific
@@ -43,12 +46,13 @@ class Network
 =end
 
     count = 0
-    provider = ["virtualbox", "aws", "mdbci", "libvirt", "docker"]
+    provider = ["(virtualbox)", "(aws)", "(libvirt)", "(docker)"]
     list.each do |line|
       provider.each do |item|
         count += 1 if line.to_s.include?(item)
       end
     end
+    p count.to_s
 
     # Log offset: 4 - for ONE node, 5 - for multiple nodes
     if count == 1; offset = 4; else offset = 5; end
