@@ -8,6 +8,7 @@ require_relative 'network'
 require_relative 'boxes_manager'
 require_relative 'repo_manager'
 
+
 class Session
 
   attr_accessor :boxes
@@ -62,7 +63,7 @@ class Session
     case what
       when 'boxes'
         $out.info 'Adding boxes to vagrant'
-        @boxes.each do |key, value|
+        @boxes.boxesManager.each do |key, value|
           next if value['provider'] == "aws" # skip 'aws' block
           # TODO: add aws dummy box
           # vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
@@ -142,7 +143,7 @@ class Session
         @mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           if !box.empty?
-            mdbci_box_params = $session.boxes[box]
+            mdbci_box_params = $session.boxes.getBox(box)
             cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_box_params['keyfile'].to_s + " "\
                             + mdbci_box_params['user'].to_s + "@"\
                             + mdbci_box_params['IP'].to_s + " "\
@@ -156,7 +157,7 @@ class Session
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == params[1] }
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
-          mdbci_params = $session.boxes[box]
+          mdbci_params = $session.boxes.getBox(box)
           cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                           + mdbci_params['user'].to_s + "@"\
                           + mdbci_params['IP'].to_s + " "\
@@ -255,11 +256,11 @@ class Session
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
     @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
-    if @nodesProvider != "mdbci"
+    if @nodesProvider != 'mdbci'
       Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
-      $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_template"
+      $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_template'
       # TODO: dir already exist?
       Dir.mkdir path unless File.exists? path
       mdbci = File.new(path+'/mdbci_template', 'w')
@@ -267,13 +268,13 @@ class Session
       mdbci.close
     end
     # write nodes provider and template to configuration nodes dir file
-    provider_file = path+"/provider"
+    provider_file = path+'/provider'
     if !File.exists?(provider_file)
-      File.open(path+"/provider", 'w') { |f| f.write(@nodesProvider.to_s) }
+      File.open(path+'/provider', 'w') { |f| f.write(@nodesProvider.to_s) }
     end
-    template_file = path+"/template"
-    if !File.exists?(template_file)
-      File.open(path+"/template", 'w') { |f| f.write(configFile.to_s) }
+    if @nodesProvider != 'mdbci'
+      template_file = path+'/template'
+      if !File.exists?(template_file); File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }; end
     end
   end
 
@@ -360,8 +361,8 @@ class Session
   def showProvider(name)
     boxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read($session.boxesFile)}
     $session.boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(boxesFile)}
-    if $session.boxes.has_key?(name)
-      box_params = $session.boxes[name]
+    if $session.boxes.boxesManager.has_key?(name)
+      box_params = $session.boxes.getBox(box)
       provider = box_params["provider"].to_s
       $out.out provider
     else
@@ -376,8 +377,8 @@ class Session
     pwd = Dir.pwd
 
     # template file
-    templateFile = $exception_handler.handle('template file not found') {IO.read(pwd.to_s+'/template')}
-    templateNodes =  $exception_handler.handle('template configuration file invalid') {JSON.parse(IO.read(config_dir.to_s+"/"+templateFile))}
+    templateFile = $exception_handler.handle('Template nodes file not found') {IO.read(pwd.to_s+'/template')}
+    templateNodes =  $exception_handler.handle('Template configuration file invalid') {JSON.parse(IO.read(config_dir.to_s+"/"+templateFile))}
     #
     node = templateNodes.find { |elem| elem[0].to_s == name }
     box = node[1]['box'].to_s
