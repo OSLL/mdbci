@@ -26,6 +26,7 @@ class Session
   attr_accessor :nodesProvider   # current configuration provider
   attr_accessor :attempts
   attr_accessor :mdbciDir
+  attr_accessor :nodeProduct
 
   def initialize
     @repoDir = './repo.d'
