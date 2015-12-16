@@ -363,7 +363,6 @@ class Session
     end
   end
 
-  # TODO: several function parameters
 
   # copy ssh keys to config/node
   def publicKeys(args)
@@ -390,30 +389,26 @@ class Session
             # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
             command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
             cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
-                            + mdbci_params['user'].to_s + "@"\
-                            + mdbci_params['IP'].to_s + " "\
-                            + "'" + command + "'"
-            $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
+                            + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
+                            + "\"" + command + "\""
+            $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
             vagrant_out = `#{cmd}`
-            $out.out vagrant_out
           end
         end
       else
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == args[1] }
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
-          mdbci_params = $session.boxes[box]
+          mdbci_params = $session.boxes[box]  # TODO: 6576
           #
           keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!"){File.read(pwd.to_s+'/'+@keyFile.to_s)}
           # add to the end of the authorized_keys file in ~/.ssh directory
           command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
           cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
-                          + mdbci_params['user'].to_s + "@"\
-                          + mdbci_params['IP'].to_s + " "\
-                          + "'" + command + "'"
-          $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s+'.'
+                          + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
+                          + "\"" + command + "\""
+          $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
           vagrant_out = `#{cmd}`
-          $out.out vagrant_out
         end
       end
     else # aws, vbox, libvirt, docker nodes
