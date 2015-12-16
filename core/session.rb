@@ -419,16 +419,13 @@ class Session
     else # aws, vbox, libvirt, docker nodes
       network = Network.new
       network.loadNodes args[0] # load nodes from dir
-      p network.nodes.to_s
 
       if args[1].nil? # No node argument, copy keys to all nodes
         network.nodes.each do |node|
-          #
           keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read("#{pwd.to_s}/#{@keyFile.to_s}")}
           # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
           cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
-          p cmd.to_s
-	        $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
+          $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
           vagrant_out = `#{cmd}`
           $out.out vagrant_out
         end
@@ -438,7 +435,6 @@ class Session
         keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read("#{pwd.to_s}/#{@keyFile.to_s}")}
         # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
         cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
-        p cmd.to_s
         $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
         vagrant_out = `#{cmd}`
         $out.out vagrant_out
