@@ -23,7 +23,6 @@ class Network
     Dir.chdir config.to_s
 
     vagrant_out = `vagrant status`
-    p vagrant_out.to_s
     list = vagrant_out.split("\n")
 
 =begin
@@ -46,7 +45,7 @@ class Network
 =end
 
     count = 0
-    provider = ["(virtualbox)", "(aws)", "(libvirt)", "(docker)"]
+    provider = ['virtualbox', 'aws', 'libvirt', 'docker']
     list.each do |line|
       provider.each do |item|
         count += 1 if line.to_s.include?(item)
