@@ -51,7 +51,6 @@ class Network
         count += 1 if line.to_s.include?(item)
       end
     end
-    p count.to_s
 
     # Log offset: 4 - for ONE node, 5 - for multiple nodes
     if count == 1; offset = 4; else offset = 5; end
