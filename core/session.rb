@@ -23,6 +23,7 @@ class Session
   attr_accessor :repos
   attr_accessor :repoDir
   attr_accessor :mdbciNodes       # mdbci nodes
+  attr_accessor :templateNodes
   attr_accessor :nodesProvider   # current configuration provider
   attr_accessor :attempts
   attr_accessor :mdbciDir
@@ -31,6 +32,7 @@ class Session
   def initialize
     @repoDir = './repo.d'
     @mdbciNodes = Hash.new
+    @templateNodes = Hash.new
   end
 
 =begin
@@ -116,14 +118,22 @@ class Session
     Dir.chdir pwd
   end
 
+  # load nodes template
+  def loadTemplateNodes()
+    pwd = Dir.pwd
+    instanceFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read(pwd+'/template')}
+    @templateNodes = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(IO.read(@mdbciDir+'/'+instanceFile))}
+    if @templateNodes.has_key?('cookbook_path') ; @templateNodes.delete('cookbook_path') ; end
+    if @templateNodes.has_key?('aws_config') ; @templateNodes.delete('aws_config') ; end
+  end
   # load mdbci nodes
   def loadMdbciNodes(path)
     templateFile = $exception_handler.handle('MDBCI configuration file not found') {IO.read(path+'/mdbci_template')}
     $out.info 'Read template file ' + templateFile.to_s
     @mdbciNodes =  $exception_handler.handle('MDBCI configuration file invalid') {JSON.parse(IO.read(templateFile))}
     # delete cookbook_path and aws_config
-    if @mdbciNodes.has_key?("cookbook_path") ; @mdbciNodes.delete("cookbook_path") ; end
-    if @mdbciNodes.has_key?("aws_config") ; @mdbciNodes.delete("aws_config") ; end
+    if @mdbciNodes.has_key?('cookbook_path') ; @mdbciNodes.delete('cookbook_path') ; end
+    if @mdbciNodes.has_key?('aws_config') ; @mdbciNodes.delete('aws_config') ; end
   end
 
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
@@ -239,7 +249,7 @@ class Session
       box = node[1]['box'].to_s
       if !box.empty?
         box_params = boxes[box]
-        @nodesProvider = box_params["provider"].to_s
+        @nodesProvider = box_params['provider'].to_s
       end
     end
   end
@@ -260,11 +270,11 @@ class Session
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
     @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
-    if @nodesProvider != "mdbci"
+    if @nodesProvider != 'mdbci'
       Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
-      $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_template"
+      $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_template'
       # TODO: dir already exist?
       Dir.mkdir path unless File.exists? path
       mdbci = File.new(path+'/mdbci_template', 'w')
@@ -272,13 +282,13 @@ class Session
       mdbci.close
     end
     # write nodes provider and template to configuration nodes dir file
-    provider_file = path+"/provider"
+    provider_file = path+'/provider'
     if !File.exists?(provider_file)
-      File.open(path+"/provider", 'w') { |f| f.write(@nodesProvider.to_s) }
+      File.open(path+'/provider', 'w') { |f| f.write(@nodesProvider.to_s) }
     end
-    template_file = path+"/template"
+    template_file = path+'/template'
     if !File.exists?(template_file)
-      File.open(path+"/template", 'w') { |f| f.write(configFile.to_s) }
+      File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }
     end
   end
 
@@ -375,15 +385,15 @@ class Session
   end
 
   # load node platform by name
-  def loadNodePlatformBy(name, config_dir)
+  def loadNodePlatformBy(name)
 
     pwd = Dir.pwd
     # boxes.json
-    boxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read(config_dir.to_s+"/boxes.json")}
+    boxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read(@mdbciDir.to_s+"/boxes.json")}
     $session.boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(boxesFile)}
     # template file
-    templateFile = $exception_handler.handle('template file not found') {IO.read(pwd.to_s+'/template')}
-    templateNodes =  $exception_handler.handle('template configuration file invalid') {JSON.parse(IO.read(config_dir.to_s+"/"+templateFile))}
+    templateFile = $exception_handler.handle('template file not found') {IO.read(pwd+'/template')}
+    templateNodes =  $exception_handler.handle('template configuration file invalid') {JSON.parse(IO.read(@mdbciDir.to_s+'/'+templateFile))}
     #
     node = templateNodes.find { |elem| elem[0].to_s == name }
     box = node[1]['box'].to_s

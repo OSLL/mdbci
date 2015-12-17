@@ -145,6 +145,7 @@ class Network
         end
       end
     else # aws, vbox nodes
+      Dir.chdir args[0]
       network = Network.new
       network.loadNodes args[0] # load nodes from dir
 
@@ -199,6 +200,7 @@ class Network
         end
       end
     else # aws, vbox nodes
+      Dir.chdir args[0]
       network = Network.new
       network.loadNodes args[0] # load nodes from dir
 
