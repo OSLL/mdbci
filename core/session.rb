@@ -122,6 +122,7 @@ class Session
   def loadTemplateNodes()
     pwd = Dir.pwd
     instanceFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read(pwd+'/template')}
+    $out.info 'Load nodes from template file ' + instanceFile.to_s
     @templateNodes = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(IO.read(@mdbciDir+'/'+instanceFile))}
     if @templateNodes.has_key?('cookbook_path') ; @templateNodes.delete('cookbook_path') ; end
     if @templateNodes.has_key?('aws_config') ; @templateNodes.delete('aws_config') ; end
@@ -129,7 +130,7 @@ class Session
   # load mdbci nodes
   def loadMdbciNodes(path)
     templateFile = $exception_handler.handle('MDBCI configuration file not found') {IO.read(path+'/mdbci_template')}
-    $out.info 'Read template file ' + templateFile.to_s
+    $out.info 'Load mdbci nodes from template file ' + templateFile.to_s
     @mdbciNodes =  $exception_handler.handle('MDBCI configuration file invalid') {JSON.parse(IO.read(templateFile))}
     # delete cookbook_path and aws_config
     if @mdbciNodes.has_key?('cookbook_path') ; @mdbciNodes.delete('cookbook_path') ; end
