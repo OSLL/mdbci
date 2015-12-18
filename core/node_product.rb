@@ -140,6 +140,7 @@ class NodeProduct
           $out.info 'Install repo to '+platform.to_s+' for '+$session.nodeProduct.to_s+' product.'
           if $session.nodeProduct == 'maxscale'
             cmd = createMaxscaleInstallRepoCmd(platform, node[0].to_s, repo)
+	    p cmd
             vagrant_out = `#{cmd}`
           elsif $session.nodeProduct == 'mariadb'
             # TODO
@@ -159,9 +160,9 @@ class NodeProduct
 
   def self.createMaxscaleInstallRepoCmd(platform, node_name, repo)
     if platform == 'ubuntu' || platform == 'debian'
-      install_repo = 'sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+repo['repo_key']+' && '\
-                   + 'sudo echo -e \"deb '+repo['repo']+'\" > sudo /etc/apt/sources.list.d/maxscale.list'
-      cmd_install_repo = 'vagrant ssh '+node_name.to_s+' -c \"'+install_repo+'\"'
+      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+repo['repo_key']+' && '\
+                       + 'sudo touch /etc/apt/sources.list.d/maxscale_new.list && '\
+                       + 'sudo echo -e \"deb '+repo['repo']+'\" | sudo tee -a /etc/apt/sources.list.d/maxscale_new.list"'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo touch /etc/yum.repos.d/maxscale_new.repo '\
 		       + '&& sudo echo -e \"[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'+'gpgcheck=1\" | sudo tee -a /etc/yum.repos.d/maxscale_new.repo"'
