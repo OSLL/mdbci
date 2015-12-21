@@ -77,11 +77,8 @@ class NodeProduct
           if !box.empty?
             mdbci_params = $session.boxes[box]  # TODO: 6576
             #
-
-            # get OS platform and version
-            # get product repo and repo_key
-            # create command for adding repo_key and repo for varios OS
-
+            # TODO
+	    #
             #command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
             #cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
             #                + mdbci_params['user'].to_s + "@"\
@@ -97,9 +94,7 @@ class NodeProduct
         if !box.empty?
           mdbci_params = $session.boxes[box]  # TODO: 6576
           #
-
           # TODO
-
           #command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
           #cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
           #                + mdbci_params['user'].to_s + "@"\
@@ -117,7 +112,7 @@ class NodeProduct
           repo = getProductRepoParameters(node[1]['product'], node[1]['box'])
           if !repo.nil?
             platform = $session.loadNodePlatformBy(node[0].to_s)
-            $out.info 'Install repo to '+platform.to_s+' for '+$session.nodeProduct.to_s+' product.'
+            $out.info 'Install '+$session.nodeProduct.to_s+' repo on '+platform.to_s+' platform.'
             if $session.nodeProduct == 'maxscale'
               cmd = createMaxscaleInstallRepoCmd(platform, node[0], repo)
               vagrant_out = `#{cmd}`
@@ -137,7 +132,7 @@ class NodeProduct
         repo = getProductRepoParameters(node[1]['product'], node[1]['box'])
         if !repo.nil?
           platform = $session.loadNodePlatformBy(node[0].to_s)
-          $out.info 'Install repo to '+platform.to_s+' for '+$session.nodeProduct.to_s+' product.'
+          $out.info 'Install '+$session.nodeProduct.to_s+' repo on '+platform.to_s+' platform.'
           if $session.nodeProduct == 'maxscale'
             cmd = createMaxscaleInstallRepoCmd(platform, node[0].to_s, repo)
             vagrant_out = `#{cmd}`
@@ -149,7 +144,7 @@ class NodeProduct
             $out.info 'Install repo: Unknown product!'
           end
         else
- 	        $out.error 'No such product for this node!'
+          $out.error 'No such product for this node!'
         end
       end
     end
@@ -227,7 +222,7 @@ class NodeProduct
       if args[1].nil? # No node argument, copy keys to all nodes
         $session.templateNodes.each do |node|
           platform = $session.loadNodePlatformBy(node[0].to_s)
-          $out.info 'Install repo to '+platform.to_s+' for '+$session.nodeProduct.to_s+' product.'
+          $out.info 'Update '+$session.nodeProduct.to_s+' repo on '+platform.to_s+' platform.'
           if $session.nodeProduct == 'maxscale'
             cmd = createMaxscaleUpdateRepoCmd(platform, node[0])
             vagrant_out = `#{cmd}`
@@ -242,7 +237,7 @@ class NodeProduct
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
         platform = $session.loadNodePlatformBy(node[0].to_s)
-        $out.info 'Install repo to '+platform.to_s+' for '+$session.nodeProduct.to_s+' product.'
+        $out.info 'Update '+$session.nodeProduct.to_s+' repo on '+platform.to_s+' platform.'
         if $session.nodeProduct == 'maxscale'
           cmd = createMaxscaleUpdateRepoCmd(platform, node[0].to_s)
           vagrant_out = `#{cmd}`
@@ -251,7 +246,7 @@ class NodeProduct
         elsif $session.nodeProduct == 'galera'
           # TODO
         else
-          $out.info 'Install repo: Unknown product!'
+          $out.info 'Update repo: Unknown product!'
         end
       end
     end
