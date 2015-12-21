@@ -140,7 +140,6 @@ class NodeProduct
           $out.info 'Install repo to '+platform.to_s+' for '+$session.nodeProduct.to_s+' product.'
           if $session.nodeProduct == 'maxscale'
             cmd = createMaxscaleInstallRepoCmd(platform, node[0].to_s, repo)
-	    p cmd
             vagrant_out = `#{cmd}`
           elsif $session.nodeProduct == 'mariadb'
             # TODO
@@ -166,9 +165,9 @@ class NodeProduct
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo touch /etc/yum.repos.d/maxscale_new.repo '\
 		       + '&& sudo echo -e \"[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'+'gpgcheck=1\" | sudo tee -a /etc/yum.repos.d/maxscale_new.repo"'
-    elsif platform == 'sles' || platform == 'suse'
-      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo touch /etc/yum.repos.d/maxscale_new.repo '\
-		       + '&& sudo echo -e \"[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'+'gpgcheck=1\" | sudo tee -a /etc/yum.repos.d/maxscale_new.repo"'  
+    elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
+      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo touch /etc/zypp/repos.d/maxscale_new.repo '\
+		       + '&& sudo echo -e \"[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'+'gpgcheck=1\" | sudo tee -a /etc/zypp/repos.d/maxscale_new.repo"'
     end
     return cmd_install_repo
   end
