@@ -46,12 +46,14 @@ COMMANDS:
   up [--attempts 'attempts arguments'] config | config/node
   public_keys --key <keyfile> config/node
   install_repo --product <profuct_name> config/node
+  update_repo --product <profuct_name> config/node
 
 EXAMPLES:
   mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
   mdbci ssh --command "cat script.sh" T/node1
   mdbci --repo-dir /home/testbed/config/repos show repos
   mdbci up --attempts 4 T/node0
+  mdbci install_repo --product maxscale config/node0
   EOF
 
 end

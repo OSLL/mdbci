@@ -92,6 +92,8 @@ case ARGV.shift
     $session.generate(ARGV.shift)
   when 'install_repo'
     NodeProduct.installProductRepo(ARGV.shift)
+  when 'update_repo'
+    NodeProduct.updateProductRepo(ARGV.shift)
   when 'up'
     $session.up(ARGV.shift)
   else
