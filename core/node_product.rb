@@ -80,11 +80,11 @@ class NodeProduct
             #
       	    # TODO
             # get OS platform and version
-	          # get installed product
+            # get installed product
             # get product repo and repo_key
             # create command for adding repo_key and repo for varios OS
- 	          #
-	          #command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
+            #
+            #command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
             #cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
             #                + mdbci_params['user'].to_s + "@"\
             #                + mdbci_params['IP'].to_s + " "\
@@ -173,6 +173,8 @@ class NodeProduct
     return cmd_install_repo
   end
   #
+  # TODO: create single function for install and update cmd, by different mdbci cmd! 
+  #
   # Update repo for product to nodes
   def self.updateProductRepo(args)
 
@@ -230,6 +232,7 @@ class NodeProduct
           if $session.nodeProduct == 'maxscale'
             cmd = createMaxscaleUpdateRepoCmd(platform, node[0])
             vagrant_out = `#{cmd}`
+	    # puts vagrant_out.to_s
           elsif $session.nodeProduct == 'mariadb'
             # TODO
           elsif $session.nodeProduct == 'galera'
@@ -245,6 +248,7 @@ class NodeProduct
         if $session.nodeProduct == 'maxscale'
           cmd = createMaxscaleUpdateRepoCmd(platform, node[0].to_s)
           vagrant_out = `#{cmd}`
+	  # puts vagrant_out.to_s
         elsif $session.nodeProduct == 'mariadb'
           # TODO
         elsif $session.nodeProduct == 'galera'
@@ -254,7 +258,6 @@ class NodeProduct
         end
       end
     end
-
     Dir.chdir pwd
   end
   #
