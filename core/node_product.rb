@@ -55,6 +55,8 @@ class NodeProduct
     return repo
   end
   #
+  #         COMMANDS
+  #
   # Install repo for product to nodes
   def self.installProductRepo(args)
 
@@ -233,7 +235,7 @@ class NodeProduct
           elsif $session.nodeProduct == 'galera'
             # TODO
           else
-            $out.info 'Install repo: Unknown product!'
+            $out.info 'Update repo: Unknown product!'
           end
         end
       else
@@ -259,7 +261,7 @@ class NodeProduct
   # update maxscale command
   def self.createMaxscaleUpdateRepoCmd(platform, node_name)
     if platform == 'ubuntu' || platform == 'debian'
-      cmd_update_repo = 'vagrant ssh '+node_name+' -c "sudo apt-get install maxscale"'
+      cmd_update_repo = 'vagrant ssh '+node_name+' -c "sudo apt-get --only-upgrade true install maxscale"'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
       cmd_update_repo = 'vagrant ssh '+node_name+' -c "sudo yum update maxscale"'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
