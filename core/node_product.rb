@@ -2,7 +2,6 @@ require 'scanf'
 require 'yaml'
 
 require_relative  '../core/out'
-require_relative '../core/network'
 
 
 class NodeProduct
@@ -77,12 +76,13 @@ class NodeProduct
           if !box.empty?
             mdbci_params = $session.boxes[box]  # TODO: 6576
             #
-
+	    # TODO
             # get OS platform and version
+	    # get installed product
             # get product repo and repo_key
             # create command for adding repo_key and repo for varios OS
-
-            #command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
+ 	    #
+	    #command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
             #cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
             #                + mdbci_params['user'].to_s + "@"\
             #                + mdbci_params['IP'].to_s + " "\
@@ -97,9 +97,7 @@ class NodeProduct
         if !box.empty?
           mdbci_params = $session.boxes[box]  # TODO: 6576
           #
-
           # TODO
-
           #command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
           #cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
           #                + mdbci_params['user'].to_s + "@"\
@@ -117,7 +115,7 @@ class NodeProduct
           repo = getProductRepoParameters(node[1]['product'], node[1]['box'])
           if !repo.nil?
             platform = $session.loadNodePlatformBy(node[0].to_s)
-            $out.info 'Install repo to '+platform.to_s+' for '+$session.nodeProduct.to_s+' product.'
+            $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
             if $session.nodeProduct == 'maxscale'
               cmd = createMaxscaleInstallRepoCmd(platform, node[0], repo)
               vagrant_out = `#{cmd}`
@@ -137,10 +135,10 @@ class NodeProduct
         repo = getProductRepoParameters(node[1]['product'], node[1]['box'])
         if !repo.nil?
           platform = $session.loadNodePlatformBy(node[0].to_s)
-          $out.info 'Install repo to '+platform.to_s+' for '+$session.nodeProduct.to_s+' product.'
+          $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
           if $session.nodeProduct == 'maxscale'
             cmd = createMaxscaleInstallRepoCmd(platform, node[0].to_s, repo)
-            vagrant_out = `#{cmd}`
+	    vagrant_out = `#{cmd}`
           elsif $session.nodeProduct == 'mariadb'
             # TODO
           elsif $session.nodeProduct == 'galera'
@@ -160,14 +158,14 @@ class NodeProduct
   def self.createMaxscaleInstallRepoCmd(platform, node_name, repo)
     if platform == 'ubuntu' || platform == 'debian'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+repo['repo_key']+' && '\
-                       + 'sudo touch /etc/apt/sources.list.d/maxscale_new.list && '\
-                       + 'sudo echo -e \"deb '+repo['repo']+'\" | sudo tee -a /etc/apt/sources.list.d/maxscale_new.list"'
+                       + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
+		       + 'sudo echo -e \"deb '+repo['repo']+'\" | sudo tee -a /etc/apt/sources.list.d/maxscale.list"'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
-      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo touch /etc/yum.repos.d/maxscale_new.repo '\
-		       + '&& sudo echo -e \"[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'+'gpgcheck=1\" | sudo tee -a /etc/yum.repos.d/maxscale_new.repo"'
+      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo dd if=/dev/null of=/etc/yum.repos.d/maxscale.repo && '\
+		       + 'sudo echo -e \"[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'+'gpgcheck=1\" | sudo tee -a /etc/yum.repos.d/maxscale.repo"'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
-      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo touch /etc/zypp/repos.d/maxscale_new.repo '\
-		       + '&& sudo echo -e \"[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'+'gpgcheck=1\" | sudo tee -a /etc/zypp/repos.d/maxscale_new.repo"'
+      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo dd if=/dev/null of=/etc/zypp/repos.d/maxscale.repo && '\
+		       + 'sudo echo -e \"[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'+'gpgcheck=1\" | sudo tee -a /etc/zypp/repos.d/maxscale.repo"'
     end
     return cmd_install_repo
   end
