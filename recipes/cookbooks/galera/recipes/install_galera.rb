@@ -83,23 +83,16 @@ case node[:platform_family]
     end
 end
 
-# iptables rules
+# iptables ports
 case node[:platform_family]
   when "debian", "ubuntu", "rhel", "fedora", "centos", "suse"
-
     ["4567", "4568", "4444", "3306", "4006", "4008", "4009", "4442", "6444"].each do |port|
-      iptables_accept_cmd = "iptables -I INPUT -p tcp -m tcp --dport "+port+" -j ACCEPT"
-      execute "Accept port #{port}" do
-        command iptables_accept_cmd
-      end
-      # 
-      iptables_state_cmd = "iptables -I INPUT -p tcp --dport "+ port +" -j ACCEPT -m state --state NEW"
-      execute "New state for port #{port}" do
-        command iptables_state_cmd
+      execute "Open port #{port}" do
+        command "iptables -I INPUT -p tcp -m tcp --dport "+port+" -j ACCEPT"
+        command "iptables -I INPUT -p tcp --dport "+ port +" -j ACCEPT -m state --state NEW"
       end
     end
-
-end # iptables rules
+end # iptables ports
 
 # TODO: check saving iptables rules after reboot
 # save iptables rules
