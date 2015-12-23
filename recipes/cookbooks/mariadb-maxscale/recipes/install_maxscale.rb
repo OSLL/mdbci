@@ -63,24 +63,17 @@ end
 
 # iptables rules
 case node[:platform_family]
-  when "debian", "ubuntu", "rhel", "fedora", "centos", "suse"
+  when "debian", "ubuntu", "rhel", "fedora", "centos", "suse", "opensuse"
     
-    ports = ["3306", "4006", "4008", "4009", "4016", "5306", "4442", "6444", "6603"]
-    ports.each do |port|
-      iptables_cmd = "iptables -I INPUT -p tcp -m tcp --dport "+ port +" -j ACCEPT"
-      execute "Opening MariaDB-Maxscale ports." do
-        command iptables_cmd
+    ["3306", "4006", "4008", "4009", "4016", "5306", "4442", "6444", "6603"].each do |port|
+      iptables_accept_cmd = "iptables -I INPUT -p tcp -m tcp --dport "+ port +" -j ACCEPT"
+      execute "Accept port #{port}" do
+        command iptables_accept_cmd
       end
-    end
-
-    execute "Opening MariaDB-Maxscale ports.." do
-      command "iptables -I INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
-    end
-    
-    ports.each do |port|
-      iptables_cmd = "iptables -I INPUT -p tcp --dport "+ port +" -j ACCEPT -m state --state NEW"
-      execute "Opening MariaDB-Maxscale ports..." do
-        command iptables_cmd
+      #
+      iptables_state_cmd = "iptables -I INPUT -p tcp --dport "+ port +" -j ACCEPT -m state --state NEW"
+      execute "New state for port #{port}" do
+        command iptables_state_cmd
       end
     end
 
@@ -90,7 +83,7 @@ end # iptables rules
 # save iptables rules
 case node[:platform_family]
   when "debian", "ubuntu"
-    execute "Save MariaDB iptables rules" do
+    execute "Save iptables rules" do
       command "iptables-save > /etc/iptables/rules.v4"
       #command "/usr/sbin/service iptables-persistent save"
     end
@@ -110,8 +103,8 @@ case node[:platform_family]
       end
     end
     # service iptables restart
-  when "suse"
-    execute "Save MariaDB iptables rules" do
+  when "suse", "opensuse"
+    execute "Save iptables rules" do
       command "iptables-save > /etc/sysconfig/iptables"
     end
 end # save iptables rules
