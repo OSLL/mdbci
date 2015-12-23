@@ -140,7 +140,7 @@ class NodeProduct
           $out.info 'Install '+$session.nodeProduct.to_s+' repo on '+platform.to_s+' platform.'
           if $session.nodeProduct == 'maxscale'
             cmd = createMaxscaleInstallRepoCmd(platform, node[0].to_s, repo)
-	          vagrant_out = `#{cmd}`
+            vagrant_out = `#{cmd}`
           elsif $session.nodeProduct == 'mariadb'
             # TODO
           elsif $session.nodeProduct == 'galera'
@@ -232,7 +232,7 @@ class NodeProduct
           if $session.nodeProduct == 'maxscale'
             cmd = createMaxscaleUpdateRepoCmd(platform, node[0])
             vagrant_out = `#{cmd}`
-	    # puts vagrant_out.to_s
+	    #cmd_out = vagrant_out.split('\r\r')
           elsif $session.nodeProduct == 'mariadb'
             # TODO
           elsif $session.nodeProduct == 'galera'
@@ -248,7 +248,6 @@ class NodeProduct
         if $session.nodeProduct == 'maxscale'
           cmd = createMaxscaleUpdateRepoCmd(platform, node[0].to_s)
           vagrant_out = `#{cmd}`
-	  # puts vagrant_out.to_s
         elsif $session.nodeProduct == 'mariadb'
           # TODO
         elsif $session.nodeProduct == 'galera'
