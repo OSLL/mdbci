@@ -285,12 +285,12 @@ class Session
   def up(args)
 
     std_q_attampts = 10
-    std_err_val = 1
+    exit_code = 1 # error
 
     # No arguments provided
     if args.nil?
       $out.info 'Command \'up\' needs one argument, found zero'
-      return std_err_val
+      return
     end
 
     # No attempts provided
@@ -347,18 +347,22 @@ class Session
           stdin.close
           stdout.each_line { |line| $out.info line }
           stdout.close
-          if wthr.value.success?
-            Dir.chdir pwd
-            return 0
+          if !wthr.value.success?
+            $out.error 'Bringing up failed'
+            stderr.each_line { |line| $out.error line }
+            stderr.close
+   	    exit_code = wthr.value.exitstatus # error
+	    $out.info 'exit code '+exit_code.to_s
+	  else
+  	    exit_code = 0 # success
+	    $out.info 'exit code '+exit_code.to_s
+	    return exit_code
           end
-          $out.error 'Bringing up failed'
-          stderr.each_line { |line| $out.error line }
-          stderr.close
-        end
+  	end
       }
-      Dir.chdir pwd
-      return std_err_val
     end
+    Dir.chdir pwd
+    return exit_code
   end
 
   def showProvider(name)
