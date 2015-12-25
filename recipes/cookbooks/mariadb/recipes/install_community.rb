@@ -3,11 +3,6 @@ require 'shellwords'
 include_recipe "mariadb::mdbcrepos"
 
 
-# install net-tools
-[ "net-tools" ].each do |pkg|
-  package pkg
-end
-
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
   # TODO: centos7 don't have selinux
@@ -42,6 +37,16 @@ if node['mariadb']['version'] == "5.1"
 end
 
 system 'echo Platform family: '+node[:platform_family]
+
+# install ifconfig
+case node[:platform_family]
+  when "rhel", "centos"
+    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
+      execute "Install ifconfig" do
+        command "yum --assumeyes install net-tools"
+      end
+    end
+end
 
 # check and install iptables
 case node[:platform_family]
@@ -147,13 +152,13 @@ case node[:platform_family]
     end
 
     copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/mysql/my.cnf.d/'
-    execute "Copy config file to cnf_template directory" do
+    execute "Copy mdbci_server.cnf to cnf_template directory" do
       command copycmd
     end
 
     # /etc/mysql/my.cnf.d -- dir for *.cnf files
     addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
-    execute "Add config file to my.cnf includedir parameter" do
+    execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
       command addlinecmd
     end
 
@@ -161,7 +166,7 @@ case node[:platform_family]
 
     # /etc/my.cnf.d -- dir for *.cnf files
     copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/my.cnf.d'
-    execute "Copy config file to cnf_template directory" do
+    execute "Copy mdbci_server.cnf to cnf_template directory" do
       command copycmd
     end
 

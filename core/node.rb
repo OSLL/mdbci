@@ -47,19 +47,19 @@ class Node
   def getIp(provider, platform, is_private)
     case provider
       when '(virtualbox)'
-        getInterfaceBoxIp(@name, 'eth1', 'inet addr:%s Bcast')
+        getInterfaceBoxIp(@name, "eth1", "inet addr:%s Bcast")
       when '(libvirt)'
-        if platform == 'ubuntu'
-          getInterfaceBoxIp(@name, 'eth0', 'inet addr:%s  Bcast')
+        if platform == "ubuntu"
+          getInterfaceBoxIp(@name, "eth0", "inet addr:%s  Bcast")
         else
-          getInterfaceBoxIp(@name, 'eth0', 'inet %s  netmask')
+          getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
         end
       when '(aws)'
         if curlCheck
           if is_private
-            cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig['private_ip_service']+'"'
+            cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["private_ip_service"]+'"'
           else
-            cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig['public_ip_service']+'"'
+            cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["public_ip_service"]+'"'
           end 
           vagrant_out = `#{cmd}`
           ip = vagrant_out.scanf('%s')
