@@ -232,6 +232,36 @@ class Session
     end
   end
 
+  # all mdbci commands swith
+  def commands
+    case ARGV.shift
+    when 'show'
+      exit_code = $session.show(ARGV.shift)
+
+    when 'sudo'
+      exit_code =$session.sudo(ARGV.shift)
+
+    when 'ssh'
+      exit_code =$session.ssh(ARGV.shift)
+
+    when 'setup'
+      exit_code =$session.setup(ARGV.shift)
+
+    when 'generate'
+      exit_code =$session.generate(ARGV.shift)
+
+    when 'up'
+      exit_code = $session.up(ARGV.shift)
+
+    else
+      exit_code = 1
+      puts 'ERR: Something wrong with command line'
+      Help.display
+    end
+
+    return exit_code
+  end
+
   # load mdbci boxes parameters from boxes.json
   def LoadNodesProvider(configs)
     configs.each do |node|
@@ -352,11 +382,10 @@ class Session
             stderr.each_line { |line| $out.error line }
             stderr.close
    	    exit_code = wthr.value.exitstatus # error
-	    $out.info 'exit code '+exit_code.to_s
+	    $out.info 'UP ERROR, exit code '+exit_code.to_s
 	  else
   	    exit_code = 0 # success
-	    $out.info 'exit code '+exit_code.to_s
-	    return exit_code
+            $out.info 'UP SUCCESS, exit code '+exit_code.to_s
           end
   	end
       }
