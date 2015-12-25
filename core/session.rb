@@ -359,10 +359,8 @@ class Session
   end
 
   def showProvider(name)
-    boxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read($session.boxesFile)}
-    $session.boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(boxesFile)}
     if $session.boxes.boxesManager.has_key?(name)
-      box_params = $session.boxes.getBox(box)
+      box_params = $session.boxes.getBox(name)
       provider = box_params["provider"].to_s
       $out.out provider
     else
