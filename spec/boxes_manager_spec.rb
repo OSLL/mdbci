@@ -8,7 +8,6 @@ require_relative '../core/out'
 describe 'BoxesManager' do
 
   it 'lookup and add boxes' do
-
     $session = Session.new
     $session.isSilent = false
     $out = Out.new
@@ -18,7 +17,6 @@ describe 'BoxesManager' do
 
     boxes.boxesManager.size().should_not eq(0)
     boxes.boxesManager.size().should eq(30)
-
   end
 
 end
