@@ -7,8 +7,6 @@ require_relative '../core/out'
 
 describe 'BoxesManager' do
 
-  context
-
   it 'lookup and add boxes' do
 
     $session = Session.new
