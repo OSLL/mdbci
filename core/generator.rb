@@ -443,7 +443,7 @@ def Generator.checkPath(path, override)
           machine = getDockerDef(cookbook_path, name, template_path, provisioned)
           copyDockerfiles(path, name, platform, platform_version)
         else
-          $out.warning 'Configuration has not support AWS, config file or other vm provision!'
+          $out.warning 'Configuration type invalid! It must be vbox, aws, libvirt or docker type. Check it, please!'
       end
     else
       $out.warning 'Box '+box+'is not installed or configured ->SKIPPING'
