@@ -177,7 +177,7 @@ Vagrant.configure(2) do |config|
       docker_def = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + templatedef  + "\n"\
             + "\t"+name+'.vm.provider "docker" do |d|' + "\n" \
-            + "\t\t"+'d.build_dir = ' + quote(name+"/") + "/\n" \
+            + "\t\t"+'d.build_dir = ' + quote(name+"/") + "\n" \
             + "\t\t"+'d.has_ssh = true' + "\n" \
             + "\t\t"+'d.privileged = true' + "\n\tend" \
             + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
