@@ -15,11 +15,11 @@ describe 'BoxesManager' do
     $session.isSilent = false
     $out = Out.new
 
-    path = Dir.pwd
+    path = './BOXES'
     boxes = BoxesManager.new(path)
 
-    boxes.boxes.size().should_not eq(0)
-    boxes.boxes.size().should eq(40)
+    boxes.boxesManager.size().should_not eq(0)
+    boxes.boxesManager.size().should eq(30)
 
   end
 
