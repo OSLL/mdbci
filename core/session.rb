@@ -393,8 +393,8 @@ class Session
     boxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read(@mdbciDir.to_s+"/boxes.json")}
     $session.boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(boxesFile)}
     # template file
-    templateFile = $exception_handler.handle('template file not found') {IO.read(pwd+'/template')}
-    templateNodes =  $exception_handler.handle('template configuration file invalid') {JSON.parse(IO.read(@mdbciDir.to_s+'/'+templateFile))}
+    templateFile = $exception_handler.handle('template file not found') {IO.read(pwd.to_s+'/template')}
+    templateNodes =  $exception_handler.handle('template configuration file invalid') {JSON.parse(IO.read(@mdbciDir.to_s+"/"+templateFile))}
     #
     node = templateNodes.find { |elem| elem[0].to_s == name }
     box = node[1]['box'].to_s
