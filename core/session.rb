@@ -225,11 +225,12 @@ class Session
         showBoxKeys
 
       when 'provider'
-        showProvider(ARGV.shift)
+        exit_code = showProvider(ARGV.shift)
 
       else
         $out.error 'Unknown collection: '+collection
     end
+    return exit_code
   end
 
   # all mdbci commands swith
@@ -239,16 +240,16 @@ class Session
       exit_code = $session.show(ARGV.shift)
 
     when 'sudo'
-      exit_code =$session.sudo(ARGV.shift)
+      exit_code = $session.sudo(ARGV.shift)
 
     when 'ssh'
-      exit_code =$session.ssh(ARGV.shift)
+      exit_code = $session.ssh(ARGV.shift)
 
     when 'setup'
-      exit_code =$session.setup(ARGV.shift)
+      exit_code = $session.setup(ARGV.shift)
 
     when 'generate'
-      exit_code =$session.generate(ARGV.shift)
+      exit_code = $session.generate(ARGV.shift)
 
     when 'up'
       exit_code = $session.up(ARGV.shift)
@@ -258,7 +259,6 @@ class Session
       puts 'ERR: Something wrong with command line'
       Help.display
     end
-
     return exit_code
   end
 
@@ -381,13 +381,13 @@ class Session
             $out.error 'Bringing up failed'
             stderr.each_line { |line| $out.error line }
             stderr.close
-   	    exit_code = wthr.value.exitstatus # error
-	    $out.info 'UP ERROR, exit code '+exit_code.to_s
-	  else
-  	    exit_code = 0 # success
+   	        exit_code = wthr.value.exitstatus # error
+	          $out.info 'UP ERROR, exit code '+exit_code.to_s
+	        else
+  	        exit_code = 0 # success
             $out.info 'UP SUCCESS, exit code '+exit_code.to_s
           end
-  	end
+  	    end
       }
     end
     Dir.chdir pwd
@@ -401,9 +401,12 @@ class Session
       box_params = $session.boxes[name]
       provider = box_params["provider"].to_s
       $out.out provider
+      exit_code = 0
     else
+      exit_code = 1
       $out.warning name.to_s+" box does not exist! Please, check box name!"
     end
+    return exit_code
   end
 
   # load node platform by name
