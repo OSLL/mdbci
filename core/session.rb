@@ -370,13 +370,12 @@ class Session
 
   # TODO: refactoring this function!
   # load node platform by name
-  def loadNodePlatformBy(name, config_dir)
+  def loadNodePlatformBy(name)
 
     pwd = Dir.pwd
-
     # template file
     templateFile = $exception_handler.handle('Template nodes file not found') {IO.read(pwd.to_s+'/template')}
-    templateNodes =  $exception_handler.handle('Template configuration file invalid') {JSON.parse(IO.read(config_dir.to_s+"/"+templateFile))}
+    templateNodes =  $exception_handler.handle('Template configuration file invalid') {JSON.parse(IO.read(@mdbciDir.to_s+"/"+templateFile))}
     #
     node = templateNodes.find { |elem| elem[0].to_s == name }
     box = node[1]['box'].to_s
