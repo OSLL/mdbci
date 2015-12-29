@@ -80,7 +80,6 @@ class Node
 
   def initialize(config, initString)
     parts = initString.scanf('%s %s %s')
-    p "NODE PARTS: "+parts.to_s
     if parts.length == 3
       @name = parts[0]
       @state = parts[1]
