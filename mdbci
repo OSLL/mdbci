@@ -55,8 +55,8 @@ opts.each do |opt, arg|
     when '--repo-dir'
       $session.repoDir = arg
 
-	  when '--attempts'
-	    $session.attempts = arg
+    when '--attempts'
+      $session.attempts = arg
 
     when '--key'
       if arg != ''; $session.keyFile = arg; end

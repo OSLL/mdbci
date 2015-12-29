@@ -29,10 +29,8 @@ class Network
   Vagrant prints node info in next format:
   >Current machine states:
   >
-  >
   >node0                     running (virtualbox)
   >node1                     running (virtualbox)
-  >
   >
   >This environment represents multiple VMs. The VMs are all listed
   >above with their current state. For more information about a specific
@@ -45,7 +43,7 @@ class Network
 =end
 
     count = 0
-    provider = ['virtualbox', 'aws', 'libvirt', 'docker']
+    provider = ["virtualbox", "aws", "mdbci", "libvirt", "docker"]
     list.each do |line|
       provider.each do |item|
         count += 1 if line.to_s.include?(item)
@@ -186,7 +184,7 @@ class Network
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           if !box.empty?
-            box_params = $session.boxes[box]  # TODO: 6576
+            box_params = $session.boxes[box]
             $out.info 'Node: ' + node[0].to_s
             $out.out box_params['IP'].to_s
           end
