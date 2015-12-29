@@ -82,8 +82,10 @@ class Network
           $out.info 'Node: ' + node[0].to_s
           if File.exist?(pwd+'/KEYS/'+box_params['keyfile'].to_s) 
             $out.out pwd+'/KEYS/'+box_params['keyfile'].to_s
+            exit_code = 0
           else
             $out.warning box_params['keyfile'].to_s+" keyfile not found!"
+            exit_code = 1
           end
         end
       else
@@ -94,11 +96,14 @@ class Network
           $out.info 'Node: ' + args[1].to_s
           if File.exist?(pwd+'/KEYS/'+mdbci_params['keyfile'].to_s) 
             $out.out pwd+'/KEYS/'+mdbci_params['keyfile'].to_s
+            exit_code = 0
           else
             $out.warning mdbci_params['keyfile'].to_s+" keyfile not found!"
+            exit_code = 1
           end
         else
           $out.warning args[1].to_s+" mdbci node not found!"
+          exit_code = 1
         end
       end
     else
@@ -109,7 +114,10 @@ class Network
       $out.out vagrant_out.split(' ')[1]
 
       Dir.chdir pwd
+      exit_code = 0
     end
+
+    return exit_code
   end
 
   def self.show(name)
@@ -133,6 +141,7 @@ class Network
             box_params = $session.boxes[box]
             $out.info 'Node: ' + node[0].to_s
             $out.out box_params['IP'].to_s
+            exit_code = 0
           end
         end
       else
@@ -142,6 +151,7 @@ class Network
           mdbci_params = $session.boxes[box]
           $out.info 'Node: ' + args[1].to_s
           $out.out mdbci_params['IP'].to_s
+          exit_code = 0
         end
       end
     else # aws, vbox nodes
@@ -153,16 +163,19 @@ class Network
           platform = $session.loadNodePlatformBy(node.name)
           node.getIp(node.provider, platform, false)
           $out.out node.ip.to_s
+          exit_code = 0
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
         platform = $session.loadNodePlatformBy(node.name)
         node.getIp(node.provider, platform, false)
         $out.out node.ip.to_s
+        exit_code = 0
       end
     end
 
     Dir.chdir pwd
+    return exit_code
   end
 
   # TODO - move mdbci box definition to new class - MdbciNode < Node
@@ -187,6 +200,7 @@ class Network
             box_params = $session.boxes[box]
             $out.info 'Node: ' + node[0].to_s
             $out.out box_params['IP'].to_s
+            exit_code = 0
           end
         end
       else
@@ -196,6 +210,7 @@ class Network
           mdbci_params = $session.boxes[box]
           $out.info 'Node: ' + args[1].to_s
           $out.out mdbci_params['IP'].to_s
+          exit_code = 0
         end
       end
     else # aws, vbox nodes
@@ -207,16 +222,19 @@ class Network
           platform = $session.loadNodePlatformBy(node.name)
           node.getIp(node.provider, platform, true)
           $out.out node.ip.to_s
+          exit_code = 0
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
         platform = $session.loadNodePlatformBy(node.name)
         node.getIp(node.provider, platform, true)
         $out.out node.ip.to_s
+        exit_code = 0
       end
     end
 
     Dir.chdir pwd
+    return exit_code
   end
 
 end

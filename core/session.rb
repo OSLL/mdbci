@@ -81,10 +81,13 @@ class Session
 
           # TODO: resque Exeption
           system shell # THERE CAN BE DONE CUSTOM EXCEPTION
+          exit_code = 0
         end
       else
         $out.warn 'Cannot setup '+what
+        exit_code = 1
     end
+    return exit_code
   end
 
   def checkConfig
@@ -113,6 +116,7 @@ class Session
     $out.out vagrant_out
 
     Dir.chdir pwd
+    return 0 # TODO: handle error, exception
   end
 
   # load mdbci nodes
@@ -154,6 +158,7 @@ class Session
             $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
             vagrant_out = `#{cmd}`
             $out.out vagrant_out
+            exit_code = 0
           end
         end
       else
@@ -168,6 +173,7 @@ class Session
           $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
           vagrant_out = `#{cmd}`
           $out.out vagrant_out
+          exit_code = 0
         end
       end
     else # aws, vbox nodes
@@ -179,9 +185,10 @@ class Session
       $out.out vagrant_out
 
       Dir.chdir pwd
+      exit_code = 0
     end
 
-
+    return exit_code
   end
 
 
@@ -213,13 +220,13 @@ class Session
         $out.out  @boxes.keys
 
       when 'network'
-        Network.show(ARGV.shift)
+        exit_code = Network.show(ARGV.shift)
 
       when 'private_ip'
-        Network.private_ip(ARGV.shift)
+        exit_code = Network.private_ip(ARGV.shift)
 
       when 'keyfile'
-        Network.showKeyFile(ARGV.shift)
+        exit_code = Network.showKeyFile(ARGV.shift)
 
       when 'boxkeys'
         showBoxKeys
@@ -229,6 +236,7 @@ class Session
 
       else
         $out.error 'Unknown collection: '+collection
+        exit_code = 1
     end
     return exit_code
   end
@@ -290,7 +298,7 @@ class Session
     @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if @nodesProvider != "mdbci"
-      Generator.generate(path,configs,boxes,isOverride,nodesProvider)
+      exit_code = Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
       $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_template"
@@ -299,6 +307,7 @@ class Session
       mdbci = File.new(path+'/mdbci_template', 'w')
       mdbci.print $session.configFile
       mdbci.close
+      exit_code = 0
     end
     # write nodes provider and template to configuration nodes dir file
     provider_file = path+"/provider"
@@ -309,6 +318,8 @@ class Session
     if !File.exists?(template_file)
       File.open(path+"/template", 'w') { |f| f.write(configFile.to_s) }
     end
+
+    return exit_code
   end
 
   # Deploy configurations

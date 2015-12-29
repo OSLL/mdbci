@@ -490,6 +490,7 @@ def Generator.checkPath(path, override)
         vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
       end
       vagrant.puts Generator.vagrantConfigFooter
+      exit_code = 0
     else
         # Generate VBox/Qemu Configuration
         vagrant.puts Generator.vagrantConfigHeader
@@ -502,9 +503,11 @@ def Generator.checkPath(path, override)
           end
         end
         vagrant.puts Generator.vagrantConfigFooter
+        exit_code = 0
     end
 
     vagrant.close
+    return exit_code
   end
 
 end
