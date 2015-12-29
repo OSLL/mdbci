@@ -104,7 +104,7 @@ class Network
         end
       end
     else
-      Dir.chdir args[0]
+      Dir.chdir pwd.to_s+'/'+args[0]
 
       cmd = 'vagrant ssh-config '+args[1].to_s+ ' | grep IdentityFile '
       vagrant_out = `#{cmd}`
@@ -148,17 +148,17 @@ class Network
       end
     else # aws, vbox nodes
       network = Network.new
-      network.loadNodes args[0] # load nodes from dir
+      network.loadNodes pwd.to_s+'/'+args[0] # load nodes from dir
 
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
-          platform = $session.loadNodePlatformBy(node.name, pwd) 
+          platform = $session.loadNodePlatformBy(node.name)
           node.getIp(node.provider, platform, false)
           $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
-        platform = $session.loadNodePlatformBy(node.name, pwd)  
+        platform = $session.loadNodePlatformBy(node.name)
         node.getIp(node.provider, platform, false)
         $out.out node.ip.to_s
       end
@@ -202,17 +202,17 @@ class Network
       end
     else # aws, vbox nodes
       network = Network.new
-      network.loadNodes args[0] # load nodes from dir
+      network.loadNodes pwd.to_s+'/'+args[0] # load nodes from dir
 
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
-          platform = $session.loadNodePlatformBy(node.name, pwd)
+          platform = $session.loadNodePlatformBy(node.name)
           node.getIp(node.provider, platform, true)
           $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
-        platform = $session.loadNodePlatformBy(node.name, pwd)
+        platform = $session.loadNodePlatformBy(node.name)
         node.getIp(node.provider, platform, true)
         $out.out node.ip.to_s
       end

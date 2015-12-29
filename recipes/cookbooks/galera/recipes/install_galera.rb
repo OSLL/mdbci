@@ -7,7 +7,7 @@ include_recipe "galera::galera_repos"
 [
   "rsync", "sudo", "sed", 
   "coreutils", "util-linux", "curl", "grep", 
-  "findutils", "gawk", "iproute"
+  "findutils", "gawk", "iproute", "net-tools"
 ].each do |pkg|
   package pkg
 end
@@ -15,11 +15,7 @@ case node[:platform_family]
   when "rhel", "fedora", "centos"
     package "wget"
     if node[:platform] == "centos"
-      if node["platform_version"].to_f >= 7.0
-        execute "Install ifconfig" do
-          command "yum --assumeyes install net-tools"
-        end
-      elsif node["platform_version"].to_f >= 6.0 
+      if node["platform_version"].to_f >= 6.0 
         execute "add_socat_repo_centos_ge6" do
           command "wget -P /etc/yum.repos.d http://www.convirture.com/repos/definitions/rhel/6.x/convirt.repo"
         end
