@@ -282,6 +282,9 @@ class Session
     when 'install_repo'
       exit_code = NodeProduct.installProductRepo(ARGV.shift)
 
+    when 'update_repo'
+      exit_code = NodeProduct.updateProductRepo(ARGV.shift)
+
     else
       exit_code = 1
       puts 'ERR: Something wrong with command line'
