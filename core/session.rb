@@ -24,14 +24,17 @@ class Session
   attr_accessor :repos
   attr_accessor :repoDir
   attr_accessor :mdbciNodes       # mdbci nodes
+  attr_accessor :templateNodes
   attr_accessor :nodesProvider   # current configuration provider
   attr_accessor :attempts
   attr_accessor :mdbciDir
   attr_accessor :keyFile
+  attr_accessor :nodeProduct
 
   def initialize
     @repoDir = './repo.d'
     @mdbciNodes = Hash.new
+    @templateNodes = Hash.new
   end
 
 =begin
@@ -121,14 +124,23 @@ class Session
     return 0 # TODO: handle error, exception
   end
 
+  # load nodes template
+  def loadTemplateNodes()
+    pwd = Dir.pwd
+    instanceFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read(pwd+'/template')}
+    $out.info 'Load nodes from template file ' + instanceFile.to_s
+    @templateNodes = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(IO.read(@mdbciDir+'/'+instanceFile))}
+    if @templateNodes.has_key?('cookbook_path') ; @templateNodes.delete('cookbook_path') ; end
+    if @templateNodes.has_key?('aws_config') ; @templateNodes.delete('aws_config') ; end
+  end
   # load mdbci nodes
   def loadMdbciNodes(path)
     templateFile = $exception_handler.handle('MDBCI configuration file not found') {IO.read(path+'/mdbci_template')}
-    $out.info 'Read template file ' + templateFile.to_s
+    $out.info 'Load mdbci nodes from template file ' + templateFile.to_s
     @mdbciNodes =  $exception_handler.handle('MDBCI configuration file invalid') {JSON.parse(IO.read(templateFile))}
     # delete cookbook_path and aws_config
-    if @mdbciNodes.has_key?("cookbook_path") ; @mdbciNodes.delete("cookbook_path") ; end
-    if @mdbciNodes.has_key?("aws_config") ; @mdbciNodes.delete("aws_config") ; end
+    if @mdbciNodes.has_key?('cookbook_path') ; @mdbciNodes.delete('cookbook_path') ; end
+    if @mdbciNodes.has_key?('aws_config') ; @mdbciNodes.delete('aws_config') ; end
   end
 
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
@@ -267,6 +279,9 @@ class Session
     when 'public_keys'
       exit_code = $session.publicKeys(ARGV.shift)
 
+    when 'install_repo'
+      exit_code = NodeProduct.installProductRepo(ARGV.shift)
+
     else
       exit_code = 1
       puts 'ERR: Something wrong with command line'
@@ -281,7 +296,7 @@ class Session
       box = node[1]['box'].to_s
       if !box.empty?
         box_params = boxes[box]
-        @nodesProvider = box_params["provider"].to_s
+        @nodesProvider = box_params['provider'].to_s
       end
     end
   end
@@ -306,7 +321,7 @@ class Session
       exit_code = Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
-      $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_template"
+      $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_template'
       # TODO: dir already exist?
       Dir.mkdir path unless File.exists? path
       mdbci = File.new(path+'/mdbci_template', 'w')
@@ -315,13 +330,13 @@ class Session
       exit_code = 0
     end
     # write nodes provider and template to configuration nodes dir file
-    provider_file = path+"/provider"
+    provider_file = path+'/provider'
     if !File.exists?(provider_file)
-      File.open(path+"/provider", 'w') { |f| f.write(@nodesProvider.to_s) }
+      File.open(path+'/provider', 'w') { |f| f.write(@nodesProvider.to_s) }
     end
-    template_file = path+"/template"
+    template_file = path+'/template'
     if !File.exists?(template_file)
-      File.open(path+"/template", 'w') { |f| f.write(configFile.to_s) }
+      File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }
     end
 
     return exit_code

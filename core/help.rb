@@ -31,13 +31,21 @@ mdbci [option] <show | setup | generate>
 -a --attempts
   Deploy configuration or node
 
+-k --key
+  Key file for publicKeys command
+
+-p --product
+  Product name for install_repo, update_repo commands
+
 COMMANDS:
   show [boxes, platforms, versions, network, repos [config | config/node], keyfile config/node ]
   generate
   setup [boxes]
   sudo --command 'command arguments' config/node
   ssh --command 'command arguments' config/node
-  up [--attempts 'attempts arguments'] config | config/node 
+  up [--attempts 'attempts arguments'] config | config/node
+  public_keys --key <keyfile> config/node
+  install_repo --product <profuct_name> config/node
 
 EXAMPLES:
   mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
