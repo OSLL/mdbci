@@ -418,8 +418,8 @@ class Session
    	        exit_code = wthr.value.exitstatus # error
 	          $out.info 'UP ERROR, exit code '+exit_code.to_s
 	        else
-  	        exit_code = 0 # success
-            $out.info 'UP SUCCESS, exit code '+exit_code.to_s
+  	        $out.info 'UP SUCCESS, exit code '+exit_code.to_s
+            return 0 # success
           end
   	    end
       }
