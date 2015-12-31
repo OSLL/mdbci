@@ -381,13 +381,13 @@ class Session
             $out.error 'Bringing up failed'
             stderr.each_line { |line| $out.error line }
             stderr.close
-   	    exit_code = wthr.value.exitstatus # error
-	    $out.info 'UP ERROR, exit code '+exit_code.to_s
-	  else
-  	    exit_code = 0 # success
-            $out.info 'UP SUCCESS, exit code '+exit_code.to_s
+   	        exit_code = wthr.value.exitstatus # error
+	          $out.info 'UP ERROR, exit code '+exit_code.to_s
+	        else
+  	        $out.info 'UP SUCCESS, exit code '+exit_code.to_s
+            return 0 # success
           end
-  	end
+  	    end
       }
     end
     Dir.chdir pwd
