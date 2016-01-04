@@ -374,15 +374,15 @@ class Session
   end
 
   # load node platform by name
-  def loadNodePlatformBy(name, config_dir)
+  def loadNodePlatformBy(name)
 
     pwd = Dir.pwd
     # boxes.json
-    boxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read(config_dir.to_s+"/boxes.json")}
+    boxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read(@mdbciDir.to_s+"/boxes.json")}
     $session.boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(boxesFile)}
     # template file
     templateFile = $exception_handler.handle('template file not found') {IO.read(pwd.to_s+'/template')}
-    templateNodes =  $exception_handler.handle('template configuration file invalid') {JSON.parse(IO.read(config_dir.to_s+"/"+templateFile))}
+    templateNodes =  $exception_handler.handle('template configuration file invalid') {JSON.parse(IO.read(@mdbciDir.to_s+"/"+templateFile))}
     #
     node = templateNodes.find { |elem| elem[0].to_s == name }
     box = node[1]['box'].to_s
