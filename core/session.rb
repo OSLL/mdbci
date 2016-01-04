@@ -225,11 +225,41 @@ class Session
         showBoxKeys
 
       when 'provider'
-        showProvider(ARGV.shift)
+        exit_code = showProvider(ARGV.shift)
 
       else
         $out.error 'Unknown collection: '+collection
     end
+    return exit_code
+  end
+
+  # all mdbci commands swith
+  def commands
+    case ARGV.shift
+    when 'show'
+      exit_code = $session.show(ARGV.shift)
+
+    when 'sudo'
+      exit_code = $session.sudo(ARGV.shift)
+
+    when 'ssh'
+      exit_code = $session.ssh(ARGV.shift)
+
+    when 'setup'
+      exit_code = $session.setup(ARGV.shift)
+
+    when 'generate'
+      exit_code = $session.generate(ARGV.shift)
+
+    when 'up'
+      exit_code = $session.up(ARGV.shift)
+
+    else
+      exit_code = 1
+      puts 'ERR: Something wrong with command line'
+      Help.display
+    end
+    return exit_code
   end
 
   # load mdbci boxes parameters from boxes.json
@@ -285,12 +315,12 @@ class Session
   def up(args)
 
     std_q_attampts = 10
-    std_err_val = 1
+    exit_code = 1 # error
 
     # No arguments provided
     if args.nil?
       $out.info 'Command \'up\' needs one argument, found zero'
-      return std_err_val
+      return
     end
 
     # No attempts provided
@@ -347,18 +377,21 @@ class Session
           stdin.close
           stdout.each_line { |line| $out.info line }
           stdout.close
-          if wthr.value.success?
-            Dir.chdir pwd
-            return 0
+          if !wthr.value.success?
+            $out.error 'Bringing up failed'
+            stderr.each_line { |line| $out.error line }
+            stderr.close
+   	        exit_code = wthr.value.exitstatus # error
+	          $out.info 'UP ERROR, exit code '+exit_code.to_s
+	        else
+  	        exit_code = 0 # success
+            $out.info 'UP SUCCESS, exit code '+exit_code.to_s
           end
-          $out.error 'Bringing up failed'
-          stderr.each_line { |line| $out.error line }
-          stderr.close
-        end
+  	    end
       }
-      Dir.chdir pwd
-      return std_err_val
     end
+    Dir.chdir pwd
+    return exit_code
   end
 
   def showProvider(name)
@@ -368,9 +401,12 @@ class Session
       box_params = $session.boxes[name]
       provider = box_params["provider"].to_s
       $out.out provider
+      exit_code = 0
     else
+      exit_code = 1
       $out.warning name.to_s+" box does not exist! Please, check box name!"
     end
+    return exit_code
   end
 
   # load node platform by name
