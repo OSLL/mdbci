@@ -1,5 +1,10 @@
 include_recipe "mariadb-maxscale::maxscale_repos"
 
+# install default packages
+[ "net-tools" ].each do |pkg|
+  package pkg
+end
+
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
   # TODO: centos7 don't have selinux
