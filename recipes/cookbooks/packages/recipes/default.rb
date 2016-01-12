@@ -13,7 +13,7 @@
 case node[:platform_family]
   when "debian", "ubuntu"
     execute "install net-tools" do
-      command "yum --assumeyes install net-tools"
+      command "apt-get -y install net-tools"
     end
   when "rhel", "fedora", "centos"
     execute "install net-tools" do
@@ -21,7 +21,7 @@ case node[:platform_family]
     end
   when "suse", "sles"
     execute "install net-tools" do
-      command "yum --assumeyes install net-tools"
+      command "zypper install -y net-tools"
     end
   else
     execute "wrong platform" do 

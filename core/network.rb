@@ -43,7 +43,7 @@ class Network
 =end
 
     count = 0
-    provider = ["virtualbox", "aws", "mdbci", "libvirt", "docker"]
+    provider = ["virtualbox", "aws", "libvirt", "docker"]
     list.each do |line|
       provider.each do |item|
         count += 1 if line.to_s.include?(item)
@@ -78,31 +78,31 @@ class Network
       if args[1].nil?
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
-          box_params = $session.boxes[box]
+          box_params = $session.boxes.getBox(box)
           $out.info 'Node: ' + node[0].to_s
           if File.exist?(pwd+'/KEYS/'+box_params['keyfile'].to_s) 
             $out.out pwd+'/KEYS/'+box_params['keyfile'].to_s
           else
-            $out.warning box_params['keyfile'].to_s+" keyfile not found!"
+            $out.warning box_params['keyfile'].to_s+" not found!"
           end
         end
       else
         if $session.mdbciNodes.has_key?(args[1])
           mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
           box = mdbci_node[1]['box'].to_s
-          mdbci_params = $session.boxes[box]  
+          mdbci_params = $session.boxes.getBox(box)
           $out.info 'Node: ' + args[1].to_s
           if File.exist?(pwd+'/KEYS/'+mdbci_params['keyfile'].to_s) 
             $out.out pwd+'/KEYS/'+mdbci_params['keyfile'].to_s
           else
-            $out.warning mdbci_params['keyfile'].to_s+" keyfile not found!"
+            $out.warning mdbci_params['keyfile'].to_s+" not found!"
           end
         else
           $out.warning args[1].to_s+" mdbci node not found!"
         end
       end
     else
-      Dir.chdir args[0]
+      Dir.chdir pwd.to_s+'/'+args[0]
 
       cmd = 'vagrant ssh-config '+args[1].to_s+ ' | grep IdentityFile '
       vagrant_out = `#{cmd}`
@@ -130,7 +130,7 @@ class Network
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           if !box.empty?
-            box_params = $session.boxes[box]
+            box_params = $session.boxes.getBox(box)
             $out.info 'Node: ' + node[0].to_s
             $out.out box_params['IP'].to_s
           end
@@ -139,24 +139,24 @@ class Network
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
-          mdbci_params = $session.boxes[box]
+          mdbci_params = $session.boxes.getBox(box)
           $out.info 'Node: ' + args[1].to_s
           $out.out mdbci_params['IP'].to_s
         end
       end
     else # aws, vbox nodes
       network = Network.new
-      network.loadNodes args[0] # load nodes from dir
+      network.loadNodes pwd.to_s+'/'+args[0] # load nodes from dir
 
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
-          platform = $session.loadNodePlatformBy(node.name, pwd) 
+          platform = $session.loadNodePlatformBy(node.name)
           node.getIp(node.provider, platform, false)
           $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
-        platform = $session.loadNodePlatformBy(node.name, pwd)  
+        platform = $session.loadNodePlatformBy(node.name)
         node.getIp(node.provider, platform, false)
         $out.out node.ip.to_s
       end
@@ -184,7 +184,7 @@ class Network
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           if !box.empty?
-            box_params = $session.boxes[box]
+            box_params = $session.boxes.getBox(box)
             $out.info 'Node: ' + node[0].to_s
             $out.out box_params['IP'].to_s
           end
@@ -193,24 +193,24 @@ class Network
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
-          mdbci_params = $session.boxes[box]
+          mdbci_params = $session.boxes.getBox(box)
           $out.info 'Node: ' + args[1].to_s
           $out.out mdbci_params['IP'].to_s
         end
       end
     else # aws, vbox nodes
       network = Network.new
-      network.loadNodes args[0] # load nodes from dir
+      network.loadNodes pwd.to_s+'/'+args[0] # load nodes from dir
 
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
-          platform = $session.loadNodePlatformBy(node.name, pwd)
+          platform = $session.loadNodePlatformBy(node.name)
           node.getIp(node.provider, platform, true)
           $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
-        platform = $session.loadNodePlatformBy(node.name, pwd)
+        platform = $session.loadNodePlatformBy(node.name)
         node.getIp(node.provider, platform, true)
         $out.out node.ip.to_s
       end

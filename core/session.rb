@@ -5,7 +5,9 @@ require 'open3'
 
 require_relative 'generator'
 require_relative 'network'
+require_relative 'boxes_manager'
 require_relative 'repo_manager'
+
 
 class Session
 
@@ -25,9 +27,11 @@ class Session
   attr_accessor :mdbciNodes       # mdbci nodes
   attr_accessor :nodesProvider   # current configuration provider
   attr_accessor :attempts
+  attr_accessor :boxesDir
   attr_accessor :mdbciDir
 
   def initialize
+    @boxesDir = './BOXES'
     @repoDir = './repo.d'
     @mdbciNodes = Hash.new
   end
@@ -44,10 +48,8 @@ class Session
 
     @mdbciDir = Dir.pwd
 
-    $out.info 'Load boxes from ' + $session.boxesFile
-    boxesFileContent = $exception_handler.handle('BOXES configuration file not found'){IO.read($session.boxesFile)}
-    @boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(boxesFileContent)}
-    $out.info 'Found boxes: ' + $session.boxes.size().to_s
+    $out.info 'Load Boxes from '+$session.boxesDir
+    @boxes = BoxesManager.new($session.boxesDir)
 
     $out.info 'Load AWS config from ' + @awsConfigFile
     @awsConfig = $exception_handler.handle('AWS configuration file not found') {YAML.load_file(@awsConfigFile)['aws']}
@@ -55,16 +57,13 @@ class Session
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
 
-    # TODO: Load vbox and aws nodes params to runtime variables
-
-
   end
 
   def setup(what)
     case what
       when 'boxes'
         $out.info 'Adding boxes to vagrant'
-        @boxes.each do |key, value|
+        @boxes.boxesManager.each do |key, value|
           next if value['provider'] == "aws" # skip 'aws' block
           # TODO: add aws dummy box
           # vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
@@ -126,8 +125,6 @@ class Session
   end
 
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
-  #     VBox, AWS: ./mdbci ssh --command "touch file.txt" config_dir/node0 --silent
-  #     MDBCI PPC64: ./mdbci ssh --command "touch file.txt" config_dir or config_dir/node0
   def ssh(args)
 
     pwd = Dir.pwd
@@ -146,7 +143,7 @@ class Session
         @mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           if !box.empty?
-            mdbci_box_params = $session.boxes[box]
+            mdbci_box_params = $session.boxes.getBox(box)
             cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_box_params['keyfile'].to_s + " "\
                             + mdbci_box_params['user'].to_s + "@"\
                             + mdbci_box_params['IP'].to_s + " "\
@@ -160,7 +157,7 @@ class Session
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == params[1] }
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
-          mdbci_params = $session.boxes[box]
+          mdbci_params = $session.boxes.getBox(box)
           cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                           + mdbci_params['user'].to_s + "@"\
                           + mdbci_params['IP'].to_s + " "\
@@ -186,13 +183,13 @@ class Session
 
 
   def platformKey(box_name)
-    key = @boxes.keys.select {|value| value == box_name }
-    return key.nil? ? "UNKNOWN" : @boxes[key[0]]['platform'] + '^' +@boxes[key[0]]['platform_version']
+    key = $session.boxes.boxesManager.keys.select {|value| value == box_name }
+    return key.nil? ? "UNKNOWN" : $session.boxes.boxesManager[key[0]]['platform']+'^'+$session.boxes.boxesManager[key[0]]['platform_version']
   end
 
 
   def showBoxKeys
-    @boxes.values.each do |value|
+    $session.boxes.boxesManager.values.each do |value|
       $out.out value['$key']
     end
   end
@@ -225,11 +222,12 @@ class Session
         showBoxKeys
 
       when 'provider'
-        showProvider(ARGV.shift)
+        exit_code = showProvider(ARGV.shift)
 
       else
         $out.error 'Unknown collection: '+collection
     end
+    return exit_code
   end
 
   # all mdbci commands swith
@@ -239,16 +237,16 @@ class Session
       exit_code = $session.show(ARGV.shift)
 
     when 'sudo'
-      exit_code =$session.sudo(ARGV.shift)
+      exit_code = $session.sudo(ARGV.shift)
 
     when 'ssh'
-      exit_code =$session.ssh(ARGV.shift)
+      exit_code = $session.ssh(ARGV.shift)
 
     when 'setup'
-      exit_code =$session.setup(ARGV.shift)
+      exit_code = $session.setup(ARGV.shift)
 
     when 'generate'
-      exit_code =$session.generate(ARGV.shift)
+      exit_code = $session.generate(ARGV.shift)
 
     when 'up'
       exit_code = $session.up(ARGV.shift)
@@ -258,7 +256,6 @@ class Session
       puts 'ERR: Something wrong with command line'
       Help.display
     end
-
     return exit_code
   end
 
@@ -267,7 +264,7 @@ class Session
     configs.each do |node|
       box = node[1]['box'].to_s
       if !box.empty?
-        box_params = boxes[box]
+        box_params = @boxes.getBox(box)
         @nodesProvider = box_params["provider"].to_s
       end
     end
@@ -289,11 +286,11 @@ class Session
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
     @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
-    if @nodesProvider != "mdbci"
+    if @nodesProvider != 'mdbci'
       Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
-      $out.info "Using mdbci ppc64 box definition, generating config in " + path + "/mdbci_template"
+      $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_template'
       # TODO: dir already exist?
       Dir.mkdir path unless File.exists? path
       mdbci = File.new(path+'/mdbci_template', 'w')
@@ -301,13 +298,13 @@ class Session
       mdbci.close
     end
     # write nodes provider and template to configuration nodes dir file
-    provider_file = path+"/provider"
+    provider_file = path+'/provider'
     if !File.exists?(provider_file)
-      File.open(path+"/provider", 'w') { |f| f.write(@nodesProvider.to_s) }
+      File.open(path+'/provider', 'w') { |f| f.write(@nodesProvider.to_s) }
     end
-    template_file = path+"/template"
-    if !File.exists?(template_file)
-      File.open(path+"/template", 'w') { |f| f.write(configFile.to_s) }
+    if @nodesProvider != 'mdbci'
+      template_file = path+'/template'
+      if !File.exists?(template_file); File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }; end
     end
   end
 
@@ -396,32 +393,31 @@ class Session
   end
 
   def showProvider(name)
-    boxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read($session.boxesFile)}
-    $session.boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(boxesFile)}
-    if $session.boxes.has_key?(name)
-      box_params = $session.boxes[name]
+    if $session.boxes.boxesManager.has_key?(name)
+      box_params = $session.boxes.getBox(name)
       provider = box_params["provider"].to_s
       $out.out provider
+      exit_code = 0
     else
+      exit_code = 1
       $out.warning name.to_s+" box does not exist! Please, check box name!"
     end
+    return exit_code
   end
 
+  # TODO: refactoring this function!
   # load node platform by name
-  def loadNodePlatformBy(name, config_dir)
+  def loadNodePlatformBy(name)
 
     pwd = Dir.pwd
-    # boxes.json
-    boxesFile = $exception_handler.handle('BOXES configuration file not found') {IO.read(config_dir.to_s+"/boxes.json")}
-    $session.boxes = $exception_handler.handle('BOXES configuration file invalid'){JSON.parse(boxesFile)}
     # template file
-    templateFile = $exception_handler.handle('template file not found') {IO.read(pwd.to_s+'/template')}
-    templateNodes =  $exception_handler.handle('template configuration file invalid') {JSON.parse(IO.read(config_dir.to_s+"/"+templateFile))}
+    templateFile = $exception_handler.handle('Template nodes file not found') {IO.read(pwd.to_s+'/template')}
+    templateNodes =  $exception_handler.handle('Template configuration file invalid') {JSON.parse(IO.read(@mdbciDir.to_s+"/"+templateFile))}
     #
     node = templateNodes.find { |elem| elem[0].to_s == name }
     box = node[1]['box'].to_s
-    if $session.boxes.has_key?(box)
-      box_params = $session.boxes[box]
+    if $session.boxes.boxesManager.has_key?(box)
+      box_params = $session.boxes.getBox(box)
       platform = box_params["platform"].to_s
       return platform
     else

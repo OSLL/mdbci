@@ -53,7 +53,6 @@ require 'yaml'
     EOF
   end
 
-
   def Generator.providerConfig
     config = <<-EOF
 
@@ -65,7 +64,6 @@ config.vm.network "private_network", type: "dhcp"
 config.vm.boot_timeout = 60
     EOF
   end
-
 
   def Generator.vagrantConfigHeader
 
@@ -97,9 +95,9 @@ Vagrant.configure(2) do |config|
   def Generator.getVmDef(cookbook_path, name, host, boxurl, vm_mem, template_path, provisioned)
 
     if template_path
-      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote("/home/vagrant/cnf_templates")
+      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates')
     else
-      templatedef = ""
+      templatedef = ''
     end
 
     if provisioned
@@ -132,20 +130,20 @@ Vagrant.configure(2) do |config|
   def Generator.getQemuDef(cookbook_path, name, host, boxurl, template_path, provisioned)
 
     if template_path
-      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote("/home/vagrant/cnf_templates") \
-                    +", type:"+quote("rsync")
+      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates') \
+                    +", type:"+quote('rsync')
     else
-      templatedef = ""
+      templatedef = ''
     end
 
     if provisioned
       vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) +"\n" \
-            + "\t"+name+'.vm.synced_folder '+quote("./")+", "+quote("/vagrant")+", type: "+quote("rsync")+"\n" \
+            + "\t"+name+'.vm.synced_folder '+quote('./')+", "+quote('/vagrant')+", type: "+quote('rsync')+"\n" \
             + templatedef  + "\n"\
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
-            + "\t\t"+'qemu.driver = ' + quote("kvm") + "\n\tend" \
+            + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n\tend" \
             + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
@@ -156,7 +154,7 @@ Vagrant.configure(2) do |config|
             + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
             + templatedef + "\n"\
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
-            + "\t\t"+'qemu.driver = ' + quote("kvm") + "\n\tend"
+            + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n\tend"
     end
 
     vmdef += "\nend # <-- end of Qemu definition>\n"
@@ -240,7 +238,8 @@ Vagrant.configure(2) do |config|
 
     if template_path
       mountdef = "\t" + name + ".vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync")
-    else mountdef = ""
+    else
+      mountdef = ''
     end
 
     awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
@@ -378,7 +377,9 @@ def Generator.checkPath(path, override)
   end
 
   def Generator.boxValid?(box, boxes)
-    !boxes[box].nil?
+    if !box.empty?
+      !boxes.getBox(box).nil?
+    end
   end
 
   def Generator.nodeDefinition(node, boxes, path, cookbook_path)
@@ -398,16 +399,16 @@ def Generator.checkPath(path, override)
 
     box = node[1]['box'].to_s
     if !box.empty?
-      box_params = boxes[box]
+      box_params = boxes.getBox(box)
 
-      provider = box_params["provider"].to_s
+      provider = box_params['provider'].to_s
       case provider
-        when "aws"
+        when 'aws'
           amiurl = box_params['ami'].to_s
           user = box_params['user'].to_s
           instance = box_params['default_instance_type'].to_s
           $out.info 'AWS definition for host:'+host+', ami:'+amiurl+', user:'+user+', instance:'+instance
-        when "mdbci"
+        when 'mdbci'
           box_params.each do |key, value|
             $session.nodes[key] = value
           end
@@ -442,10 +443,10 @@ def Generator.checkPath(path, override)
           machine = getDockerDef(cookbook_path, name, template_path, provisioned)
           copyDockerfiles(path, name, platform, platform_version)
         else
-          $out.warning 'WARNING: Configuration has not support AWS, config file or other vm provision'
+          $out.warning 'Configuration type invalid! It must be vbox, aws, libvirt or docker type. Check it, please!'
       end
     else
-      $out.warning 'WARNING: Box '+box+'is not installed or configured ->SKIPPING'
+      $out.warning 'Box '+box+'is not installed or configured ->SKIPPING'
     end
 
     # box with mariadb, maxscale provision - create role

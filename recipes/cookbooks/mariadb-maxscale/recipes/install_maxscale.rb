@@ -1,5 +1,10 @@
 include_recipe "mariadb-maxscale::maxscale_repos"
 
+# install default packages
+[ "net-tools" ].each do |pkg|
+  package pkg
+end
+
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
   # TODO: centos7 don't have selinux
@@ -63,34 +68,20 @@ end
 
 # iptables rules
 case node[:platform_family]
-  when "debian", "ubuntu", "rhel", "fedora", "centos", "suse"
-    
-    ports = ["3306", "4006", "4008", "4009", "4016", "5306", "4442", "6444", "6603"]
-    ports.each do |port|
-      iptables_cmd = "iptables -I INPUT -p tcp -m tcp --dport "+ port +" -j ACCEPT"
-      execute "Opening MariaDB-Maxscale ports." do
-        command iptables_cmd
+  when "debian", "ubuntu", "rhel", "fedora", "centos", "suse", "opensuse"  
+    ["3306", "4006", "4008", "4009", "4016", "5306", "4442", "6444", "6603"].each do |port|
+      execute "Open port #{port}" do
+        command "iptables -I INPUT -p tcp -m tcp --dport "+ port +" -j ACCEPT"
+	command "iptables -I INPUT -p tcp --dport "+ port +" -j ACCEPT -m state --state NEW"
       end
     end
-
-    execute "Opening MariaDB-Maxscale ports.." do
-      command "iptables -I INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
-    end
-    
-    ports.each do |port|
-      iptables_cmd = "iptables -I INPUT -p tcp --dport "+ port +" -j ACCEPT -m state --state NEW"
-      execute "Opening MariaDB-Maxscale ports..." do
-        command iptables_cmd
-      end
-    end
-
 end # iptables rules
 
 # TODO: check saving iptables rules after reboot
 # save iptables rules
 case node[:platform_family]
   when "debian", "ubuntu"
-    execute "Save MariaDB iptables rules" do
+    execute "Save iptables rules" do
       command "iptables-save > /etc/iptables/rules.v4"
       #command "/usr/sbin/service iptables-persistent save"
     end
@@ -110,8 +101,8 @@ case node[:platform_family]
       end
     end
     # service iptables restart
-  when "suse"
-    execute "Save MariaDB iptables rules" do
+  when "suse", "opensuse"
+    execute "Save iptables rules" do
       command "iptables-save > /etc/sysconfig/iptables"
     end
 end # save iptables rules
