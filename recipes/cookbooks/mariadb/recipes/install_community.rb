@@ -42,16 +42,6 @@ end
 
 system 'echo Platform family: '+node[:platform_family]
 
-# install ifconfig
-case node[:platform_family]
-  when "rhel", "centos"
-    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
-      execute "Install ifconfig" do
-        command "yum --assumeyes install net-tools"
-      end
-    end
-end
-
 # check and install iptables
 case node[:platform_family]
   when "debian", "ubuntu"
