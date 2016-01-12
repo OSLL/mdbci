@@ -83,36 +83,22 @@ case node[:platform_family]
     end
 end
 
-# iptables rules
+# iptables ports
 case node[:platform_family]
   when "debian", "ubuntu", "rhel", "fedora", "centos", "suse"
-
-    ports = ["4567", "4568", "4444", "3306", "4006", "4008", "4009", "4442", "6444"]
-    ports.each do |port|
-      iptables_cmd = "iptables -I INPUT -p tcp -m tcp --dport "+ port +" -j ACCEPT"
-      execute "Opening MariaDB ports." do
-        command iptables_cmd
+    ["4567", "4568", "4444", "3306", "4006", "4008", "4009", "4442", "6444"].each do |port|
+      execute "Open port #{port}" do
+        command "iptables -I INPUT -p tcp -m tcp --dport "+port+" -j ACCEPT"
+        command "iptables -I INPUT -p tcp --dport "+ port +" -j ACCEPT -m state --state NEW"
       end
     end
-
-    execute "Opening MariaDB ports.." do
-      command "iptables -I INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
-    end
-    
-    ports.each do |port|
-      iptables_cmd = "iptables -I INPUT -p tcp --dport "+ port +" -j ACCEPT -m state --state NEW"
-      execute "Opening MariaDB ports..." do
-        command iptables_cmd
-      end
-    end
-
-end # iptables rules
+end # iptables ports
 
 # TODO: check saving iptables rules after reboot
 # save iptables rules
 case node[:platform_family]
   when "debian", "ubuntu"
-    execute "Save MariaDB iptables rules" do
+    execute "Save iptables rules" do
       command "iptables-save > /etc/iptables/rules.v4"
       #command "/usr/sbin/service iptables-persistent save"
     end
@@ -133,7 +119,7 @@ case node[:platform_family]
     end
     # service iptables restart
   when "suse"
-    execute "Save MariaDB iptables rules" do
+    execute "Save iptables rules" do
       command "iptables-save > /etc/sysconfig/iptables"
     end
 end # save iptables rules

@@ -56,8 +56,8 @@ opts.each do |opt, arg|
     when '--repo-dir'
       $session.repoDir = arg
 
-	  when '--attempts'
-	    $session.attempts = arg
+    when '--attempts'
+      $session.attempts = arg
 
     when '--product'
       if arg != ''; $session.nodeProduct = arg; end
@@ -79,24 +79,6 @@ $out.info 'mdbci called with: '+ARGV.to_s
 $session.checkConfig
 $session.loadCollections
 
-case ARGV.shift
-  when 'show'
-    $session.show(ARGV.shift)
-  when 'sudo'
-    $session.sudo(ARGV.shift)
-  when 'ssh'
-    $session.ssh(ARGV.shift)
-  when 'setup'
-    $session.setup(ARGV.shift)
-  when 'generate'
-    $session.generate(ARGV.shift)
-  when 'install_repo'
-    NodeProduct.installProductRepo(ARGV.shift)
-  when 'update_repo'
-    NodeProduct.updateProductRepo(ARGV.shift)
-  when 'up'
-    $session.up(ARGV.shift)
-  else
-    puts 'ERR: Something wrong with command line'
-    Help.display
-end
+# run commands and return 0 for success, 1 for error
+exit_code = $session.commands
+if exit_code != 0; exit 1; else; 0; end

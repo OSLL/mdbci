@@ -1,0 +1,62 @@
+{
+  "debian" : {
+    "provider": "virtualbox",
+    "box": "https://atlas.hashicorp.com/chef/boxes/debian-7.4/versions/1.0.0/providers/virtualbox.box",
+    "platform": "debian",
+    "platform_version": "wheezy"
+  },
+  "ubuntu_trusty": {
+    "provider": "virtualbox",
+    "box": "chef/ubuntu-14.04",
+    "platform": "ubuntu",
+    "platform_version": "trusty"
+  },
+  "ubuntu_utopic": {
+    "provider": "virtualbox",
+    "box": "chef/ubuntu-14.10",
+    "platform": "ubuntu",
+    "platform_version": "utopic"
+  },
+  "ubuntu_precise": {
+    "provider": "virtualbox",
+    "box": "chef/ubuntu-12.04",
+    "platform": "ubuntu",
+    "platform_version": "precise"
+  },
+  "centos6": {
+    "provider": "virtualbox",
+    "box": "bento/centos-6.7",
+    "platform": "centos",
+    "platform_version": "6"
+  },
+  "centos5": {
+    "provider": "virtualbox",
+    "box": "chef/centos-5.11",
+    "platform": "centos",
+    "platform_version": "5"
+  },
+  "deb_wheezy": {
+    "provider": "virtualbox",
+    "box": "chef/debian-7.8",
+    "platform": "debian",
+    "platform_version": "wheezy"
+  },
+  "deb_squeeze" : {
+    "provider": "virtualbox",
+    "box": "chef/debian-6.0.8",
+    "platform": "debian",
+    "platform_version": "squeeze"
+  },
+  "suse13.1": {
+    "provider": "virtualbox",
+    "box": "chef/opensuse-13.1",
+    "platform": "opensuse",
+    "platform_version": "13"
+  },
+  "suse13": {
+    "provider": "virtualbox",
+    "box": "webhippie/opensuse-13.2",
+    "platform": "opensuse",
+    "platform_version": "13"
+  }
+}

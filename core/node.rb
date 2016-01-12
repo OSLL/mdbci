@@ -39,7 +39,13 @@ class Node
       when '(virtualbox)'
         getInterfaceBoxIp(@name, "eth1", "inet addr:%s Bcast")
       when '(libvirt)'
-        if platform == "ubuntu"
+        if platform == "ubuntu" || platform == "debian"
+          getInterfaceBoxIp(@name, "eth0", "inet addr:%s  Bcast")
+        else
+          getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
+        end
+      when '(docker)'
+        if platform == "ubuntu" || platform == "debian"
           getInterfaceBoxIp(@name, "eth0", "inet addr:%s  Bcast")
         else
           getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
