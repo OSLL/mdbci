@@ -2,6 +2,10 @@ require 'shellwords'
 
 include_recipe "mariadb::mdbcrepos"
 
+# install default packages
+[ "net-tools" ].each do |pkg|
+  package pkg
+end
 
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0

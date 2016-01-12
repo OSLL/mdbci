@@ -78,22 +78,6 @@ $out.info 'mdbci called with: '+ARGV.to_s
 $session.checkConfig
 $session.loadCollections
 
-case ARGV.shift
-  when 'show'
-    $session.show(ARGV.shift)
-  when 'sudo'
-    $session.sudo(ARGV.shift)
-  when 'ssh'
-    $session.ssh(ARGV.shift)
-  when 'setup'
-    $session.setup(ARGV.shift)
-  when 'generate'
-    $session.generate(ARGV.shift)
-  when 'up'
-    $session.up(ARGV.shift)
-  when 'public_keys'
-    $session.publicKeys(ARGV.shift)
-  else
-    puts 'ERR: Something wrong with command line'
-    Help.display
-end
+# run commands and return 0 for success, 1 for error
+exit_code = $session.commands
+if exit_code != 0; exit 1; else; 0; end
