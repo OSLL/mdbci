@@ -1,0 +1,11 @@
+{
+  "cookbook_path" : "../recipes/cookbooks/",
+  "node0" :
+  {
+    "hostname" : "node0",
+    "box" : "centos6",
+    "product" : {
+      "name" : "maxscale"
+    }
+  }
+}
