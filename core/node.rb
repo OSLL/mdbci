@@ -44,21 +44,33 @@ class Node
     @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
   end
 
-  def getIp(provider, is_private)
+  def getIp(provider, platform, is_private)
     case provider
       when '(virtualbox)'
         getInterfaceBoxIp(@name, "eth1", "inet addr:%s Bcast")
+      when '(libvirt)'
+        if platform == "ubuntu" || platform == "debian"
+          getInterfaceBoxIp(@name, "eth0", "inet addr:%s  Bcast")
+        else
+          getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
+        end
+      when '(docker)'
+        if platform == "ubuntu" || platform == "debian"
+          getInterfaceBoxIp(@name, "eth0", "inet addr:%s  Bcast")
+        else
+          getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
+        end
       when '(aws)'
         if curlCheck
           if is_private
-            getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
+            cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["private_ip_service"]+'"'
           else
             cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["public_ip_service"]+'"'
-            vagrant_out = `#{cmd}`
-            ip = vagrant_out.scanf('%s')
-            # get ip from command output
-            @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')
-          end
+          end 
+          vagrant_out = `#{cmd}`
+          ip = vagrant_out.scanf('%s')
+          # get ip from command output
+          @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')
         else
           installCurl
         end

@@ -1,0 +1,14 @@
+[mysqld]
+#bind-address = 127.0.0.1
+server-id = 101
+relay_log = /var/lib/mysql/mysql-relay-bin
+relay-log-index = /var/lib/mysql/mysql-relay-bin.index
+log-error = /var/lib/mysql/mysql.err
+master-info-file = /var/lib/mysql/mysql-master.info
+relay-log-info-file = /var/lib/mysql/mysql-relay-log.info
+log-bin = /var/lib/mysql/mysql-bin
+binlog_format = ROW
+
+[mysqld_safe]
+log-error=/var/log/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid
