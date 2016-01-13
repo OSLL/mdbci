@@ -6,17 +6,26 @@ execute "Turn off SElinux" do
     command "echo " + node['mariadb']['cnf_template']
 end
 
+# install default packages
+[ "net-tools" ].each do |pkg|
+  package pkg
+end
 
-# TODO: BUG: #6309 Check if SElinux already disabled!
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
-#  execute "SElinux status" do
-#  	command "/usr/sbin/selinuxenabled && echo enabled || echo disabled"
-#	returns [1, 0]
-#  end
-  execute "Turn off SElinux" do
-      command "/usr/sbin/setenforce 0"
+  # TODO: centos7 don't have selinux
+  bash 'Turn off SElinux on CentOS >= 6.0' do
+  code <<-EOF
+    selinuxenabled && flag=enabled || flag=disabled
+    if [[ $flag == 'enabled' ]];
+    then
+      /usr/sbin/setenforce 0
+    else
+      echo "SElinux already disabled!"
+    fi
+  EOF
   end
+
   cookbook_file 'selinux.config' do
     path "/etc/selinux/config"
     action :create
@@ -36,6 +45,16 @@ if node['mariadb']['version'] == "5.1"
 end
 
 system 'echo Platform family: '+node[:platform_family]
+
+# install ifconfig
+case node[:platform_family]
+  when "rhel", "centos"
+    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
+      execute "Install ifconfig" do
+        command "yum --assumeyes install net-tools"
+      end
+    end
+end
 
 # check and install iptables
 case node[:platform_family]
@@ -85,9 +104,23 @@ case node[:platform_family]
       #command "/usr/sbin/service iptables-persistent save"
     end
   when "rhel", "centos", "fedora"
-    execute "Save MariaDB iptables rules" do
-      command "/sbin/service iptables save"
+    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
+      bash 'Save iptables rules on CentOS 7' do
+      code <<-EOF
+        iptables-save > /etc/sysconfig/iptables
+      EOF
+      end
+    else
+      bash 'Save iptables rules on CentOS >= 6.0' do
+      code <<-EOF
+        /sbin/service iptables save
+      EOF
+      end
     end
+    # TODO: don't work centos7 docker
+    #execute "Save MariaDB iptables rules" do
+    #  command "service iptables save"
+    #end
     # service iptables restart
   when "suse"
     execute "Save MariaDB iptables rules" do
@@ -115,6 +148,7 @@ else
   package 'MariaDB-client'
 end
 
+
 # cnf_template configuration
 case node[:platform_family]
 
@@ -125,7 +159,7 @@ case node[:platform_family]
       command createcmd
     end
 
-    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/mysql/my.cnf.d'
+    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/mysql/my.cnf.d/'
     execute "Copy mdbci_server.cnf to cnf_template directory" do
       command copycmd
     end

@@ -7,7 +7,7 @@ include_recipe "galera::galera_repos"
 [
   "rsync", "sudo", "sed", 
   "coreutils", "util-linux", "curl", "grep", 
-  "findutils", "gawk", "iproute"
+  "findutils", "gawk", "iproute", "net-tools"
 ].each do |pkg|
   package pkg
 end
@@ -29,14 +29,24 @@ case node[:platform_family]
   else # debian, suse
     package "netcat"
 end
-package"socat"
+package "socat"
 
 
 # Turn off SElinux
-if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0 
-  execute "Turn off SElinux" do
-    command "setenforce 0"
+if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
+  # TODO: centos7 don't have selinux
+  bash 'Turn off SElinux on CentOS >= 6.0' do
+  code <<-EOF
+    selinuxenabled && flag=enabled || flag=disabled
+    if [[ $flag == 'enabled' ]];
+    then
+      /usr/sbin/setenforce 0
+    else
+      echo "SElinux already disabled!"
+    fi
+  EOF
   end
+
   cookbook_file 'selinux.config' do
     path "/etc/selinux/config"
     action :create
@@ -73,46 +83,43 @@ case node[:platform_family]
     end
 end
 
-# iptables rules
+# iptables ports
 case node[:platform_family]
   when "debian", "ubuntu", "rhel", "fedora", "centos", "suse"
-
-    ports = ["4567", "4568", "4444", "3306", "4006", "4008", "4009", "4442", "6444"]
-    ports.each do |port|
-      iptables_cmd = "iptables -I INPUT -p tcp -m tcp --dport "+ port +" -j ACCEPT"
-      execute "Opening MariaDB ports." do
-        command iptables_cmd
+    ["4567", "4568", "4444", "3306", "4006", "4008", "4009", "4442", "6444"].each do |port|
+      execute "Open port #{port}" do
+        command "iptables -I INPUT -p tcp -m tcp --dport "+port+" -j ACCEPT"
+        command "iptables -I INPUT -p tcp --dport "+ port +" -j ACCEPT -m state --state NEW"
       end
     end
-
-    execute "Opening MariaDB ports.." do
-      command "iptables -I INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT"
-    end
-    
-    ports.each do |port|
-      iptables_cmd = "iptables -I INPUT -p tcp --dport "+ port +" -j ACCEPT -m state --state NEW"
-      execute "Opening MariaDB ports..." do
-        command iptables_cmd
-      end
-    end
-
-end # iptables rules
+end # iptables ports
 
 # TODO: check saving iptables rules after reboot
 # save iptables rules
 case node[:platform_family]
   when "debian", "ubuntu"
-    execute "Save MariaDB iptables rules" do
+    execute "Save iptables rules" do
       command "iptables-save > /etc/iptables/rules.v4"
       #command "/usr/sbin/service iptables-persistent save"
     end
   when "rhel", "centos", "fedora"
-    execute "Save MariaDB iptables rules" do
-      command "/sbin/service iptables save"
+    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
+      bash 'Save iptables rules on CentOS 7' do
+      code <<-EOF
+        # TODO: use firewalld
+        iptables-save > /etc/sysconfig/iptables
+      EOF
+      end
+    else
+      bash 'Save iptables rules on CentOS >= 6.0' do
+      code <<-EOF
+        /sbin/service iptables save
+      EOF
+      end
     end
     # service iptables restart
   when "suse"
-    execute "Save MariaDB iptables rules" do
+    execute "Save iptables rules" do
       command "iptables-save > /etc/sysconfig/iptables"
     end
 end # save iptables rules
@@ -136,11 +143,15 @@ case node[:platform_family]
   when "rhel", "fedora", "centos"
     system 'echo shell install on: '+node[:platform_family]
     if node['galera']['version'] == "10.1"
-      execute "install" do
+      execute "install galera 10.1" do
         command "yum --assumeyes -c /etc/yum.repos.d/galera.repo install MariaDB-server"
       end
+    elsif node['galera']['version'] == "10.0"
+      execute "install galera 10.0" do
+        command "yum --assumeyes -c /etc/yum.repos.d/galera.repo install MariaDB-Galera-server && yum --assumeyes install galera"
+      end
     else
-      execute "install" do
+      execute "install galera" do
         command "yum --assumeyes -c /etc/yum.repos.d/galera.repo install MariaDB-Galera-server"
       end
     end
@@ -225,6 +236,13 @@ case node[:platform_family]
         sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
         EOF
       end
+    elsif provider == "libvirt"
+      bash 'Configure Galera server.cnf - Get Libvirt node IP address' do
+        code <<-EOF
+        node_address=$(/sbin/ifconfig eth0 | grep -o -P '(?<=inet ).*(?=  netmask)')
+        sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/mysql/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        EOF
+      end
     end
 
     bash 'Configure Galera server.cnf - Get/Set Galera NODE_NAME' do
@@ -260,6 +278,13 @@ case node[:platform_family]
       bash 'Configure Galera server.cnf - Get Virtualbox node IP address' do
         code <<-EOF
         node_address=$(/sbin/ifconfig eth1 | grep "inet " | grep -o -P '(?<=addr:).*(?=  Bcast)')
+        sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
+        EOF
+      end
+    elsif provider == "libvirt"
+      bash 'Configure Galera server.cnf - Get Libvirt node IP address' do
+        code <<-EOF
+        node_address=$(/sbin/ifconfig eth0 | grep -o -P '(?<=inet ).*(?=  netmask)')
         sed -i "s|###NODE-ADDRESS###|$node_address|g" /etc/my.cnf.d/#{Shellwords.escape(node['galera']['cnf_template'])}
         EOF
       end

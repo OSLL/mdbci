@@ -6,6 +6,7 @@ require_relative 'core/help'
 require_relative 'core/generator'
 require_relative 'core/session'
 require_relative 'core/out'
+require_relative 'core/exception_handler'
 
 #Reading options
 opts = GetoptLong.new(
@@ -23,21 +24,18 @@ $session = Session.new
 $session.configFile='instance.json'
 $session.boxesFile='boxes.json'
 $session.awsConfigFile='aws-config.yml'
+$exception_handler = ExceptionHandler.new
 
 $out = Out.new
 
 opts.each do |opt, arg|
   case opt
     when '--template'
-      if arg != ''
-        $session.configFile= arg
-      end
+      if arg != ''; $session.configFile = arg; end
       $out.info 'Using template name '+$session.configFile
 
     when '--boxes'
-      if arg != ''
-        $session.boxesFile= arg
-      end
+      if arg != ''; $session.boxesFile = arg; end
       $out.info 'Using boxes name '+$session.boxesFile
 
     when '--help'
@@ -45,19 +43,19 @@ opts.each do |opt, arg|
       exit
 
     when '--override'
-      $session.isOverride =true
+      $session.isOverride = true
 
     when '--command'
-      $session.command =arg
+      $session.command = arg
 
     when '--silent'
-      $session.isSilent =true
+      $session.isSilent = true
 
     when '--repo-dir'
       $session.repoDir = arg
 
-	  when '--attempts'
-	    $session.attempts = arg
+    when '--attempts'
+      $session.attempts = arg
 
     else
       $out.error 'Option are not supported:'+opt
@@ -75,20 +73,6 @@ $out.info 'mdbci called with: '+ARGV.to_s
 $session.checkConfig
 $session.loadCollections
 
-case ARGV.shift
-  when 'show'
-    $session.show(ARGV.shift)
-  when 'sudo'
-    $session.sudo(ARGV.shift)
-  when 'ssh'
-    $session.ssh(ARGV.shift)
-  when 'setup'
-    $session.setup(ARGV.shift)
-  when 'generate'
-    $session.generate(ARGV.shift)
-  when 'up'
-    $session.up(ARGV.shift)
-  else
-    puts 'ERR: Something wrong with command line'
-    Help.display
-end
+# run commands and return 0 for success, 1 for error
+exit_code = $session.commands
+if exit_code != 0; exit 1; else; 0; end
