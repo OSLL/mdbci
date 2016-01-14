@@ -3,7 +3,7 @@
   "node0" :
   {
     "hostname" : "node0",
-    "box" : "centos6",
+    "box" : "ubuntu_precise32",
     "product" : {
       "name" : "maxscale"
     }
