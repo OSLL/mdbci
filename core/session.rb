@@ -306,6 +306,7 @@ class Session
       template_file = path+'/template'
       if !File.exists?(template_file); File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }; end
     end
+    #Dir.chdir path
   end
 
   # Deploy configurations
@@ -423,7 +424,7 @@ class Session
     else
       $out.warning name.to_s+" platform does not exist! Please, check box name!"
     end
-
+    Dir.chdir pwd
   end
 
 end
