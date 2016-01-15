@@ -3,9 +3,11 @@
   "node0" :
   {
     "hostname" : "node0",
-    "box" : "ubuntu_precise32",
-    "product" : {
-      "name" : "maxscale"
-    }
+    "box" : "ubuntu_precise32"
+  },
+  "node1" :
+  {
+    "hostname" : "node1",
+    "box" : "ubuntu_precise32"
   }
 }
