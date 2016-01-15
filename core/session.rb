@@ -360,8 +360,8 @@ class Session
     $out.info 'Current provider: ' + @nodesProvider
     if @nodesProvider == 'mdbci'
       $out.warning 'You are using mdbci nodes template. ./mdbci up command doesn\'t supported for this boxes!'
-      return 0 # success for mdbci warning
-    else 
+      return 0
+    else
       (1..@attempts.to_i).each { |i|
         $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') + 
           args + ', attempt: ' + i.to_s
@@ -383,8 +383,8 @@ class Session
    	        exit_code = wthr.value.exitstatus # error
 	          $out.info 'UP ERROR, exit code '+exit_code.to_s
 	        else
-  	        $out.info 'UP SUCCESS'
-            return 0 # success
+            $out.info 'Configuration UP SUCCESS!'
+            return 0
           end
   	    end
       }
