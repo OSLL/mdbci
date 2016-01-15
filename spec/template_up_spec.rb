@@ -39,7 +39,7 @@ RSpec.describe "VBoxTemplateCommandsTests", :order => :defined do
     $out.info "mdbciDir: " + $session.mdbciDir.to_s
 
   end
-'''
+
   it "./mdbci generate and up test" do
 
     # Generator.generate(path, config, boxes, override, provider)
@@ -52,7 +52,7 @@ RSpec.describe "VBoxTemplateCommandsTests", :order => :defined do
     @up_exit_code.should eq(0)      # success
 
   end
-'''
+
   it "nodesStatusTest" do
 
     network = Network.new
