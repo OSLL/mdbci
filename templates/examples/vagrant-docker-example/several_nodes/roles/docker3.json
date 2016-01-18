@@ -1,0 +1,19 @@
+{
+	"name": "docker2",
+  	"default_attributes": { },
+  	"override_attributes": { 
+		"mariadb": { 
+			"version": "10.0",
+			"repo": "http://yum.mariadb.org/10.0/opensuse/13/x86_64",
+			"repo_key" : "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+			"cnf_template" : "server1.cnf",
+			"cnf_template_path" : "/cnf"
+		}
+	},
+  	"json_class": "Chef::Role",
+  	"description": "test role",
+  	"chef_type": "role",
+  	"run_list": [
+		"recipe[mdbc]"
+	]
+}
