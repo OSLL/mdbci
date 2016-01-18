@@ -10,31 +10,21 @@ class Node
   attr_accessor :provider
   attr_accessor :ip
 
-  def curlCheck
-    cmd_curl = 'vagrant ssh '+@name+' -c "which curl"'
-    vagrant_out = `#{cmd_curl}`
-    curl = vagrant_out.scanf('%s')
-    #
-    if curl.to_s.tr('[]','') == ''
-      $out.out("Curl not found! Trying to install curl...")
-      return false
+  def initialize(config, initString)
+    parts = initString.scanf('%s %s %s')
+    if parts.length == 3
+      @name = parts[0]
+      @state = parts[1]
+      @provider = parts[2]
+      @config = config
     else
-      return true
+      $out.error 'ERR: Cannot parse vagrant node description. Has format changed? ['+initString+']'
     end
   end
 
-  # TODO - now only for Debian/Ubuntu
-  def installCurl
-    cmd = 'vagrant ssh '+@name+' -c "sudo apt-get install -y curl"'
-    vagrant_cmd = `#{cmd}`
-    #
-    if curlCheck
-      $out.out("Curl installed! Try to run 'show network' again!")
-    else
-      $out.error("Curl not installed!")
-    end
-  end
-
+  #
+  # Network
+  #
   # get node ip address from ifconfig interface
   def getInterfaceBoxIp(node_name, iface, parse_str)
     cmd = 'vagrant ssh '+node_name+' -c "/sbin/ifconfig '+iface+' | grep \"inet \" "'
@@ -84,16 +74,34 @@ class Node
     end
   end
 
-  def initialize(config, initString)
-    parts = initString.scanf('%s %s %s')
-    if parts.length == 3
-      @name = parts[0]
-      @state = parts[1]
-      @provider = parts[2]
-      @config = config
+  #
+  # Install products
+  #
+  def curlCheck
+    cmd_curl = 'vagrant ssh '+@name+' -c "which curl"'
+    vagrant_out = `#{cmd_curl}`
+    curl = vagrant_out.scanf('%s')
+    #
+    if curl.to_s.tr('[]','') == ''
+      $out.out("Curl not found! Trying to install curl...")
+      return false
     else
-      $out.error 'ERR: Cannot parse vagrant node description. Has format changed? ['+initString+']'
+      return true
     end
   end
+
+  # TODO - now only for Debian/Ubuntu
+  def installCurl
+    cmd = 'vagrant ssh '+@name+' -c "sudo apt-get install -y curl"'
+    vagrant_cmd = `#{cmd}`
+    #
+    if curlCheck
+      $out.out("Curl installed! Try to run 'show network' again!")
+    else
+      $out.error("Curl not installed!")
+    end
+  end
+
+
 
 end

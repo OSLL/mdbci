@@ -28,7 +28,7 @@ class RepoManager
 
     version = (product['version'].nil? ? 'default' : product['version']);
     platform = $session.platformKey(box)
-    repokey = name+'@'+version+'+'+ platform
+    repokey = name.to_s+'@'+version.to_s+'+'+platform.to_s
 
     repo = @repos[repokey]
     $out.info 'Repo key is '+repokey + ' ... ' + (repo.nil? ? 'NOT_FOUND' : 'FOUND')
