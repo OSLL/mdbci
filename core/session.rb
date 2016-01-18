@@ -124,9 +124,28 @@ class Session
     if @mdbciNodes.has_key?("aws_config") ; @mdbciNodes.delete("aws_config") ; end
   end
 
+  # check keyfile and its rights in mdbci/KEYS/ dir
+  def checkKeyfileRights(path, keyfile)
+    if File.exist?(path+'/'+keyfile)
+      keyfile_stat = File.stat(path+'/'+keyfile)
+      keyfile_rights = sprintf("%o", keyfile_stat.mode)
+      if keyfile_rights[3..5] == "400"
+        $out.info 'Keyfile ' + keyfile.to_s + ' exists. File permissions: ' + keyfile_rights[3..5].to_s + '.'
+      else
+        $out.info 'Set readonly (400) permissions for keyfile ' + keyfile.to_s
+        File.chmod(0400, path+'/'+keyfile)
+      end
+    else
+      $out.warning 'Node keyfile ' + keyfile.to_s + ' is missing! Check mdbci/KEYS directory!'
+      return false
+    end
+    return true
+  end
+
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
   def ssh(args)
 
+    exit_code = 1 # error
     pwd = Dir.pwd
 
     if args.nil?
@@ -144,13 +163,15 @@ class Session
           box = node[1]['box'].to_s
           if !box.empty?
             mdbci_box_params = $session.boxes.getBox(box)
-            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_box_params['keyfile'].to_s + " "\
-                            + mdbci_box_params['user'].to_s + "@"\
-                            + mdbci_box_params['IP'].to_s + " "\
-                            + "'" + $session.command + "'"
-            $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
-            vagrant_out = `#{cmd}`
-            $out.out vagrant_out
+            if checkKeyfileRights(pwd.to_s+'/KEYS', mdbci_box_params['keyfile'].to_s)
+              cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_box_params['keyfile'].to_s + " "\
+                              + mdbci_box_params['user'].to_s + "@"\
+                              + mdbci_box_params['IP'].to_s + " "\
+                              + "'" + $session.command + "'"
+              $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
+              vagrant_out = `#{cmd}`
+              $out.out vagrant_out
+            end
           end
         end
       else
@@ -158,13 +179,15 @@ class Session
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes.getBox(box)
-          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
-                          + mdbci_params['user'].to_s + "@"\
-                          + mdbci_params['IP'].to_s + " "\
-                          + "'" + $session.command + "'"
-          $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
-          vagrant_out = `#{cmd}`
-          $out.out vagrant_out
+          if checkKeyfileRights(pwd.to_s+'/KEYS', mdbci_params['keyfile'].to_s)
+            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+                            + mdbci_params['user'].to_s + "@"\
+                            + mdbci_params['IP'].to_s + " "\
+                            + "'" + $session.command + "'"
+            $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
+            vagrant_out = `#{cmd}`
+            $out.out vagrant_out
+          end
         end
       end
     else # aws, vbox nodes
@@ -176,9 +199,10 @@ class Session
       $out.out vagrant_out
 
       Dir.chdir pwd
+      exit_code = 0
     end
 
-
+    return exit_code
   end
 
 
