@@ -305,6 +305,7 @@ class Session
   end
 
   def generate(name)
+    exit_code = 1
     path = Dir.pwd
 
     if name.nil?
@@ -323,6 +324,7 @@ class Session
     if @nodesProvider != "mdbci"
       exit_code = Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
+      exit_code = 0
     else
       $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_template'
       # TODO: dir already exist?
@@ -434,6 +436,7 @@ class Session
   def publicKeys(args)
 
     pwd = Dir.pwd
+    exit_code = 1
 
     if args.nil?
       $out.error 'Configuration name is required'

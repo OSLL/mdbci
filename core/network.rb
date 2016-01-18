@@ -64,6 +64,7 @@ class Network
 
     #TODO refactor with show
     pwd = Dir.pwd
+    exit_code = 1
 
     if name.nil?
       $out.error 'Configuration name is required'
@@ -123,6 +124,7 @@ class Network
   def self.show(name)
 
     pwd = Dir.pwd
+    exit_code = 1
 
     if name.nil?
       $out.error 'Configuration name is required'
@@ -183,6 +185,7 @@ class Network
   def self.private_ip(name)
 
     pwd = Dir.pwd
+    exit_code = 1
 
     if name.nil?
       $out.error 'Configuration name is required'
