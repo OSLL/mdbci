@@ -25,15 +25,18 @@ class Session
   attr_accessor :repos
   attr_accessor :repoDir
   attr_accessor :mdbciNodes       # mdbci nodes
+  attr_accessor :templateNodes
   attr_accessor :nodesProvider   # current configuration provider
   attr_accessor :attempts
   attr_accessor :boxesDir
   attr_accessor :mdbciDir
+  attr_accessor :nodeProduct
 
   def initialize
     @boxesDir = './BOXES'
     @repoDir = './repo.d'
     @mdbciNodes = Hash.new
+    @templateNodes = Hash.new
   end
 
 =begin
@@ -114,14 +117,23 @@ class Session
     Dir.chdir pwd
   end
 
+  # load nodes template
+  def loadTemplateNodes()
+    pwd = Dir.pwd
+    instanceFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read(pwd+'/template')}
+    $out.info 'Load nodes from template file ' + instanceFile.to_s
+    @templateNodes = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(IO.read(@mdbciDir+'/'+instanceFile))}
+    if @templateNodes.has_key?('cookbook_path') ; @templateNodes.delete('cookbook_path') ; end
+    if @templateNodes.has_key?('aws_config') ; @templateNodes.delete('aws_config') ; end
+  end
   # load mdbci nodes
   def loadMdbciNodes(path)
     templateFile = $exception_handler.handle('MDBCI configuration file not found') {IO.read(path+'/mdbci_template')}
-    $out.info 'Read template file ' + templateFile.to_s
+    $out.info 'Load mdbci nodes from template file ' + templateFile.to_s
     @mdbciNodes =  $exception_handler.handle('MDBCI configuration file invalid') {JSON.parse(IO.read(templateFile))}
     # delete cookbook_path and aws_config
-    if @mdbciNodes.has_key?("cookbook_path") ; @mdbciNodes.delete("cookbook_path") ; end
-    if @mdbciNodes.has_key?("aws_config") ; @mdbciNodes.delete("aws_config") ; end
+    if @mdbciNodes.has_key?('cookbook_path') ; @mdbciNodes.delete('cookbook_path') ; end
+    if @mdbciNodes.has_key?('aws_config') ; @mdbciNodes.delete('aws_config') ; end
   end
 
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
