@@ -53,7 +53,7 @@ require 'yaml'
     EOF
   end
 
-  def Generator.providerConfig
+  def Generator.providerConfig(provider)
     config = <<-EOF
 
 ### Default (VBox, Libvirt, Docker) Provider config ###
@@ -62,7 +62,14 @@ require 'yaml'
 config.vm.network "private_network", type: "dhcp"
 
 config.vm.boot_timeout = 60
+
     EOF
+
+    if provider == "libvirt"
+      config += 'config.ssh.pty = true'
+    end
+
+    return config
   end
 
   def Generator.vagrantConfigHeader
@@ -494,7 +501,7 @@ def Generator.checkPath(path, override)
     else
         # Generate VBox/Qemu Configuration
         vagrant.puts Generator.vagrantConfigHeader
-        vagrant.puts Generator.providerConfig
+        vagrant.puts Generator.providerConfig(provider)
 
         config.each do |node|
           unless (node[1]['box'].nil?)
