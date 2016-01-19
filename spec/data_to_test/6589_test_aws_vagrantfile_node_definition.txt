@@ -1,0 +1,18 @@
+#  -> Begin definition for machine: testNode
+config.vm.define :testNode do |testNode|
+	testNode.vm.provider :aws do |aws,override|
+		aws.ami = "ami-1c2e8b6b"
+		aws.instance_type = "t1.micro"
+		override.ssh.username = "ec2-user"
+	end
+	testNode.vm.synced_folder "../cnf", "/home/vagrant/cnf_templates", type: "rsync"
+##--- Chef binding ---
+	testNode.vm.provision "chef_solo" do |chef|
+		chef.cookbooks_path = "../recipes/cookbooks/"
+		chef.roles_path = "."
+		chef.add_role "testNode"
+		chef.synced_folder_type = "rsync"
+	end #<-- end of chef binding
+
+end #  -> End definition for machine: testNode
+

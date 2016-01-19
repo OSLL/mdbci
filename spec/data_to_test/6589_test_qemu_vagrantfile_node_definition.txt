@@ -1,0 +1,14 @@
+config.vm.define "testNode" do |testNode|
+	testNode.vm.box = "centos/7"
+	testNode.vm.hostname = "test"
+	testNode.vm.synced_folder "./", "/vagrant", type: "rsync"
+	testNode.vm.synced_folder "../cnf", "/home/vagrant/cnf_templates", type:"rsync"
+	testNode.vm.provider :libvirt do |qemu|
+		qemu.driver = "kvm"
+	end
+	testNode.vm.provision "chef_solo" do |chef|
+		chef.cookbooks_path = "../recipes/cookbooks/"
+		chef.roles_path = "."
+		chef.add_role "testNode"
+	end
+end # <-- end of Qemu definition>

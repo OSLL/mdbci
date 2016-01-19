@@ -1,0 +1,13 @@
+config.vm.define "testNode" do |testNode|
+	testNode.vm.synced_folder "../cnf", "/home/vagrant/cnf_templates"
+	testNode.vm.provider "docker" do |d|
+		d.build_dir = "testNode/"
+		d.has_ssh = true
+		d.privileged = true
+	end
+	testNode.vm.provision "chef_solo" do |chef|
+		chef.cookbooks_path = "../recipes/cookbooks/"
+		chef.roles_path = "."
+		chef.add_role "testNode"
+	end
+end # <-- end of Docker definition>

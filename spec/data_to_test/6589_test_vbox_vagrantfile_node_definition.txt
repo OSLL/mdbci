@@ -1,0 +1,14 @@
+config.vm.define "testNode" do |testNode|
+	testNode.vm.box = "bento/centos-6.7"
+	testNode.vm.hostname = "test"
+	testNode.vm.synced_folder "../cnf", "/home/vagrant/cnf_templates"
+	testNode.vm.provision "chef_solo" do |chef|
+		chef.cookbooks_path = "../recipes/cookbooks/"
+		chef.roles_path = "."
+		chef.add_role "testNode"
+	end
+	config.vm.provider :virtualbox do |vbox|
+		vbox.customize ["modifyvm", :id, "--memory", "1024"]
+	end
+
+end # <-- end of VM definition>
