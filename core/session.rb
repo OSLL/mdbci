@@ -252,6 +252,9 @@ class Session
     when 'up'
       exit_code = $session.up(ARGV.shift)
 
+    when 'public_keys'
+      exit_code = $session.publicKeys(ARGV.shift)
+
     else
       exit_code = 1
       puts 'ERR: Something wrong with command line'
@@ -397,6 +400,7 @@ class Session
   def publicKeys(args)
 
     pwd = Dir.pwd
+    exit_code = 1 # error
 
     if args.nil?
       $out.error 'Configuration name is required'
@@ -412,7 +416,7 @@ class Session
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           if !box.empty?
-            mdbci_params = $session.boxes[box]  # TODO: 6576
+            mdbci_params = $session.boxes.getBox(box)
             #
             keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!"){File.read(pwd.to_s+'/'+@keyFile.to_s)}
             # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
@@ -422,13 +426,15 @@ class Session
                             + "\"" + command + "\""
             $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
             vagrant_out = `#{cmd}`
+            # TODO
+            exit_code = 0
           end
         end
       else
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == args[1] }
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
-          mdbci_params = $session.boxes[box]  # TODO: 6576
+          mdbci_params = $session.boxes.getBox(box)
           #
           keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!"){File.read(pwd.to_s+'/'+@keyFile.to_s)}
           # add to the end of the authorized_keys file in ~/.ssh directory
@@ -438,6 +444,8 @@ class Session
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
           vagrant_out = `#{cmd}`
+          # TODO
+          exit_code = 0
         end
       end
     else # aws, vbox, libvirt, docker nodes
@@ -452,6 +460,8 @@ class Session
           $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
           vagrant_out = `#{cmd}`
           $out.out vagrant_out
+          # TODO
+          exit_code = 0
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
@@ -462,10 +472,14 @@ class Session
         $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
         vagrant_out = `#{cmd}`
         $out.out vagrant_out
+        # TODO
+        exit_code = 0
       end
     end
 
     Dir.chdir pwd
+
+    return exit_code
   end
 
   def showProvider(name)
