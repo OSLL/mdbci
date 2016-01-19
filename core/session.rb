@@ -393,6 +393,7 @@ class Session
       }
     end
     Dir.chdir pwd
+    
     return exit_code
   end
 
