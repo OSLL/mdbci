@@ -53,7 +53,7 @@ require 'yaml'
     EOF
   end
 
-  def Generator.providerConfig(provider)
+  def Generator.providerConfig
     config = <<-EOF
 
 ### Default (VBox, Libvirt, Docker) Provider config ###
@@ -62,14 +62,7 @@ require 'yaml'
 config.vm.network "private_network", type: "dhcp"
 
 config.vm.boot_timeout = 60
-
     EOF
-
-    if provider == "libvirt"
-      config += 'config.ssh.pty = true'
-    end
-
-    return config
   end
 
   def Generator.vagrantConfigHeader
@@ -99,42 +92,41 @@ Vagrant.configure(2) do |config|
   end
 
   # Vagrantfile for Vbox provider
-  def Generator.getVmDef(cookbook_path, name, host, boxurl, vm_mem, template_path, provisioned)
+  def Generator.getVmDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
 
     if template_path
       templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates')
     else
       templatedef = ''
     end
+    # ssh.pty option
+    ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
 
-    if provisioned
-      vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
+    vmdef = "\n#  -> Begin definition for machine: " + name +"\n"\
+            "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
+            + ssh_pty_option + "\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
-            + "\t"+name+'.vm.hostname = ' + quote(host) +"\n" \
-            + templatedef  + "\n"\
+            + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
+            + templatedef + "\n"
+    if provisioned
+      vmdef += "##--- Chef binding ---\n"\
             + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
             + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
-    else
-      vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
-            + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
-            + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
-            + templatedef
     end
 
     if vm_mem
       vmdef += "\n\t"+'config.vm.provider :virtualbox do |vbox|' + "\n" \
                "\t\t"+'vbox.customize ["modifyvm", :id, "--memory", ' + quote(vm_mem) +"]\n\tend\n"
     end
-
-    vmdef += "\nend # <-- end of VM definition>\n"
+    vmdef += "\nend # <-- End of VM definition for machine: " + name +"\n\n"
 
     return vmdef
   end
 
   # Vagrantfile for Libvirt provider
-  def Generator.getQemuDef(cookbook_path, name, host, boxurl, template_path, provisioned)
+  def Generator.getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, template_path, provisioned)
 
     if template_path
       templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates') \
@@ -142,65 +134,59 @@ Vagrant.configure(2) do |config|
     else
       templatedef = ''
     end
+    # ssh.pty option
+    ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
 
-    if provisioned
-      vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
+    qemudef = "\n#  -> Begin definition for machine: " + name +"\n"\
+            + "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
+            + ssh_pty_option + "\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
-            + "\t"+name+'.vm.hostname = ' + quote(host) +"\n" \
+            + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
             + "\t"+name+'.vm.synced_folder '+quote('./')+", "+quote('/vagrant')+", type: "+quote('rsync')+"\n" \
-            + templatedef  + "\n"\
+            + templatedef + "\n"\
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
-            + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n\tend" \
+            + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n\tend"
+    if provisioned
+      qemudef += "##--- Chef binding ---\n"\
             + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
             + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
-    else
-      vmdef = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
-            + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
-            + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
-            + templatedef + "\n"\
-            + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
-            + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n\tend"
     end
+    qemudef += "\nend # <-- End of Qemu definition for machine: " + name +"\n\n"
 
-    vmdef += "\nend # <-- end of Qemu definition>\n"
-
-    return vmdef
+    return qemudef
   end
 
   # Vagrantfile for Docker provider + Dockerfiles
-  def Generator.getDockerDef(cookbook_path, name, template_path, provisioned)
+  def Generator.getDockerDef(cookbook_path, name, ssh_pty, template_path, provisioned)
 
     if template_path
       templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote("/home/vagrant/cnf_templates")
     else
       templatedef = ""
     end
+    # ssh.pty option
+    ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
 
-    if provisioned
-      docker_def = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
-            + templatedef  + "\n"\
-            + "\t"+name+'.vm.provider "docker" do |d|' + "\n" \
-            + "\t\t"+'d.build_dir = ' + quote(name+"/") + "\n" \
-            + "\t\t"+'d.has_ssh = true' + "\n" \
-            + "\t\t"+'d.privileged = true' + "\n\tend" \
-            + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
-            + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
-            + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
-            + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
-    else
-      docker_def = "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
-            + templatedef  + "\n"\
+    dockerdef = "\n#  -> Begin definition for machine: " + name +"\n"\
+            + "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
+            + ssh_pty_option + "\n" \
+            + templatedef  + "\n" \
             + "\t"+name+'.vm.provider "docker" do |d|' + "\n" \
             + "\t\t"+'d.build_dir = ' + quote(name+"/") + "/\n" \
             + "\t\t"+'d.has_ssh = true' + "\n" \
             + "\t\t"+'d.privileged = true' + "\n\tend"
+    if provisioned
+      dockerdef += "##--- Chef binding ---\n"\
+            + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
+            + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
+            + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
+            + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
     end
+    dockerdef += "\nend # <-- End of Docker definition for machine: " + name +"\n\n"
 
-    docker_def += "\nend # <-- end of Docker definition>\n"
-
-    return docker_def
+    return dockerdef
   end
   # generate Dockerfiles
   def Generator.copyDockerfiles(path, name, platform, platform_version)
@@ -241,13 +227,15 @@ Vagrant.configure(2) do |config|
   end
 
   #  Vagrantfile for AWS provider
-  def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, instance_type, template_path, provisioned)
+  def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, ssh_pty, instance_type, template_path, provisioned)
 
     if template_path
       mountdef = "\t" + name + ".vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync")
     else
       mountdef = ''
     end
+    # ssh.pty option
+    ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
 
     awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
            + "config.vm.define :"+ name +" do |" + name + "|\n" \
@@ -425,6 +413,12 @@ def Generator.checkPath(path, override)
           platform = box_params['platform'].to_s
           platform_version = box_params['platform_version'].to_s
       end
+      # ssh_pty
+      if !box_params['ssh_pty'].nil?
+        ssh_pty = box_params['ssh_pty']
+        $out.info 'SSH_PTY: ' + ssh_pty.to_s
+      end
+
     end
 
     provisioned = !node[1]['product'].nil?
@@ -441,13 +435,13 @@ def Generator.checkPath(path, override)
     if Generator.boxValid?(box, boxes)
       case provider
         when 'virtualbox'
-          machine = getVmDef(cookbook_path, name, host, boxurl, vm_mem, template_path, provisioned)
+          machine = getVmDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'aws'
-          machine = getAWSVmDef(cookbook_path, name, amiurl, user, instance, template_path, provisioned)
+          machine = getAWSVmDef(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned)
         when 'libvirt'
-          machine = getQemuDef(cookbook_path, name, host, boxurl, template_path, provisioned)
+          machine = getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, template_path, provisioned)
         when 'docker'
-          machine = getDockerDef(cookbook_path, name, template_path, provisioned)
+          machine = getDockerDef(cookbook_path, name, ssh_pty, template_path, provisioned)
           copyDockerfiles(path, name, platform, platform_version)
         else
           $out.warning 'Configuration type invalid! It must be vbox, aws, libvirt or docker type. Check it, please!'
@@ -501,7 +495,7 @@ def Generator.checkPath(path, override)
     else
         # Generate VBox/Qemu Configuration
         vagrant.puts Generator.vagrantConfigHeader
-        vagrant.puts Generator.providerConfig(provider)
+        vagrant.puts Generator.providerConfig
 
         config.each do |node|
           unless (node[1]['box'].nil?)
