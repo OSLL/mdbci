@@ -102,14 +102,14 @@ Vagrant.configure(2) do |config|
     # ssh.pty option
     ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
 
-    vmdef = "\n#  -> Begin definition for machine: " + name +"\n"\
+    vmdef = "\n#  --> Begin definition for machine: " + name +"\n"\
             "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + ssh_pty_option + "\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
             + templatedef + "\n"
     if provisioned
-      vmdef += "##--- Chef binding ---\n"\
+      vmdef += "\t##--- Chef binding ---\n"\
             + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
@@ -120,7 +120,7 @@ Vagrant.configure(2) do |config|
       vmdef += "\n\t"+'config.vm.provider :virtualbox do |vbox|' + "\n" \
                "\t\t"+'vbox.customize ["modifyvm", :id, "--memory", ' + quote(vm_mem) +"]\n\tend\n"
     end
-    vmdef += "\nend # <-- End of VM definition for machine: " + name +"\n\n"
+    vmdef += "\nend #  <-- End of VM definition for machine: " + name +"\n\n"
 
     return vmdef
   end
@@ -137,7 +137,7 @@ Vagrant.configure(2) do |config|
     # ssh.pty option
     ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
 
-    qemudef = "\n#  -> Begin definition for machine: " + name +"\n"\
+    qemudef = "\n#  --> Begin definition for machine: " + name +"\n"\
             + "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + ssh_pty_option + "\n" \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
@@ -147,13 +147,13 @@ Vagrant.configure(2) do |config|
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
             + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n\tend"
     if provisioned
-      qemudef += "##--- Chef binding ---\n"\
+      qemudef += "\t##--- Chef binding ---\n"\
             + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
             + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
     end
-    qemudef += "\nend # <-- End of Qemu definition for machine: " + name +"\n\n"
+    qemudef += "\nend #  <-- End of Qemu definition for machine: " + name +"\n\n"
 
     return qemudef
   end
@@ -169,7 +169,7 @@ Vagrant.configure(2) do |config|
     # ssh.pty option
     ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
 
-    dockerdef = "\n#  -> Begin definition for machine: " + name +"\n"\
+    dockerdef = "\n#  --> Begin definition for machine: " + name +"\n"\
             + "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + ssh_pty_option + "\n" \
             + templatedef  + "\n" \
@@ -178,13 +178,13 @@ Vagrant.configure(2) do |config|
             + "\t\t"+'d.has_ssh = true' + "\n" \
             + "\t\t"+'d.privileged = true' + "\n\tend"
     if provisioned
-      dockerdef += "##--- Chef binding ---\n"\
+      dockerdef += "\t##--- Chef binding ---\n"\
             + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
             + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
     end
-    dockerdef += "\nend # <-- End of Docker definition for machine: " + name +"\n\n"
+    dockerdef += "\nend #  <-- End of Docker definition for machine: " + name +"\n\n"
 
     return dockerdef
   end
@@ -237,8 +237,9 @@ Vagrant.configure(2) do |config|
     # ssh.pty option
     ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
 
-    awsdef = "\n#  -> Begin definition for machine: " + name +"\n"\
+    awsdef = "\n#  --> Begin definition for machine: " + name +"\n"\
            + "config.vm.define :"+ name +" do |" + name + "|\n" \
+           + ssh_pty_option + "\n" \
            + "\t" + name + ".vm.provider :aws do |aws,override|\n" \
            + "\t\taws.ami = " + quote(boxurl) + "\n"\
            + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
@@ -246,14 +247,15 @@ Vagrant.configure(2) do |config|
            + "\tend\n" \
            + mountdef + "\n"
     if provisioned
-      awsdef += "##--- Chef binding ---\n"\
+      awsdef += "\t##--- Chef binding ---\n"\
            + "\t" + name + ".vm.provision "+ quote('chef_solo')+" do |chef| \n"\
            + "\t\tchef.cookbooks_path = "+ quote(cookbook_path) + "\n" \
            + "\t\tchef.roles_path = "+ quote('.') + "\n" \
            + "\t\tchef.add_role "+ quote(name) + "\n" \
            + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend #<-- end of chef binding\n"
     end
-    awsdef +="\nend #  -> End definition for machine: " + name +"\n\n"
+    awsdef +="\nend #  <-- End AWS definition for machine: " + name +"\n\n"
+
     return awsdef
   end
 
@@ -413,16 +415,14 @@ def Generator.checkPath(path, override)
           platform = box_params['platform'].to_s
           platform_version = box_params['platform_version'].to_s
       end
-      # ssh_pty
+      # ssh_pty option
       if !box_params['ssh_pty'].nil?
         ssh_pty = box_params['ssh_pty']
-        $out.info 'SSH_PTY: ' + ssh_pty.to_s
+        $out.info 'SSH_PTY option is ' + ssh_pty.to_s + 'for a box ' + box.to_s
       end
-
     end
 
     provisioned = !node[1]['product'].nil?
-
     if (provisioned)
       product = node[1]['product']
       if !product['cnf_template_path'].nil?
