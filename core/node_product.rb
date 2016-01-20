@@ -126,8 +126,8 @@ class NodeProduct
             else
               $out.info 'Install repo: Unknown product!'
             end
- 	  else
-	    $out.error 'No such product for this node!'
+ 	        else
+	          $out.error 'No such product for this node!'
           end
         end
       else
@@ -138,7 +138,7 @@ class NodeProduct
           $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
           if $session.nodeProduct == 'maxscale'
             cmd = createMaxscaleInstallRepoCmd(platform, node[0].to_s, repo)
-	    vagrant_out = `#{cmd}`
+	          vagrant_out = `#{cmd}`
           elsif $session.nodeProduct == 'mariadb'
             # TODO
           elsif $session.nodeProduct == 'galera'
@@ -147,7 +147,7 @@ class NodeProduct
             $out.info 'Install repo: Unknown product!'
           end
         else
- 	  $out.error 'No such product for this node!'
+ 	        $out.error 'No such product for this node!'
         end
       end
     end
