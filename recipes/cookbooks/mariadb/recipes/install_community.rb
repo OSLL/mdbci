@@ -3,7 +3,7 @@ require 'shellwords'
 include_recipe "mariadb::mdbcrepos"
 
 # install default packages
-[ "net-tools" ].each do |pkg|
+[ "net-tools", "psmisc" ].each do |pkg|
   package pkg
 end
 
