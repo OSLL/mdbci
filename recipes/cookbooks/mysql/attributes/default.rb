@@ -8,3 +8,6 @@ default["mysql"]["repo"] = "http://repo.mysql.com/yum/"
 
 # mysql repo key for rhel/fedora/centos/suse
 default["mysql"]["repo_key"] = "http://repo.mysql.com/yum/"
+
+# path for server.cnf file
+default["mysql"]["cnf_template"] = "server1.cnf"
