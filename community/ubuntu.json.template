@@ -32,6 +32,16 @@
    "repo_key":          "0xcbcb082a1bb943db",
    "platform":          "ubuntu",
    "platform_version":  "vivid"
+},
+
+{
+   "product":           "mariadb",
+   "version":           "###version###",
+   "repo":              "http://mirror.netinch.com/pub/mariadb/repo/###version###/ubuntu wily main",
+   "repo_key":          "0xcbcb082a1bb943db",
+   "platform":          "ubuntu",
+   "platform_version":  "wily"
 }
+
 
 ]

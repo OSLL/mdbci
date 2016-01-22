@@ -19,8 +19,21 @@
    "repo_key":          "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
    "platform":          "ubuntu",
    "platform_version":  "utopic"
+},
+{
+   "product":           "mdbe",
+   "repo":              "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/###version###/repo/ubuntu vivid main",
+   "repo_key":          "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+   "platform":          "ubuntu",
+   "platform_version":  "vivid"
+},
+{
+   "product":           "mdbe",
+   "repo":              "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/###version###/repo/ubuntu wily main",
+   "repo_key":          "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+   "platform":          "ubuntu",
+   "platform_version":  "wily"
 }
-
 
 
 ]

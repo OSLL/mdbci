@@ -30,5 +30,14 @@
    "repo_key":          "http://repo.mysql.com/RPM-GPG-KEY-mysql",
    "platform":          "ubuntu",
    "platform_version":  "vivid"
+}Ð,
+{
+   "product":           "mysql",
+   "version":           "###version-clean###",
+   "repo":              "deb http://repo.mysql.com/apt/ubuntu/ wily mysql-###version###",
+   "repo_key":          "http://repo.mysql.com/RPM-GPG-KEY-mysql",
+   "platform":          "ubuntu",
+   "platform_version":  "wily"
 }
+
 ]
