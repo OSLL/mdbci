@@ -9,24 +9,6 @@ require_relative  '../core/out'
 
 class NodeProduct
   #
-  # 
-  def getProductName(product)
-
-    repoName = nil
-
-    if !product['repo'].nil?
-      repoName = product['repo']
-      unless $session.repos.knownRepo?(repoName)
-        $out.warning 'Unknown key for repo '+repoName.to_s+' will be skipped'
-        return "#NONE, due invalid repo name \n"
-      end
-      product_name = $session.repos.productName(repoName)
-    else
-      product_name = product['name']
-    end
-    return product_name
-  end
-  #
   #
   def self.getProductRepoParameters(product, box)
 
@@ -95,7 +77,8 @@ class NodeProduct
           if !box.empty?
             mdbci_params = $session.boxes.getBox(box)
             #
-	          # TODO - get repo for mariadb, galera, mysql - Where to store product version for mdbci boxes?
+	          # TODO - get repo for mariadb, galera, mysql
+            #  - Where to store product version for mdbci boxes? In boxes.json node description!
  	          #
             platform = $session.platformKey(box).split('^')
             $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
@@ -104,35 +87,37 @@ class NodeProduct
               if !repo.nil?
                 # 1
                 # create repo file for each os and download it to server
-                #maxscaleMdbciNetScpCmd(pwd, platform[0], repo, mdbci_params)
-                # download it to pointed dir
+                # ssh sudo: https://irb.rocks/execute-sudo-commands-with-net-ssh
+                # maxscaleMdbciNetScpCmd(pwd, platform[0], repo, mdbci_params)
+                #
                 # 2
                 # # { ssh ... } version
-                #command = maxscaleMdbciInstallRepoCmd(platform[0], repo)
-                #cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
-                #              + mdbci_params['user'].to_s + '@'\
-                #              + mdbci_params['IP'].to_s + ' '\
-                #              + "'" + command.to_s + "'"
-                #$out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
-                #vagrant_out = `#{cmd}`
-                #$out.out vagrant_out
-                #
-                # 3 TODO -- NEED ROOT FOR COPY TO / !!!
-                # # { scp ... } version
-                # create file
-                createMaxscaleRepoFileMdbciScp(pwd, platform[0], repo)
-                remotepath = ''
-                if platform == 'ubuntu' || platform == 'debian'
-                  remotepath = '/etc/apt/sources.list.d'
-                end
-                cmd = 'scp -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
-                                + pwd+'/maxscale.list '\
-                                + mdbci_params['user'].to_s + '@'\
-                                + mdbci_params['IP'].to_s + ':'\
-                                + remotepath.to_s
+                #  P.S. Add NOPASSWD:ALL for node ssh user !
+                command = maxscaleMdbciInstallRepoCmd(platform[0], repo)
+                cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
+                              + mdbci_params['user'].to_s + '@'\
+                              + mdbci_params['IP'].to_s + ' '\
+                              + "'" + command.to_s + "'"
                 $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
                 vagrant_out = `#{cmd}`
                 $out.out vagrant_out
+                #
+                # 3
+                # # { scp ... } version
+                #   - P.S. Need root password or key for access to /
+                # createMaxscaleRepoFileMdbciScp(pwd, platform[0], repo)
+                # remotepath = ''
+                #if platform == 'ubuntu' || platform == 'debian'
+                #  remotepath = '/etc/apt/sources.list.d'
+                #end
+                #cmd = 'scp -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
+                #                + pwd.to_s+'/maxscale.list '\
+                #                + mdbci_params['user'].to_s + '@'\
+                #                + mdbci_params['IP'].to_s + ':'\
+                #                + remotepath.to_s
+                #$out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
+                #vagrant_out = `#{cmd}`
+                #$out.out vagrant_out
               end
             elsif $session.nodeProduct == 'mariadb'
               # TODO
@@ -238,7 +223,7 @@ class NodeProduct
   def self.maxscaleMdbciInstallRepoCmd(platform, repo)
     if platform == 'ubuntu' || platform == 'debian'
       cmd_install_repo = 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
-		                   + 'echo -e \"deb '+repo['repo']+'\" | tee -a /etc/apt/sources.list.d/maxscale.list'
+		                   + 'sudo echo -e \"deb '+repo['repo']+'\" | sudo tee -a /etc/apt/sources.list.d/maxscale.list'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
       cmd_install_repo = 'sudo dd if=/dev/null of=/etc/yum.repos.d/maxscale.repo && '\
 		                   + 'sudo echo -e \"[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'
