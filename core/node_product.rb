@@ -1,5 +1,6 @@
 require 'scanf'
 require 'yaml'
+require 'shellwords'
 
 require_relative  '../core/out'
 
@@ -180,15 +181,19 @@ class NodeProduct
 
   def self.maxscaleInstallRepoCmd(platform, node_name, repo)
     if platform == 'ubuntu' || platform == 'debian'
-      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+repo['repo_key']+' && '\
+      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+Shellwords.escape(repo['repo_key'].to_s)+' && '\
                        + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
-		       + 'sudo echo -e \"deb '+repo['repo']+'\" | sudo tee -a /etc/apt/sources.list.d/maxscale.list"'
+		                   + 'sudo echo -e \"deb '+Shellwords.escape(repo['repo'].to_s)+'\" | sudo tee -a /etc/apt/sources.list.d/maxscale.list"'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo dd if=/dev/null of=/etc/yum.repos.d/maxscale.repo && '\
-		       + 'sudo echo -e \"[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'+'gpgcheck=1\" | sudo tee -a /etc/yum.repos.d/maxscale.repo"'
+		                   + 'sudo echo -e \'[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
+		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
+		                   + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/maxscale.repo"'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo dd if=/dev/null of=/etc/zypp/repos.d/maxscale.repo && '\
-		       + 'sudo echo -e \"[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'+'gpgcheck=1\" | sudo tee -a /etc/zypp/repos.d/maxscale.repo"'
+		                   + 'sudo echo -e \'[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
+		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
+		                   + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/maxscale.repo"'
     end
     return cmd_install_repo
   end
@@ -196,16 +201,19 @@ class NodeProduct
   # for #{ ssh ... } version
   def self.maxscaleMdbciInstallRepoCmd(platform, repo)
     if platform == 'ubuntu' || platform == 'debian'
-      cmd_install_repo = 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
-		                   + 'sudo echo -e deb '+repo['repo']+' | sudo tee -a /etc/apt/sources.list.d/maxscale.list'
+      cmd_install_repo = 'sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+Shellwords.escape(repo['repo_key'].to_s)+' && '\
+                       + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
+		                   + 'sudo echo -e deb '+Shellwords.escape(repo['repo'].to_s)+' | sudo tee -a /etc/apt/sources.list.d/maxscale.list'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
       cmd_install_repo = 'sudo dd if=/dev/null of=/etc/yum.repos.d/maxscale.repo && '\
-		                   + 'sudo echo -e [maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'
-                       + 'gpgcheck=1 | sudo tee -a /etc/yum.repos.d/maxscale.repo'
+		                   + 'sudo echo -e \'[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
+		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
+                       + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/maxscale.repo'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
       cmd_install_repo = 'sudo dd if=/dev/null of=/etc/zypp/repos.d/maxscale.repo && '\
-		                   + 'sudo echo -e [maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'
-                       + 'gpgcheck=1 | sudo tee -a /etc/zypp/repos.d/maxscale.repo'
+		                   + 'sudo echo -e \'[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
+		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
+                       + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/maxscale.repo'
     end
     return cmd_install_repo
   end
