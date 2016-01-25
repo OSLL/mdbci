@@ -80,26 +80,27 @@ class NodeProduct
  	          #
             platform = $session.platformKey(box).split('^')
             $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
-            if $session.nodeProduct == 'maxscale'
-              repo = getMaxscaleRepoByBox(box)
-              if !repo.nil?
-                # # { ssh ... } version
-                #  P.S. Add NOPASSWD:ALL for node ssh user, for example, vagranttest ALL=(ALL) NOPASSWD:ALL
-                command = maxscaleMdbciInstallRepoCmd(platform[0], repo)
-                cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
-                              + mdbci_params['user'].to_s + '@'\
-                              + mdbci_params['IP'].to_s + ' '\
-                              + "'" + command.to_s + "'"
-                $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
-                vagrant_out = `#{cmd}`
-                $out.out vagrant_out
-              end
-            elsif $session.nodeProduct == 'mariadb'
-              # TODO
-            elsif $session.nodeProduct == 'galera'
-              # TODO
-            else
-              $out.info 'Install repo: Unknown product!'
+            case $session.nodeProduct
+              when 'maxscale'
+                repo = getMaxscaleRepoByBox(box)
+                if !repo.nil?
+                  # # { ssh ... } version
+                  #  P.S. Add NOPASSWD:ALL for node ssh user, for example, vagranttest ALL=(ALL) NOPASSWD:ALL
+                  command = maxscaleMdbciInstallRepoCmd(platform[0], repo)
+                  cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
+                                + mdbci_params['user'].to_s + '@'\
+                                + mdbci_params['IP'].to_s + ' '\
+                                + "'" + command.to_s + "'"
+                  $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
+                  vagrant_out = `#{cmd}`
+                  $out.out vagrant_out
+                end
+              when 'mariadb'
+                # TODO
+              when 'galera'
+                # TODO
+              else
+                $out.info 'Install repo: Unknown product!'
             end
           end
         end
@@ -110,24 +111,25 @@ class NodeProduct
           mdbci_params = $session.boxes.getBox(box)
           platform = $session.platformKey(box).split('^')
           $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
-          if $session.nodeProduct == 'maxscale'
-            repo = getMaxscaleRepoByBox(box)
-            if !repo.nil?
-              command = maxscaleMdbciInstallRepoCmd(platform[0], repo)
-              cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
-                              + mdbci_params['user'].to_s + '@'\
-                              + mdbci_params['IP'].to_s + ' '\
-                              + "'" + command + "'"
-              $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
-              vagrant_out = `#{cmd}`
-              $out.out vagrant_out
-            end
-          elsif $session.nodeProduct == 'mariadb'
-            # TODO
-          elsif $session.nodeProduct == 'galera'
-            # TODO
-          else
-            $out.info 'Install repo: Unknown product!'
+          case $session.nodeProduct
+            when 'maxscale'
+              repo = getMaxscaleRepoByBox(box)
+              if !repo.nil?
+                command = maxscaleMdbciInstallRepoCmd(platform[0], repo)
+                cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
+                                + mdbci_params['user'].to_s + '@'\
+                                + mdbci_params['IP'].to_s + ' '\
+                                + "'" + command + "'"
+                $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
+                vagrant_out = `#{cmd}`
+                $out.out vagrant_out
+              end
+            when 'mariadb'
+              # TODO
+            when 'galera'
+              # TODO
+            else
+              $out.info 'Install repo: Unknown product!'
           end
         end
       end
@@ -140,15 +142,17 @@ class NodeProduct
           if !repo.nil?
             platform = $session.loadNodePlatformBy(node[0].to_s)
             $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
-            if $session.nodeProduct == 'maxscale'
-              cmd = maxscaleInstallRepoCmd(platform, node[0], repo)
-              vagrant_out = `#{cmd}`
-            elsif $session.nodeProduct == 'mariadb'
-              # TODO
-            elsif $session.nodeProduct == 'galera'
-              # TODO
-            else
-              $out.info 'Install repo: Unknown product!'
+            case $session.nodeProduct
+              when 'maxscale'
+                cmd = maxscaleInstallRepoCmd(platform, node[0].to_s, repo)
+                vagrant_out = `#{cmd}`
+                $out.info vagrant_out.to_s
+              when 'mariadb'
+                # TODO
+              when 'galera'
+                # TODO
+              else
+                $out.info 'Install repo: Unknown product!'
             end
  	        else
 	          $out.error 'No such product for this node!'
@@ -160,15 +164,17 @@ class NodeProduct
         if !repo.nil?
           platform = $session.loadNodePlatformBy(node[0].to_s)
           $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
-          if $session.nodeProduct == 'maxscale'
-            cmd = maxscaleInstallRepoCmd(platform, node[0].to_s, repo)
-	          vagrant_out = `#{cmd}`
-          elsif $session.nodeProduct == 'mariadb'
-            # TODO
-          elsif $session.nodeProduct == 'galera'
-            # TODO
-          else
-            $out.info 'Install repo: Unknown product!'
+          case $session.nodeProduct
+            when 'maxscale'
+              cmd = maxscaleInstallRepoCmd(platform, node[0].to_s, repo)
+	            vagrant_out = `#{cmd}`
+              $out.info vagrant_out.to_s
+            when 'mariadb'
+              # TODO
+            when 'galera'
+              # TODO
+            else
+              $out.info 'Install repo: Unknown product!'
           end
         else
  	        $out.error 'No such product for this node!'
@@ -220,7 +226,7 @@ class NodeProduct
   #
   #
   # Update nodes product repo
-  #  P.S. Add NOPASSWD:ALL for mdbci node ssh user, for example, vagranttest ALL=(ALL) NOPASSWD:ALL
+  #  P.S. Add NOPASSWD:ALL for mdbci node ssh user, for example, vagranttest ALL=(ALL) NOPASSWD:ALL to /etc/sudoers
   def self.updateProductRepo(args)
 
     pwd = Dir.pwd
@@ -294,33 +300,34 @@ class NodeProduct
         $session.templateNodes.each do |node|
           platform = $session.loadNodePlatformBy(node[0].to_s)
           $out.info 'Update '+$session.nodeProduct.to_s+' repo on '+platform.to_s+' platform.'
-          if $session.nodeProduct == 'maxscale'
-            cmd = maxscaleUpdateRepoCmd(platform, node[0])
-            vagrant_out = `#{cmd}`
-            $out.info vagrant_out.to_s
-            #cmd_out = vagrant_out.split('\r\r')
-          elsif $session.nodeProduct == 'mariadb'
-            # TODO
-          elsif $session.nodeProduct == 'galera'
-            # TODO
-          else
-            $out.info 'Update repo: Unknown product!'
+          case $session.nodeProduct
+            when 'maxscale'
+              cmd = maxscaleUpdateRepoCmd(platform, node[0])
+              vagrant_out = `#{cmd}`
+              $out.info vagrant_out.to_s
+            when 'mariadb'
+              # TODO
+            when 'galera'
+              # TODO
+            else
+              $out.info 'Update repo: Unknown product!'
           end
         end
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
         platform = $session.loadNodePlatformBy(node[0].to_s)
         $out.info 'Update '+$session.nodeProduct.to_s+' repo on '+platform.to_s+' platform.'
-        if $session.nodeProduct == 'maxscale'
-          cmd = maxscaleUpdateRepoCmd(platform, node[0].to_s)
-          vagrant_out = `#{cmd}`
-          $out.info vagrant_out.to_s
-        elsif $session.nodeProduct == 'mariadb'
-          # TODO
-        elsif $session.nodeProduct == 'galera'
-          # TODO
-        else
-          $out.info 'Update repo: Unknown product!'
+        case $session.nodeProduct
+          when 'maxscale'
+            cmd = maxscaleUpdateRepoCmd(platform, node[0])
+            vagrant_out = `#{cmd}`
+            $out.info vagrant_out.to_s
+          when 'mariadb'
+            # TODO
+          when 'galera'
+            # TODO
+          else
+            $out.info 'Update repo: Unknown product!'
         end
       end
     end
