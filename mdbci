@@ -61,7 +61,6 @@ opts.each do |opt, arg|
 
     when '--product'
       if arg != ''; $session.nodeProduct = arg; end
-      $out.info 'Product name: '+$session.nodeProduct
 
     else
       $out.error 'Option are not supported: '+opt
