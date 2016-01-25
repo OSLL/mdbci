@@ -42,6 +42,7 @@ COMMANDS:
   ssh --command 'command arguments' config/node
   up [--attempts 'attempts arguments'] config | config/node
   install_repo --product <product_name> config/node
+  update_repo --product <profuct_name> config/node
 
 EXAMPLES:
   mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
@@ -49,6 +50,7 @@ EXAMPLES:
   mdbci --repo-dir /home/testbed/config/repos show repos
   mdbci up --attempts 4 T/node0
   mdbci install_repo --product maxscale T/node0
+  mdbci update_repo --product maxscale T/node0
   EOF
 
 end
