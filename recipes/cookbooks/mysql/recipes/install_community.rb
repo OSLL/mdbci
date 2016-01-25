@@ -52,13 +52,13 @@ case node[:platform_family]
     end
 
     copycmd = 'cp /home/vagrant/cnf_templates/' + node['mysql']['cnf_template'] + ' /etc/mysql/my.cnf.d/'
-    execute "Copy mdbci_server.cnf to cnf_template directory" do
+    execute "Copy server.cnf to cnf_template directory" do
       command copycmd
     end
 
     # /etc/mysql/my.cnf.d -- dir for *.cnf files
     addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
-    execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
+    execute "Add server.cnf to my.cnf includedir parameter" do
       command addlinecmd
     end
 
@@ -66,13 +66,14 @@ case node[:platform_family]
 
     # /etc/my.cnf.d -- dir for *.cnf files
     copycmd = 'cp /home/vagrant/cnf_templates/' + node['mysql']['cnf_template'] + ' /etc/my.cnf.d'
-    execute "Copy mdbci_server.cnf to cnf_template directory" do
+    execute "Copy server.cnf to cnf_template directory" do
       command copycmd
     end
 
-  # TODO: check if line already exist !!!
-  #addlinecmd = "replace '!includedir /etc/my.cnf.d' '!includedir " + node['mariadb']['cnf_template'] + "' -- /etc/my.cnf"
-  #execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-  #  command addlinecmd
-  #end
+    # TODO: check if line already exist !!!
+    #addlinecmd = "replace '!includedir /etc/my.cnf.d' '!includedir " + node['mariadb']['cnf_template'] + "' -- /etc/my.cnf"
+    addlinecmd = 'echo "!includedir /etc/my.cnf.d" >> /etc/my.cnf'
+    execute "Add server.cnf to my.cnf !includedir parameter" do
+      command addlinecmd
+    end
 end
