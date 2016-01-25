@@ -1,9 +1,6 @@
 require 'scanf'
 require 'yaml'
 
-require 'net/ssh'   # gem install net-ssh
-require 'net/scp'   # gem install net-scp
-
 require_relative  '../core/out'
 
 
@@ -85,14 +82,8 @@ class NodeProduct
             if $session.nodeProduct == 'maxscale'
               repo = getMaxscaleRepoByBox(box)
               if !repo.nil?
-                # 1
-                # create repo file for each os and download it to server
-                # ssh sudo: https://irb.rocks/execute-sudo-commands-with-net-ssh
-                # maxscaleMdbciNetScpCmd(pwd, platform[0], repo, mdbci_params)
-                #
-                # 2
                 # # { ssh ... } version
-                #  P.S. Add NOPASSWD:ALL for node ssh user !
+                #  P.S. Add NOPASSWD:ALL for node ssh user, for example, vagranttest ALL=(ALL) NOPASSWD:ALL
                 command = maxscaleMdbciInstallRepoCmd(platform[0], repo)
                 cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
                               + mdbci_params['user'].to_s + '@'\
@@ -101,23 +92,6 @@ class NodeProduct
                 $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
                 vagrant_out = `#{cmd}`
                 $out.out vagrant_out
-                #
-                # 3
-                # # { scp ... } version
-                #   - P.S. Need root password or key for access to /
-                # createMaxscaleRepoFileMdbciScp(pwd, platform[0], repo)
-                # remotepath = ''
-                #if platform == 'ubuntu' || platform == 'debian'
-                #  remotepath = '/etc/apt/sources.list.d'
-                #end
-                #cmd = 'scp -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
-                #                + pwd.to_s+'/maxscale.list '\
-                #                + mdbci_params['user'].to_s + '@'\
-                #                + mdbci_params['IP'].to_s + ':'\
-                #                + remotepath.to_s
-                #$out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
-                #vagrant_out = `#{cmd}`
-                #$out.out vagrant_out
               end
             elsif $session.nodeProduct == 'mariadb'
               # TODO
@@ -145,7 +119,7 @@ class NodeProduct
                               + "'" + command + "'"
               $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
               vagrant_out = `#{cmd}`
-              #$out.out vagrant_out
+              $out.out vagrant_out
             end
           elsif $session.nodeProduct == 'mariadb'
             # TODO
@@ -223,80 +197,17 @@ class NodeProduct
   def self.maxscaleMdbciInstallRepoCmd(platform, repo)
     if platform == 'ubuntu' || platform == 'debian'
       cmd_install_repo = 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
-		                   + 'sudo echo -e \"deb '+repo['repo']+'\" | sudo tee -a /etc/apt/sources.list.d/maxscale.list'
+		                   + 'sudo echo -e deb '+repo['repo']+' | sudo tee -a /etc/apt/sources.list.d/maxscale.list'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
       cmd_install_repo = 'sudo dd if=/dev/null of=/etc/yum.repos.d/maxscale.repo && '\
-		                   + 'sudo echo -e \"[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'
-                       + 'gpgcheck=1\" | sudo tee -a /etc/yum.repos.d/maxscale.repo'
+		                   + 'sudo echo -e [maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'
+                       + 'gpgcheck=1 | sudo tee -a /etc/yum.repos.d/maxscale.repo'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
       cmd_install_repo = 'sudo dd if=/dev/null of=/etc/zypp/repos.d/maxscale.repo && '\
-		                   + 'sudo echo -e \"[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'
-                       + 'gpgcheck=1\" | sudo tee -a /etc/zypp/repos.d/maxscale.repo'
+		                   + 'sudo echo -e [maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'
+                       + 'gpgcheck=1 | sudo tee -a /etc/zypp/repos.d/maxscale.repo'
     end
     return cmd_install_repo
-  end
-
-  # for net-scp version
-  def self.createMaxscaleRepoFileMdbciScp(dir, platform, repo)
-
-    if platform == 'ubuntu' || platform == 'debian'
-      debrepofile = File.open(dir+'/maxscale.list', 'w')
-      debrepofile.puts 'deb '+repo['repo']
-      debrepofile.close
-    elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
-      rhelrepofile = File.open(dir+'/maxscale.repo', 'w')
-      rhelrepofile.puts '[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'+ 'gpgcheck=1'
-      rhelrepofile.close
-    elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
-      slesrepofile = File.open(dir+'/maxscale.repo', 'w')
-      slesrepofile.puts = '[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'+ 'gpgcheck=1'
-      slesrepofile.close
-    else
-      $out.info 'Unknown mdbci platform!'
-      return 1
-    end
-
-  end
-
-  # TODO
-  '''
-    /home/h05t/.rbenv/versions/2.2.2/lib/ruby/gems/2.2.0/gems/net-scp-1.2.1/lib/net/scp.rb:365:in
-    block (3 levels) in start_command: SCP did not finish successfully (1):  (Net::SCP::Error)
-  '''
-  # for net-scp version
-  def self.maxscaleMdbciNetScpCmd(dir, platform, repo, mdbci_params)
-
-    if platform == 'ubuntu' || platform == 'debian'
-      debrepofile = File.open(dir+'/maxscale.list', 'w')
-      debrepofile.puts 'deb '+repo['repo']
-      debrepofile.close
-      #
-      keyfile = IO.read(dir.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s)
-      Net::SSH.start(mdbci_params['IP'].to_s, mdbci_params['user'].to_s, :key_data => keyfile.to_s, :keys_only => true) do |ssh|
-        channel = ssh.scp.upload!(dir+'/maxscale.list', '/etc/apt/sources.list.d')
-        channel.wait
-        #$out.info result.to_s
-      end
-      #
-    elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
-      rhelrepofile = File.open(dir+'/maxscale.repo', 'w')
-      rhelrepofile.puts '[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'+ 'gpgcheck=1'
-      rhelrepofile.close
-      #
-      Net.SCP.upload!(mdbci_params['IP'].to_s, mdbci_params['user'].to_s, dir+'/maxscale.list', '/etc/yum.repos.d/', 'key')
-      #
-    elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
-      slesrepofile = File.open(dir+'/maxscale.repo', 'w')
-      slesrepofile.puts = '[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+repo['repo']+'\n'+'gpgkey='+repo['repo_key']+'\n'+ 'gpgcheck=1'
-      slesrepofile.close
-      #
-      Net.SCP.upload!(mdbci_params['IP'].to_s, mdbci_params['user'].to_s, dir+'/maxscale.list', '/etc/zypp/repos.d/', 'key')
-      #
-    else
-      $out.info 'Unknown mdbci platform!'
-      return 1
-    end
-
   end
 
 end
