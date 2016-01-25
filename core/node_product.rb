@@ -55,6 +55,7 @@ class NodeProduct
   end
   #
   # Install repo for product to nodes
+  #  P.S. Add NOPASSWD:ALL for mdbci node ssh user, for example, vagranttest ALL=(ALL) NOPASSWD:ALL to /etc/sudoers
   def self.installProductRepo(args)
 
     pwd = Dir.pwd
@@ -75,9 +76,8 @@ class NodeProduct
           if !box.empty?
             mdbci_params = $session.boxes.getBox(box)
             #
-	          # TODO - get repo for mariadb, galera, mysql
-            #  - Where to store product version for mdbci boxes? In boxes.json node description!
- 	          #
+            # TODO - get repo for mariadb, galera, mysql
+            # - Where to store product version for mdbci boxes? In boxes.json node description!
             platform = $session.platformKey(box).split('^')
             $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
             case $session.nodeProduct
@@ -85,7 +85,6 @@ class NodeProduct
                 repo = getMaxscaleRepoByBox(box)
                 if !repo.nil?
                   # # { ssh ... } version
-                  #  P.S. Add NOPASSWD:ALL for node ssh user, for example, vagranttest ALL=(ALL) NOPASSWD:ALL
                   command = maxscaleMdbciInstallRepoCmd(platform[0], repo)
                   cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
                                 + mdbci_params['user'].to_s + '@'\
