@@ -23,6 +23,12 @@
     "platform": "ubuntu",
     "platform_version": "precise"
   },
+  "ubuntu_precise32": {
+    "provider": "virtualbox",
+    "box": "hashicorp/precise32",
+    "platform": "ubuntu",
+    "platform_version": "precise"
+  },
   "centos6": {
     "provider": "virtualbox",
     "box": "bento/centos-6.7",

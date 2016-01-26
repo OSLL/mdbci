@@ -20,6 +20,8 @@ class Network
   def loadNodes(config)
     $out.info 'Load configuration nodes from vagrant status ...'
 
+    pwd = Dir.pwd
+
     Dir.chdir config.to_s
 
     vagrant_out = `vagrant status`
@@ -57,6 +59,7 @@ class Network
       getNodeInfo(config, list[x])
     end
 
+    Dir.chdir pwd
   end
 
 
@@ -71,6 +74,8 @@ class Network
     end
 
     args = name.split('/')
+
+    Dir.chdir args[0].to_s
 
     # mdbci ppc64 boxes
     if File.exist?(args[0]+'/mdbci_template')
@@ -122,6 +127,8 @@ class Network
     end
 
     args = name.split('/')
+
+    Dir.chdir args[0].to_s
 
     # mdbci ppc64 boxes
     if File.exist?(args[0]+'/mdbci_template')
@@ -176,6 +183,8 @@ class Network
     end
 
     args = name.split('/')
+
+    Dir.chdir args[0].to_s
 
     # mdbci box
     if File.exist?(args[0]+'/mdbci_template')
