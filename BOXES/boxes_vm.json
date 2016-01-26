@@ -1,19 +1,13 @@
 {
   "ubuntu_trusty": {
     "provider": "virtualbox",
-    "box": "chef/ubuntu-14.04",
+    "box": "bento/ubuntu-14.04",
     "platform": "ubuntu",
     "platform_version": "trusty"
   },
-  "ubuntu_utopic": {
-    "provider": "virtualbox",
-    "box": "chef/ubuntu-14.10",
-    "platform": "ubuntu",
-    "platform_version": "utopic"
-  },
   "ubuntu_precise": {
     "provider": "virtualbox",
-    "box": "chef/ubuntu-12.04",
+    "box": "bento/ubuntu-12.04",
     "platform": "ubuntu",
     "platform_version": "precise"
   },

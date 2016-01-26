@@ -1,4 +1,10 @@
 {
+  "debian_7.5_libvirt": {
+    "provider": "libvirt",
+    "box": "baremettle/debian-7.5",
+    "platform": "debian",
+    "platform_version": "wheezy"
+  },
   "ubuntu_trusty_libvirt": {
     "provider": "libvirt",
     "box": "baremettle/ubuntu-14.04",
