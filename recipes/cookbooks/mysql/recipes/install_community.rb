@@ -57,7 +57,7 @@ case node[:platform_family]
     end
 
     # /etc/mysql/my.cnf.d -- dir for *.cnf files
-    addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
+    addlinecmd = 'echo -e \''+'\n'+'!includedir /etc/mysql/my.cnf.d\' | tee -a /etc/mysql/my.cnf'
     execute "Add server.cnf to my.cnf includedir parameter" do
       command addlinecmd
     end
@@ -72,7 +72,7 @@ case node[:platform_family]
 
     # TODO: check if line already exist !!!
     #addlinecmd = "replace '!includedir /etc/my.cnf.d' '!includedir " + node['mariadb']['cnf_template'] + "' -- /etc/my.cnf"
-    addlinecmd = 'echo "!includedir /etc/my.cnf.d" >> /etc/my.cnf'
+    addlinecmd = 'echo -e \''+'\n'+'!includedir /etc/my.cnf.d\' | tee -a /etc/my.cnf'
     execute "Add server.cnf to my.cnf !includedir parameter" do
       command addlinecmd
     end
