@@ -44,18 +44,20 @@ class Node
     @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
   end
 
-  def getIp(provider, platform, is_private)
+  def getIp(provider, platform_version, is_private)
+
+    platform = platform_version.split('^')
     case provider
       when '(virtualbox)'
         getInterfaceBoxIp(@name, "eth1", "inet addr:%s Bcast")
       when '(libvirt)'
-        if platform == "ubuntu" || platform == "debian"
+        if platform[0] == "ubuntu" || platform[0] == "debian" || (platform[0] == "centos" && platform[1] == "6")
           getInterfaceBoxIp(@name, "eth0", "inet addr:%s  Bcast")
         else
           getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
         end
       when '(docker)'
-        if platform == "ubuntu" || platform == "debian"
+        if platform[0] == "ubuntu" || platform[0] == "debian"
           getInterfaceBoxIp(@name, "eth0", "inet addr:%s  Bcast")
         else
           getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
@@ -82,6 +84,7 @@ class Node
     else
       $out.warning('IP address is not received!')
     end
+
   end
 
   def initialize(config, initString)

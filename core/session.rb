@@ -374,7 +374,7 @@ class Session
   end
 
   # load node platform by name
-  def loadNodePlatformBy(name)
+  def loadNodePlatformVersionByName(name)
 
     pwd = Dir.pwd
     # boxes.json
@@ -389,7 +389,8 @@ class Session
     if $session.boxes.has_key?(box)
       box_params = $session.boxes[box]
       platform = box_params["platform"].to_s
-      return platform
+      platform_version = box_params["platform_version"].to_s
+      return platform.to_s+'^'+platform_version.to_s
     else
       $out.warning name.to_s+" platform does not exist! Please, check box name!"
     end

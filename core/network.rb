@@ -150,14 +150,14 @@ class Network
 
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
-          platform = $session.loadNodePlatformBy(node.name)
-          node.getIp(node.provider, platform, false)
+          platform_version = $session.loadNodePlatformVersionByName(node.name)
+          node.getIp(node.provider, platform_version, false)
           $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
-        platform = $session.loadNodePlatformBy(node.name)
-        node.getIp(node.provider, platform, false)
+        platform_version = $session.loadNodePlatformVersionByName(node.name)
+        node.getIp(node.provider, platform_version, false)
         $out.out node.ip.to_s
       end
     end
@@ -204,14 +204,14 @@ class Network
 
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
-          platform = $session.loadNodePlatformBy(node.name)
-          node.getIp(node.provider, platform, true)
+          platform_version = $session.loadNodePlatformVersionByName(node.name)
+          node.getIp(node.provider, platform_version, true)
           $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
-        platform = $session.loadNodePlatformBy(node.name)
-        node.getIp(node.provider, platform, true)
+        platform_version = $session.loadNodePlatformVersionByName(node.name)
+        node.getIp(node.provider, platform_version, true)
         $out.out node.ip.to_s
       end
     end
