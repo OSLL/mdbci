@@ -19,7 +19,8 @@ opts = GetoptLong.new(
     ['--silent', '-s', GetoptLong::NO_ARGUMENT],
     ['--repo-dir','-r',GetoptLong::REQUIRED_ARGUMENT],
     ['--attempts','-a',GetoptLong::REQUIRED_ARGUMENT],
-    ['--product','-p',GetoptLong::REQUIRED_ARGUMENT]
+    ['--product','-p',GetoptLong::REQUIRED_ARGUMENT],
+    ['--key','-k',GetoptLong::REQUIRED_ARGUMENT]
 )
 
 $session = Session.new
@@ -61,6 +62,10 @@ opts.each do |opt, arg|
 
     when '--product'
       if arg != ''; $session.nodeProduct = arg; end
+
+    when '--key'
+      if arg != ''; $session.keyFile = arg; end
+      $out.info 'Using keyfile '+$session.keyFile
 
     else
       $out.error 'Option are not supported: '+opt

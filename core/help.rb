@@ -28,11 +28,15 @@ mdbci [option] <show | setup | generate>
 -r, --repo-dir
   Change default place for repo.d
 
--a --attempts
+-a, --attempts
   Deploy configuration or node
 
 -p, --product
   Product name for install and update repo commands
+
+-k, --key
+  Keyfile to the node for public_keys command
+
 
 COMMANDS:
   show [boxes, platforms, versions, network, repos [config | config/node], keyfile config/node ]
@@ -43,6 +47,7 @@ COMMANDS:
   up [--attempts 'attempts arguments'] config | config/node
   install_repo --product <product_name> config/node
   update_repo --product <profuct_name> config/node
+  public_keys --key keyfile.pem config/node
 
 EXAMPLES:
   mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
@@ -51,6 +56,7 @@ EXAMPLES:
   mdbci up --attempts 4 T/node0
   mdbci install_repo --product maxscale T/node0
   mdbci update_repo --product maxscale T/node0
+  mdbci public_keys --key keyfile.pem T/node0
   EOF
 
 end

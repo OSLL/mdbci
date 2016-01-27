@@ -3,7 +3,7 @@ require 'shellwords'
 include_recipe "mariadb::mdbcrepos"
 
 # install default packages
-[ "net-tools" ].each do |pkg|
+[ "net-tools", "psmisc" ].each do |pkg|
   package pkg
 end
 
@@ -41,16 +41,6 @@ if node['mariadb']['version'] == "5.1"
 end
 
 system 'echo Platform family: '+node[:platform_family]
-
-# install ifconfig
-case node[:platform_family]
-  when "rhel", "centos"
-    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
-      execute "Install ifconfig" do
-        command "yum --assumeyes install net-tools"
-      end
-    end
-end
 
 # check and install iptables
 case node[:platform_family]

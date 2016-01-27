@@ -31,6 +31,7 @@ class Session
   attr_accessor :boxesDir
   attr_accessor :mdbciDir
   attr_accessor :nodeProduct
+  attr_accessor :keyFile
 
   def initialize
     @boxesDir = './BOXES'
@@ -270,6 +271,9 @@ class Session
     when 'update_repo'
       NodeProduct.updateProductRepo(ARGV.shift)
 
+    when 'public_keys'
+      exit_code = $session.publicKeys(ARGV.shift)
+
     else
       exit_code = 1
       puts 'ERR: Something wrong with command line'
@@ -408,6 +412,94 @@ class Session
       }
     end
     Dir.chdir pwd
+    
+    return exit_code
+  end
+
+
+  # copy ssh keys to config/node
+  def publicKeys(args)
+
+    pwd = Dir.pwd
+    exit_code = 1 # error
+
+    if args.nil?
+      $out.error 'Configuration name is required'
+      return
+    end
+
+    args = args.split('/')
+
+    # mdbci box
+    if File.exist?(args[0]+'/mdbci_template')
+      loadMdbciNodes args[0]
+      if args[1].nil?     # read ip for all nodes
+        $session.mdbciNodes.each do |node|
+          box = node[1]['box'].to_s
+          if !box.empty?
+            mdbci_params = $session.boxes.getBox(box)
+            #
+            keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!"){File.read(pwd.to_s+'/'+@keyFile.to_s)}
+            # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
+            command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
+            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+                            + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
+                            + "\"" + command + "\""
+            $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
+            vagrant_out = `#{cmd}`
+            # TODO
+            exit_code = 0
+          end
+        end
+      else
+        mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == args[1] }
+        box = mdbci_node[1]['box'].to_s
+        if !box.empty?
+          mdbci_params = $session.boxes.getBox(box)
+          #
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!"){File.read(pwd.to_s+'/'+@keyFile.to_s)}
+          # add to the end of the authorized_keys file in ~/.ssh directory
+          command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
+          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+                          + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
+                          + "\"" + command + "\""
+          $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
+          vagrant_out = `#{cmd}`
+          # TODO
+          exit_code = 0
+        end
+      end
+    else # aws, vbox, libvirt, docker nodes
+      network = Network.new
+      network.loadNodes args[0] # load nodes from dir
+
+      if args[1].nil? # No node argument, copy keys to all nodes
+        network.nodes.each do |node|
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read("#{pwd.to_s}/#{@keyFile.to_s}")}
+          # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
+          cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
+          $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
+          vagrant_out = `#{cmd}`
+          $out.out vagrant_out
+          # TODO
+          exit_code = 0
+        end
+      else
+        node = network.nodes.find { |elem| elem.name == args[1]}
+        #
+        keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read("#{pwd.to_s}/#{@keyFile.to_s}")}
+        # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
+        cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
+        $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
+        vagrant_out = `#{cmd}`
+        $out.out vagrant_out
+        # TODO
+        exit_code = 0
+      end
+    end
+
+    Dir.chdir pwd
+
     return exit_code
   end
 
