@@ -19,11 +19,8 @@ opts = GetoptLong.new(
     ['--silent', '-s', GetoptLong::NO_ARGUMENT],
     ['--repo-dir','-r',GetoptLong::REQUIRED_ARGUMENT],
     ['--attempts','-a',GetoptLong::REQUIRED_ARGUMENT],
-<<<<<<< HEAD
-    ['--product','-p',GetoptLong::REQUIRED_ARGUMENT]
-=======
+    ['--product','-p',GetoptLong::REQUIRED_ARGUMENT],
     ['--key','-k',GetoptLong::REQUIRED_ARGUMENT]
->>>>>>> integration
 )
 
 $session = Session.new
