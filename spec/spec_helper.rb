@@ -8,7 +8,7 @@ module ExecutionHelper
     @original_stderr, $stderr = $stderr, File.open('/dev/null', 'w')
   end
 
-  def save_and_reset_output
+  def reset_output
     $stdout, @original_stdout = @original_stdout, nil
     $stderr, @original_stderr = @original_stderr, nil
   end
@@ -66,7 +66,7 @@ RSpec.configure do |config|
     redirect_output
   end
   config.after(:each) do
-    save_and_reset_output
+    reset_output
   end
 
 # The settings below are suggested to provide a good initial experience
