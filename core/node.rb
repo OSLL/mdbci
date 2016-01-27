@@ -1,5 +1,7 @@
 require 'scanf'
 require 'yaml'
+#require 'resolv'
+require 'ipaddress'
 
 require_relative  '../core/out'
 
@@ -40,26 +42,32 @@ class Node
     cmd = 'vagrant ssh '+node_name+' -c "/sbin/ifconfig '+iface+' | grep \"inet \" "'
     vagrant_out = `#{cmd}`
     ip = vagrant_out.scanf(parse_str.to_s)
-    $out.info 'Node.GetIp '+cmd
-    @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
+
+    # TODO add check ip with RegExp and del addr or inet by hands !!!
+    #puts ip =~ Resolv::IPv4::Regex ? true : false
+
+    ip_addr = IPAddress.parse ip[0]
+
+    if IPAddress.valid?(ip[0])
+      $out.info 'IP Address '+ip_addr.to_s+' VALID!'
+    else
+      $out.info 'IP Address '+ip_addr.to_s+' NOT VALID!'
+    end
+
+    #$out.info 'Node.GetIp '+cmd
+    @ip = ip_addr.nil? ? '127.0.0.1' : ip_addr
   end
 
-  def getIp(provider, platform, is_private)
+  def getIp(provider, is_private)
     case provider
       when '(virtualbox)'
         getInterfaceBoxIp(@name, "eth1", "inet addr:%s Bcast")
       when '(libvirt)'
-        if platform == "ubuntu" || platform == "debian"
-          getInterfaceBoxIp(@name, "eth0", "inet addr:%s  Bcast")
-        else
-          getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
-        end
+        getInterfaceBoxIp(@name, "eth0", "inet addr:%s  netmask")
+        #getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
       when '(docker)'
-        if platform == "ubuntu" || platform == "debian"
-          getInterfaceBoxIp(@name, "eth0", "inet addr:%s  Bcast")
-        else
-          getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
-        end
+        getInterfaceBoxIp(@name, "eth0", "inet addr:%s  Bcast")
+        #getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
       when '(aws)'
         if curlCheck
           if is_private

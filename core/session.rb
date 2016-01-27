@@ -496,26 +496,6 @@ class Session
     end
     return exit_code
   end
-
-  # TODO: refactoring this function!
-  # load node platform by name
-  def loadNodePlatformBy(name)
-
-    pwd = Dir.pwd
-    # template file
-    templateFile = $exception_handler.handle('Template nodes file not found') {IO.read(pwd.to_s+'/template')}
-    templateNodes =  $exception_handler.handle('Template configuration file invalid') {JSON.parse(IO.read(@mdbciDir.to_s+"/"+templateFile))}
-    #
-    node = templateNodes.find { |elem| elem[0].to_s == name }
-    box = node[1]['box'].to_s
-    if $session.boxes.boxesManager.has_key?(box)
-      box_params = $session.boxes.getBox(box)
-      platform = box_params["platform"].to_s
-      return platform
-    else
-      $out.warning name.to_s+" platform does not exist! Please, check box name!"
-    end
-
-  end
+  
 
 end
