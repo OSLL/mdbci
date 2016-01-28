@@ -16,6 +16,7 @@ end
 # here will be tasks without parameters
 task :run do
   Rake::Task[:task_generator].execute
+  Rake::Task[:task_6641_setup_exit_code].execute
 
   RakeTaskManager.get_failed_tests_info
 end
@@ -33,5 +34,9 @@ task :task_6639_ssh_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINod
 end
 
 task :task_generator do |t|
+  RakeTaskManager.new(t).run
+end
+
+task :task_6641_setup_exit_code do |t|
   RakeTaskManager.new(t).run
 end
