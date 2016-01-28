@@ -9,6 +9,7 @@ task :run_parametrized do
     :pathToConfigToMDBCIBadNode=>'TEST2/mdbcinodebad',
     :pathToConfigToMDBCIFolder=>'TEST1'
   })
+  Rake::Task[:task_6640_sudo_exit_code].execute({:pathToConfigToVBOXNode=>'TEST/vboxnode'})
 
   RakeTaskManager.get_failed_tests_info
 end
@@ -29,6 +30,10 @@ end
 # like that [:arg1, :arg2, ...] so then in ENV they would be available like ENV['arg1']
 # then in cmd: rake task_6639_ssh_exit_code['TEST/vboxnode']
 task :task_6639_ssh_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args|
+  RakeTaskManager.new(t).run_parametrized(args)
+end
+
+task :task_6640_sudo_exit_code, [:pathToConfigToVBOXNode] do |t, args|
   RakeTaskManager.new(t).run_parametrized(args)
 end
 

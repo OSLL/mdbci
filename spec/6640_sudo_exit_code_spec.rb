@@ -17,14 +17,14 @@ describe 'Session' do
     $session.boxes = BoxesManager.new boxesPath
     reposPath = './repo.d'
     $session.repos = RepoManager.new reposPath
+    $session.command = 'ls'
   end
 
   it '#sudo should exit with zero code for aws/vbox nodes nodes' do
-    # should be initialized machine to test aws/vbox nodes
-    # $session.ssh('TEST_MACHINE').should(eql(0))
+    $session.ssh(ENV['pathToConfigToVBOXNode'].to_s).should(eql(0))
   end
 
-  it '#sudo should exit with non-zero code for aws/vbox nodes nodes' do
+  it '#sudo should exit with non-zero code for aws/vbox nodes nodes (no such machine exists)' do
     $session.sudo('TEST_MACHINE').should(eql(1))
   end
 
