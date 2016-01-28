@@ -3,13 +3,20 @@ require_relative 'spec/rake_helper'
 
 # here you need to add task with appropriate parameters
 task :run_parametrized do
-  Rake::Task[:task_6639_ssh_exit_code].execute({:pathToConfig=>'TEST/vboxnode'})
+  Rake::Task[:task_6639_ssh_exit_code].execute({
+    :pathToConfigToVBOXNode=>'TEST/vboxnode',
+    :pathToConfigToMDBCINode=>'TEST1/mdbcinode',
+    :pathToConfigToMDBCIBadNode=>'TEST2/mdbcinodebad',
+    :pathToConfigToMDBCIFolder=>'TEST1'
+  })
+
   RakeTaskManager.get_failed_tests_info
 end
 
 # here will be tasks without parameters
 task :run do
   Rake::Task[:task_generator].execute
+
   RakeTaskManager.get_failed_tests_info
 end
 
@@ -21,7 +28,7 @@ end
 # in this case if you want to run only next task with parameters - you need to define parameters
 # like that [:arg1, :arg2, ...] so then in ENV they would be available like ENV['arg1']
 # then in cmd: rake task_6639_ssh_exit_code['TEST/vboxnode']
-task :task_6639_ssh_exit_code, [:pathToConfig] do |t, args|
+task :task_6639_ssh_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args|
   RakeTaskManager.new(t).run_parametrized(args)
 end
 

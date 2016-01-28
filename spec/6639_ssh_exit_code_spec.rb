@@ -20,21 +20,29 @@ describe 'Session' do
     $session.command = 'ls'
   end
 
-  it '#ssh should exit with zero code for mdbci/ppc64 nodes' do
-    # should be initialized machine to test mdbci/ppc64 nodes
-    # $session.ssh('TEST_MACHINE').should(eql(0))
+  # Before all tests must be generated configurations
+  # vagrant machine must be running
+  # for mdbci node must be created appropriate mdbci_template file and
+  # must be prepared box with IP and keyfile location that is targeting real running machine
+  # that can be accessed through ssh
+
+  it '#ssh should exit with zero code for concrete mdbci/ppc64 node' do
+    $session.ssh(ENV['pathToConfigToMDBCINode'].to_s).should(eql(0))
   end
 
-  it '#ssh should exit with non-zero code for mdbci/ppc64 nodes' do
-    # should be initialized machine to test mdbci/ppc64 nodes
-    # $session.ssh('TEST_MACHINE').should(eql(1))
+  it '#ssh should exit with zero code for all mdbci/ppc64 nodes' do
+    $session.ssh(ENV['pathToConfigToMDBCIFolder'].to_s).should(eql(0))
   end
 
-  it '#ssh should exit with zero code for aws/vbox nodes nodes' do
-    $session.ssh(ENV['pathToConfig'].to_s).should(eql(0))
+  it '#ssh should exit with zero code for all aws/vbox nodes' do
+    $session.ssh(ENV['pathToConfigToVBOXNode'].to_s).should(eql(0))
   end
 
-  it '#ssh should exit with non-zero code for aws/vbox nodes nodes' do
+  it '#ssh should exit with non-zero code for mdbci/ppc64 nodes (when IP is wrong)' do
+    $session.ssh(ENV['pathToConfigToMDBCIBadNode'].to_s).should(eql(1))
+  end
+
+  it '#ssh should exit with non-zero code (when no such machine exists)' do
     $session.ssh('TEST_MACHINE').should(eql(1))
   end
 
