@@ -1,5 +1,6 @@
 require 'scanf'
 require 'yaml'
+require 'ipaddress'
 
 require_relative  '../core/out'
 
@@ -36,30 +37,26 @@ class Node
   end
 
   # get node ip address from ifconfig interface
-  def getInterfaceBoxIp(node_name, iface, parse_str)
+  def getInterfaceBoxIp(node_name, iface)
     cmd = 'vagrant ssh '+node_name+' -c "/sbin/ifconfig '+iface+' | grep \"inet \" "'
     vagrant_out = `#{cmd}`
-    ip = vagrant_out.scanf(parse_str.to_s)
-    $out.info 'Node.GetIp '+cmd
-    @ip = ip[0].nil? ? '127.0.0.1' : ip[0]
+    # parse ifconfig output
+    ip = vagrant_out.scanf("inet %s")
+    # del addr: from ip
+    ip_addr = ip[0].to_s.sub('addr:','')
+    # check ip with a IP RegExp
+    IPAddress.valid?(ip_addr.to_s) ? $out.info('Node IP '+ip_addr.to_s+' is valid!') : $out.info('Node IP '+ip_addr.to_s+' is not valid!')
+    @ip = ip_addr.nil? ? '127.0.0.1' : ip_addr
   end
 
-  def getIp(provider, platform, is_private)
+  def getIp(provider, is_private)
     case provider
       when '(virtualbox)'
-        getInterfaceBoxIp(@name, "eth1", "inet addr:%s Bcast")
+        getInterfaceBoxIp(@name, "eth1")
       when '(libvirt)'
-        if platform == "ubuntu" || platform == "debian"
-          getInterfaceBoxIp(@name, "eth0", "inet addr:%s  Bcast")
-        else
-          getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
-        end
+        getInterfaceBoxIp(@name, "eth0")
       when '(docker)'
-        if platform == "ubuntu" || platform == "debian"
-          getInterfaceBoxIp(@name, "eth0", "inet addr:%s  Bcast")
-        else
-          getInterfaceBoxIp(@name, "eth0", "inet %s  netmask")
-        end
+        getInterfaceBoxIp(@name, "eth0")
       when '(aws)'
         if curlCheck
           if is_private
@@ -77,11 +74,7 @@ class Node
       else
         $out.warning('WARNING: Unknown machine type!')
     end
-    if !@ip.to_s.empty?
-      $out.info('IP:'+@ip.to_s)
-    else
-      $out.warning('IP address is not received!')
-    end
+    !@ip.to_s.empty? ? $out.info('IP:'+@ip.to_s) : $out.warning('IP address is not received!')
   end
 
   def initialize(config, initString)
