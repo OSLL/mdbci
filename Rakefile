@@ -9,6 +9,12 @@ task :run_parametrized do
     :pathToConfigToMDBCIBadNode=>'TEST2/mdbcinodebad',
     :pathToConfigToMDBCIFolder=>'TEST1'
   })
+  Rake::Task[:task_6642_show_keyfile_exit_code].execute({
+    :pathToConfigToVBOXNode=>'TEST/vboxnode',
+    :pathToConfigToMDBCINode=>'TEST1/mdbcinode',
+    :pathToConfigToMDBCIBadNode=>'TEST2/mdbcinodebad',
+    :pathToConfigToMDBCIFolder=>'TEST1'
+  })
 
   RakeTaskManager.get_failed_tests_info
 end
@@ -34,4 +40,8 @@ end
 
 task :task_generator do |t|
   RakeTaskManager.new(t).run
+end
+
+task :task_6642_show_keyfile_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args|
+  RakeTaskManager.new(t).run_parametrized(args)
 end
