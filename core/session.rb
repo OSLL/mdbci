@@ -127,7 +127,7 @@ class Session
     Dir.chdir pwd
 
     if exit_code != 0
-      $out.error "command 'vagrant ssh' exit with non-zero code: #{exit_code}"
+      $out.error "command '#{possibly_failed_command}' exit with non-zero code: #{exit_code}"
       exit_code = 1
     end
 
