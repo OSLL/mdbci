@@ -148,11 +148,14 @@ class Session
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
   def ssh(args)
 
+    exit_code = 0
+    possibly_failed_command = ''
+
     pwd = Dir.pwd
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return
+      return 1
     end
 
     params = args.split('/')
@@ -171,6 +174,8 @@ class Session
                             + "'" + $session.command + "'"
             $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
             vagrant_out = `#{cmd}`
+            exit_code = $?.exitstatus
+            possibly_failed_command = cmd
             $out.out vagrant_out
           end
         end
@@ -185,20 +190,33 @@ class Session
                           + "'" + $session.command + "'"
           $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
           vagrant_out = `#{cmd}`
+          exit_code = $?.exitstatus
+          possibly_failed_command = cmd
           $out.out vagrant_out
         end
       end
     else # aws, vbox nodes
+      unless Dir.exist?(params[0])
+        $out.error 'Machine with such name does not exist'
+        return 1
+      end
       Dir.chdir params[0]
       cmd = 'vagrant ssh '+params[1].to_s+' -c "'+$session.command+'"'
       $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
-
       vagrant_out = `#{cmd}`
+      exit_code = $?.exitstatus
+      possibly_failed_command = cmd
       $out.out vagrant_out
-
       Dir.chdir pwd
     end
 
+    if exit_code != 0
+      $out.error "'ssh' (or 'vagrant ssh') command returned non-zero exit code: (#{$?.exitstatus})"
+      $out.error "failed ssh command: #{possibly_failed_command}"
+      exit_code = 1
+    end
+
+    return exit_code
 
   end
 
