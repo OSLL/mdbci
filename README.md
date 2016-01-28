@@ -394,18 +394,28 @@ mdbci [options] <show | setup | generate>
 
 -r, --repo-dir
   Change default place for repo.d
+  
+-p, --product
+  Product name for install and update repo commands. Currently supported only **Maxscale** product.
 
 ### Commands:
 
-  show [boxes, platforms, versions, network, repos [config | config/node], keyfile [config/node] ]
+show [boxes, platforms, versions, network, repos [config | config/node], keyfile [config/node] ]
   
-  generate
+generate
   
-  setup [boxes]
+setup [boxes]
   
-  sudo --command 'command arguments' config/node
+sudo --command 'command arguments' config/node
 
-  ssh --command 'command arguments' config/node
+ssh --command 'command arguments' config/node
+  
+install_repo --product 'product name' config/node
+  Install product repo on the specified node. Product is defined by **--product** command option.
+  **P.S.** SSH access to the **MDBCI** boxes needs **NOPASSWD:ALL** option in the **/etc/sudoers** file for the mdbci ssh user. 
+   
+update_repo --product 'product name' config/node
+  Update product repo at the specified node, such as 'apt-get update' command. 
 
 ### Examples:
 
@@ -414,11 +424,13 @@ Run command inside of VM
 ```
   ./mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
   ./mdbci ssh --command "cat anaconda.syslog" T/node0 --silent
+  ./mdbci install_repo --product 'maxscale' T/node0
+  ./mdbci update_repo --product 'maxscale' T/node0
 ```
   
 Show repos with using alternative repo.d repository
 ```
-  mdbci --repo-dir /home/testbed/config/repos show repos
+  ./mdbci --repo-dir /home/testbed/config/repos show repos
 ```
   
 ## Using vagrant to manage stand

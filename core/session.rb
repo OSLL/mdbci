@@ -25,16 +25,19 @@ class Session
   attr_accessor :repos
   attr_accessor :repoDir
   attr_accessor :mdbciNodes       # mdbci nodes
+  attr_accessor :templateNodes
   attr_accessor :nodesProvider   # current configuration provider
   attr_accessor :attempts
   attr_accessor :boxesDir
   attr_accessor :mdbciDir
+  attr_accessor :nodeProduct
   attr_accessor :keyFile
 
   def initialize
     @boxesDir = './BOXES'
     @repoDir = './repo.d'
     @mdbciNodes = Hash.new
+    @templateNodes = Hash.new
   end
 
 =begin
@@ -113,6 +116,16 @@ class Session
     $out.out vagrant_out
 
     Dir.chdir pwd
+  end
+
+  # load template nodes
+  def loadTemplateNodes()
+    pwd = Dir.pwd
+    instanceFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read(pwd+'/template')}
+    $out.info 'Load nodes from template file ' + instanceFile.to_s
+    @templateNodes = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(IO.read(@mdbciDir+'/'+instanceFile))}
+    if @templateNodes.has_key?('cookbook_path') ; @templateNodes.delete('cookbook_path') ; end
+    if @templateNodes.has_key?('aws_config') ; @templateNodes.delete('aws_config') ; end
   end
 
   # load mdbci nodes
@@ -251,6 +264,12 @@ class Session
 
     when 'up'
       exit_code = $session.up(ARGV.shift)
+
+    when 'install_repo'
+      NodeProduct.installProductRepo(ARGV.shift)
+
+    when 'update_repo'
+      NodeProduct.updateProductRepo(ARGV.shift)
 
     when 'public_keys'
       exit_code = $session.publicKeys(ARGV.shift)
