@@ -45,7 +45,7 @@ class Node
     # del addr: from ip
     ip_addr = ip[0].to_s.sub('addr:','')
     # check ip with a IP RegExp
-    IPAddress.valid?(ip_addr.to_s) ? $out.info 'Node IP '+ip_addr.to_s+' is valid' : $out.info 'Node IP '+ip_addr.to_s+' is not valid'
+    IPAddress.valid?(ip_addr.to_s) ? $out.info('Node IP '+ip_addr.to_s+' is valid!') : $out.info('Node IP '+ip_addr.to_s+' is not valid!')
     @ip = ip_addr.nil? ? '127.0.0.1' : ip_addr
   end
 
@@ -74,11 +74,7 @@ class Node
       else
         $out.warning('WARNING: Unknown machine type!')
     end
-    if !@ip.to_s.empty?
-      $out.info('IP:'+@ip.to_s)
-    else
-      $out.warning('IP address is not received!')
-    end
+    !@ip.to_s.empty? ? $out.info('IP:'+@ip.to_s) : $out.warning('IP address is not received!')
   end
 
   def initialize(config, initString)
