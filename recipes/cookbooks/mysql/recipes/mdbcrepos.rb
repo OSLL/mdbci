@@ -5,17 +5,16 @@ case node[:platform_family]
   when "debian", "ubuntu", "mint"
   # Add repo key
   execute "Key add" do
-    command "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db"
+    command "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xce1a3dd5e3c94f49"
   end
-  release_name = '$(lsb_release -cs)'
-  system 'echo MariaDB version: ' + node['mysql']['version']
-  system 'echo MariaDB repo: ' + node['mysql']['repo']
-  system 'echo MariaDB repo key: ' + node['mysql']['repo_key']
+  # release_name = '$(lsb_release -cs)'
+  system 'echo MySQL version: ' + node['mysql']['version']
+  system 'echo MySQL repo: ' + node['mysql']['repo']
+  system 'echo MySQL repo key: ' + node['mysql']['repo_key']
   system 'echo MDBCI plain repo recipe'
-  #6373 to be removed command 'echo "deb ' + node['mysql']['repo'] + '/' + node['mysql']['version'] + '/' + node[:platform] + ' ' + release_name + ' main" > /etc/apt/sources.list.d/mysql.list'
-  addrepocmd = 'echo "deb '+ node['mysql']['repo']+' ">/etc/apt/sources.list.d/mysql.list'
 
   # Add repo
+  addrepocmd = 'echo "'+ node['mysql']['repo']+' "> /etc/apt/sources.list.d/mysql.list'
   execute "Repository add" do
     command addrepocmd
   end
