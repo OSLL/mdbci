@@ -53,19 +53,30 @@ MDBCI uses vagrant with set of plugins as the VM backend manager. It's written w
 #### Install Pre-requisities
 
 <pre>
-#echo "deb http://download.virtualbox.org/virtualbox/debian trusty contrib" >> /etc/apt/sources.list
-#wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
-#apt-get update
-#apt-get install virtualbox-4.3
+echo "deb http://download.virtualbox.org/virtualbox/debian trusty contrib" >> /etc/apt/sources.list
+wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
+apt-get update
+apt-get install virtualbox-4.3
 
-#apt-get install ruby
-#apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev
-#wget https://dl.bintray.com/mitchellh/vagrant/vagrant_1.7.2_x86_64.deb
-#dpkg -i vagrant_1.7.2_x86_64.deb
-#vagrant plugin install vagrant-vbguest
-#vagrant plugin install vagrant-aws
-#vagrant plugin install vagrant-libvirt
-#vagrant plugin install vagrant-mutate
+apt-get install ruby
+apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev
+wget https://dl.bintray.com/mitchellh/vagrant/vagrant_1.7.2_x86_64.deb
+dpkg -i vagrant_1.7.2_x86_64.deb
+</pre>
+
+#### Vagrant plugins pre-install
+
+<pre>
+vagrant plugin install vagrant-vbguest
+vagrant plugin install vagrant-aws
+vagrant plugin install vagrant-libvirt
+vagrant plugin install vagrant-mutate
+</pre>
+
+#### Ruby modules pre-install
+
+<pre>
+gem install ipaddress
 </pre>
 
 #### Install mdbci

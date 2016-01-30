@@ -513,7 +513,6 @@ class Session
     return exit_code
   end
 
-  # TODO: refactoring this function!
   # load node platform by name
   def loadNodePlatform(name)
 
@@ -533,5 +532,6 @@ class Session
     end
 
   end
+
 
 end
