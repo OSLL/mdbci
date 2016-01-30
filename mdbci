@@ -68,7 +68,7 @@ opts.each do |opt, arg|
       $out.info 'Using keyfile '+$session.keyFile
 
     else
-      $out.error 'Option are not supported: '+opt
+      $out.error 'Option is not supported: '+opt
   end
 end
 

@@ -54,8 +54,15 @@ class NodeProduct
     return repo
   end
   #
-  # Install repo for product to nodes
-  def self.installProductRepo(args)
+  # Setup repo for product to nodes (install product repo and update it)
+  # Supported products: Maxscale
+  #
+  # P.S. Require to add NOPASSWD:ALL to /etc/sudoers for a mdbci node user!
+  # for example, vagranttest ALL=(ALL) NOPASSWD:ALL
+  #
+  # TODO - get repo for mariadb, galera, mysql
+  # TODO - Where to store product version for mdbci boxes? In boxes.json node or another place?
+  def self.setupProductRepo(args)
 
     pwd = Dir.pwd
 
@@ -74,9 +81,6 @@ class NodeProduct
           box = node[1]['box'].to_s
           if !box.empty?
             mdbci_params = $session.boxes.getBox(box)
-            #
-	          # TODO - get repo for mariadb, galera, mysql
-            #  - Where to store product version for mdbci boxes? In boxes.json node description!
  	          #
             platform = $session.platformKey(box).split('^')
             $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
@@ -84,8 +88,7 @@ class NodeProduct
               repo = getMaxscaleRepoByBox(box)
               if !repo.nil?
                 # # { ssh ... } version
-                #  P.S. Add NOPASSWD:ALL for node ssh user, for example, vagranttest ALL=(ALL) NOPASSWD:ALL
-                command = maxscaleMdbciInstallRepoCmd(platform[0], repo)
+                command = maxscaleMdbciSetupRepoCmd(platform[0], repo)
                 cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
                               + mdbci_params['user'].to_s + '@'\
                               + mdbci_params['IP'].to_s + ' '\
@@ -113,7 +116,7 @@ class NodeProduct
           if $session.nodeProduct == 'maxscale'
             repo = getMaxscaleRepoByBox(box)
             if !repo.nil?
-              command = maxscaleMdbciInstallRepoCmd(platform[0], repo)
+              command = maxscaleMdbciSetupRepoCmd(platform[0], repo)
               cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
                               + mdbci_params['user'].to_s + '@'\
                               + mdbci_params['IP'].to_s + ' '\
@@ -138,10 +141,10 @@ class NodeProduct
         $session.templateNodes.each do |node|
           repo = getProductRepoParameters(node[1]['product'], node[1]['box'])
           if !repo.nil?
-            platform = $session.loadNodePlatformBy(node[0].to_s)
+            platform = $session.loadNodePlatform(node[0].to_s)
             $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
             if $session.nodeProduct == 'maxscale'
-              cmd = maxscaleInstallRepoCmd(platform, node[0], repo)
+              cmd = maxscaleSetupRepoCmd(platform, node[0], repo)
               vagrant_out = `#{cmd}`
             elsif $session.nodeProduct == 'mariadb'
               # TODO
@@ -158,10 +161,10 @@ class NodeProduct
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
         repo = getProductRepoParameters(node[1]['product'], node[1]['box'])
         if !repo.nil?
-          platform = $session.loadNodePlatformBy(node[0].to_s)
+          platform = $session.loadNodePlatform(node[0].to_s)
           $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
           if $session.nodeProduct == 'maxscale'
-            cmd = maxscaleInstallRepoCmd(platform, node[0].to_s, repo)
+            cmd = maxscaleSetupRepoCmd(platform, node[0].to_s, repo)
 	          vagrant_out = `#{cmd}`
           elsif $session.nodeProduct == 'mariadb'
             # TODO
@@ -179,41 +182,47 @@ class NodeProduct
     Dir.chdir pwd
   end
 
-  def self.maxscaleInstallRepoCmd(platform, node_name, repo)
+  def self.maxscaleSetupRepoCmd(platform, node_name, repo)
     if platform == 'ubuntu' || platform == 'debian'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+Shellwords.escape(repo['repo_key'].to_s)+' && '\
                        + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
-		                   + 'sudo echo -e \"deb '+Shellwords.escape(repo['repo'].to_s)+'\" | sudo tee -a /etc/apt/sources.list.d/maxscale.list"'
+		                   + 'sudo echo -e \"deb '+Shellwords.escape(repo['repo'].to_s)+'\" | sudo tee -a /etc/apt/sources.list.d/maxscale.list" && '\
+		                   + 'sudo apt-get --only-upgrade true install maxscale'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo dd if=/dev/null of=/etc/yum.repos.d/maxscale.repo && '\
 		                   + 'sudo echo -e \'[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
-		                   + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/maxscale.repo"'
+		                   + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/maxscale.repo" && '\
+		                   + 'sudo yum clean all && sudo sudo yum update maxscale'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo dd if=/dev/null of=/etc/zypp/repos.d/maxscale.repo && '\
 		                   + 'sudo echo -e \'[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
-		                   + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/maxscale.repo"'
+		                   + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/maxscale.repo" && '\
+		                   + 'sudo zypper up maxscale'
     end
     return cmd_install_repo
   end
 
   # for #{ ssh ... } version
-  def self.maxscaleMdbciInstallRepoCmd(platform, repo)
+  def self.maxscaleMdbciSetupRepoCmd(platform, repo)
     if platform == 'ubuntu' || platform == 'debian'
       cmd_install_repo = 'sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+Shellwords.escape(repo['repo_key'].to_s)+' && '\
                        + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
-		                   + 'sudo echo -e deb '+Shellwords.escape(repo['repo'].to_s)+' | sudo tee -a /etc/apt/sources.list.d/maxscale.list'
+		                   + 'sudo echo -e deb '+Shellwords.escape(repo['repo'].to_s)+' | sudo tee -a /etc/apt/sources.list.d/maxscale.list && '\
+		                   + 'sudo apt-get --only-upgrade true install maxscale'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
       cmd_install_repo = 'sudo dd if=/dev/null of=/etc/yum.repos.d/maxscale.repo && '\
 		                   + 'sudo echo -e \'[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
-                       + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/maxscale.repo'
+                       + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/maxscale.repo && '\
+		                   + 'sudo yum clean all && sudo sudo yum update maxscale'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
       cmd_install_repo = 'sudo dd if=/dev/null of=/etc/zypp/repos.d/maxscale.repo && '\
 		                   + 'sudo echo -e \'[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
-                       + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/maxscale.repo'
+                       + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/maxscale.repo && '\
+		                   + 'sudo zypper up maxscale'
     end
     return cmd_install_repo
   end

@@ -32,7 +32,7 @@ mdbci [option] <show | setup | generate>
   Deploy configuration or node
 
 -p, --product
-  Product name for install and update repo commands
+  Product name for setup repo and install product commands
 
 -k, --key
   Keyfile to the node for public_keys command
@@ -45,7 +45,7 @@ COMMANDS:
   sudo --command 'command arguments' config/node
   ssh --command 'command arguments' config/node
   up [--attempts 'attempts arguments'] config | config/node
-  install_repo --product <product_name> config/node
+  setup_repo --product <product_name> config/node
   public_keys --key keyfile.pem config/node
 
 
@@ -54,7 +54,7 @@ EXAMPLES:
   mdbci ssh --command "cat script.sh" T/node1
   mdbci --repo-dir /home/testbed/config/repos show repos
   mdbci up --attempts 4 T/node0
-  mdbci install_repo --product maxscale T/node0
+  mdbci setup_repo --product maxscale T/node0
   mdbci public_keys --key keyfile.pem T/node0
   EOF
 

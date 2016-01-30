@@ -383,6 +383,9 @@ mdbci [options] <show | setup | generate>
 
 -r, --repo-dir
   Change default place for repo.d
+  
+-p, --product
+  Product name for install and update repo commands. Currently supported only **Maxscale** product.
 
 ### Commands:
 
@@ -395,6 +398,11 @@ mdbci [options] <show | setup | generate>
   sudo --command 'command arguments' config/node
 
   ssh --command 'command arguments' config/node
+  
+  setup_repo --product 'product name' config/node
+    Setup product repo on the specified config/node. Install repo and update repo on th node/
+    Product is defined by **--product** command option.
+    **P.S.** SSH access to the **MDBCI** boxes needs **NOPASSWD:ALL** option in the **/etc/sudoers** file for the mdbci ssh user.
 
 ### Examples:
 
@@ -403,6 +411,7 @@ Run command inside of VM
 ```
   ./mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
   ./mdbci ssh --command "cat anaconda.syslog" T/node0 --silent
+  ./mdbci setup_repo --product 'maxscale' T/node0
 ```
   
 Show repos with using alternative repo.d repository

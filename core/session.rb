@@ -265,8 +265,8 @@ class Session
     when 'up'
       exit_code = $session.up(ARGV.shift)
 
-    when 'install_repo'
-      NodeProduct.installProductRepo(ARGV.shift)
+    when 'setup_repo'
+      NodeProduct.setupProductRepo(ARGV.shift)
 
     when 'public_keys'
       exit_code = $session.publicKeys(ARGV.shift)
@@ -515,7 +515,7 @@ class Session
 
   # TODO: refactoring this function!
   # load node platform by name
-  def loadNodePlatformBy(name)
+  def loadNodePlatform(name)
 
     pwd = Dir.pwd
     # template file
