@@ -146,6 +146,7 @@ class NodeProduct
             if $session.nodeProduct == 'maxscale'
               cmd = maxscaleSetupRepoCmd(platform, node[0], repo)
               vagrant_out = `#{cmd}`
+              $out.out vagrant_out
             elsif $session.nodeProduct == 'mariadb'
               # TODO
             elsif $session.nodeProduct == 'galera'
@@ -166,6 +167,7 @@ class NodeProduct
           if $session.nodeProduct == 'maxscale'
             cmd = maxscaleSetupRepoCmd(platform, node[0].to_s, repo)
 	          vagrant_out = `#{cmd}`
+            $out.out vagrant_out
           elsif $session.nodeProduct == 'mariadb'
             # TODO
           elsif $session.nodeProduct == 'galera'
@@ -186,20 +188,20 @@ class NodeProduct
     if platform == 'ubuntu' || platform == 'debian'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+Shellwords.escape(repo['repo_key'].to_s)+' && '\
                        + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
-		                   + 'sudo echo -e \"deb '+Shellwords.escape(repo['repo'].to_s)+'\" | sudo tee -a /etc/apt/sources.list.d/maxscale.list" && '\
-		                   + 'sudo apt-get --only-upgrade true install maxscale'
+		                   + 'sudo echo -e \'deb '+Shellwords.escape(repo['repo'].to_s)+'\' | sudo tee -a /etc/apt/sources.list.d/maxscale.list && '\
+		                   + 'sudo apt-get --only-upgrade true install maxscale"'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo dd if=/dev/null of=/etc/yum.repos.d/maxscale.repo && '\
 		                   + 'sudo echo -e \'[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
-		                   + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/maxscale.repo" && '\
-		                   + 'sudo yum clean all && sudo sudo yum update maxscale'
+		                   + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/maxscale.repo && '\
+		                   + 'sudo yum clean all && sudo sudo yum update maxscale"'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo dd if=/dev/null of=/etc/zypp/repos.d/maxscale.repo && '\
 		                   + 'sudo echo -e \'[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
-		                   + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/maxscale.repo" && '\
-		                   + 'sudo zypper up maxscale'
+		                   + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/maxscale.repo && '\
+		                   + 'sudo zypper up maxscale"'
     end
     return cmd_install_repo
   end
@@ -209,7 +211,7 @@ class NodeProduct
     if platform == 'ubuntu' || platform == 'debian'
       cmd_install_repo = 'sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+Shellwords.escape(repo['repo_key'].to_s)+' && '\
                        + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
-		                   + 'sudo echo -e deb '+Shellwords.escape(repo['repo'].to_s)+' | sudo tee -a /etc/apt/sources.list.d/maxscale.list && '\
+		                   + 'sudo echo -e \'deb '+Shellwords.escape(repo['repo'].to_s)+'\' | sudo tee -a /etc/apt/sources.list.d/maxscale.list && '\
 		                   + 'sudo apt-get --only-upgrade true install maxscale'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
       cmd_install_repo = 'sudo dd if=/dev/null of=/etc/yum.repos.d/maxscale.repo && '\
