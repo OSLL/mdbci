@@ -8,7 +8,7 @@ require_relative  '../core/out'
 class NodeProduct
   #
   #
-  def getProductRepoParameters(product, box)
+  def NodeProduct.getProductRepoParameters(product, box)
 
     repo = nil
     repoName = nil
@@ -32,7 +32,7 @@ class NodeProduct
   end
   #
   #
-  def getMaxscaleRepoByBox(box)
+  def NodeProduct.getMaxscaleRepoByBox(box)
 
     product_name = 'maxscale'
     version = 'default'
@@ -48,7 +48,7 @@ class NodeProduct
   end
   #
   #
-  def getProductRepoParametersByName(product_name, product, box)
+  def NodeProduct.getProductRepoParametersByName(product_name, product, box)
     repo = $session.repos.findRepo(product_name, product, box)
     if repo.nil?; return nil; end
     return repo
@@ -95,7 +95,7 @@ class NodeProduct
                               + "'" + command.to_s + "'"
                 $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
                 vagrant_out = `#{cmd}`
-                $out.out vagrant_out
+                #$out.out vagrant_out
               end
             elsif $session.nodeProduct == 'mariadb'
               # TODO
@@ -123,7 +123,7 @@ class NodeProduct
                               + "'" + command + "'"
               $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
               vagrant_out = `#{cmd}`
-              $out.out vagrant_out
+              #$out.out vagrant_out
             end
           elsif $session.nodeProduct == 'mariadb'
             # TODO
@@ -146,7 +146,7 @@ class NodeProduct
             if $session.nodeProduct == 'maxscale'
               cmd = maxscaleSetupRepoCmd(platform, node[0], repo)
               vagrant_out = `#{cmd}`
-              $out.out vagrant_out
+              #$out.out vagrant_out
             elsif $session.nodeProduct == 'mariadb'
               # TODO
             elsif $session.nodeProduct == 'galera'
@@ -167,7 +167,7 @@ class NodeProduct
           if $session.nodeProduct == 'maxscale'
             cmd = maxscaleSetupRepoCmd(platform, node[0].to_s, repo)
 	          vagrant_out = `#{cmd}`
-            $out.out vagrant_out
+            #$out.out vagrant_out
           elsif $session.nodeProduct == 'mariadb'
             # TODO
           elsif $session.nodeProduct == 'galera'
@@ -184,7 +184,7 @@ class NodeProduct
     Dir.chdir pwd
   end
 
-  def maxscaleSetupRepoCmd(platform, node_name, repo)
+  def NodeProduct.maxscaleSetupRepoCmd(platform, node_name, repo)
     if platform == 'ubuntu' || platform == 'debian'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+Shellwords.escape(repo['repo_key'].to_s)+' && '\
                        + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
@@ -207,7 +207,7 @@ class NodeProduct
   end
 
   # for #{ ssh ... } version
-  def maxscaleMdbciSetupRepoCmd(platform, repo)
+  def NodeProduct.maxscaleMdbciSetupRepoCmd(platform, repo)
     if platform == 'ubuntu' || platform == 'debian'
       cmd_install_repo = 'sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+Shellwords.escape(repo['repo_key'].to_s)+' && '\
                        + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
@@ -259,7 +259,7 @@ class NodeProduct
                               + "'" + command.to_s + "'"
               $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
               vagrant_out = `#{cmd}`
-              $out.out vagrant_out
+              #$out.out vagrant_out
             elsif $session.nodeProduct == 'mariadb'
               # TODO
             elsif $session.nodeProduct == 'galera'
@@ -284,7 +284,7 @@ class NodeProduct
                             + "'" + command + "'"
             $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
             vagrant_out = `#{cmd}`
-            $out.out vagrant_out
+            #$out.out vagrant_out
           elsif $session.nodeProduct == 'mariadb'
             # TODO
           elsif $session.nodeProduct == 'galera'
@@ -333,7 +333,7 @@ class NodeProduct
   end
 
   # install Maxscale product command for Vagrant nodes
-  def installMaxscaleProductCmd(platform, node_name)
+  def NodeProduct.installMaxscaleProductCmd(platform, node_name)
     if platform == 'ubuntu' || platform == 'debian'
       cmd_update_repo = 'vagrant ssh '+node_name+' -c "sudo apt-get -y install maxscale"'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
@@ -345,7 +345,7 @@ class NodeProduct
   end
   #
   # #{ ssh ... } version of install Maxscale product on a mdbci nodes
-  def installMaxscaleProductMdbciCmd(platform)
+  def NodeProduct.installMaxscaleProductMdbciCmd(platform)
     if platform == 'ubuntu' || platform == 'debian'
       cmd_update_repo = 'sudo apt-get -y install maxscale'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
