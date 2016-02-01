@@ -8,7 +8,7 @@ require_relative  '../core/out'
 class NodeProduct
   #
   #
-  def self.getProductRepoParameters(product, box)
+  def getProductRepoParameters(product, box)
 
     repo = nil
     repoName = nil
@@ -32,7 +32,7 @@ class NodeProduct
   end
   #
   #
-  def self.getMaxscaleRepoByBox(box)
+  def getMaxscaleRepoByBox(box)
 
     product_name = 'maxscale'
     version = 'default'
@@ -182,7 +182,7 @@ class NodeProduct
     Dir.chdir pwd
   end
 
-  def self.maxscaleSetupRepoCmd(platform, node_name, repo)
+  def maxscaleSetupRepoCmd(platform, node_name, repo)
     if platform == 'ubuntu' || platform == 'debian'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+Shellwords.escape(repo['repo_key'].to_s)+' && '\
                        + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
@@ -205,7 +205,7 @@ class NodeProduct
   end
 
   # for #{ ssh ... } version
-  def self.maxscaleMdbciSetupRepoCmd(platform, repo)
+  def maxscaleMdbciSetupRepoCmd(platform, repo)
     if platform == 'ubuntu' || platform == 'debian'
       cmd_install_repo = 'sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+Shellwords.escape(repo['repo_key'].to_s)+' && '\
                        + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
@@ -229,7 +229,7 @@ class NodeProduct
   #
   #
   # Install product command. Supported: Maxscale
-  def installProduct(args)
+  def self.installProduct(args)
     pwd = Dir.pwd
 
     if args.nil?
@@ -331,25 +331,25 @@ class NodeProduct
   end
 
   # install Maxscale product command for Vagrant nodes
-  def self.installMaxscaleProductCmd(platform, node_name)
+  def installMaxscaleProductCmd(platform, node_name)
     if platform == 'ubuntu' || platform == 'debian'
-      cmd_update_repo = 'vagrant ssh '+node_name+' -c "sudo apt-get install maxscale"'
+      cmd_update_repo = 'vagrant ssh '+node_name+' -c "sudo apt-get -y install maxscale"'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
-      cmd_update_repo = 'vagrant ssh '+node_name+' -c "sudo yum install maxscale"'
+      cmd_update_repo = 'vagrant ssh '+node_name+' -c "sudo yum -y install maxscale"'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
-      cmd_update_repo = 'vagrant ssh '+node_name+' -c "sudo zypper -n install maxscale"'
+      cmd_update_repo = 'vagrant ssh '+node_name+' -c "sudo zypper --non-interactive install maxscale"'
     end
     return cmd_update_repo
   end
   #
   # #{ ssh ... } version of install Maxscale product on a mdbci nodes
-  def self.installMaxscaleProductMdbciCmd(platform)
+  def installMaxscaleProductMdbciCmd(platform)
     if platform == 'ubuntu' || platform == 'debian'
-      cmd_update_repo = 'sudo apt-get install maxscale'
+      cmd_update_repo = 'sudo apt-get -y install maxscale'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
-      cmd_update_repo = 'sudo yum install maxscale'
+      cmd_update_repo = 'sudo yum -y install maxscale'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
-      cmd_update_repo = 'sudo zypper -n install maxscale'
+      cmd_update_repo = 'sudo zypper --non-interactive install maxscale'
     end
     return cmd_update_repo
   end
