@@ -1,38 +1,8 @@
 {
-  "ubuntu_trusty": {
+  "ubuntu_precise32": {
     "provider": "virtualbox",
-    "box": "bento/ubuntu-14.04",
-    "platform": "ubuntu",
-    "platform_version": "trusty"
-  },
-  "ubuntu_precise": {
-    "provider": "virtualbox",
-    "box": "bento/ubuntu-12.04",
+    "box": "hashicorp/precise32",
     "platform": "ubuntu",
     "platform_version": "precise"
-  },
-  "centos6": {
-    "provider": "virtualbox",
-    "box": "bento/centos-6.7",
-    "platform": "centos",
-    "platform_version": "6"
-  },
-  "centos5": {
-    "provider": "virtualbox",
-    "box": "chef/centos-5.11",
-    "platform": "centos",
-    "platform_version": "5"
-  },
-  "deb_wheezy": {
-    "provider": "virtualbox",
-    "box": "chef/debian-7.8",
-    "platform": "debian",
-    "platform_version": "wheezy"
-  },
-  "suse13": {
-    "provider": "virtualbox",
-    "box": "webhippie/opensuse-13.2",
-    "platform": "opensuse",
-    "platform_version": "13"
   }
 }
