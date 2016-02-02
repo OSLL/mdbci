@@ -13,14 +13,15 @@ describe 'Session' do
     $session.isSilent = true
     $session.mdbciDir = Dir.pwd
     $exception_handler = ExceptionHandler.new
-    boxesPath = './BOXES'
+    boxesPath = ENV['pathToTestBoxes']
     $session.boxes = BoxesManager.new boxesPath
     reposPath = './repo.d'
     $session.repos = RepoManager.new reposPath
   end
 
   it '#setup should exit with zero exit code when parameter \'boxes\' is defined' do
-    #$session.setup('boxes').should(eql(0))
+    $session.setup('boxes').should(eql(0))
+    system('vagrant box remove ' + ENV['testBoxName'])
   end
 
   it '#setup should exit with non-zero exit code when parameter is wrong or shell command failed' do
