@@ -1,5 +1,10 @@
 include_recipe "mariadb::mdberepos"
 
+# install default packages
+[ "net-tools", "psmisc" ].each do |pkg|
+  package pkg
+end
+
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0 
   execute "Turn off SElinux" do
