@@ -28,8 +28,11 @@ mdbci [option] <show | setup | generate>
 -r, --repo-dir
   Change default place for repo.d
 
--a --attempts
+-a, --attempts
   Deploy configuration or node
+
+-k, --key
+  Keyfile to the node for public_keys command
 
 COMMANDS:
   show [boxes, platforms, versions, network, repos [config | config/node], keyfile config/node ]
@@ -37,13 +40,15 @@ COMMANDS:
   setup [boxes]
   sudo --command 'command arguments' config/node
   ssh --command 'command arguments' config/node
-  up [--attempts 'attempts arguments'] config | config/node 
+  up [--attempts 'attempts arguments'] config | config/node
+  public_keys --key keyfile.pem config/node
 
 EXAMPLES:
   mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
   mdbci ssh --command "cat script.sh" T/node1
   mdbci --repo-dir /home/testbed/config/repos show repos
   mdbci up --attempts 4 T/node0
+  mdbci public_keys --key keyfile.pem T/node0
   EOF
 
 end

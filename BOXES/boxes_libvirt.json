@@ -8,12 +8,14 @@
   "centos_7.0_libvirt": {
     "provider": "libvirt",
     "box": "centos/7",
+    "ssh_pty": "true",
     "platform": "centos",
     "platform_version": "7"
   },
   "centos_6.5_libvirt": {
     "provider": "libvirt",
     "box": "dliappis/centos65minlibvirt",
+    "ssh_pty": "true",
     "platform": "centos",
     "platform_version": "6"
   }

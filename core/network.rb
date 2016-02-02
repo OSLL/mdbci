@@ -17,6 +17,7 @@ class Network
     @nodes.push(node)
   end
 
+  # TODO BUG 6633
   def loadNodes(config)
     $out.info 'Load configuration nodes from vagrant status ...'
 
@@ -173,14 +174,12 @@ class Network
 
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
-          platform = $session.loadNodePlatformBy(node.name)
-          node.getIp(node.provider, platform, false)
+          node.getIp(node.provider, false)
           $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
-        platform = $session.loadNodePlatformBy(node.name)
-        node.getIp(node.provider, platform, false)
+        node.getIp(node.provider, false)
         $out.out node.ip.to_s
       end
     end
@@ -227,14 +226,12 @@ class Network
 
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
-          platform = $session.loadNodePlatformBy(node.name)
-          node.getIp(node.provider, platform, true)
+          node.getIp(node.provider, true)
           $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
-        platform = $session.loadNodePlatformBy(node.name)
-        node.getIp(node.provider, platform, true)
+        node.getIp(node.provider, true)
         $out.out node.ip.to_s
       end
     end
