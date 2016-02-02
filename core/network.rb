@@ -84,12 +84,12 @@ class Network
           box = node[1]['box'].to_s
           box_params = $session.boxes.getBox(box)
           $out.info 'Node: ' + node[0].to_s
-          if File.exist?(pwd+'/KEYS/'+box_params['keyfile'].to_s) 
+          if File.exist?(pwd+'/KEYS/'+box_params['keyfile'].to_s)
             $out.out pwd+'/KEYS/'+box_params['keyfile'].to_s
             return 0
           else
             $out.warning box_params['keyfile'].to_s+" not found!"
-            return 1
+            exit_code = 1
           end
         end
       else
@@ -98,7 +98,7 @@ class Network
           box = mdbci_node[1]['box'].to_s
           mdbci_params = $session.boxes.getBox(box)
           $out.info 'Node: ' + args[1].to_s
-          if File.exist?(pwd+'/KEYS/'+mdbci_params['keyfile'].to_s) 
+          if File.exist?(pwd+'/KEYS/'+mdbci_params['keyfile'].to_s)
             $out.out pwd+'/KEYS/'+mdbci_params['keyfile'].to_s
             return 0
           else

@@ -24,6 +24,6 @@ end
 # in this case if you want to run only next task with parameters - you need to define parameters
 # like that [:arg1, :arg2, ...] so then in ENV they would be available like ENV['arg1']
 # then in cmd: rake task_6639_ssh_exit_code['TEST/vboxnode']
-task :task_6639_ssh_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] { |t, args| RakeTaskManager.new(t).run_parametrized(args) }
-task :task_generator { |t| RakeTaskManager.new(t).run }
-task :task_6642_show_keyfile_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] { |t, args| RakeTaskManager.new(t).run_parametrized(args) }
+task :task_6639_ssh_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
+task :task_generator do |t| RakeTaskManager.new(t).run end
+task :task_6642_show_keyfile_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
