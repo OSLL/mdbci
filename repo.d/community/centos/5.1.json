@@ -19,7 +19,7 @@
    "product":           "mariadb",
    "version":           "5.1",
    "repo":              "http://archive.mariadb.org/mariadb-5.1.67/centos5-amd64",
-   "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+   "repo_key":          "https://archive.mariadb.org/PublicKey",
    "platform":          "centos",
    "platform_version":  7
 }

@@ -4,7 +4,7 @@
    "version":		"5.1",
    "repo":		"http://archive.mariadb.org/mariadb-5.1.67/rhel5-amd64",
    "repo_key":		"https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
-   "platform":		"centos",
+   "platform":		"rhel",
    "platform_version":	5
 },
 {
@@ -12,7 +12,7 @@
    "version":           "5.1",
    "repo":              "http://archive.mariadb.org/mariadb-5.1.67/rhel5-amd64",
    "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
-   "platform":          "centos",
+   "platform":          "rhel",
    "platform_version":  6
 },
 {
@@ -20,7 +20,7 @@
    "version":           "5.1",
    "repo":              "http://archive.mariadb.org/mariadb-5.1.67/rhel5-amd64",
    "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
-   "platform":          "centos",
+   "platform":          "rhel",
    "platform_version":  7
 }
 ]
