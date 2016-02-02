@@ -9,6 +9,11 @@ task :run_parametrized do
     :pathToConfigToMDBCIBadNode=>'TEST2/mdbcinodebad',
     :pathToConfigToMDBCIFolder=>'TEST1'
   })
+  Rake::Task[:task_6648_generate_exit_code].execute({
+    :pathToVBOXConfigFile=>'spec/test_machine_configurations/vbox.json',
+    :pathToMDBCIConfigFile=>'spec/test_machine_configurations/mdbci.json',
+    :pathToDestination=>'TEST_GEN'
+  })
 
   RakeTaskManager.get_failed_tests_info
 end
@@ -34,4 +39,8 @@ end
 
 task :task_generator do |t|
   RakeTaskManager.new(t).run
+end
+
+task :task_6648_generate_exit_code, [:pathToVBOXConfigFile, :pathToMDBCIConfigFile, :pathToDestination] do |t, args|
+  RakeTaskManager.new(t).run_parametrized(args)
 end

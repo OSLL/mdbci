@@ -68,7 +68,7 @@ class Session
           next if value['provider'] == "aws" # skip 'aws' block
           # TODO: add aws dummy box
           # vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
- 
+
           next if value['provider'] == "mdbci" # skip 'mdbci' block
           #
           if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
@@ -293,6 +293,9 @@ class Session
   end
 
   def generate(name)
+
+    exit_code = 0
+
     path = Dir.pwd
 
     if name.nil?
@@ -301,7 +304,25 @@ class Session
       path +='/'+name.to_s
     end
     #
+
+    # Exception hendler need to be refactored!!! because handler does not return 1 for error
+    begin
+      IO.read($session.configFile)
+    rescue
+      puts 'INSTANCE configuration file not found'
+      return 1
+    end
+
     instanceConfigFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read($session.configFile)}
+
+    # Exception hendler need to be refactored!!!
+    begin
+      JSON.parse(instanceConfigFile)
+    rescue
+      puts 'INSTANCE configuration file invalid'
+      return 1
+    end
+
     @configs = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(instanceConfigFile)}
     LoadNodesProvider(configs)
     #
@@ -328,6 +349,8 @@ class Session
       template_file = path+'/template'
       if !File.exists?(template_file); File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }; end
     end
+
+    return exit_code
   end
 
   # Deploy configurations
@@ -384,7 +407,7 @@ class Session
       return 0
     else
       (1..@attempts.to_i).each { |i|
-        $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') + 
+        $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') +
           args + ', attempt: ' + i.to_s
         $out.info 'Destroying current instance'
         cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
@@ -411,7 +434,7 @@ class Session
       }
     end
     Dir.chdir pwd
-    
+
     return exit_code
   end
 
@@ -514,6 +537,6 @@ class Session
     end
     return exit_code
   end
-  
+
 
 end
