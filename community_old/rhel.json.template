@@ -3,24 +3,24 @@
    "product":		"mariadb",
    "version":		"###version###",
    "repo":		"http://archive.mariadb.org/mariadb-5.1.67/rhel5-amd64",
-   "repo_key":		"https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
-   "platform":		"centos",
+   "repo_key":		"https://archive.mariadb.org/PublicKey",
+   "platform":		"rhel",
    "platform_version":	5
 },
 {
    "product":           "mariadb",
    "version":           "###version###",
    "repo":              "http://archive.mariadb.org/mariadb-5.1.67/rhel5-amd64",
-   "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
-   "platform":          "centos",
+   "repo_key":          "https://archive.mariadb.org/PublicKey",
+   "platform":          "rhel",
    "platform_version":  6
 },
 {
    "product":           "mariadb",
    "version":           "###version###",
    "repo":              "http://archive.mariadb.org/mariadb-5.1.67/rhel5-amd64",
-   "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
-   "platform":          "centos",
+   "repo_key":          "https://archive.mariadb.org/PublicKey",
+   "platform":          "rhel",
    "platform_version":  7
 }
 ]
