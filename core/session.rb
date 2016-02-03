@@ -68,7 +68,7 @@ class Session
           next if value['provider'] == "aws" # skip 'aws' block
           # TODO: add aws dummy box
           # vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
- 
+
           next if value['provider'] == "mdbci" # skip 'mdbci' block
           #
           if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
@@ -128,11 +128,14 @@ class Session
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
   def ssh(args)
 
+    exit_code = 0
+    possibly_failed_command = ''
+
     pwd = Dir.pwd
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return
+      return 1
     end
 
     params = args.split('/')
@@ -151,6 +154,8 @@ class Session
                             + "'" + $session.command + "'"
             $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
             vagrant_out = `#{cmd}`
+            exit_code = $?.exitstatus
+            possibly_failed_command = cmd
             $out.out vagrant_out
           end
         end
@@ -165,20 +170,33 @@ class Session
                           + "'" + $session.command + "'"
           $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
           vagrant_out = `#{cmd}`
+          exit_code = $?.exitstatus
+          possibly_failed_command = cmd
           $out.out vagrant_out
         end
       end
     else # aws, vbox nodes
+      unless Dir.exist?(params[0])
+        $out.error 'Machine with such name does not exist'
+        return 1
+      end
       Dir.chdir params[0]
       cmd = 'vagrant ssh '+params[1].to_s+' -c "'+$session.command+'"'
       $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
-
       vagrant_out = `#{cmd}`
+      exit_code = $?.exitstatus
+      possibly_failed_command = cmd
       $out.out vagrant_out
-
       Dir.chdir pwd
     end
 
+    if exit_code != 0
+      $out.error "'ssh' (or 'vagrant ssh') command returned non-zero exit code: (#{$?.exitstatus})"
+      $out.error "failed ssh command: #{possibly_failed_command}"
+      exit_code = 1
+    end
+
+    return exit_code
 
   end
 
@@ -366,7 +384,7 @@ class Session
       return 0
     else
       (1..@attempts.to_i).each { |i|
-        $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') + 
+        $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') +
           args + ', attempt: ' + i.to_s
         $out.info 'Destroying current instance'
         cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
@@ -393,7 +411,7 @@ class Session
       }
     end
     Dir.chdir pwd
-    
+
     return exit_code
   end
 
@@ -402,11 +420,13 @@ class Session
   def publicKeys(args)
 
     pwd = Dir.pwd
-    exit_code = 1 # error
+
+    possibly_failed_command = ''
+    exit_code = 0
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return
+      return 1
     end
 
     args = args.split('/')
@@ -415,6 +435,10 @@ class Session
     if File.exist?(args[0]+'/mdbci_template')
       loadMdbciNodes args[0]
       if args[1].nil?     # read ip for all nodes
+        if $session.mdbciNodes.empty?
+          $out.error "MDBCI nodes not found in #{args[0]}"
+          return 1
+        end
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           if !box.empty?
@@ -429,11 +453,18 @@ class Session
             $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
             vagrant_out = `#{cmd}`
             # TODO
-            exit_code = 0
+            exit_code = $?.exitstatus
+            possibly_failed_command = cmd
           end
         end
       else
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == args[1] }
+
+        if mdbci_node.nil?
+          $out.error "No such node with name #{args[1]} in #{args[0]}"
+          return 1
+        end
+
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes.getBox(box)
@@ -447,12 +478,27 @@ class Session
           $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
           vagrant_out = `#{cmd}`
           # TODO
-          exit_code = 0
+          exit_code = $?.exitstatus
+          possibly_failed_command = cmd
+        else
+          $out.error "Wrong box parameter in node: #{args[1]}"
+          return 1
         end
       end
     else # aws, vbox, libvirt, docker nodes
+
+      unless Dir.exists? args[0]
+        $out.error "Directory with nodes does not exists: #{args[1]}"
+        return 1
+      end
+
       network = Network.new
       network.loadNodes args[0] # load nodes from dir
+
+      if network.nodes.empty?
+        $out.error "No aws, vbox, libvirt, docker nodes found in #{args[0]}"
+        return 1
+      end
 
       if args[1].nil? # No node argument, copy keys to all nodes
         network.nodes.each do |node|
@@ -463,10 +509,15 @@ class Session
           vagrant_out = `#{cmd}`
           $out.out vagrant_out
           # TODO
-          exit_code = 0
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
+
+        if node.nil?
+          $out.error "No such node with name #{args[1]} in #{args[0]}"
+          return 1
+        end
+
         #
         keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read("#{pwd.to_s}/#{@keyFile.to_s}")}
         # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
@@ -475,13 +526,20 @@ class Session
         vagrant_out = `#{cmd}`
         $out.out vagrant_out
         # TODO
-        exit_code = 0
+        exit_code = $?.exitstatus
+        possibly_failed_command = cmd
       end
     end
 
     Dir.chdir pwd
 
+    if exit_code != 0
+      $out.error "command #{possibly_failed_command} exit with non-zero code: #{exit_code}"
+      exit_code = 1
+    end
+
     return exit_code
+
   end
 
   def showProvider(name)
@@ -496,6 +554,6 @@ class Session
     end
     return exit_code
   end
-  
+
 
 end
