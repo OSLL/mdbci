@@ -61,6 +61,10 @@ class Session
   end
 
   def setup(what)
+
+    exit_code = 0
+    possibly_failed_command = ''
+
     case what
       when 'boxes'
         $out.info 'Adding boxes to vagrant'
@@ -68,7 +72,7 @@ class Session
           next if value['provider'] == "aws" # skip 'aws' block
           # TODO: add aws dummy box
           # vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
- 
+
           next if value['provider'] == "mdbci" # skip 'mdbci' block
           #
           if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
@@ -81,10 +85,24 @@ class Session
 
           # TODO: resque Exeption
           system shell # THERE CAN BE DONE CUSTOM EXCEPTION
+
+          exit_code = $?.exitstatus
+          possibly_failed_command = shell
+
         end
       else
-        $out.warn 'Cannot setup '+what
+        $out.warning 'Cannot setup '+what
+        return 1
     end
+
+    if exit_code != 0
+      $out.error "command 'setup' exit with non-zero exit code: #{exit_code}"
+      $out.error "failed command: #{possibly_failed_command}"
+      exit_code = 1
+    end
+
+    return exit_code
+
   end
 
   def checkConfig
