@@ -213,7 +213,7 @@ class Network
 
     if name.nil?
       $out.error 'Configuration name is required'
-      return
+      return 1
     end
 
     args = name.split('/')
@@ -222,6 +222,10 @@ class Network
     if File.exist?(args[0]+'/mdbci_template')
       $session.loadMdbciNodes args[0]
       if args[1].nil?     # read ip for all nodes
+        if $session.mdbciNodes.empty?
+          $out.error "MDBCI nodes not found in #{args[0]}"
+          return 1
+        end
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           if !box.empty?
@@ -232,17 +236,25 @@ class Network
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
+        if mdbci_node.nil?
+          return 1
+        end
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes.getBox(box)
           $out.info 'Node: ' + args[1].to_s
           $out.out mdbci_params['IP'].to_s
+        else
+          $out.error "Can not find box parameter for node #{args[1]}"
+          return 1
         end
       end
     else # aws, vbox nodes
+      unless Dir.exists? args[0]
+        return 1
+      end
       network = Network.new
       network.loadNodes pwd.to_s+'/'+args[0] # load nodes from dir
-
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
           node.getIp(node.provider, true)
@@ -256,6 +268,9 @@ class Network
     end
 
     Dir.chdir pwd
+
+    return 0
+
   end
 
 end
