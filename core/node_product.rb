@@ -65,6 +65,7 @@ class NodeProduct
   def self.setupProductRepo(args)
 
     pwd = Dir.pwd
+    maxscale_product = { "name" => "maxscale" }
 
     if args.nil?
       $out.error 'Configuration name is required'
@@ -102,7 +103,7 @@ class NodeProduct
             elsif $session.nodeProduct == 'galera'
               # TODO
             else
-              $out.info 'Install repo: Unknown product!'
+              $out.info 'Setup repo: Unknown product!'
             end
           end
         end
@@ -130,7 +131,7 @@ class NodeProduct
           elsif $session.nodeProduct == 'galera'
             # TODO
           else
-            $out.info 'Install repo: Unknown product!'
+            $out.info 'Setup repo: Unknown product!'
           end
         end
       end
@@ -139,44 +140,44 @@ class NodeProduct
       $session.loadTemplateNodes
       if args[1].nil? # No node argument, copy keys to all nodes
         $session.templateNodes.each do |node|
-          repo = getProductRepoParameters(node[1]['product'], node[1]['box'])
-          if !repo.nil?
-            platform = $session.loadNodePlatform(node[0].to_s)
-            $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
-            if $session.nodeProduct == 'maxscale'
+          platform = $session.loadNodePlatform(node[0].to_s)
+          $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
+          if $session.nodeProduct == 'maxscale'
+            repo = getProductRepoParameters(maxscale_product, node[1]['box'])
+            if !repo.nil?
               cmd = maxscaleSetupRepoCmd(platform, node[0], repo)
               vagrant_out = `#{cmd}`
               #$out.out vagrant_out
-            elsif $session.nodeProduct == 'mariadb'
-              # TODO
-            elsif $session.nodeProduct == 'galera'
-              # TODO
             else
-              $out.info 'Install repo: Unknown product!'
+              $out.error 'No such product for this node!'
             end
- 	        else
-	          $out.error 'No such product for this node!'
+          elsif $session.nodeProduct == 'mariadb'
+              # TODO
+          elsif $session.nodeProduct == 'galera'
+              # TODO
+          else
+              $out.error 'Setup repo: Unknown product!'
           end
         end
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
-        repo = getProductRepoParameters(node[1]['product'], node[1]['box'])
-        if !repo.nil?
-          platform = $session.loadNodePlatform(node[0].to_s)
-          $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
-          if $session.nodeProduct == 'maxscale'
-            cmd = maxscaleSetupRepoCmd(platform, node[0].to_s, repo)
-	          vagrant_out = `#{cmd}`
+        platform = $session.loadNodePlatform(node[0].to_s)
+        $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
+        if $session.nodeProduct == 'maxscale'
+          repo = getProductRepoParameters(maxscale_product, node[1]['box'])
+          if !repo.nil?
+            cmd = maxscaleSetupRepoCmd(platform, node[0], repo)
+            vagrant_out = `#{cmd}`
             #$out.out vagrant_out
-          elsif $session.nodeProduct == 'mariadb'
-            # TODO
-          elsif $session.nodeProduct == 'galera'
-            # TODO
           else
-            $out.info 'Install repo: Unknown product!'
+            $out.error 'No such product for this node!'
           end
+        elsif $session.nodeProduct == 'mariadb'
+          # TODO
+        elsif $session.nodeProduct == 'galera'
+          # TODO
         else
- 	        $out.error 'No such product for this node!'
+          $out.info 'Setup repo: Unknown product!'
         end
       end
     end
