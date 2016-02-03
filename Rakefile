@@ -4,6 +4,7 @@ require_relative 'spec/rake_helper'
 # here you need to add task with appropriate parameters
 task :run_parametrized do
   Rake::Task[:task_6639_ssh_exit_code].execute({ :pathToConfigToVBOXNode=>'TEST/vboxnode', :pathToConfigToMDBCINode=>'TEST1/mdbcinode', :pathToConfigToMDBCIBadNode=>'TEST2/mdbcinodebad', :pathToConfigToMDBCIFolder=>'TEST1' })
+  Rake::Task[:task_6640_sudo_exit_code].execute({ :pathToConfigToVBOXNode=>'TEST/vboxnode' })
 
   RakeTaskManager.get_failed_tests_info
 end
@@ -25,3 +26,4 @@ end
 # then in cmd: rake task_6639_ssh_exit_code['TEST/vboxnode']
 task :task_6639_ssh_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_generator do |t| RakeTaskManager.new(t).run end
+task :task_6640_sudo_exit_code, [:pathToConfigToVBOXNode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
