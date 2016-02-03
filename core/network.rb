@@ -63,12 +63,15 @@ class Network
 
   def self.showKeyFile(name)
 
+    exit_code = 0
+    possibly_failed_command = ''
+
     #TODO refactor with show
     pwd = Dir.pwd
 
     if name.nil?
       $out.error 'Configuration name is required'
-      return
+      return 1
     end
 
     args = name.split('/')
@@ -81,10 +84,12 @@ class Network
           box = node[1]['box'].to_s
           box_params = $session.boxes.getBox(box)
           $out.info 'Node: ' + node[0].to_s
-          if File.exist?(pwd+'/KEYS/'+box_params['keyfile'].to_s) 
+          if File.exist?(pwd+'/KEYS/'+box_params['keyfile'].to_s)
             $out.out pwd+'/KEYS/'+box_params['keyfile'].to_s
+            return 0
           else
             $out.warning box_params['keyfile'].to_s+" not found!"
+            exit_code = 1
           end
         end
       else
@@ -93,24 +98,42 @@ class Network
           box = mdbci_node[1]['box'].to_s
           mdbci_params = $session.boxes.getBox(box)
           $out.info 'Node: ' + args[1].to_s
-          if File.exist?(pwd+'/KEYS/'+mdbci_params['keyfile'].to_s) 
+          if File.exist?(pwd+'/KEYS/'+mdbci_params['keyfile'].to_s)
             $out.out pwd+'/KEYS/'+mdbci_params['keyfile'].to_s
+            return 0
           else
             $out.warning mdbci_params['keyfile'].to_s+" not found!"
+            return 1
           end
         else
           $out.warning args[1].to_s+" mdbci node not found!"
+          return 1
         end
       end
     else
+      unless Dir.exists? pwd.to_s+'/'+args[0]
+        $out.error 'Configuration with such name does not exists'
+        return 1
+      end
+
       Dir.chdir pwd.to_s+'/'+args[0]
 
       cmd = 'vagrant ssh-config '+args[1].to_s+ ' | grep IdentityFile '
       vagrant_out = `#{cmd}`
+      exit_code = $?.exitstatus
+      possibly_failed_command = cmd
       $out.out vagrant_out.split(' ')[1]
 
       Dir.chdir pwd
     end
+
+    if exit_code != 0
+      $out.error "command #{possibly_failed_command } exit with non-zero exit code : #{exit_code}"
+      exit_code = 1
+    end
+
+    return exit_code
+
   end
 
   def self.show(name)
