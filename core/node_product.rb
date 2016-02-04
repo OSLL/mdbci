@@ -239,23 +239,16 @@ class NodeProduct
             mdbci_params = $session.boxes.getBox(box)
             platform = $session.platformKey(box).split('^')
             $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
-            if $session.nodeProduct == 'maxscale'
-              # #{ ssh ... } version
-              command = installMaxscaleProductMdbciCmd(platform[0])
-              cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
-                              + mdbci_params['user'].to_s + '@'\
-                              + mdbci_params['IP'].to_s + ' '\
-                              + "'" + command.to_s + "'"
-              $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
-              vagrant_out = `#{cmd}`
-              #$out.out vagrant_out
-            elsif $session.nodeProduct == 'mariadb'
-              # TODO
-            elsif $session.nodeProduct == 'galera'
-              # TODO
-            else
-              $out.info 'Install product: Unknown product!'
-            end
+            # execute command
+            command = installProductToMdbciCmd(platform[0])
+            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
+                            + mdbci_params['user'].to_s + '@'\
+                            + mdbci_params['IP'].to_s + ' '\
+                            + "'" + command.to_s + "'"
+            $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
+            vagrant_out = `#{cmd}`
+            #$out.out vagrant_out
+            # TODO - check for unknown product
           end
         end
       else
@@ -264,23 +257,17 @@ class NodeProduct
         if !box.empty?
           mdbci_params = $session.boxes.getBox(box)
           platform = $session.platformKey(box).split('^')
-          $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
-          if $session.nodeProduct == 'maxscale'
-            command = installMaxscaleProductMdbciCmd(platform[0])
-            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
+          $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0].to_s
+          # execute command
+          command = installProductToMdbciCmd(platform[0])
+          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
                             + mdbci_params['user'].to_s + '@'\
                             + mdbci_params['IP'].to_s + ' '\
-                            + "'" + command + "'"
-            $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
-            vagrant_out = `#{cmd}`
-            #$out.out vagrant_out
-          elsif $session.nodeProduct == 'mariadb'
-            # TODO
-          elsif $session.nodeProduct == 'galera'
-            # TODO
-          else
-            $out.info 'Install product: Unknown product!'
-          end
+                            + "'" + command.to_s + "'"
+          $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
+          vagrant_out = `#{cmd}`
+          #$out.out vagrant_out
+          # TODO - check for unknown product
         end
       end
     else # aws, vbox, libvirt, docker nodes
@@ -289,32 +276,18 @@ class NodeProduct
       if args[1].nil? # No node argument, copy keys to all nodes
         $session.templateNodes.each do |node|
           platform = $session.loadNodePlatform(node[0].to_s)
-          $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
-          if $session.nodeProduct == 'maxscale'
-            cmd = installMaxscaleProductCmd(platform, node[0])
-            vagrant_out = `#{cmd}`
-          elsif $session.nodeProduct == 'mariadb'
-            # TODO
-          elsif $session.nodeProduct == 'galera'
-            # TODO
-          else
-            $out.info 'Install product: Unknown product!'
-          end
+          $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0].to_s
+          # execute command
+          cmd = installProductCmd(platform, node[0])
+          vagrant_out = `#{cmd}`
         end
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
         platform = $session.loadNodePlatform(node[0].to_s)
-        $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
-        if $session.nodeProduct == 'maxscale'
-          cmd = installMaxscaleProductCmd(platform, node[0].to_s)
-          vagrant_out = `#{cmd}`
-        elsif $session.nodeProduct == 'mariadb'
-          # TODO
-        elsif $session.nodeProduct == 'galera'
-          # TODO
-        else
-          $out.info 'Install product: Unknown product!'
-        end
+        $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0].to_s
+        # execute command
+        cmd = installProductCmd(platform, node[0])
+        vagrant_out = `#{cmd}`
       end
     end
 
@@ -322,27 +295,27 @@ class NodeProduct
   end
 
   # install Maxscale product command for Vagrant nodes
-  def NodeProduct.installMaxscaleProductCmd(platform, node_name)
+  def NodeProduct.installProductCmd(platform, node_name)
     if platform == 'ubuntu' || platform == 'debian'
-      cmd_update_repo = 'vagrant ssh '+node_name+' -c "sudo apt-get -y install maxscale"'
+      cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo apt-get -y install '+$session.nodeProduct.to_s+'"'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
-      cmd_update_repo = 'vagrant ssh '+node_name+' -c "sudo yum -y install maxscale"'
+      cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo yum -y install '+$session.nodeProduct.to_s+'"'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
-      cmd_update_repo = 'vagrant ssh '+node_name+' -c "sudo zypper --non-interactive install maxscale"'
+      cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo zypper --non-interactive install '+$session.nodeProduct.to_s+'"'
     end
-    return cmd_update_repo
+    return cmd_install_product
   end
   #
   # #{ ssh ... } version of install Maxscale product on a mdbci nodes
-  def NodeProduct.installMaxscaleProductMdbciCmd(platform)
+  def NodeProduct.installProductToMdbciCmd(platform)
     if platform == 'ubuntu' || platform == 'debian'
-      cmd_update_repo = 'sudo apt-get -y install maxscale'
+      cmd_install_product = 'sudo apt-get -y install '+$session.nodeProduct.to_s
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
-      cmd_update_repo = 'sudo yum -y install maxscale'
+      cmd_install_product = 'sudo yum -y install '+$session.nodeProduct.to_s
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
-      cmd_update_repo = 'sudo zypper --non-interactive install maxscale'
+      cmd_install_product = 'sudo zypper --non-interactive install '+$session.nodeProduct.to_s
     end
-    return cmd_update_repo
+    return cmd_install_product
   end
 
 end
