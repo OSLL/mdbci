@@ -20,6 +20,7 @@ opts = GetoptLong.new(
     ['--repo-dir','-r',GetoptLong::REQUIRED_ARGUMENT],
     ['--attempts','-a',GetoptLong::REQUIRED_ARGUMENT],
     ['--product','-p',GetoptLong::REQUIRED_ARGUMENT],
+    ['--product-version','-v',GetoptLong::REQUIRED_ARGUMENT],
     ['--key','-k',GetoptLong::REQUIRED_ARGUMENT]
 )
 
@@ -62,6 +63,9 @@ opts.each do |opt, arg|
 
     when '--product'
       if arg != ''; $session.nodeProduct = arg; end
+
+    when '--product-version'
+      if arg != ''; $session.productVersion = arg; end
 
     when '--key'
       if arg != ''; $session.keyFile = arg; end
