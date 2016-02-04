@@ -31,6 +31,7 @@ class Session
   attr_accessor :boxesDir
   attr_accessor :mdbciDir
   attr_accessor :nodeProduct
+  attr_accessor :productVersion
   attr_accessor :keyFile
 
   def initialize
@@ -525,7 +526,7 @@ class Session
     box = node[1]['box'].to_s
     if $session.boxes.boxesManager.has_key?(box)
       box_params = $session.boxes.getBox(box)
-      platform = box_params["platform"].to_s
+      platform = box_params["platform"].to_s+'^'+box_params['platform_version'].to_s
       return platform
     else
       $out.warning name.to_s+" platform does not exist! Please, check box name!"

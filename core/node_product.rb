@@ -8,7 +8,7 @@ require_relative  '../core/out'
 class NodeProduct
   #
   #
-  def self.getProductRepoParameters(product, box)
+  def NodeProduct.getProductRepoParameters(product, box)
 
     repo = nil
     repoName = nil
@@ -32,13 +32,10 @@ class NodeProduct
   end
   #
   #
-  def self.getMaxscaleRepoByBox(box)
-
-    product_name = 'maxscale'
-    version = 'default'
-    platform = $session.platformKey(box)
-
-    repokey = product_name+'@'+version+'+'+ platform
+  # Get product repo params from repo manager (repo.d/)
+  # platform format = platform_name^platform_version
+  def NodeProduct.getProductRepo(product_name, product_version, platform)
+    repokey = product_name+'@'+product_version+'+'+ platform
     repo = $session.repos.getRepo(repokey)
     $out.info 'Repo key is '+repokey + ' ... ' + (repo.nil? ? 'NOT_FOUND' : 'FOUND')
 
@@ -48,28 +45,19 @@ class NodeProduct
   end
   #
   #
-  def getProductRepoParametersByName(product_name, product, box)
-    repo = $session.repos.findRepo(product_name, product, box)
-    if repo.nil?; return nil; end
-    return repo
-  end
-  #
   # Setup repo for product to nodes (install product repo and update it)
   # Supported products: Maxscale
   #
   # P.S. Require to add NOPASSWD:ALL to /etc/sudoers for a mdbci node user!
   # for example, vagranttest ALL=(ALL) NOPASSWD:ALL
   #
-  # TODO - get repo for mariadb, galera, mysql
-  # TODO - Where to store product version for mdbci boxes? In boxes.json node or another place?
   def self.setupProductRepo(args)
 
     pwd = Dir.pwd
-    maxscale_product = { "name" => "maxscale" }
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return
+      return 1
     end
 
     args = args.split('/')
@@ -83,27 +71,33 @@ class NodeProduct
           if !box.empty?
             mdbci_params = $session.boxes.getBox(box)
  	          #
-            platform = $session.platformKey(box).split('^')
-            $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
+            full_platform = $session.platformKey(box)
+            #$out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
             if $session.nodeProduct == 'maxscale'
-              repo = getMaxscaleRepoByBox(box)
+              repo = getProductRepo('maxscale', 'default', full_platform)
               if !repo.nil?
                 # # { ssh ... } version
-                command = maxscaleMdbciSetupRepoCmd(platform[0], repo)
-                cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
-                              + mdbci_params['user'].to_s + '@'\
-                              + mdbci_params['IP'].to_s + ' '\
-                              + "'" + command.to_s + "'"
-                $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
-                vagrant_out = `#{cmd}`
-                $out.out vagrant_out
+                command = setupProductRepoToMdbciCmd(platform[0], repo)
+                p command.to_s
+                #cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
+                #              + mdbci_params['user'].to_s + '@'\
+                #              + mdbci_params['IP'].to_s + ' '\
+                #              + "'" + command.to_s + "'"
+                #$out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
+                #vagrant_out = `#{cmd}`
+                #$out.out vagrant_out
+              else
+                $out.error 'No such product for this node!'
+                return 1
               end
-            elsif $session.nodeProduct == 'mariadb'
-              # TODO
-            elsif $session.nodeProduct == 'galera'
-              # TODO
             else
-              $out.info 'Install repo: Unknown product!'
+              repo = getProductRepo($session.nodeProduct, $session.productVersion, full_platform)
+              if !repo.nil?
+                p repo['repo'].to_s + ", " + repo['repo_key']
+              else
+                $out.error 'No such product for this node!'
+                return 1
+              end
             end
           end
         end
@@ -112,26 +106,32 @@ class NodeProduct
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes.getBox(box)
-          platform = $session.platformKey(box).split('^')
-          $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
+          full_platform = $session.platformKey(box)
+          #$out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
           if $session.nodeProduct == 'maxscale'
-            repo = getMaxscaleRepoByBox(box)
+            repo = getProductRepo('maxscale', 'default', full_platform)
             if !repo.nil?
-              command = maxscaleMdbciSetupRepoCmd(platform[0], repo)
-              cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
-                              + mdbci_params['user'].to_s + '@'\
-                              + mdbci_params['IP'].to_s + ' '\
-                              + "'" + command + "'"
-              $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
-              vagrant_out = `#{cmd}`
-              $out.out vagrant_out
+              command = setupProductRepoToMdbciCmd(platform[0], repo)
+              p command.to_s
+              #cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
+              #                + mdbci_params['user'].to_s + '@'\
+              #                + mdbci_params['IP'].to_s + ' '\
+              #                + "'" + command + "'"
+              #$out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
+              #vagrant_out = `#{cmd}`
+              #$out.out vagrant_out
+            else
+              $out.error 'No such product for this node!'
+              return 1
             end
-          elsif $session.nodeProduct == 'mariadb'
-            # TODO
-          elsif $session.nodeProduct == 'galera'
-            # TODO
           else
-            $out.info 'Install repo: Unknown product!'
+            repo = getProductRepo($session.nodeProduct, $session.productVersion, full_platform)
+            if !repo.nil?
+              p repo['repo'].to_s + ", " + repo['repo_key']
+            else
+              $out.error 'No such product for this node!'
+              return 1
+            end
           end
         end
       end
@@ -140,92 +140,103 @@ class NodeProduct
       $session.loadTemplateNodes
       if args[1].nil? # No node argument, copy keys to all nodes
         $session.templateNodes.each do |node|
-          platform = $session.loadNodePlatform(node[0].to_s)
-          $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
+          full_platform = $session.loadNodePlatform(node[0].to_s)
+          #$out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
           if $session.nodeProduct == 'maxscale'
-            repo = getProductRepoParameters(maxscale_product, node[1]['box'])
+            repo = getProductRepo('maxscale', 'default', full_platform)
             if !repo.nil?
-              cmd = maxscaleSetupRepoCmd(platform, node[0], repo)
-              vagrant_out = `#{cmd}`
+              cmd = setupProductRepoCmd(full_platform, node[0], repo)
+              p cmd.to_s
+              #vagrant_out = `#{cmd}`
               #$out.out vagrant_out
             else
               $out.error 'No such product for this node!'
+              return 1
             end
-          elsif $session.nodeProduct == 'mariadb'
-            # TODO
-          elsif $session.nodeProduct == 'galera'
-            # TODO
           else
-            $out.info 'Install repo: Unknown product!'
+            repo = getProductRepo($session.nodeProduct, $session.productVersion, full_platform)
+            if !repo.nil?
+              p repo['repo'].to_s + ", " + repo['repo_key']
+            else
+              $out.error 'No such product for this node!'
+              return 1
+            end
           end
         end
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
-        platform = $session.loadNodePlatform(node[0].to_s)
-        $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
+        full_platform = $session.loadNodePlatform(node[0].to_s)
+        #$out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
         if $session.nodeProduct == 'maxscale'
-          repo = getProductRepoParameters(maxscale_product, node[1]['box'])
+          repo = getProductRepo('maxscale', 'default', full_platform)
           if !repo.nil?
-            cmd = maxscaleSetupRepoCmd(platform, node[0], repo)
-            vagrant_out = `#{cmd}`
+            cmd = setupProductRepoCmd(platform, node[0], repo)
+            p cmd.to_s
+            #vagrant_out = `#{cmd}`
             #$out.out vagrant_out
           else
             $out.error 'No such product for this node!'
+            return 1
           end
-        elsif $session.nodeProduct == 'mariadb'
-          # TODO
-        elsif $session.nodeProduct == 'galera'
-          # TODO
         else
-          $out.info 'Install repo: Unknown product!'
+          repo = getProductRepo($session.nodeProduct, $session.productVersion, full_platform)
+          if !repo.nil?
+            p repo['repo'].to_s + ", " + repo['repo_key']
+          else
+            $out.error 'No such product for this node!'
+            return 1
+          end
         end
       end
     end
 
     Dir.chdir pwd
+    return 0
   end
 
-  def self.maxscaleSetupRepoCmd(platform, node_name, repo)
-    if platform == 'ubuntu' || platform == 'debian'
+  def NodeProduct.setupProductRepoCmd(full_platform, node_name, repo)
+    platform = full_platform.split('^')
+    if platform[0] == 'ubuntu' || platform[0] == 'debian'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+repo['repo_key'].to_s+' && '\
-                       + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
-		                   + 'sudo echo -e \'deb '+repo['repo'].to_s+'\' | sudo tee -a /etc/apt/sources.list.d/maxscale.list && '\
+                       + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\
+		                   + 'sudo echo -e \'deb '+repo['repo'].to_s+'\' | sudo tee -a /etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\
 		                   + 'sudo apt-get update"'
-    elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
-      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo dd if=/dev/null of=/etc/yum.repos.d/maxscale.repo && '\
-		                   + 'sudo echo -e \'[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
+    elsif platform[0] == 'rhel' || platform[0] == 'centos' || platform[0] == 'fedora'
+      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo dd if=/dev/null of=/etc/yum.repos.d/'+$session.nodeProduct.to_s+'.repo && '\
+		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
-		                   + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/maxscale.repo && '\
-		                   + 'sudo yum clean all && sudo yum update maxscale"'
-    elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
-      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo dd if=/dev/null of=/etc/zypp/repos.d/maxscale.repo && '\
-		                   + 'sudo echo -e \'[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
+		                   + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/'+$session.nodeProduct.to_s+'.repo && '\
+		                   + 'sudo yum clean all && sudo yum update '+$session.nodeProduct.to_s+'"'
+    elsif platform[0] == 'sles' || platform[0] == 'suse' || platform[0] == 'opensuse'
+      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo dd if=/dev/null of=/etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
+		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
-		                   + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/maxscale.repo && '\
-		                   + 'sudo zypper up maxscale"'
+		                   + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
+		                   + 'sudo zypper up '+$session.nodeProduct.to_s+'"'
     end
     return cmd_install_repo
   end
 
   # for #{ ssh ... } version
-  def self.maxscaleMdbciSetupRepoCmd(platform, repo)
-    if platform == 'ubuntu' || platform == 'debian'
+  def NodeProduct.setupProductRepoToMdbciCmd(full_platform, repo)
+    platform = full_platform.split('^')
+    if platform[0] == 'ubuntu' || platform[0] == 'debian'
       cmd_install_repo = 'sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+repo['repo_key'].to_s+' && '\
-                       + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/maxscale.list && '\
-		                   + 'sudo echo -e \'deb '+repo['repo'].to_s+'\' | sudo tee -a /etc/apt/sources.list.d/maxscale.list && '\
+                       + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\
+		                   + 'sudo echo -e \'deb '+repo['repo'].to_s+'\' | sudo tee -a /etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\
 		                   + 'sudo apt-get update'
-    elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
-      cmd_install_repo = 'sudo dd if=/dev/null of=/etc/yum.repos.d/maxscale.repo && '\
-		                   + 'sudo echo -e \'[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
+    elsif platform[0] == 'rhel' || platform[0] == 'centos' || platform[0] == 'fedora'
+      cmd_install_repo = 'sudo dd if=/dev/null of=/etc/yum.repos.d/'+$session.nodeProduct.to_s+'.repo && '\
+		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
-                       + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/maxscale.repo && '\
-		                   + 'sudo yum clean all && sudo yum update maxscale'
-    elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
-      cmd_install_repo = 'sudo dd if=/dev/null of=/etc/zypp/repos.d/maxscale.repo && '\
-		                   + 'sudo echo -e \'[maxscale]'+'\n'+'name=maxscale'+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
+                       + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/'+$session.nodeProduct.to_s+'.repo && '\
+		                   + 'sudo yum clean all && sudo yum update '+$session.nodeProduct.to_s+''
+    elsif platform[0] == 'sles' || platform[0] == 'suse' || platform[0] == 'opensuse'
+      cmd_install_repo = 'sudo dd if=/dev/null of=/etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
+		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
-                       + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/maxscale.repo && '\
-		                   + 'sudo zypper up maxscale'
+                       + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
+		                   + 'sudo zypper up '+$session.nodeProduct.to_s
     end
     return cmd_install_repo
   end
