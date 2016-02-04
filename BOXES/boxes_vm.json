@@ -1,5 +1,5 @@
 {
-  "ubuntu_precise32": {
+  "ubuntu_precise": {
     "provider": "virtualbox",
     "box": "hashicorp/precise32",
     "platform": "ubuntu",
