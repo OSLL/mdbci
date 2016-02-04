@@ -70,34 +70,26 @@ class NodeProduct
           box = node[1]['box'].to_s
           if !box.empty?
             mdbci_params = $session.boxes.getBox(box)
- 	          #
             full_platform = $session.platformKey(box)
-            #$out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
+            # get product repo
             if $session.nodeProduct == 'maxscale'
               repo = getProductRepo('maxscale', 'default', full_platform)
-              if !repo.nil?
-                # # { ssh ... } version
-                command = setupProductRepoToMdbciCmd(platform[0], repo)
-                p command.to_s
-                #cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
-                #              + mdbci_params['user'].to_s + '@'\
-                #              + mdbci_params['IP'].to_s + ' '\
-                #              + "'" + command.to_s + "'"
-                #$out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
-                #vagrant_out = `#{cmd}`
-                #$out.out vagrant_out
-              else
-                $out.error 'No such product for this node!'
-                return 1
-              end
             else
               repo = getProductRepo($session.nodeProduct, $session.productVersion, full_platform)
-              if !repo.nil?
-                p repo['repo'].to_s + ", " + repo['repo_key']
-              else
-                $out.error 'No such product for this node!'
-                return 1
-              end
+            end
+            # execute command
+            if !repo.nil?
+              command = setupProductRepoToMdbciCmd(full_platform, repo)
+              cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
+                              + mdbci_params['user'].to_s + '@'\
+                              + mdbci_params['IP'].to_s + ' '\
+                              + "'" + command.to_s + "'"
+              $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
+              vagrant_out = `#{cmd}`
+              $out.out vagrant_out
+            else
+              $out.error 'No such product for this node!'
+              return 1
             end
           end
         end
@@ -107,31 +99,25 @@ class NodeProduct
         if !box.empty?
           mdbci_params = $session.boxes.getBox(box)
           full_platform = $session.platformKey(box)
-          #$out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
+          # get product repo
           if $session.nodeProduct == 'maxscale'
             repo = getProductRepo('maxscale', 'default', full_platform)
-            if !repo.nil?
-              command = setupProductRepoToMdbciCmd(platform[0], repo)
-              p command.to_s
-              #cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
-              #                + mdbci_params['user'].to_s + '@'\
-              #                + mdbci_params['IP'].to_s + ' '\
-              #                + "'" + command + "'"
-              #$out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
-              #vagrant_out = `#{cmd}`
-              #$out.out vagrant_out
-            else
-              $out.error 'No such product for this node!'
-              return 1
-            end
           else
             repo = getProductRepo($session.nodeProduct, $session.productVersion, full_platform)
-            if !repo.nil?
-              p repo['repo'].to_s + ", " + repo['repo_key']
-            else
-              $out.error 'No such product for this node!'
-              return 1
-            end
+          end
+          # execute command
+          if !repo.nil?
+            command = setupProductRepoToMdbciCmd(full_platform, repo)
+            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
+                            + mdbci_params['user'].to_s + '@'\
+                            + mdbci_params['IP'].to_s + ' '\
+                            + "'" + command.to_s + "'"
+            $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
+            vagrant_out = `#{cmd}`
+            $out.out vagrant_out
+          else
+            $out.error 'No such product for this node!'
+            return 1
           end
         end
       end
@@ -141,51 +127,39 @@ class NodeProduct
       if args[1].nil? # No node argument, copy keys to all nodes
         $session.templateNodes.each do |node|
           full_platform = $session.loadNodePlatform(node[0].to_s)
-          #$out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
+          # get product repo
           if $session.nodeProduct == 'maxscale'
             repo = getProductRepo('maxscale', 'default', full_platform)
-            if !repo.nil?
-              cmd = setupProductRepoCmd(full_platform, node[0], repo)
-              p cmd.to_s
-              #vagrant_out = `#{cmd}`
-              #$out.out vagrant_out
-            else
-              $out.error 'No such product for this node!'
-              return 1
-            end
           else
             repo = getProductRepo($session.nodeProduct, $session.productVersion, full_platform)
-            if !repo.nil?
-              p repo['repo'].to_s + ", " + repo['repo_key']
-            else
-              $out.error 'No such product for this node!'
-              return 1
-            end
           end
-        end
-      else
-        node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
-        full_platform = $session.loadNodePlatform(node[0].to_s)
-        #$out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
-        if $session.nodeProduct == 'maxscale'
-          repo = getProductRepo('maxscale', 'default', full_platform)
+          # execute command
           if !repo.nil?
-            cmd = setupProductRepoCmd(platform, node[0], repo)
-            p cmd.to_s
-            #vagrant_out = `#{cmd}`
+            cmd = setupProductRepoCmd(full_platform, node[0], repo)
+            vagrant_out = `#{cmd}`
             #$out.out vagrant_out
           else
             $out.error 'No such product for this node!'
             return 1
           end
+        end
+      else
+        node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
+        full_platform = $session.loadNodePlatform(node[0].to_s)
+        # get product repo
+        if $session.nodeProduct == 'maxscale'
+          repo = getProductRepo('maxscale', 'default', full_platform)
         else
           repo = getProductRepo($session.nodeProduct, $session.productVersion, full_platform)
-          if !repo.nil?
-            p repo['repo'].to_s + ", " + repo['repo_key']
-          else
-            $out.error 'No such product for this node!'
-            return 1
-          end
+        end
+        # execute command
+        if !repo.nil?
+          cmd = setupProductRepoCmd(full_platform, node[0], repo)
+          vagrant_out = `#{cmd}`
+          #$out.out vagrant_out
+        else
+          $out.error 'No such product for this node!'
+          return 1
         end
       end
     end
@@ -196,6 +170,7 @@ class NodeProduct
 
   def NodeProduct.setupProductRepoCmd(full_platform, node_name, repo)
     platform = full_platform.split('^')
+    $out.info 'Setup '+$session.nodeProduct.to_s+' repo on '+platform[0].to_s
     if platform[0] == 'ubuntu' || platform[0] == 'debian'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+repo['repo_key'].to_s+' && '\
                        + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\
@@ -220,6 +195,7 @@ class NodeProduct
   # for #{ ssh ... } version
   def NodeProduct.setupProductRepoToMdbciCmd(full_platform, repo)
     platform = full_platform.split('^')
+    $out.info 'Setup '+$session.nodeProduct.to_s+' repo on '+platform[0].to_s
     if platform[0] == 'ubuntu' || platform[0] == 'debian'
       cmd_install_repo = 'sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+repo['repo_key'].to_s+' && '\
                        + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\

@@ -34,6 +34,9 @@ mdbci [option] <show | setup | generate>
 -p, --product
   Product name for setup repo and install product commands
 
+-v, --product-version
+  Product version for setup repo and install product commands
+
 -k, --key
   Keyfile to the node for public_keys command
 
@@ -55,6 +58,7 @@ EXAMPLES:
   mdbci --repo-dir /home/testbed/config/repos show repos
   mdbci up --attempts 4 T/node0
   mdbci setup_repo --product maxscale T/node0
+  mdbci setup_repo --product mariadb --product-version 10.0 T/node0
   mdbci public_keys --key keyfile.pem T/node0
   EOF
 
