@@ -140,7 +140,7 @@ case node[:platform_family]
 
   when "debian", "ubuntu"
   
-    createcmd = "mkdir /etc/mysql/my.cnf.d"
+    createcmd = "mkdir -p /etc/mysql/my.cnf.d/"
     execute "Create cnf_template directory" do
       command createcmd
     end
@@ -158,8 +158,13 @@ case node[:platform_family]
 
   when "rhel", "fedora", "centos", "suse"
 
+    createcmd = 'mkdir -p /etc/my.cnf.d/'
+    execute "Create cnf_template directory" do
+      command createcmd
+    end
+
     # /etc/my.cnf.d -- dir for *.cnf files
-    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/my.cnf.d'
+    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/my.cnf.d/'
     execute "Copy mdbci_server.cnf to cnf_template directory" do
       command copycmd
     end
