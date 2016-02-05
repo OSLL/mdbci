@@ -118,7 +118,7 @@ end # save iptables rules
 case node[:platform_family]
 when "suse"
   execute "install" do
-    command "zypper -n install --from mariadb MariaDB-server MariaDB-client &> /vagrant/log"
+    command "zypper -n install --from mariadb MariaDB-server MariaDB-client"
   end
 when "debian"
   package 'mariadb-server'
@@ -146,13 +146,13 @@ case node[:platform_family]
     end
 
     copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/mysql/my.cnf.d/'
-    execute "Copy mdbci_server.cnf to cnf_template directory" do
+    execute "Copy server.cnf to cnf_template directory" do
       command copycmd
     end
 
     # /etc/mysql/my.cnf.d -- dir for *.cnf files
-    addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
-    execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
+    addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d/" >> /etc/mysql/my.cnf'
+    execute "Add server.cnf dir to /etc/my.cnf includedir parameter" do
       command addlinecmd
     end
 
@@ -165,8 +165,16 @@ case node[:platform_family]
 
     # /etc/my.cnf.d -- dir for *.cnf files
     copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/my.cnf.d/'
-    execute "Copy mdbci_server.cnf to cnf_template directory" do
+    execute "Copy server.cnf to cnf_template directory" do
       command copycmd
+    end
+
+    # create /etc/my.cnf file for MariaDB 5.1
+    if node['mariadb']['version'] == "5.1"
+      addlinecmd = 'echo "!includedir /etc/my.cnf.d/" >> /etc/my.cnf'
+      execute "Add server.cnf dir to /etc/my.cnf includedir parameter" do
+        command addlinecmd
+      end
     end
 
     # TODO: check if line already exist !!!
