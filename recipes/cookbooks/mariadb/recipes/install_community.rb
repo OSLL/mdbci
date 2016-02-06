@@ -2,6 +2,9 @@ require 'shellwords'
 
 include_recipe "mariadb::mdbcrepos"
 
+system 'echo Platform family: '+node[:platform_family]
+system 'echo Platform version: '+node[:platform_version]
+
 # install default packages
 [ "net-tools", "psmisc" ].each do |pkg|
   package pkg
@@ -32,15 +35,14 @@ end  # Turn off SElinux
 if node['mariadb']['version'] == "5.1"
   execute "Remove mysql-libs for MariaDB-Server 5.1" do
     case node[:platform]
-      when "ubuntu", "debian" 
+      when "ubuntu", "debian"
+        break if node[:platform_version] == "14.04"
         command "apt-get -y remove mysql-libs"
       when "rhel", "centos"
         command "yum remove -y mysql-libs"
     end
   end
 end
-
-system 'echo Platform family: '+node[:platform_family]
 
 # check and install iptables
 case node[:platform_family]
@@ -171,7 +173,8 @@ case node[:platform_family]
 
     # create /etc/my.cnf file for MariaDB 5.1
     if node['mariadb']['version'] == "5.1"
-      addlinecmd = 'echo "!includedir /etc/my.cnf.d/" >> /etc/my.cnf'
+      addlinecmd = 'echo -e \'#'+'\n'+'[client-server]'+'\n\n#'+'# include all files from the config directory:'+'\n'+'!includedir /etc/my.cnf.d/\' && '
+                   'tee -a /etc/my.cnf'
       execute "Add server.cnf dir to /etc/my.cnf includedir parameter" do
         command addlinecmd
       end
