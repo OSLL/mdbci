@@ -219,13 +219,31 @@ class NodeProduct
   end
   #
   #
-  # Install product command. Supported: Maxscale
+  # Install product command. Supported: MySQL, MariaDB, MariaDB-Galera, Maxscale
   def self.installProduct(args)
     pwd = Dir.pwd
 
+    exit_code = 0
+    products = ['mysql', 'mariadb-server', 'mariadb-client' 'galera', 'maxscale']
+
+
     if args.nil?
       $out.error 'Configuration name is required'
-      return
+      return 1
+    end
+
+    # TODO Создать задачу для подстановки правильных названий пакетов в команду install для mysql, mariadb, galera
+    # MariaDB-server MariaDB-client == centos + suse, ubuntu: mariadb-server mariadb-client
+    # Galera 10.1 suse: MariaDB-server, for other = MariaDB-Galera-server
+    # Galera 10.1 centos: MariaDB-server, for 10.0: MariaDB-Galera-server + galera, for other: MariaDB-Galera-server
+    # Maxscale FOR ALL: maxscale !!!
+    # MySQL suse + centos:  mysql-community-client mysql-community-server
+    # MySQL ubuntu: mysql-server mysql-client
+
+    # check supported products
+    if !products.include?($session.nodeProduct)
+      $out.error 'Unsupported product: '+$session.nodeProduct.to_s+'! Check your product name.'
+      return 1
     end
 
     args = args.split('/')
@@ -248,7 +266,7 @@ class NodeProduct
             $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
             vagrant_out = `#{cmd}`
             #$out.out vagrant_out
-            # TODO - check for unknown product
+            exit_code = $?.exitstatus # TODO
           end
         end
       else
@@ -267,7 +285,7 @@ class NodeProduct
           $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
           vagrant_out = `#{cmd}`
           #$out.out vagrant_out
-          # TODO - check for unknown product
+          exit_code = $?.exitstatus # TODO
         end
       end
     else # aws, vbox, libvirt, docker nodes
@@ -276,28 +294,32 @@ class NodeProduct
       if args[1].nil? # No node argument, copy keys to all nodes
         $session.templateNodes.each do |node|
           platform = $session.loadNodePlatform(node[0].to_s)
-          $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0].to_s
+          $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
           # execute command
           cmd = installProductCmd(platform, node[0])
           vagrant_out = `#{cmd}`
+          exit_code = $?.exitstatus # TODO
         end
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
         platform = $session.loadNodePlatform(node[0].to_s)
-        $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0].to_s
+        $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
         # execute command
         cmd = installProductCmd(platform, node[0])
         vagrant_out = `#{cmd}`
+        exit_code = $?.exitstatus # TODO
       end
     end
 
     Dir.chdir pwd
+
+    return exit_code
   end
 
   # install Maxscale product command for Vagrant nodes
   def NodeProduct.installProductCmd(platform, node_name)
     if platform == 'ubuntu' || platform == 'debian'
-      cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo apt-get -y install '+$session.nodeProduct.to_s+'"'
+      cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo DEBIAN_FRONTEND=noninteractive apt-get -y install '+$session.nodeProduct.to_s+'"'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
       cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo yum -y install '+$session.nodeProduct.to_s+'"'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
@@ -309,7 +331,7 @@ class NodeProduct
   # #{ ssh ... } version of install Maxscale product on a mdbci nodes
   def NodeProduct.installProductToMdbciCmd(platform)
     if platform == 'ubuntu' || platform == 'debian'
-      cmd_install_product = 'sudo apt-get -y install '+$session.nodeProduct.to_s
+      cmd_install_product = 'sudo DEBIAN_FRONTEND=noninteractive apt-get -y install '+$session.nodeProduct.to_s
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
       cmd_install_product = 'sudo yum -y install '+$session.nodeProduct.to_s
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
