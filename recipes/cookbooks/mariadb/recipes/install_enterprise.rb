@@ -148,7 +148,7 @@ case node[:platform_family]
       command addlinecmd
     end
 
-  when "rhel", "fedora", "centos", "suse"
+  when "rhel", "fedora", "centos", "opensuse"
 
     createcmd = 'mkdir -p /etc/my.cnf.d/'
     execute "Create cnf_template directory" do
@@ -163,15 +163,11 @@ case node[:platform_family]
 
     # create /etc/my.cnf file for MariaDB 5.1
     if node['mariadb']['version'] == "5.1"
-      addlinecmd = 'echo "!includedir /etc/my.cnf.d/" >> /etc/my.cnf'
+      addlinecmd = 'echo -e \'#'+'\n'+'[client-server]'+'\n\n'+'# include all files from the config directory:'+'\n'+'!includedir /etc/my.cnf.d/\' >> /etc/my.cnf'
       execute "Add server.cnf dir to /etc/my.cnf includedir parameter" do
         command addlinecmd
       end
     end
 
-  # TODO: check if line already exist !!!
-  #addlinecmd = "replace '!includedir /etc/my.cnf.d' '!includedir " + node['mariadb']['cnf_template'] + "' -- /etc/my.cnf"
-  #execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-  #  command addlinecmd
-  #end
 end
+
