@@ -27,7 +27,7 @@ class NodeProduct
 
     if repo.nil?; repo = $session.repos.findRepo(product_name, product, box); end
     if repo.nil?; return nil; end
-    
+
     return repo
   end
   #
@@ -187,7 +187,7 @@ class NodeProduct
 		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
 		                   + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo zypper up '+$session.nodeProduct.to_s+'"'
+		                   + 'sudo zypper --no-gpg-check up '+$session.nodeProduct.to_s+'"'
     end
     return cmd_install_repo
   end
