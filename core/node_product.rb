@@ -53,6 +53,9 @@ class NodeProduct
   #
   def self.setupProductRepo(args)
 
+    exit_code = 0
+    possibly_failed_command = ''
+
     pwd = Dir.pwd
 
     if args.nil?
@@ -87,6 +90,9 @@ class NodeProduct
               $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
               vagrant_out = `#{cmd}`
               $out.out vagrant_out
+
+              exit_code = $?.exitstatus
+              possibly_failed_command = cmd
             else
               $out.error 'No such product for this node!'
               return 1
@@ -115,6 +121,9 @@ class NodeProduct
             $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
             vagrant_out = `#{cmd}`
             $out.out vagrant_out
+
+            exit_code = $?.exitstatus
+            possibly_failed_command = cmd
           else
             $out.error 'No such product for this node!'
             return 1
@@ -137,7 +146,10 @@ class NodeProduct
           if !repo.nil?
             cmd = setupProductRepoCmd(full_platform, node[0], repo)
             vagrant_out = `#{cmd}`
-            #$out.out vagrant_out
+            $out.out vagrant_out
+
+            exit_code = $?.exitstatus
+            possibly_failed_command = cmd
           else
             $out.error 'No such product for this node!'
             return 1
@@ -156,7 +168,10 @@ class NodeProduct
         if !repo.nil?
           cmd = setupProductRepoCmd(full_platform, node[0], repo)
           vagrant_out = `#{cmd}`
-          #$out.out vagrant_out
+          $out.out vagrant_out
+
+          exit_code = $?.exitstatus
+          possibly_failed_command = cmd
         else
           $out.error 'No such product for this node!'
           return 1
@@ -165,7 +180,15 @@ class NodeProduct
     end
 
     Dir.chdir pwd
-    return 0
+
+    if exit_code != 0
+      $out.error "command #{possibly_failed_command} exit with non-zero exit code: #{exit_code}"
+      exit_code = 1
+    end
+
+    puts exit_code
+
+    return exit_code
   end
 
   def NodeProduct.setupProductRepoCmd(full_platform, node_name, repo)
