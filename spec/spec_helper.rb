@@ -1,3 +1,5 @@
+require 'open3'
+
 # Suppressing application output (it does not affect rspec output)
 module ExecutionHelper
   attr_accessor :original_stdout
