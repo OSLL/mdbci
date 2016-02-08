@@ -5,6 +5,7 @@ require 'getoptlong'
 require_relative 'core/help'
 require_relative 'core/generator'
 require_relative 'core/session'
+require_relative 'core/node_product'
 require_relative 'core/out'
 require_relative 'core/exception_handler'
 
@@ -18,6 +19,8 @@ opts = GetoptLong.new(
     ['--silent', '-s', GetoptLong::NO_ARGUMENT],
     ['--repo-dir','-r',GetoptLong::REQUIRED_ARGUMENT],
     ['--attempts','-a',GetoptLong::REQUIRED_ARGUMENT],
+    ['--product','-p',GetoptLong::REQUIRED_ARGUMENT],
+    ['--product-version','-v',GetoptLong::REQUIRED_ARGUMENT],
     ['--key','-k',GetoptLong::REQUIRED_ARGUMENT]
 )
 
@@ -58,12 +61,18 @@ opts.each do |opt, arg|
     when '--attempts'
       $session.attempts = arg
 
+    when '--product'
+      if arg != ''; $session.nodeProduct = arg; end
+
+    when '--product-version'
+      if arg != ''; $session.productVersion = arg; end
+
     when '--key'
       if arg != ''; $session.keyFile = arg; end
       $out.info 'Using keyfile '+$session.keyFile
 
     else
-      $out.error 'Option are not supported:'+opt
+      $out.error 'Option is not supported: '+opt
   end
 end
 
