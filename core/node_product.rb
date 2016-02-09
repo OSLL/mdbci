@@ -136,7 +136,16 @@ class NodeProduct
           # execute command
           if !repo.nil?
             cmd = setupProductRepoCmd(full_platform, node[0], repo)
-            vagrant_out = `#{cmd}`
+            #vagrant_out = `#{cmd}`
+            require 'open3'
+            Open3.popen3 cmd do |stdin, stdout, stderr, wait_thr|
+              stdout.each do |line|
+                puts line
+              end
+              stderr.each do |line|
+                puts line
+              end
+            end
             #$out.out vagrant_out
           else
             $out.error 'No such product for this node!'
@@ -187,7 +196,7 @@ class NodeProduct
 		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
 		                   + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo zypper --no-gpg-check up '+$session.nodeProduct.to_s+'"'
+		                   + 'sudo zypper --no-gpg-check ref '+$session.nodeProduct.to_s+'"'
     end
     return cmd_install_repo
   end
@@ -212,7 +221,7 @@ class NodeProduct
 		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
                        + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo zypper up '+$session.nodeProduct.to_s
+		                   + 'sudo zypper --no-gpg-check ref '+$session.nodeProduct.to_s
     end
     return cmd_install_repo
   end
