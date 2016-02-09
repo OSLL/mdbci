@@ -1,17 +1,17 @@
 [
 {
-   "product":		"mariadb",
-   "version":		"5.1",
-   "repo":		"http://mirror.netinch.com/pub/mariadb/repo/5.1/ubuntu precise main",
-   "repo_key":		"0xcbcb082a1bb943db",
-   "platform":		"ubuntu",
+   "product":		    "mariadb",
+   "version":		    "5.1",
+   "repo":		        "ftp://ftp.hosteurope.de/mirror/archive.mariadb.org/mariadb-5.1.67/repo/ubuntu precise main",
+   "repo_key":		    "ftp://ftp.hosteurope.de/mirror/archive.mariadb.org/mariadb-5.1.67/repo/ubuntu/dists/precise/Release.gpg",
+   "platform":		    "ubuntu",
    "platform_version":	"precise"
 },
 {
    "product":           "mariadb",
    "version":           "5.1",
-   "repo":              "http://mirror.netinch.com/pub/mariadb/repo/5.1/ubuntu trusty main",
-   "repo_key":          "0xcbcb082a1bb943db",
+   "repo":              "ftp://ftp.hosteurope.de/mirror/archive.mariadb.org/mariadb-5.1.67/repo/ubuntu precise main",
+   "repo_key":          "ftp://ftp.hosteurope.de/mirror/archive.mariadb.org/mariadb-5.1.67/repo/ubuntu/dists/precise/Release.gpg",
    "platform":          "ubuntu",
    "platform_version":  "trusty"
 },
@@ -19,8 +19,8 @@
 {
    "product":           "mariadb",
    "version":           "5.1",
-   "repo":              "http://mirror.netinch.com/pub/mariadb/repo/5.1/ubuntu utopic main",
-   "repo_key":          "0xcbcb082a1bb943db",
+   "repo":              "ftp://ftp.hosteurope.de/mirror/archive.mariadb.org/mariadb-5.1.67/repo/ubuntu precise main",
+   "repo_key":          "ftp://ftp.hosteurope.de/mirror/archive.mariadb.org/mariadb-5.1.67/repo/ubuntu/dists/precise/Release.gpg",
    "platform":          "ubuntu",
    "platform_version":  "utopic"
 },
@@ -28,8 +28,8 @@
 {
    "product":           "mariadb",
    "version":           "5.1",
-   "repo":              "http://mirror.netinch.com/pub/mariadb/repo/5.1/ubuntu trusty main",
-   "repo_key":          "0xcbcb082a1bb943db",
+   "repo":              "ftp://ftp.hosteurope.de/mirror/archive.mariadb.org/mariadb-5.1.67/repo/ubuntu precise main",
+   "repo_key":          "ftp://ftp.hosteurope.de/mirror/archive.mariadb.org/mariadb-5.1.67/repo/ubuntu/dists/precise/Release.gpg",
    "platform":          "ubuntu",
    "platform_version":  "vivid"
 }
