@@ -1,6 +1,7 @@
 require 'scanf'
 require 'yaml'
 require 'shellwords'
+require 'json'
 
 require_relative  '../core/out'
 
@@ -27,7 +28,7 @@ class NodeProduct
 
     if repo.nil?; repo = $session.repos.findRepo(product_name, product, box); end
     if repo.nil?; return nil; end
-    
+
     return repo
   end
   #
@@ -136,7 +137,17 @@ class NodeProduct
           # execute command
           if !repo.nil?
             cmd = setupProductRepoCmd(full_platform, node[0], repo)
-            vagrant_out = `#{cmd}`
+            #vagrant_out = `#{cmd}`
+            require 'open3'
+
+            Open3.popen3 cmd do |stdin, stdout, stderr, wait_thr|
+              stdout.each do |line|
+                puts line
+              end
+              stderr.each do |line|
+                puts line
+              end
+            end
             #$out.out vagrant_out
           else
             $out.error 'No such product for this node!'
@@ -188,7 +199,7 @@ class NodeProduct
 		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
 		                   + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo zypper up '+$session.nodeProduct.to_s+'"'
+		                   + 'sudo zypper --no-gpg-check ref '+$session.nodeProduct.to_s+'"'
     end
     return cmd_install_repo
   end
@@ -213,36 +224,54 @@ class NodeProduct
 		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
                        + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo zypper up '+$session.nodeProduct.to_s
+		                   + 'sudo zypper --no-gpg-check ref '+$session.nodeProduct.to_s
     end
     return cmd_install_repo
   end
   #
   #
   # Install product command. Supported: MySQL, MariaDB, MariaDB-Galera, Maxscale
+
+  # Returns packages to install or nil
+  def NodeProduct.validateProduct(platform, products)
+    products.keys.any? do |k|
+
+      if platform.include? k
+        # If platform exists in products list
+        if products[k].has_key? $session.nodeProduct
+          # If current platform have product
+          if products[k][$session.nodeProduct].class == Hash
+            # If product have concrete versions
+            if $session.productVersion != nil
+              # If version specified during execution
+              if products[k][$session.nodeProduct].has_key? $session.productVersion
+                # If defined version exists
+                return products[k][$session.nodeProduct][$session.productVersion]
+              end
+            end
+          else
+            # If product without versions
+            return products[k][$session.nodeProduct]
+          end
+        end
+      end
+    end
+    # Wrong platform/product/version
+    return nil
+  end
+
   def self.installProduct(args)
-    pwd = Dir.pwd
 
     exit_code = 0
-    products = ['mysql', 'mariadb-server', 'mariadb-client' 'galera', 'maxscale']
+    possibly_failed_command = ''
 
+    pwd = Dir.pwd
+
+    # Loading file with product packages to every system
+    products = JSON.parse(File.read('products.json'))
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return 1
-    end
-
-    # TODO Создать задачу для подстановки правильных названий пакетов в команду install для mysql, mariadb, galera
-    # MariaDB-server MariaDB-client == centos + suse, ubuntu: mariadb-server mariadb-client
-    # Galera 10.1 suse: MariaDB-server, for other = MariaDB-Galera-server
-    # Galera 10.1 centos: MariaDB-server, for 10.0: MariaDB-Galera-server + galera, for other: MariaDB-Galera-server
-    # Maxscale FOR ALL: maxscale !!!
-    # MySQL suse + centos:  mysql-community-client mysql-community-server
-    # MySQL ubuntu: mysql-server mysql-client
-
-    # check supported products
-    if !products.include?($session.nodeProduct)
-      $out.error 'Unsupported product: '+$session.nodeProduct.to_s+'! Check your product name.'
       return 1
     end
 
@@ -251,61 +280,124 @@ class NodeProduct
     if File.exist?(args[0]+'/mdbci_template')
       $session.loadMdbciNodes args[0]
       if args[1].nil?     # read ip for all nodes
+
+        if $session.mdbciNodes.length == 0
+          $our.error "nodes not found in #{args[0]}"
+          return 1
+        end
+
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           if !box.empty?
             mdbci_params = $session.boxes.getBox(box)
             platform = $session.platformKey(box).split('^')
-            $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform.to_s
+
+            pckages = validateProduct(platform[0], products)
+            if packages == nil
+              version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
+              $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}"
+              return 1
+            end
+
+            $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform[0]
+
             # execute command
-            command = installProductToMdbciCmd(platform[0])
+            command = installProductToMdbciCmd(platform[0], packages)
             cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
                             + mdbci_params['user'].to_s + '@'\
                             + mdbci_params['IP'].to_s + ' '\
                             + "'" + command.to_s + "'"
             $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
             vagrant_out = `#{cmd}`
-            #$out.out vagrant_out
+            $out.out vagrant_out
+
             exit_code = $?.exitstatus # TODO
           end
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
+
+        if mdbci_node == nil
+          $out.error "node #{args[1]} not found in #{args[0]}"
+          return 1
+        end
+
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes.getBox(box)
           platform = $session.platformKey(box).split('^')
+
+          pckages = validateProduct(platform[0], products)
+          if packages == nil
+            version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
+            $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}"
+            return 1
+          end
+
           $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0].to_s
+
           # execute command
-          command = installProductToMdbciCmd(platform[0])
+          command = installProductToMdbciCmd(platform[0], packages)
           cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
                             + mdbci_params['user'].to_s + '@'\
                             + mdbci_params['IP'].to_s + ' '\
                             + "'" + command.to_s + "'"
           $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
           vagrant_out = `#{cmd}`
-          #$out.out vagrant_out
+          $out.out vagrant_out
+
           exit_code = $?.exitstatus # TODO
         end
       end
     else # aws, vbox, libvirt, docker nodes
       Dir.chdir args[0]
       $session.loadTemplateNodes
+
       if args[1].nil? # No node argument, copy keys to all nodes
+
+        if $session.templateNodes.length == 0
+          $our.error "nodes not  found in #{args[0]}"
+          return 1
+        end
+
         $session.templateNodes.each do |node|
-          platform = $session.loadNodePlatform(node[0].to_s)
-          $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
+          platform = $session.loadNodePlatform(node[0].to_s).split('^')
+
+          packages = validateProduct(platform[0], products)
+          if packages == nil
+            version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
+            $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}"
+            return 1
+          end
+
+          $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0]
+
           # execute command
-          cmd = installProductCmd(platform, node[0])
+          cmd = installProductCmd(platform[0], node[0], packages)
           vagrant_out = `#{cmd}`
+          $out.info vagrant_out
+
           exit_code = $?.exitstatus # TODO
         end
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
-        platform = $session.loadNodePlatform(node[0].to_s)
+
+        if node == nil
+          $out.error "node #{args[1]} not found in #{args[0]}"
+          return 1
+        end
+
+        platform = $session.loadNodePlatform(node[0].to_s).split('^')
+
+        pckages = validateProduct(platform[0], products)
+        if packages == nil
+          $out.error "product #{$session.nodeProduct} not found for platform #{platform[0]}"
+          return 1
+        end
+
         $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
         # execute command
-        cmd = installProductCmd(platform, node[0])
+        cmd = installProductCmd(platform, node[0], packages)
         vagrant_out = `#{cmd}`
         exit_code = $?.exitstatus # TODO
       end
@@ -317,26 +409,32 @@ class NodeProduct
   end
 
   # install Maxscale product command for Vagrant nodes
-  def NodeProduct.installProductCmd(platform, node_name)
+  def NodeProduct.installProductCmd(platform, node_name, packages)
     if platform == 'ubuntu' || platform == 'debian'
-      cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo DEBIAN_FRONTEND=noninteractive apt-get -y install '+$session.nodeProduct.to_s+'"'
+      cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo DEBIAN_FRONTEND=noninteractive apt-get -y install '+ packages +'"'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
-      cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo yum -y install '+$session.nodeProduct.to_s+'"'
+      cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo yum -y install '+ packages + '"'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
-      cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo zypper --non-interactive install '+$session.nodeProduct.to_s+'"'
+      packages_with_repository = ''
+      packages.split(' ').each { |package| packages_with_repository += 'mariadb:' + package + ' ' }
+      cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo zypper --non-interactive remove MariaDB*; sudo zypper --non-interactive install -f '+ packages_with_repository +'"'
     end
+    puts cmd_install_product
     return cmd_install_product
   end
   #
   # #{ ssh ... } version of install Maxscale product on a mdbci nodes
-  def NodeProduct.installProductToMdbciCmd(platform)
+  def NodeProduct.installProductToMdbciCmd(platform, packages)
     if platform == 'ubuntu' || platform == 'debian'
-      cmd_install_product = 'sudo DEBIAN_FRONTEND=noninteractive apt-get -y install '+$session.nodeProduct.to_s
+      cmd_install_product = 'sudo DEBIAN_FRONTEND=noninteractive apt-get -y install '+ packages
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
-      cmd_install_product = 'sudo yum -y install '+$session.nodeProduct.to_s
+      cmd_install_product = 'sudo yum -y install '+ packages
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
-      cmd_install_product = 'sudo zypper --non-interactive install '+$session.nodeProduct.to_s
+      packages_with_repository = ''
+      packages.split(' ').each { |package| packages_with_repository += 'mariadb:' + package + ' ' }
+      cmd_install_product = 'sudo zypper --non-interactive remove MariaDB*; sudo zypper --non-interactive install -f '+ packages_with_repository
     end
+    puts cmd_install_product
     return cmd_install_product
   end
 

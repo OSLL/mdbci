@@ -72,7 +72,7 @@ class Session
           next if value['provider'] == "aws" # skip 'aws' block
           # TODO: add aws dummy box
           # vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
- 
+
           next if value['provider'] == "mdbci" # skip 'mdbci' block
           #
           if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
@@ -270,7 +270,7 @@ class Session
       NodeProduct.setupProductRepo(ARGV.shift)
 
     when 'install_product'
-      NodeProduct.installProduct(ARGV.shift)
+      exit_code = NodeProduct.installProduct(ARGV.shift)
 
     when 'public_keys'
       exit_code = $session.publicKeys(ARGV.shift)
@@ -386,7 +386,7 @@ class Session
       return 0
     else
       (1..@attempts.to_i).each { |i|
-        $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') + 
+        $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') +
           args + ', attempt: ' + i.to_s
         $out.info 'Destroying current instance'
         cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
@@ -413,7 +413,7 @@ class Session
       }
     end
     Dir.chdir pwd
-    
+
     return exit_code
   end
 
