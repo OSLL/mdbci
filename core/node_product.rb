@@ -416,7 +416,7 @@ class NodeProduct
       cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo yum -y install '+ packages + '"'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
       packages_with_repository = ''
-      packages.split(' ').each { |package| packages_with_repository += 'mariadb:' + package + ' ' }
+      packages.split(' ').each { |package| packages_with_repository += $session.nodeProduct + ":" + package + ' ' }
       cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo zypper --non-interactive remove MariaDB*; sudo zypper --non-interactive install -f '+ packages_with_repository +'"'
     end
     puts cmd_install_product
@@ -431,7 +431,7 @@ class NodeProduct
       cmd_install_product = 'sudo yum -y install '+ packages
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
       packages_with_repository = ''
-      packages.split(' ').each { |package| packages_with_repository += 'mariadb:' + package + ' ' }
+      packages.split(' ').each { |package| packages_with_repository += $session.nodeProduct + ":" + package + ' ' }
       cmd_install_product = 'sudo zypper --non-interactive remove MariaDB*; sudo zypper --non-interactive install -f '+ packages_with_repository
     end
     puts cmd_install_product
