@@ -29,6 +29,7 @@ class Session
   attr_accessor :attempts
   attr_accessor :boxesDir
   attr_accessor :mdbciDir
+  attr_accessor :keyFile
 
   def initialize
     @boxesDir = './BOXES'
@@ -127,11 +128,14 @@ class Session
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
   def ssh(args)
 
+    exit_code = 0
+    possibly_failed_command = ''
+
     pwd = Dir.pwd
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return
+      return 1
     end
 
     params = args.split('/')
@@ -150,6 +154,8 @@ class Session
                             + "'" + $session.command + "'"
             $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
             vagrant_out = `#{cmd}`
+            exit_code = $?.exitstatus
+            possibly_failed_command = cmd
             $out.out vagrant_out
           end
         end
@@ -164,20 +170,33 @@ class Session
                           + "'" + $session.command + "'"
           $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
           vagrant_out = `#{cmd}`
+          exit_code = $?.exitstatus
+          possibly_failed_command = cmd
           $out.out vagrant_out
         end
       end
     else # aws, vbox nodes
+      unless Dir.exist?(params[0])
+        $out.error 'Machine with such name does not exist'
+        return 1
+      end
       Dir.chdir params[0]
       cmd = 'vagrant ssh '+params[1].to_s+' -c "'+$session.command+'"'
       $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
-
       vagrant_out = `#{cmd}`
+      exit_code = $?.exitstatus
+      possibly_failed_command = cmd
       $out.out vagrant_out
-
       Dir.chdir pwd
     end
 
+    if exit_code != 0
+      $out.error "'ssh' (or 'vagrant ssh') command returned non-zero exit code: (#{$?.exitstatus})"
+      $out.error "failed ssh command: #{possibly_failed_command}"
+      exit_code = 1
+    end
+
+    return exit_code
 
   end
 
@@ -250,6 +269,9 @@ class Session
 
     when 'up'
       exit_code = $session.up(ARGV.shift)
+
+    when 'public_keys'
+      exit_code = $session.publicKeys(ARGV.shift)
 
     else
       exit_code = 1
@@ -389,6 +411,94 @@ class Session
       }
     end
     Dir.chdir pwd
+    
+    return exit_code
+  end
+
+
+  # copy ssh keys to config/node
+  def publicKeys(args)
+
+    pwd = Dir.pwd
+    exit_code = 1 # error
+
+    if args.nil?
+      $out.error 'Configuration name is required'
+      return
+    end
+
+    args = args.split('/')
+
+    # mdbci box
+    if File.exist?(args[0]+'/mdbci_template')
+      loadMdbciNodes args[0]
+      if args[1].nil?     # read ip for all nodes
+        $session.mdbciNodes.each do |node|
+          box = node[1]['box'].to_s
+          if !box.empty?
+            mdbci_params = $session.boxes.getBox(box)
+            #
+            keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!"){File.read(pwd.to_s+'/'+@keyFile.to_s)}
+            # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
+            command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
+            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+                            + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
+                            + "\"" + command + "\""
+            $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
+            vagrant_out = `#{cmd}`
+            # TODO
+            exit_code = 0
+          end
+        end
+      else
+        mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == args[1] }
+        box = mdbci_node[1]['box'].to_s
+        if !box.empty?
+          mdbci_params = $session.boxes.getBox(box)
+          #
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!"){File.read(pwd.to_s+'/'+@keyFile.to_s)}
+          # add to the end of the authorized_keys file in ~/.ssh directory
+          command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
+          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+                          + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
+                          + "\"" + command + "\""
+          $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
+          vagrant_out = `#{cmd}`
+          # TODO
+          exit_code = 0
+        end
+      end
+    else # aws, vbox, libvirt, docker nodes
+      network = Network.new
+      network.loadNodes args[0] # load nodes from dir
+
+      if args[1].nil? # No node argument, copy keys to all nodes
+        network.nodes.each do |node|
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read("#{pwd.to_s}/#{@keyFile.to_s}")}
+          # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
+          cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
+          $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
+          vagrant_out = `#{cmd}`
+          $out.out vagrant_out
+          # TODO
+          exit_code = 0
+        end
+      else
+        node = network.nodes.find { |elem| elem.name == args[1]}
+        #
+        keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read("#{pwd.to_s}/#{@keyFile.to_s}")}
+        # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
+        cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
+        $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
+        vagrant_out = `#{cmd}`
+        $out.out vagrant_out
+        # TODO
+        exit_code = 0
+      end
+    end
+
+    Dir.chdir pwd
+
     return exit_code
   end
 
@@ -404,26 +514,6 @@ class Session
     end
     return exit_code
   end
-
-  # TODO: refactoring this function!
-  # load node platform by name
-  def loadNodePlatformBy(name)
-
-    pwd = Dir.pwd
-    # template file
-    templateFile = $exception_handler.handle('Template nodes file not found') {IO.read(pwd.to_s+'/template')}
-    templateNodes =  $exception_handler.handle('Template configuration file invalid') {JSON.parse(IO.read(@mdbciDir.to_s+"/"+templateFile))}
-    #
-    node = templateNodes.find { |elem| elem[0].to_s == name }
-    box = node[1]['box'].to_s
-    if $session.boxes.boxesManager.has_key?(box)
-      box_params = $session.boxes.getBox(box)
-      platform = box_params["platform"].to_s
-      return platform
-    else
-      $out.warning name.to_s+" platform does not exist! Please, check box name!"
-    end
-
-  end
+  
 
 end
