@@ -101,7 +101,7 @@ class NodeProduct
                               + "'" + command.to_s + "'"
               $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
               vagrant_out = `#{cmd}`
-              $out.out vagrant_out
+              $out.info vagrant_out
 
               exit_code = $?.exitstatus
               possibly_failed_command = cmd
@@ -144,7 +144,7 @@ class NodeProduct
                             + "'" + command.to_s + "'"
             $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
             vagrant_out = `#{cmd}`
-            $out.out vagrant_out
+            $out.info vagrant_out
 
             exit_code = $?.exitstatus
             possibly_failed_command = cmd
@@ -181,7 +181,7 @@ class NodeProduct
           if !repo.nil?
             cmd = setupProductRepoCmd(full_platform, node[0], repo)
             vagrant_out = `#{cmd}`
-            #$out.out vagrant_out
+            $out.info vagrant_out
 
             exit_code = $?.exitstatus
             possibly_failed_command = cmd
@@ -211,7 +211,7 @@ class NodeProduct
         if !repo.nil?
           cmd = setupProductRepoCmd(full_platform, node[0], repo)
           vagrant_out = `#{cmd}`
-          $out.out vagrant_out
+          $out.info vagrant_out
 
           exit_code = $?.exitstatus
           possibly_failed_command = cmd
