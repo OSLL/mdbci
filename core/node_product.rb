@@ -87,7 +87,7 @@ class NodeProduct
                               + "'" + command.to_s + "'"
               $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
               vagrant_out = `#{cmd}`
-              $out.out vagrant_out
+              #$out.out vagrant_out
             else
               $out.error 'No such product for this node!'
               return 1
@@ -115,7 +115,7 @@ class NodeProduct
                             + "'" + command.to_s + "'"
             $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
             vagrant_out = `#{cmd}`
-            $out.out vagrant_out
+            #$out.out vagrant_out
           else
             $out.error 'No such product for this node!'
             return 1
@@ -309,7 +309,7 @@ class NodeProduct
                             + "'" + command.to_s + "'"
             $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
             vagrant_out = `#{cmd}`
-            $out.out vagrant_out
+            #$out.out vagrant_out
 
             exit_code = $?.exitstatus # TODO
           end
@@ -344,7 +344,7 @@ class NodeProduct
                             + "'" + command.to_s + "'"
           $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
           vagrant_out = `#{cmd}`
-          $out.out vagrant_out
+          #$out.out vagrant_out
 
           exit_code = $?.exitstatus # TODO
         end
@@ -375,7 +375,7 @@ class NodeProduct
           # execute command
           cmd = installProductCmd(platform[0], node[0], packages)
           vagrant_out = `#{cmd}`
-          $out.info vagrant_out
+          #$out.info vagrant_out
 
           exit_code = $?.exitstatus # TODO
         end
@@ -399,6 +399,7 @@ class NodeProduct
         # execute command
         cmd = installProductCmd(platform[0], node[0], packages)
         vagrant_out = `#{cmd}`
+
         exit_code = $?.exitstatus # TODO
       end
     end
@@ -419,7 +420,6 @@ class NodeProduct
       packages.split(' ').each { |package| packages_with_repository += $session.nodeProduct + ":" + package + ' ' }
       cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo zypper --non-interactive remove MariaDB*; sudo zypper --non-interactive install -f '+ packages_with_repository +'"'
     end
-    puts cmd_install_product
     return cmd_install_product
   end
   #
@@ -434,7 +434,6 @@ class NodeProduct
       packages.split(' ').each { |package| packages_with_repository += $session.nodeProduct + ":" + package + ' ' }
       cmd_install_product = 'sudo zypper --non-interactive remove MariaDB*; sudo zypper --non-interactive install -f '+ packages_with_repository
     end
-    puts cmd_install_product
     return cmd_install_product
   end
 
