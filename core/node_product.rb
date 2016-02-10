@@ -70,10 +70,22 @@ class NodeProduct
       $session.loadMdbciNodes args[0]
       if args[1].nil?     # read ip for all nodes
         $session.mdbciNodes.each do |node|
+          if $session.mdbciNodes.length == 0
+            $out.error "0 nodes found in #{args[0]}"
+            return 1
+          end
           box = node[1]['box'].to_s
           if !box.empty?
             mdbci_params = $session.boxes.getBox(box)
+            if mdbci_params == nil
+              $out.error "box #{box} not found"
+              return 1
+            end
             full_platform = $session.platformKey(box)
+            if full_platform == "UNKNOWN"
+              $out.error "platform for box #{box} not found"
+              return 1
+            end
             # get product repo
             if $session.nodeProduct == 'maxscale'
               repo = getProductRepo('maxscale', 'default', full_platform)
@@ -101,10 +113,22 @@ class NodeProduct
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
+        if mdbci_node == nil
+          $out.error "node #{args[1]} not found in #{args[0]}"
+          return 1
+        end
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes.getBox(box)
+          if mdbci_params == nil
+            $out.error "box #{box} not found"
+            return 1
+          end
           full_platform = $session.platformKey(box)
+          if full_platform == "UNKNOWN"
+            $out.error "platform for box #{box} not found"
+            return 1
+          end
           # get product repo
           if $session.nodeProduct == 'maxscale'
             repo = getProductRepo('maxscale', 'default', full_platform)
@@ -128,14 +152,25 @@ class NodeProduct
             $out.error 'No such product for this node!'
             return 1
           end
+        else
+          $out.error "box parameter not found in defenition of node #{args[0]}/#{args[1]}"
+          return 1
         end
       end
     else # aws, vbox, libvirt, docker nodes
       Dir.chdir args[0]
       $session.loadTemplateNodes
       if args[1].nil? # No node argument, copy keys to all nodes
+        if $session.templateNodes.length == 0
+          $out.error "0 nodes found in #{args[0]}"
+          return 1
+        end
         $session.templateNodes.each do |node|
           full_platform = $session.loadNodePlatform(node[0].to_s)
+          if full_platform == nil
+            $out.error "platform for node #{node[0]} not found"
+            return 1
+          end
           # get product repo
           if $session.nodeProduct == 'maxscale'
             repo = getProductRepo('maxscale', 'default', full_platform)
@@ -146,7 +181,7 @@ class NodeProduct
           if !repo.nil?
             cmd = setupProductRepoCmd(full_platform, node[0], repo)
             vagrant_out = `#{cmd}`
-            $out.out vagrant_out
+            #$out.out vagrant_out
 
             exit_code = $?.exitstatus
             possibly_failed_command = cmd
@@ -157,7 +192,15 @@ class NodeProduct
         end
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
+        if node == nil
+          $out.error "node #{args[1]} not found in #{args[0]}"
+          return 1
+        end
         full_platform = $session.loadNodePlatform(node[0].to_s)
+        if full_platform == nil
+          $out.error "platform for node #{args[1]} not found"
+          return 1
+        end
         # get product repo
         if $session.nodeProduct == 'maxscale'
           repo = getProductRepo('maxscale', 'default', full_platform)
@@ -186,8 +229,6 @@ class NodeProduct
       exit_code = 1
     end
 
-    puts exit_code
-
     return exit_code
   end
 
@@ -210,7 +251,7 @@ class NodeProduct
 		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
 		                   + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo zypper --no-gpg-check up '+$session.nodeProduct.to_s+'"'
+		                   + 'sudo zypper --no-gpg-check ref '+$session.nodeProduct.to_s+'"'
     end
     return cmd_install_repo
   end
@@ -235,7 +276,7 @@ class NodeProduct
 		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
 		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
                        + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo zypper up '+$session.nodeProduct.to_s
+		                   + 'sudo zypper --no-gpg-check ref '+$session.nodeProduct.to_s
     end
     return cmd_install_repo
   end
