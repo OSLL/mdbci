@@ -397,7 +397,7 @@ class NodeProduct
 
         $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
         # execute command
-        cmd = installProductCmd(platform, node[0], packages)
+        cmd = installProductCmd(platform[0], node[0], packages)
         vagrant_out = `#{cmd}`
         exit_code = $?.exitstatus # TODO
       end
