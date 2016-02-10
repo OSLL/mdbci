@@ -287,6 +287,9 @@ class Session
     when 'setup_repo'
       exit_code = NodeProduct.setupProductRepo(ARGV.shift)
 
+    when 'install_product'
+      exit_code = NodeProduct.installProduct(ARGV.shift)
+
     when 'public_keys'
       exit_code = $session.publicKeys(ARGV.shift)
 
