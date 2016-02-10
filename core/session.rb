@@ -267,7 +267,7 @@ class Session
       exit_code = $session.up(ARGV.shift)
 
     when 'setup_repo'
-      NodeProduct.setupProductRepo(ARGV.shift)
+      exit_code = NodeProduct.setupProductRepo(ARGV.shift)
 
     when 'install_product'
       exit_code = NodeProduct.installProduct(ARGV.shift)
