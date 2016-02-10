@@ -67,6 +67,10 @@ class NodeProduct
     if File.exist?(args[0]+'/mdbci_template')
       $session.loadMdbciNodes args[0]
       if args[1].nil?     # read ip for all nodes
+        if $session.mdbciNodes.length == 0
+          $out.error "0 nodes found in #{args[0]}"
+          return 1
+        end
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           if !box.empty?
@@ -96,6 +100,10 @@ class NodeProduct
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
+        if $session.mdbci_node == nil
+          $out.error "node #{args[1]} not found in #{args[0]}"
+          return 1
+        end
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes.getBox(box)
@@ -126,6 +134,10 @@ class NodeProduct
       Dir.chdir args[0]
       $session.loadTemplateNodes
       if args[1].nil? # No node argument, copy keys to all nodes
+        if $session.templateNodes.length == 0
+          $out.error "0 nodes found in #{args[0]}"
+          return 1
+        end
         $session.templateNodes.each do |node|
           full_platform = $session.loadNodePlatform(node[0].to_s)
           # get product repo
@@ -156,6 +168,10 @@ class NodeProduct
         end
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
+        if $session.node == nil
+          $out.error "node #{args[1]} not found in #{args[0]}"
+          return 1
+        end
         full_platform = $session.loadNodePlatform(node[0].to_s)
         # get product repo
         if $session.nodeProduct == 'maxscale'
