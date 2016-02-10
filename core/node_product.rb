@@ -292,7 +292,7 @@ class NodeProduct
             mdbci_params = $session.boxes.getBox(box)
             platform = $session.platformKey(box).split('^')
 
-            pckages = validateProduct(platform[0], products)
+            packages = validateProduct(platform[0], products)
             if packages == nil
               version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
               $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}"
@@ -327,7 +327,7 @@ class NodeProduct
           mdbci_params = $session.boxes.getBox(box)
           platform = $session.platformKey(box).split('^')
 
-          pckages = validateProduct(platform[0], products)
+          packages = validateProduct(platform[0], products)
           if packages == nil
             version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
             $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}"
@@ -389,7 +389,7 @@ class NodeProduct
 
         platform = $session.loadNodePlatform(node[0].to_s).split('^')
 
-        pckages = validateProduct(platform[0], products)
+        packages = validateProduct(platform[0], products)
         if packages == nil
           $out.error "product #{$session.nodeProduct} not found for platform #{platform[0]}"
           return 1
