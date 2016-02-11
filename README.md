@@ -418,6 +418,9 @@ mdbci [options] <show | setup | generate>
     Product name and its version are defined by **--product** and **--product-version** command option.
     **P.S.** SSH access to the **MDBCI** boxes needs **NOPASSWD:ALL** option in the **/etc/sudoers** file for the mdbci ssh user.
 
+  **install_product --product maxscale config/node**
+    Install specified product by command option **--product** on a config/node. Currently supported only **Maxscale** product.
+
 ### Examples:
 
 Run command inside of VM
@@ -427,6 +430,8 @@ Run command inside of VM
   ./mdbci ssh --command "cat anaconda.syslog" T/node0 --silent
   ./mdbci setup_repo --product maxscale T/node0
   ./mdbci setup_repo --product mariadb --product-version 10.0 T/node0
+  ./mdbci install_product --product 'maxscale' T/node0
+  
 ```
   
 Show repos with using alternative repo.d repository

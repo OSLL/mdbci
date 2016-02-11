@@ -2,6 +2,9 @@ require 'shellwords'
 
 include_recipe "mariadb::mdbcrepos"
 
+system 'echo Platform family: '+node[:platform_family]
+system 'echo Platform version: '+node[:platform_version]
+
 # install default packages
 [ "net-tools", "psmisc" ].each do |pkg|
   package pkg
@@ -32,15 +35,14 @@ end  # Turn off SElinux
 if node['mariadb']['version'] == "5.1"
   execute "Remove mysql-libs for MariaDB-Server 5.1" do
     case node[:platform]
-      when "ubuntu", "debian" 
+      when "ubuntu", "debian"
+        break if node[:platform_version] == "14.04"
         command "apt-get -y remove mysql-libs"
       when "rhel", "centos"
         command "yum remove -y mysql-libs"
     end
   end
 end
-
-system 'echo Platform family: '+node[:platform_family]
 
 # check and install iptables
 case node[:platform_family]
@@ -118,7 +120,7 @@ end # save iptables rules
 case node[:platform_family]
 when "suse"
   execute "install" do
-    command "zypper -n install --from mariadb MariaDB-server MariaDB-client &> /vagrant/log"
+    command "zypper -n install --from mariadb MariaDB-server MariaDB-client"
   end
 when "debian"
   package 'mariadb-server'
@@ -140,33 +142,41 @@ case node[:platform_family]
 
   when "debian", "ubuntu"
   
-    createcmd = "mkdir /etc/mysql/my.cnf.d"
+    createcmd = "mkdir -p /etc/mysql/my.cnf.d/"
     execute "Create cnf_template directory" do
       command createcmd
     end
 
     copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/mysql/my.cnf.d/'
-    execute "Copy mdbci_server.cnf to cnf_template directory" do
+    execute "Copy server.cnf to cnf_template directory" do
       command copycmd
     end
 
     # /etc/mysql/my.cnf.d -- dir for *.cnf files
-    addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
-    execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
+    addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d/" >> /etc/mysql/my.cnf'
+    execute "Add server.cnf dir to /etc/my.cnf includedir parameter" do
       command addlinecmd
     end
 
-  when "rhel", "fedora", "centos", "suse"
+  when "rhel", "fedora", "centos", "opensuse"
+
+    createcmd = 'mkdir -p /etc/my.cnf.d/'
+    execute "Create cnf_template directory" do
+      command createcmd
+    end
 
     # /etc/my.cnf.d -- dir for *.cnf files
-    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/my.cnf.d'
-    execute "Copy mdbci_server.cnf to cnf_template directory" do
+    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/my.cnf.d/'
+    execute "Copy server.cnf to cnf_template directory" do
       command copycmd
     end
 
-    # TODO: check if line already exist !!!
-    #addlinecmd = "replace '!includedir /etc/my.cnf.d' '!includedir " + node['mariadb']['cnf_template'] + "' -- /etc/my.cnf"
-    #execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-    #  command addlinecmd
-    #end
+    # create /etc/my.cnf file for MariaDB 5.1
+    if node['mariadb']['version'] == "5.1"
+      addlinecmd = 'echo -e \'#'+'\n'+'[client-server]'+'\n\n'+'# include all files from the config directory:'+'\n'+'!includedir /etc/my.cnf.d/\' >> /etc/my.cnf'
+      execute "Add server.cnf dir to /etc/my.cnf includedir parameter" do
+        command addlinecmd
+      end
+    end
+
 end
