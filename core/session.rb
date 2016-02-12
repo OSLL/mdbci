@@ -541,7 +541,14 @@ class Session
     exit_code = 1
     boxes_versions = Array.new
 
-    $out.info 'Boxes platform versions for '+platform.to_s+' platform:'
+    # check for supported platforms
+    some_platform = $session.boxes.boxesManager.find { |box| box[1]['platform'] == platform }
+    if some_platform.nil?
+      $out.warning 'Platform '+platform.to_s+' is not supported!'
+      exit_code = 1
+    else
+      $out.info 'Supported '+platform.to_s+' platforms:'
+    end
 
     # get boxes platform versions
     $session.boxes.boxesManager.each do |box, params|
@@ -555,6 +562,7 @@ class Session
         exit_code = 1
       end
     end
+    
     # output platforms versions
     boxes_versions = boxes_versions.uniq # delete duplicates values
     boxes_versions.each { |version| $out.out version }
