@@ -25,16 +25,20 @@ class Session
   attr_accessor :repos
   attr_accessor :repoDir
   attr_accessor :mdbciNodes       # mdbci nodes
+  attr_accessor :templateNodes
   attr_accessor :nodesProvider   # current configuration provider
   attr_accessor :attempts
   attr_accessor :boxesDir
   attr_accessor :mdbciDir
+  attr_accessor :nodeProduct
+  attr_accessor :productVersion
   attr_accessor :keyFile
 
   def initialize
     @boxesDir = './BOXES'
     @repoDir = './repo.d'
     @mdbciNodes = Hash.new
+    @templateNodes = Hash.new
   end
 
 =begin
@@ -68,7 +72,7 @@ class Session
           next if value['provider'] == "aws" # skip 'aws' block
           # TODO: add aws dummy box
           # vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
- 
+
           next if value['provider'] == "mdbci" # skip 'mdbci' block
           #
           if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
@@ -113,6 +117,16 @@ class Session
     $out.out vagrant_out
 
     Dir.chdir pwd
+  end
+
+  # load template nodes
+  def loadTemplateNodes()
+    pwd = Dir.pwd
+    instanceFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read(pwd+'/template')}
+    $out.info 'Load nodes from template file ' + instanceFile.to_s
+    @templateNodes = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(IO.read(@mdbciDir+'/'+instanceFile))}
+    if @templateNodes.has_key?('cookbook_path') ; @templateNodes.delete('cookbook_path') ; end
+    if @templateNodes.has_key?('aws_config') ; @templateNodes.delete('aws_config') ; end
   end
 
   # load mdbci nodes
@@ -270,6 +284,12 @@ class Session
     when 'up'
       exit_code = $session.up(ARGV.shift)
 
+    when 'setup_repo'
+      exit_code = NodeProduct.setupProductRepo(ARGV.shift)
+
+    when 'install_product'
+      exit_code = NodeProduct.installProduct(ARGV.shift)
+
     when 'public_keys'
       exit_code = $session.publicKeys(ARGV.shift)
 
@@ -384,7 +404,7 @@ class Session
       return 0
     else
       (1..@attempts.to_i).each { |i|
-        $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') + 
+        $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') +
           args + ', attempt: ' + i.to_s
         $out.info 'Destroying current instance'
         cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
@@ -411,7 +431,7 @@ class Session
       }
     end
     Dir.chdir pwd
-    
+
     return exit_code
   end
 
@@ -514,6 +534,26 @@ class Session
     end
     return exit_code
   end
-  
+
+  # load node platform by name
+  def loadNodePlatform(name)
+
+    pwd = Dir.pwd
+    # template file
+    templateFile = $exception_handler.handle('Template nodes file not found') {IO.read(pwd.to_s+'/template')}
+    templateNodes =  $exception_handler.handle('Template configuration file invalid') {JSON.parse(IO.read(@mdbciDir.to_s+"/"+templateFile))}
+    #
+    node = templateNodes.find { |elem| elem[0].to_s == name }
+    box = node[1]['box'].to_s
+    if $session.boxes.boxesManager.has_key?(box)
+      box_params = $session.boxes.getBox(box)
+      platform = box_params["platform"].to_s+'^'+box_params['platform_version'].to_s
+      return platform
+    else
+      $out.warning name.to_s+" platform does not exist! Please, check box name!"
+    end
+
+  end
+
 
 end

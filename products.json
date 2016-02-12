@@ -1,0 +1,82 @@
+{
+  "debian" : {
+    "mariadb" : "mariadb-server mariadb-client",
+    "mysql" : "mysql-server mysql-client",
+    "galera": {
+      "10.1" : "mariadb-server",
+      "10.0" : "mariadb-galera-server",
+      "5.5" : "mariadb-galera-server"
+    },
+    "maxscale" : "maxscale"
+  },
+  "ubuntu" : {
+    "mariadb": "mariadb-server mariadb-client",
+    "mysql" : "mysql-server mysql-client",
+    "galera": {
+      "10.1" : "mariadb-server",
+      "10.0" : "mariadb-galera-server",
+      "5.5" : "mariadb-galera-server"
+    },
+    "maxscale" : "maxscale"
+  },
+  "rhel" : {
+    "mariadb" : "MariaDB-server MariaDB-client",
+    "mysql" : "mysql-community-client mysql-community-server",
+    "galera" : {
+      "10.1": "MariaDB-server",
+      "10.0" : "MariaDB-Galera-server galera",
+      "5.5" : "MariaDB-Galera-server"
+    },
+    "maxscale" : "maxscale"
+  },
+  "fedora" : {
+    "mariadb" : "MariaDB-server MariaDB-client",
+    "mysql" : "mysql-community-client mysql-community-server",
+    "galera" : {
+      "10.1": "MariaDB-server",
+      "10.0" : "MariaDB-Galera-server galera",
+      "5.5" : "MariaDB-Galera-server"
+    },
+    "maxscale" : "maxscale"
+  },
+  "centos" : {
+    "mariadb" : "MariaDB-server MariaDB-client",
+    "mysql" : "mysql-community-client mysql-community-server",
+    "galera" : {
+      "10.1": "MariaDB-server",
+      "10.0" : "MariaDB-Galera-server galera",
+      "5.5" : "MariaDB-Galera-server"
+    },
+    "maxscale" : "maxscale"
+  },
+  "sles" : {
+    "mariadb" : "MariaDB-server MariaDB-client",
+    "mysql" : "mysql-community-client mysql-community-server",
+    "galera" : {
+      "10.1": "MariaDB-server",
+      "10.0" : "MariaDB-Galera-server",
+      "5.5" : "MariaDB-Galera-server"
+    },
+    "maxscale" : "maxscale"
+  },
+  "suse" : {
+    "mariadb" : "MariaDB-server MariaDB-client",
+    "mysql" : "mysql-community-client mysql-community-server",
+    "galera" : {
+      "10.1": "MariaDB-server",
+      "10.0" : "MariaDB-Galera-server",
+      "5.5" : "MariaDB-Galera-server"
+    },
+    "maxscale" : "maxscale"
+  },
+  "opensuse" : {
+    "mariadb" : "MariaDB-server MariaDB-client",
+    "mysql" : "mysql-community-client mysql-community-server",
+    "galera" : {
+      "10.1": "MariaDB-server",
+      "10.0" : "MariaDB-Galera-server",
+      "5.5" : "MariaDB-Galera-server"
+    },
+    "maxscale" : "maxscale"
+  }
+}
