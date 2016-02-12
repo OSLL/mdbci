@@ -426,6 +426,7 @@ mdbci [options] <show | setup | generate>
 Run command inside of VM
 
 ```
+  ./mdbci show version ubuntu
   ./mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
   ./mdbci ssh --command "cat anaconda.syslog" T/node0 --silent
   ./mdbci setup_repo --product maxscale T/node0

@@ -54,6 +54,7 @@ COMMANDS:
 
 
 EXAMPLES:
+  mdbci show versions ubuntu
   mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
   mdbci ssh --command "cat script.sh" T/node1
   mdbci --repo-dir /home/testbed/config/repos show repos
