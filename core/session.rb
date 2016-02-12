@@ -237,7 +237,7 @@ class Session
         @repos.show
 
       when 'versions'
-        exit_code = showBoxesVersions(ARGV.shift)
+        exit_code = boxesPlatformVersions(ARGV.shift)
 
       when 'platforms'
         $out.out  @boxes.keys
@@ -536,17 +536,18 @@ class Session
   end
 
   # print boxes platform versions by platform name
-  def showBoxesVersions(platform)
+  def boxesPlatformVersions(platform)
 
     exit_code = 1
     boxes_versions = Array.new
 
-    $out.info 'Platform versions for the platform '+platform.to_s+':'
+    $out.info 'Boxes platform versions for '+platform.to_s+' platform:'
+
+    # get boxes platform versions
     $session.boxes.boxesManager.each do |box, params|
       next if params['platform'] != platform.to_s # skip unknown platform
       if params.has_value?(platform)
         box_platform_version = params['platform_version'].to_s
-        #$out.out box_platform_version
         boxes_versions.push(box_platform_version)
         exit_code = 0
       else
@@ -556,7 +557,8 @@ class Session
     end
     # output platforms versions
     boxes_versions = boxes_versions.uniq # delete duplicates values
-    boxes_versions.each {|version| $out.out version}
+    boxes_versions.each { |version| $out.out version }
+    #
     return exit_code
   end
 
