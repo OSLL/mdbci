@@ -231,7 +231,7 @@ class Session
   def show(collection)
     case collection
       when 'boxes'
-        $out.out JSON.pretty_generate(@boxes)
+        $out.out JSON.pretty_generate(@boxes.boxesManager)
 
       when 'repos'
         @repos.show
