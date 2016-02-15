@@ -1,7 +1,7 @@
 include_recipe "mariadb-maxscale::maxscale_repos"
 
 # install default packages
-[ "net-tools" ].each do |pkg|
+[ "net-tools", "psmisc" ].each do |pkg|
   package pkg
 end
 
@@ -25,16 +25,6 @@ if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
     action :create
   end
 end  # Turn off SElinux
-
-# install ifconfig
-case node[:platform_family]
-  when "rhel", "centos"
-    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
-      execute "Install ifconfig" do
-        command "yum --assumeyes install net-tools"
-      end
-    end
-end
 
 # check and install iptables
 case node[:platform_family]
