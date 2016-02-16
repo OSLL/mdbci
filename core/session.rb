@@ -240,7 +240,7 @@ class Session
         $out.out @versions
 
       when 'platforms'
-        $out.out  @boxes.keys
+        $out.out  @boxes.boxesManager.keys
 
       when 'network'
         Network.show(ARGV.shift)
