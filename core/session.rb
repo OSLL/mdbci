@@ -227,11 +227,30 @@ class Session
     end
   end
 
+  def showBoxes
+    begin
+      $out.out JSON.pretty_generate(@boxes.boxesManager)
+      return 0
+    rescue
+      $out.error "check boxes configuration and try again"
+      return 1
+    end
+  end
+
+  def showPlatforms
+    begin
+      $out.out @boxes.boxesManager.keys
+      return 0
+    rescue
+      $out.error "check boxes configuration and try again"
+      return 1
+    end
+  end
 
   def show(collection)
     case collection
       when 'boxes'
-        $out.out JSON.pretty_generate(@boxes.boxesManager)
+        exit_code = showBoxes
 
       when 'repos'
         @repos.show
@@ -240,7 +259,7 @@ class Session
         exit_code = boxesPlatformVersions(ARGV.shift)
 
       when 'platforms'
-        $out.out  @boxes.boxesManager.keys
+        exit_code = showPlatforms
 
       when 'network'
         Network.show(ARGV.shift)
@@ -562,7 +581,7 @@ class Session
         exit_code = 1
       end
     end
-    
+
     # output platforms versions
     boxes_versions = boxes_versions.uniq # delete duplicates values
     boxes_versions.each { |version| $out.out version }
