@@ -237,7 +237,7 @@ class Session
         @repos.show
 
       when 'versions'
-        $out.out @versions
+        exit_code = boxesPlatformVersions(ARGV.shift)
 
       when 'platforms'
         $out.out  @boxes.boxesManager.keys
@@ -534,6 +534,42 @@ class Session
     end
     return exit_code
   end
+
+  # print boxes platform versions by platform name
+  def boxesPlatformVersions(platform)
+
+    exit_code = 1
+    boxes_versions = Array.new
+
+    # check for supported platforms
+    some_platform = $session.boxes.boxesManager.find { |box| box[1]['platform'] == platform }
+    if some_platform.nil?
+      $out.warning 'Platform '+platform.to_s+' is not supported!'
+      exit_code = 1
+    else
+      $out.info 'Supported '+platform.to_s+' platforms:'
+    end
+
+    # get boxes platform versions
+    $session.boxes.boxesManager.each do |box, params|
+      next if params['platform'] != platform.to_s # skip unknown platform
+      if params.has_value?(platform)
+        box_platform_version = params['platform_version'].to_s
+        boxes_versions.push(box_platform_version)
+        exit_code = 0
+      else
+        $out.error platform.to_s+' platform does not support! Please check box platform!'
+        exit_code = 1
+      end
+    end
+    
+    # output platforms versions
+    boxes_versions = boxes_versions.uniq # delete duplicates values
+    boxes_versions.each { |version| $out.out version }
+    #
+    return exit_code
+  end
+
 
   # load node platform by name
   def loadNodePlatform(name)
