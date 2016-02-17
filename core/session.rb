@@ -235,9 +235,13 @@ class Session
 
     exit_code = 1
 
-    #if $session.boxPlatform.nil? || $session.boxPlatformVersion.nil?
-    #  $out.warning '--platform or --platform-version command parameters are empty. Please point one of it.'
-    #end
+    if $session.boxPlatform.nil?
+      $out.warning './mdbci show boxes --platform command option are not defined!'
+      return 1
+    elsif $session.boxPlatform.nil? and $session.boxPlatformVersion.nil?
+      $out.warning './mdbci show boxes --platform or --platform-version command parameters are not defined!'
+      return 1
+    end
 
     some_box = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
     if some_box.nil?
@@ -248,15 +252,12 @@ class Session
     end
 
     $session.boxes.boxesManager.each do |box, params|
-      next if params['platform'] != $session.boxPlatform
-      #next if params['platform_version'] != $session.boxPlatformVersion
-      if params.has_value?($session.boxPlatform)
-        box_name = box.to_s
-        $out.out box_name.to_s
+      if params.has_value?($session.boxPlatform) and $session.boxPlatformVersion.nil?
+        $out.out box.to_s
         exit_code = 0
-      elsif params.has_value?($session.boxPlatform) && params.has_value?($session.boxPlatformVersion)
-        box_name = box
-        $out.out box_name
+      elsif params.has_value?($session.boxPlatform) and params.has_value?($session.boxPlatformVersion)
+        $out.out box.to_s
+        exit_code = 0
       else
         exit_code = 1
       end
