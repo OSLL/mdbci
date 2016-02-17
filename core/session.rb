@@ -33,6 +33,8 @@ class Session
   attr_accessor :nodeProduct
   attr_accessor :productVersion
   attr_accessor :keyFile
+  attr_accessor :boxPlatform
+  attr_accessor :boxPlatformVersion
 
   def initialize
     @boxesDir = './BOXES'
@@ -228,10 +230,45 @@ class Session
   end
 
 
+  # show boxes with platform and version
+  def showBoxes
+
+    exit_code = 1
+
+    #if $session.boxPlatform.nil? || $session.boxPlatformVersion.nil?
+    #  $out.warning '--platform or --platform-version command parameters are empty. Please point one of it.'
+    #end
+
+    some_box = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
+    if some_box.nil?
+      $out.warning 'Platform '+$session.boxPlatform+' is not supported!'
+      exit_code = 1
+    else
+      $out.info 'List of boxes for the '+$session.boxPlatform+' platform:'
+    end
+
+    $session.boxes.boxesManager.each do |box, params|
+      next if params['platform'] != $session.boxPlatform
+      #next if params['platform_version'] != $session.boxPlatformVersion
+      if params.has_value?($session.boxPlatform)
+        box_name = box.to_s
+        $out.out box_name.to_s
+        exit_code = 0
+      elsif params.has_value?($session.boxPlatform) && params.has_value?($session.boxPlatformVersion)
+        box_name = box
+        $out.out box_name
+      else
+        exit_code = 1
+      end
+    end
+
+    return exit_code
+  end
+
   def show(collection)
     case collection
       when 'boxes'
-        $out.out JSON.pretty_generate(@boxes)
+        exit_code = showBoxes
 
       when 'repos'
         @repos.show
