@@ -268,73 +268,56 @@ class Session
 
 
   def show(collection)
+    exit_code = 1
     case collection
       when 'boxes'
         $out.out JSON.pretty_generate(@boxes)
-
       when 'repos'
         @repos.show
-
       when 'versions'
         $out.out @versions
-
       when 'platforms'
-        $out.out  @boxes.keys
-
+        $out.out @boxes.keys
       when 'network'
-        Network.show(ARGV.shift)
-
+        exit_code = Network.show(ARGV.shift)
       when 'private_ip'
-        Network.private_ip(ARGV.shift)
-
+        exit_code = Network.private_ip(ARGV.shift)
       when 'keyfile'
-        Network.showKeyFile(ARGV.shift)
-
+        exit_code = Network.showKeyFile(ARGV.shift)
       when 'boxkeys'
         showBoxKeys
-
       when 'provider'
         exit_code = showProvider(ARGV.shift)
-
       else
-        $out.error 'Unknown collection: '+collection
+        $out.error 'Unknown show command collection: '+collection
     end
     return exit_code
   end
 
   # all mdbci commands swith
   def commands
+    exit_code = 1
     case ARGV.shift
     when 'show'
       exit_code = $session.show(ARGV.shift)
-
     when 'sudo'
       exit_code = $session.sudo(ARGV.shift)
-
     when 'ssh'
       exit_code = $session.ssh(ARGV.shift)
-
     when 'setup'
       exit_code = $session.setup(ARGV.shift)
-
     when 'generate'
       exit_code = $session.generate(ARGV.shift)
-
     when 'up'
       exit_code = $session.up(ARGV.shift)
-
     when 'setup_repo'
       exit_code = NodeProduct.setupProductRepo(ARGV.shift)
-
     when 'install_product'
       exit_code = NodeProduct.installProduct(ARGV.shift)
-
     when 'public_keys'
       exit_code = $session.publicKeys(ARGV.shift)
-
     else
-      exit_code = 1
-      puts 'ERR: Something wrong with command line'
+      $out.error 'Unknown mdbci command. Please look help!'
       Help.display
     end
     return exit_code

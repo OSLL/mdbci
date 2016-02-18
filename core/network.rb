@@ -62,7 +62,6 @@ class Network
 
 
   def self.showKeyFile(name)
-
     exit_code = 0
     possibly_failed_command = ''
 
@@ -133,11 +132,10 @@ class Network
     end
 
     return exit_code
-
   end
 
   def self.show(name)
-
+    exit_code = 1
     pwd = Dir.pwd
 
     if name.nil?
@@ -161,11 +159,15 @@ class Network
             box_params = $session.boxes.getBox(box)
             $out.info 'Node: ' + node[0].to_s
             $out.out box_params['IP'].to_s
+          else
+            $out.error "Can not read parameter 'box' of node #{args[0]}"
+            return 1
           end
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
-        if mdbci_node == nil
+        if mdbci_node.nil?
+          $out.error "mdbci node #{mdbci_node[1].to_s} not found!"
           return 1
         end
         box = mdbci_node[1]['box'].to_s
@@ -190,25 +192,23 @@ class Network
 
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
-          node.getIp(node.provider, false)
+          exit_code = node.getIp(node.provider, false)
           $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
-        node.getIp(node.provider, false)
+        exit_code = node.getIp(node.provider, false)
         $out.out node.ip.to_s
       end
     end
-
     Dir.chdir pwd
 
-    return 0
-
+    return exit_code
   end
 
   # TODO - move mdbci box definition to new class - MdbciNode < Node
   def self.private_ip(name)
-
+    exit_code = 1
     pwd = Dir.pwd
 
     if name.nil?
@@ -232,6 +232,9 @@ class Network
             box_params = $session.boxes.getBox(box)
             $out.info 'Node: ' + node[0].to_s
             $out.out box_params['IP'].to_s
+          else
+            $out.error "Can not find box parameter for node #{args[0]}"
+            return 1
           end
         end
       else
@@ -257,20 +260,18 @@ class Network
       network.loadNodes pwd.to_s+'/'+args[0] # load nodes from dir
       if args[1].nil? # No node argument, show all config
         network.nodes.each do |node|
-          node.getIp(node.provider, true)
+          exit_code = node.getIp(node.provider, true)
           $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
-        node.getIp(node.provider, true)
+        exit_code = node.getIp(node.provider, true)
         $out.out node.ip.to_s
       end
     end
-
     Dir.chdir pwd
 
-    return 0
-
+    return exit_code
   end
 
 end
