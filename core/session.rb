@@ -406,11 +406,20 @@ class Session
       (1..@attempts.to_i).each { |i|
         $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') +
           args + ', attempt: ' + i.to_s
-        $out.info 'Destroying current instance'
-        cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
-        exec_cmd_destr = `#{cmd_destr}`
-        $out.info exec_cmd_destr
-        cmd_up = 'vagrant up --destroy-on-error ' + '--provider=' + @nodesProvider + ' ' +
+
+        if i == 1
+          $out.info 'Destroying current instance'
+          cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
+          exec_cmd_destr = `#{cmd_destr}`
+          $out.info exec_cmd_destr
+        end
+
+        no_parallel_flag = ""
+        if @nodesProvider == "aws"
+          no_parallel_flag = " --no-parallel "
+        end
+
+        cmd_up = 'vagrant up' + no_parallel_flag + ' --destroy-on-error ' + '--provider=' + @nodesProvider + ' ' +
           (up_type ? config[1]:'')
         $out.info 'Actual command: ' + cmd_up
         Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
