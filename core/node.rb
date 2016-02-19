@@ -41,7 +41,6 @@ class Node
 
   # get node ip address from ifconfig interface
   def getInterfaceBoxIp(node_name, iface)
-
     exit_code = 1
 
     cmd = 'vagrant ssh '+node_name+' -c "/sbin/ifconfig '+iface+' | grep \"inet \" "'
@@ -60,7 +59,6 @@ class Node
   end
 
   def getIp(provider, is_private)
-
     exit_code = 1
 
     if provider.nil?

@@ -116,9 +116,9 @@ class Session
   end
 
   def sudo(args)
-
-    exit_code = 0
+    exit_code = 1
     possibly_failed_command = ''
+    pwd = Dir.pwd
 
     if args.nil?
       $out.error 'Configuration name is required'
@@ -126,25 +126,17 @@ class Session
     end
 
     config = args.split('/')
-
-    pwd = Dir.pwd
-
     unless Dir.exists?(config[0])
       $out.error 'Machine with such name does not exists'
       return 1
     end
 
     Dir.chdir config[0]
-
     cmd = 'vagrant ssh '+config[1]+' -c "/usr/bin/sudo '+$session.command+'"'
-
     $out.info 'Running ['+cmd+'] on '+config[0]+'/'+config[1]
-
     vagrant_out = `#{cmd}`
-
     exit_code = $?.exitstatus
     possibly_failed_command = cmd
-
     $out.out vagrant_out
 
     Dir.chdir pwd
@@ -155,7 +147,6 @@ class Session
     end
 
     return exit_code
-
   end
 
   # load template nodes
@@ -180,10 +171,8 @@ class Session
 
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
   def ssh(args)
-
-    exit_code = 0
+    exit_code = 1
     possibly_failed_command = ''
-
     pwd = Dir.pwd
 
     if args.nil?
@@ -192,7 +181,6 @@ class Session
     end
 
     params = args.split('/')
-
     # mdbci ppc64 boxes
     if File.exist?(params[0]+'/mdbci_template')
       loadMdbciNodes params[0]
@@ -250,7 +238,6 @@ class Session
     end
 
     return exit_code
-
   end
 
 
@@ -335,6 +322,7 @@ class Session
   end
 
   def generate(name)
+    exit_code = 0
     path = Dir.pwd
 
     if name.nil?
@@ -343,14 +331,28 @@ class Session
       path +='/'+name.to_s
     end
     #
+    # TODO: ExceptionHandler need to be refactored! Don't return 1 for error
+    begin
+      IO.read($session.configFile)
+    rescue
+      $out.warning 'Instance configuration file not found!'
+      return 1
+    end
     instanceConfigFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read($session.configFile)}
+    begin
+      IO.read(instanceConfigFile)
+    rescue
+      $out.warning 'Instance configuration file invalid!'
+      return 1
+    end
     @configs = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(instanceConfigFile)}
-    LoadNodesProvider(configs)
+    if @configs.nil? 'Template configuration file is empty!'; return 1; else LoadNodesProvider(configs) end
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
     @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if @nodesProvider != 'mdbci'
+      # TODO: return exit code
       Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
@@ -370,11 +372,12 @@ class Session
       template_file = path+'/template'
       if !File.exists?(template_file); File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }; end
     end
+
+    return exit_code
   end
 
   # Deploy configurations
   def up(args)
-
     std_q_attampts = 10
     exit_code = 1 # error
 
@@ -460,11 +463,9 @@ class Session
 
   # copy ssh keys to config/node
   def publicKeys(args)
-
     pwd = Dir.pwd
-
     possibly_failed_command = ''
-    exit_code = 0
+    exit_code = 1
 
     if args.nil?
       $out.error 'Configuration name is required'
@@ -549,8 +550,9 @@ class Session
           cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
           $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
           vagrant_out = `#{cmd}`
+          exit_code = $?.exitstatus
+          possibly_failed_command = cmd
           $out.out vagrant_out
-          # TODO
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
@@ -566,10 +568,9 @@ class Session
         cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
         $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
         vagrant_out = `#{cmd}`
-        $out.out vagrant_out
-        # TODO
         exit_code = $?.exitstatus
         possibly_failed_command = cmd
+        $out.out vagrant_out
       end
     end
 
@@ -599,7 +600,6 @@ class Session
 
   # load node platform by name
   def loadNodePlatform(name)
-
     pwd = Dir.pwd
     # template file
     templateFile = $exception_handler.handle('Template nodes file not found') {IO.read(pwd.to_s+'/template')}
