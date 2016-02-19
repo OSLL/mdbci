@@ -403,14 +403,23 @@ class Session
       $out.warning 'You are using mdbci nodes template. ./mdbci up command doesn\'t supported for this boxes!'
       return 0
     else
-      (1..@attempts.to_i).each { |i|
+      (1..@attempts.to_i).each do |i|
         $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') +
           args + ', attempt: ' + i.to_s
-        $out.info 'Destroying current instance'
-        cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
-        exec_cmd_destr = `#{cmd_destr}`
-        $out.info exec_cmd_destr
-        cmd_up = 'vagrant up --destroy-on-error ' + '--provider=' + @nodesProvider + ' ' +
+
+        if i == 1
+          $out.info 'Destroying current instance'
+          cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
+          exec_cmd_destr = `#{cmd_destr}`
+          $out.info exec_cmd_destr
+        end
+
+        no_parallel_flag = ""
+        if @nodesProvider == "aws"
+          no_parallel_flag = " --no-parallel "
+        end
+
+        cmd_up = 'vagrant up' + no_parallel_flag + ' --provider=' + @nodesProvider + ' ' +
           (up_type ? config[1]:'')
         $out.info 'Actual command: ' + cmd_up
         Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
@@ -422,14 +431,37 @@ class Session
             stderr.each_line { |line| $out.error line }
             stderr.close
    	        exit_code = wthr.value.exitstatus # error
-	          $out.info 'UP ERROR, exit code '+exit_code.to_s
+	          $out.error 'exit code '+exit_code.to_s
 	        else
             $out.info 'Configuration UP SUCCESS!'
             return 0
           end
   	    end
-      }
+
+        if exit_code != 0
+          $out.info "Checking for all nodes to be started"
+          all_machines_started = true
+          invalid_states = ["not created", "poweroff"]
+          Dir.glob('*.json', File::FNM_DOTMATCH) do |f|
+            machine_name = f.chomp! ".json"
+            status = `vagrant status #{machine_name}`.split("\n")[2]
+            invalid_states.each do |state|
+              if status.include? state
+                all_machines_started = false
+                $out.error "Machine #{machine_name} is in #{state} state"
+              end
+            end
+          end
+
+          if i == @attempts && !all_machines_started
+            $out.error 'Bringing up failed'
+            $out.error 'Some machines are still down'
+            exit_code = 1
+          end
+        end
+      end
     end
+
     Dir.chdir pwd
 
     return exit_code
