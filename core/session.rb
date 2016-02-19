@@ -33,6 +33,8 @@ class Session
   attr_accessor :nodeProduct
   attr_accessor :productVersion
   attr_accessor :keyFile
+  attr_accessor :boxPlatform
+  attr_accessor :boxPlatformVersion
 
   def initialize
     @boxesDir = './BOXES'
@@ -116,9 +118,9 @@ class Session
   end
 
   def sudo(args)
-
-    exit_code = 0
+    exit_code = 1
     possibly_failed_command = ''
+    pwd = Dir.pwd
 
     if args.nil?
       $out.error 'Configuration name is required'
@@ -126,25 +128,17 @@ class Session
     end
 
     config = args.split('/')
-
-    pwd = Dir.pwd
-
     unless Dir.exists?(config[0])
       $out.error 'Machine with such name does not exists'
       return 1
     end
 
     Dir.chdir config[0]
-
     cmd = 'vagrant ssh '+config[1]+' -c "/usr/bin/sudo '+$session.command+'"'
-
     $out.info 'Running ['+cmd+'] on '+config[0]+'/'+config[1]
-
     vagrant_out = `#{cmd}`
-
     exit_code = $?.exitstatus
     possibly_failed_command = cmd
-
     $out.out vagrant_out
 
     Dir.chdir pwd
@@ -155,7 +149,6 @@ class Session
     end
 
     return exit_code
-
   end
 
   # load template nodes
@@ -180,10 +173,8 @@ class Session
 
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
   def ssh(args)
-
-    exit_code = 0
+    exit_code = 1
     possibly_failed_command = ''
-
     pwd = Dir.pwd
 
     if args.nil?
@@ -192,7 +183,6 @@ class Session
     end
 
     params = args.split('/')
-
     # mdbci ppc64 boxes
     if File.exist?(params[0]+'/mdbci_template')
       loadMdbciNodes params[0]
@@ -250,7 +240,6 @@ class Session
     end
 
     return exit_code
-
   end
 
 
@@ -267,74 +256,94 @@ class Session
   end
 
 
+  # show boxes with platform and version
+  def showBoxes
+
+    exit_code = 1
+
+    if $session.boxPlatform.nil?
+      $out.warning './mdbci show boxes --platform command option is not defined!'
+      return 1
+    elsif $session.boxPlatform.nil? and $session.boxPlatformVersion.nil?
+      $out.warning './mdbci show boxes --platform or --platform-version command parameters are not defined!'
+      return 1
+    end
+    # check for undefined box
+    some_box = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
+    if some_box.nil?
+      $out.warning 'Platform '+$session.boxPlatform+' is not supported!'
+      return 1
+    end
+
+    if !$session.boxPlatformVersion.nil?
+      $out.info 'List of boxes for the '+$session.boxPlatform+'^'+$session.boxPlatformVersion+' platform'
+    else
+      $out.info 'List of boxes for the '+$session.boxPlatform+' platform:'
+    end
+    $session.boxes.boxesManager.each do |box, params|
+      if params.has_value?($session.boxPlatform) and $session.boxPlatformVersion.nil?
+        $out.out box.to_s
+        exit_code = 0
+      elsif params.has_value?($session.boxPlatform) and params.has_value?($session.boxPlatformVersion)
+        $out.out box.to_s
+        exit_code = 0
+      end
+    end
+
+    return exit_code
+  end
+
   def show(collection)
+    exit_code = 1
     case collection
       when 'boxes'
-        $out.out JSON.pretty_generate(@boxes)
-
+        exit_code = showBoxes
       when 'repos'
         @repos.show
-
       when 'versions'
         $out.out @versions
-
       when 'platforms'
-        $out.out  @boxes.keys
-
+        $out.out @boxes.keys
       when 'network'
-        Network.show(ARGV.shift)
-
+        exit_code = Network.show(ARGV.shift)
       when 'private_ip'
-        Network.private_ip(ARGV.shift)
-
+        exit_code = Network.private_ip(ARGV.shift)
       when 'keyfile'
-        Network.showKeyFile(ARGV.shift)
-
+        exit_code = Network.showKeyFile(ARGV.shift)
       when 'boxkeys'
         showBoxKeys
-
       when 'provider'
         exit_code = showProvider(ARGV.shift)
-
       else
-        $out.error 'Unknown collection: '+collection
+        $out.error 'Unknown show command collection: '+collection
     end
     return exit_code
   end
 
   # all mdbci commands swith
   def commands
+    exit_code = 1
     case ARGV.shift
     when 'show'
       exit_code = $session.show(ARGV.shift)
-
     when 'sudo'
       exit_code = $session.sudo(ARGV.shift)
-
     when 'ssh'
       exit_code = $session.ssh(ARGV.shift)
-
     when 'setup'
       exit_code = $session.setup(ARGV.shift)
-
     when 'generate'
       exit_code = $session.generate(ARGV.shift)
-
     when 'up'
       exit_code = $session.up(ARGV.shift)
-
     when 'setup_repo'
       exit_code = NodeProduct.setupProductRepo(ARGV.shift)
-
     when 'install_product'
       exit_code = NodeProduct.installProduct(ARGV.shift)
-
     when 'public_keys'
       exit_code = $session.publicKeys(ARGV.shift)
-
     else
-      exit_code = 1
-      puts 'ERR: Something wrong with command line'
+      $out.error 'Unknown mdbci command. Please look help!'
       Help.display
     end
     return exit_code
@@ -352,6 +361,7 @@ class Session
   end
 
   def generate(name)
+    exit_code = 1
     path = Dir.pwd
 
     if name.nil?
@@ -360,15 +370,31 @@ class Session
       path +='/'+name.to_s
     end
     #
+    # TODO: ExceptionHandler need to be refactored! Don't return 1 for error
+    begin
+      IO.read($session.configFile)
+    rescue
+      $out.warning 'Instance configuration file not found!'
+      return 1
+    end
     instanceConfigFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read($session.configFile)}
+    if instanceConfigFile.nil?
+      $out.warning 'Instance configuration file invalid!'
+      return 1
+    end
     @configs = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(instanceConfigFile)}
-    LoadNodesProvider(configs)
+    if @configs.nil?
+      $out.out 'Template configuration file is empty!'
+      return 1
+    else
+      LoadNodesProvider configs
+    end
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
     @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if @nodesProvider != 'mdbci'
-      Generator.generate(path,configs,boxes,isOverride,nodesProvider)
+      exit_code = Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
       $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_template'
@@ -387,11 +413,12 @@ class Session
       template_file = path+'/template'
       if !File.exists?(template_file); File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }; end
     end
+
+    return exit_code
   end
 
   # Deploy configurations
   def up(args)
-
     std_q_attampts = 10
     exit_code = 1 # error
 
@@ -442,14 +469,23 @@ class Session
       $out.warning 'You are using mdbci nodes template. ./mdbci up command doesn\'t supported for this boxes!'
       return 0
     else
-      (1..@attempts.to_i).each { |i|
+      (1..@attempts.to_i).each do |i|
         $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') +
           args + ', attempt: ' + i.to_s
-        $out.info 'Destroying current instance'
-        cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
-        exec_cmd_destr = `#{cmd_destr}`
-        $out.info exec_cmd_destr
-        cmd_up = 'vagrant up --destroy-on-error ' + '--provider=' + @nodesProvider + ' ' +
+
+        if i == 1
+          $out.info 'Destroying current instance'
+          cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
+          exec_cmd_destr = `#{cmd_destr}`
+          $out.info exec_cmd_destr
+        end
+
+        no_parallel_flag = ""
+        if @nodesProvider == "aws"
+          no_parallel_flag = " --no-parallel "
+        end
+
+        cmd_up = 'vagrant up' + no_parallel_flag + ' --provider=' + @nodesProvider + ' ' +
           (up_type ? config[1]:'')
         $out.info 'Actual command: ' + cmd_up
         Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
@@ -461,14 +497,37 @@ class Session
             stderr.each_line { |line| $out.error line }
             stderr.close
    	        exit_code = wthr.value.exitstatus # error
-	          $out.info 'UP ERROR, exit code '+exit_code.to_s
+	          $out.error 'exit code '+exit_code.to_s
 	        else
             $out.info 'Configuration UP SUCCESS!'
             return 0
           end
   	    end
-      }
+
+        if exit_code != 0
+          $out.info "Checking for all nodes to be started"
+          all_machines_started = true
+          invalid_states = ["not created", "poweroff"]
+          Dir.glob('*.json', File::FNM_DOTMATCH) do |f|
+            machine_name = f.chomp! ".json"
+            status = `vagrant status #{machine_name}`.split("\n")[2]
+            invalid_states.each do |state|
+              if status.include? state
+                all_machines_started = false
+                $out.error "Machine #{machine_name} is in #{state} state"
+              end
+            end
+          end
+
+          if i == @attempts && !all_machines_started
+            $out.error 'Bringing up failed'
+            $out.error 'Some machines are still down'
+            exit_code = 1
+          end
+        end
+      end
     end
+
     Dir.chdir pwd
 
     return exit_code
@@ -477,11 +536,9 @@ class Session
 
   # copy ssh keys to config/node
   def publicKeys(args)
-
     pwd = Dir.pwd
-
     possibly_failed_command = ''
-    exit_code = 0
+    exit_code = 1
 
     if args.nil?
       $out.error 'Configuration name is required'
@@ -566,8 +623,9 @@ class Session
           cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
           $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
           vagrant_out = `#{cmd}`
+          exit_code = $?.exitstatus
+          possibly_failed_command = cmd
           $out.out vagrant_out
-          # TODO
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
@@ -583,10 +641,9 @@ class Session
         cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
         $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
         vagrant_out = `#{cmd}`
-        $out.out vagrant_out
-        # TODO
         exit_code = $?.exitstatus
         possibly_failed_command = cmd
+        $out.out vagrant_out
       end
     end
 
@@ -616,7 +673,6 @@ class Session
 
   # load node platform by name
   def loadNodePlatform(name)
-
     pwd = Dir.pwd
     # template file
     templateFile = $exception_handler.handle('Template nodes file not found') {IO.read(pwd.to_s+'/template')}
