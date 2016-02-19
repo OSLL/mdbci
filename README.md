@@ -438,6 +438,18 @@ Show repos with using alternative repo.d repository
 ```
   mdbci --repo-dir /home/testbed/config/repos show repos
 ```
+
+## MDBCI scripts
+  
+MDBCI scripts are located in the **mdbci/scripts** directory. Their main goal is to setup and control Vagrant infrastructure.
+
+* **./clean_vms.sh** - cleanup launched mdbci virtual machines (vbox, libvirt, docker) at the current platform. One parameter: substring
+   
+Run script examples
+
+```
+  ./clean_vms.sh mdbci - find all VMs with ID prefix mdbci* and cleanup them.
+```
   
 ## Using vagrant to manage stand
 
@@ -460,6 +472,7 @@ More information about vagrant features could be found in [vagrant documentation
   * Alexander Kaluzhniy
   * Kirill Krinkin
   * Kirill Yudenok
+  * Mark Zaslavskiy
    
    
 
