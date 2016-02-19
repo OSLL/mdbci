@@ -7,6 +7,7 @@ require_relative 'generator'
 require_relative 'network'
 require_relative 'boxes_manager'
 require_relative 'repo_manager'
+require_relative 'out'
 
 
 class Session
@@ -216,61 +217,10 @@ class Session
 
   end
 
-
-  def platformKey(box_name)
-    key = $session.boxes.boxesManager.keys.select {|value| value == box_name }
-    return key.nil? ? "UNKNOWN" : $session.boxes.boxesManager[key[0]]['platform']+'^'+$session.boxes.boxesManager[key[0]]['platform_version']
-  end
-
-
-  def showBoxKeys
-    $session.boxes.boxesManager.values.each do |value|
-      $out.out value['$key']
-    end
-  end
-
-
-  # show boxes with platform and version
-  def showBoxes
-
-    exit_code = 1
-
-    if $session.boxPlatform.nil?
-      $out.warning './mdbci show boxes --platform command option is not defined!'
-      return 1
-    elsif $session.boxPlatform.nil? and $session.boxPlatformVersion.nil?
-      $out.warning './mdbci show boxes --platform or --platform-version command parameters are not defined!'
-      return 1
-    end
-    # check for undefined box
-    some_box = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
-    if some_box.nil?
-      $out.warning 'Platform '+$session.boxPlatform+' is not supported!'
-      return 1
-    end
-
-    if !$session.boxPlatformVersion.nil?
-      $out.info 'List of boxes for the '+$session.boxPlatform+'^'+$session.boxPlatformVersion+' platform'
-    else
-      $out.info 'List of boxes for the '+$session.boxPlatform+' platform:'
-    end
-    $session.boxes.boxesManager.each do |box, params|
-      if params.has_value?($session.boxPlatform) and $session.boxPlatformVersion.nil?
-        $out.out box.to_s
-        exit_code = 0
-      elsif params.has_value?($session.boxPlatform) and params.has_value?($session.boxPlatformVersion)
-        $out.out box.to_s
-        exit_code = 0
-      end
-    end
-
-    return exit_code
-  end
-
   def show(collection)
     case collection
       when 'boxes'
-        exit_code = showBoxes
+        exit_code = BoxesManager.showBoxes
 
       when 'repos'
         @repos.show
@@ -606,6 +556,7 @@ class Session
     return exit_code
   end
 
+  # TODO move to BoxesManager class
   # load node platform by name
   def loadNodePlatform(name)
 
