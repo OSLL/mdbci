@@ -322,7 +322,7 @@ class Session
   end
 
   def generate(name)
-    exit_code = 0
+    exit_code = 1
     path = Dir.pwd
 
     if name.nil?
@@ -339,21 +339,23 @@ class Session
       return 1
     end
     instanceConfigFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read($session.configFile)}
-    begin
-      IO.read(instanceConfigFile)
-    rescue
+    if instanceConfigFile.nil?
       $out.warning 'Instance configuration file invalid!'
       return 1
     end
     @configs = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(instanceConfigFile)}
-    if @configs.nil? 'Template configuration file is empty!'; return 1; else LoadNodesProvider(configs) end
+    if @configs.nil?
+      $out.out 'Template configuration file is empty!'
+      return 1
+    else
+      LoadNodesProvider configs
+    end
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
     @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if @nodesProvider != 'mdbci'
-      # TODO: return exit code
-      Generator.generate(path,configs,boxes,isOverride,nodesProvider)
+      exit_code = Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
       $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_template'
