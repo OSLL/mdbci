@@ -311,7 +311,8 @@ class NodeProduct
             vagrant_out = `#{cmd}`
             #$out.out vagrant_out
 
-            exit_code = $?.exitstatus # TODO
+            exit_code = $?.exitstatus
+            possibly_failed_command = cmd
           end
         end
       else
@@ -346,7 +347,8 @@ class NodeProduct
           vagrant_out = `#{cmd}`
           #$out.out vagrant_out
 
-          exit_code = $?.exitstatus # TODO
+          exit_code = $?.exitstatus
+          possibly_failed_command = cmd
         end
       end
     else # aws, vbox, libvirt, docker nodes
@@ -377,7 +379,8 @@ class NodeProduct
           vagrant_out = `#{cmd}`
           #$out.info vagrant_out
 
-          exit_code = $?.exitstatus # TODO
+          exit_code = $?.exitstatus
+          possibly_failed_command = cmd
         end
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
@@ -400,11 +403,17 @@ class NodeProduct
         cmd = installProductCmd(platform[0], node[0], packages)
         vagrant_out = `#{cmd}`
 
-        exit_code = $?.exitstatus # TODO
+        exit_code = $?.exitstatus
+        possibly_failed_command = cmd
       end
     end
 
     Dir.chdir pwd
+
+    if exit_code != 0
+      $out.error "command #{possibly_failed_command} exit with non-zero code: #{exit_code}"
+      exit_code = 1
+    end
 
     return exit_code
   end
