@@ -33,6 +33,8 @@ class Session
   attr_accessor :nodeProduct
   attr_accessor :productVersion
   attr_accessor :keyFile
+  attr_accessor :boxPlatform
+  attr_accessor :boxPlatformVersion
 
   def initialize
     @boxesDir = './BOXES'
@@ -228,10 +230,47 @@ class Session
   end
 
 
+  # show boxes with platform and version
+  def showBoxes
+
+    exit_code = 1
+
+    if $session.boxPlatform.nil?
+      $out.warning './mdbci show boxes --platform command option is not defined!'
+      return 1
+    elsif $session.boxPlatform.nil? and $session.boxPlatformVersion.nil?
+      $out.warning './mdbci show boxes --platform or --platform-version command parameters are not defined!'
+      return 1
+    end
+    # check for undefined box
+    some_box = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
+    if some_box.nil?
+      $out.warning 'Platform '+$session.boxPlatform+' is not supported!'
+      return 1
+    end
+
+    if !$session.boxPlatformVersion.nil?
+      $out.info 'List of boxes for the '+$session.boxPlatform+'^'+$session.boxPlatformVersion+' platform'
+    else
+      $out.info 'List of boxes for the '+$session.boxPlatform+' platform:'
+    end
+    $session.boxes.boxesManager.each do |box, params|
+      if params.has_value?($session.boxPlatform) and $session.boxPlatformVersion.nil?
+        $out.out box.to_s
+        exit_code = 0
+      elsif params.has_value?($session.boxPlatform) and params.has_value?($session.boxPlatformVersion)
+        $out.out box.to_s
+        exit_code = 0
+      end
+    end
+
+    return exit_code
+  end
+
   def show(collection)
     case collection
       when 'boxes'
-        $out.out JSON.pretty_generate(@boxes)
+        exit_code = showBoxes
 
       when 'repos'
         @repos.show
