@@ -21,7 +21,9 @@ opts = GetoptLong.new(
     ['--attempts','-a',GetoptLong::REQUIRED_ARGUMENT],
     ['--product','-p',GetoptLong::REQUIRED_ARGUMENT],
     ['--product-version','-v',GetoptLong::REQUIRED_ARGUMENT],
-    ['--key','-k',GetoptLong::REQUIRED_ARGUMENT]
+    ['--key','-k',GetoptLong::REQUIRED_ARGUMENT],
+    ['--platform','-o',GetoptLong::REQUIRED_ARGUMENT],
+    ['--platform-version','-i',GetoptLong::REQUIRED_ARGUMENT]
 )
 
 $session = Session.new
@@ -70,6 +72,12 @@ opts.each do |opt, arg|
     when '--key'
       if arg != ''; $session.keyFile = arg; end
       $out.info 'Using keyfile '+$session.keyFile
+
+    when '--platform'
+      if arg != ''; $session.boxPlatform = arg; end
+
+    when '--platform-version'
+      if arg != ''; $session.boxPlatformVersion = arg; end
 
     else
       $out.error 'Option is not supported: '+opt

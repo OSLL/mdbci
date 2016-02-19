@@ -40,11 +40,17 @@ mdbci [option] <show | setup | generate>
 -k, --key
   Keyfile to the node for public_keys command
 
+-o, --platform
+  Platform name for the show boxes command
+
+-i, --platform-version
+  Platform version for the show boxes command. Must be used together with --platform option!
 
 COMMANDS:
-  show [boxes, platforms, versions, network, repos [config | config/node], keyfile config/node ]
+  show [platforms, versions, network, repos [config | config/node], keyfile config/node ]
   generate
   setup [boxes]
+  show boxes --platform 'box platform' --platform-version 'box platform version'
   sudo --command 'command arguments' config/node
   ssh --command 'command arguments' config/node
   up [--attempts 'attempts arguments'] config | config/node
@@ -55,6 +61,8 @@ COMMANDS:
 
 EXAMPLES:
   mdbci show versions ubuntu
+  mdbci show boxes --platform centos
+  mdbci show boxes --platform ubuntu --platform-version trusty
   mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
   mdbci ssh --command "cat script.sh" T/node1
   mdbci --repo-dir /home/testbed/config/repos show repos
