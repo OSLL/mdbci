@@ -42,4 +42,23 @@ class BoxesManager
     @boxesManager[key]
   end
 
+  def getBoxByConfig(config_path, node_name)
+    config = nil
+    begin
+      config = JSON.parse(File.read(config_path))
+    rescue
+      $out.error "Wrong config path or json implementation for #{config_path}"
+      return nil
+    end
+
+    if config.has_key?(node_name)
+      box = getBox(config[node_name]['box'])
+      $out.info "Box for #{config_path}: "
+      $out.info box
+      return box
+    else
+      $out.error "Node #{node_name} is not found in #{config_path}"
+      return nil
+    end
+  end
 end
