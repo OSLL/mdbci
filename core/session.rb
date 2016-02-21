@@ -285,6 +285,7 @@ class Session
         end
       else
         $out.out box
+        return 0
       end
     end
   end
