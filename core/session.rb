@@ -16,6 +16,8 @@ class Session
   attr_accessor :versions
   attr_accessor :configFile
   attr_accessor :boxesFile
+  attr_accessor :boxName
+  attr_accessor :field
   attr_accessor :awsConfig        # aws-config parameters
   attr_accessor :awsConfigFile    # aws-config.yml file
   attr_accessor :awsConfigOption  # path to aws-config.yml in template file
@@ -267,10 +269,29 @@ class Session
     return exit_code
   end
 
+  def showBoxField
+    box = $session.boxes.getBox($session.boxName)
+    if box == nil
+      $out.error "Box #{$session.boxName} is not found"
+      return 1
+    else
+      if !box.has_key?($session.field)
+        $out.error "Box #{$session.boxName} does not have #{$session.field} key"
+        return 1
+      else
+        $out.out box[$session.field]
+        return 0
+      end
+    end
+  end
+
   def show(collection)
     case collection
       when 'boxes'
         exit_code = showBoxes
+
+      when 'box'
+        exit_code = showBoxField
 
       when 'repos'
         @repos.show

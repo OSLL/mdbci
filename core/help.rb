@@ -16,6 +16,12 @@ mdbci [option] <show | setup | generate>
 -b, --boxes [boxes file]:
   Uses [boxes file] for existing boxes. By default 'boxes.json'  will be used as boxes file.
 
+-n, --box-name [box name]:
+  Uses [box name] from boxes json file.
+
+-f, --field [field]:
+  Uses [field] maybe used to define field in box configuration json file.
+
 -w, --override
   Override previous configuration
 
