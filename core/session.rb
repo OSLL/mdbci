@@ -458,8 +458,7 @@ class Session
           no_parallel_flag = " --no-parallel "
         end
 
-        cmd_up = 'vagrant up' + no_parallel_flag + ' --provider=' + @nodesProvider + ' ' +
-          (up_type ? config[1]:'')
+        cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{(up_type ? config[1]:'')}"
         $out.info 'Actual command: ' + cmd_up
         Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
           stdin.close
@@ -480,15 +479,12 @@ class Session
         if exit_code != 0
           $out.info "Checking for all nodes to be started"
           all_machines_started = true
-          invalid_states = ["not created", "poweroff"]
           Dir.glob('*.json', File::FNM_DOTMATCH) do |f|
             machine_name = f.chomp! ".json"
             status = `vagrant status #{machine_name}`.split("\n")[2]
-            invalid_states.each do |state|
-              if status.include? state
-                all_machines_started = false
-                $out.error "Machine #{machine_name} is in #{state} state"
-              end
+            if !status.include? 'running'
+              all_machines_started = false
+              $out.error "Machine #{machine_name} is in #{state} state"
             end
           end
 
