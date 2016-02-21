@@ -27,7 +27,7 @@ opts.each do |opt, arg|
   case opt
     when '--help'
       puts <<-EOF
-      dounload_boxes [OPTION]
+download_boxes OPTION
 
 -d, --dir:
   directory name where to store boxes
@@ -64,6 +64,9 @@ end
 boxes.each do |box|
   url = box[1][BOX]
   if url =~ /\A#{URI::regexp(['http', 'https'])}\z/
+
+    puts "INFO: downloading: '#{url}' box"
+
     url_base = url.split('/')[2]
     url_path = '/'+url.split('/')[3..-1].join('/')
     provider = box[1][PROVIDER]
@@ -71,20 +74,15 @@ boxes.each do |box|
     platform_version = box[1][PLATFORM_VERSION]
     box_file_name = url_path.split('/')[-1]
 
-    downloaded_box_dir = [
-        dir,
-        provider,
-        platform,
-        platform_version
-    ].join('/')
-    downloaded_box_path = [
-        downloaded_box_dir,
-        box_file_name
-    ].join('/')
+    downloaded_box_dir = File.absolute_path([dir, provider, platform, platform_version].join('/'))
+    downloaded_box_path = File.absolute_path([downloaded_box_dir, box_file_name].join('/'))
+
+    puts "INFO: Box will be stored in '#{downloaded_box_path}'"
 
     if Dir.exists?(downloaded_box_dir) && File.exists?(downloaded_box_path)
       if !force
-        puts "ERROR: file '#{downloaded_box_path} already exists'"
+        at_exit { puts "ERROR: file '#{downloaded_box_path}' already exists" }
+        exit 1
       else
         puts "WARNING: file '#{downloaded_box_path} will be overwritten"
         File.delete downloaded_box_path
@@ -108,6 +106,7 @@ boxes.each do |box|
       end
       pbar.finish
     end
-    puts "Done."
+
+    puts "INFO: Box loaded successefully"
   end
 end
