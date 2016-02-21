@@ -13,7 +13,7 @@ BOX = 'box'
 
 opts = GetoptLong.new(
     [ '--dir', '-d', GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--boxes_dir', '-b', GetoptLong::REQUIRED_ARGUMENT ],
+    [ '--boxes-dir', '-b', GetoptLong::REQUIRED_ARGUMENT ],
     [ '--force', '-f', GetoptLong::NO_ARGUMENT ],
     [ '--help', '-h', GetoptLong::NO_ARGUMENT ]
 )
@@ -32,7 +32,7 @@ download_boxes OPTION
 -d, --dir:
   directory name where to store boxes
 
--b, --boxes_dir:
+-b, --boxes-dir:
   directory name where to find JSON files with
   with boxes information
 
@@ -46,7 +46,7 @@ download_boxes OPTION
       force = true
     when '--dir'
       dir = arg
-    when '--boxes_dir'
+    when '--boxes-dir'
       boxes_dir = arg
   end
 end
@@ -61,11 +61,19 @@ boxes_files.each do |boxes_file|
   boxes = boxes.merge boxes_json
 end
 
+boxes_quantity = boxes.length
+puts boxes_quantity
+
+boxes_paths = Array.new
+
+boxes_counter = 0
 boxes.each do |box|
   url = box[1][BOX]
   if url =~ /\A#{URI::regexp(['http', 'https'])}\z/
 
-    puts "INFO: downloading: '#{url}' box"
+    boxes_counter += 1
+
+    puts "INFO: #{boxes_counter}/#{boxes_quantity}, downloading from url: '#{url}'"
 
     url_base = url.split('/')[2]
     url_path = '/'+url.split('/')[3..-1].join('/')
@@ -76,6 +84,8 @@ boxes.each do |box|
 
     downloaded_box_dir = File.absolute_path([dir, provider, platform, platform_version].join('/'))
     downloaded_box_path = File.absolute_path([downloaded_box_dir, box_file_name].join('/'))
+
+    boxes_paths.push downloaded_box_path
 
     puts "INFO: Box will be stored in '#{downloaded_box_path}'"
 
@@ -108,5 +118,28 @@ boxes.each do |box|
     end
 
     puts "INFO: Box loaded successefully"
+  else
+    puts "INFO: Box will not be loaded - url #{url} is wrong"
   end
 end
+puts "INFO: Boxes loaded #{boxes_counter}/#{boxes_quantity}"
+
+boxes_paths_file = File.absolute_path([dir, "boxes_paths"].join('/'))
+
+if Dir.exists?(dir) && File.exists?(boxes_paths_file )
+  if !force
+    at_exit { puts "ERROR: file '#{boxes_paths_file }' already exists" }
+    exit 1
+  else
+    puts "WARNING: file '#{boxes_paths_file}' will be overwritten"
+    File.delete boxes_paths_file
+  end
+end
+
+File.open(boxes_paths_file, 'w') do |f|
+  boxes_paths.each do |path|
+    f.puts path
+  end
+end
+
+puts "INFO: File with boxes paths is stored as '#{boxes_paths_file}'"
