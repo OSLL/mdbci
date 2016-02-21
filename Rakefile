@@ -3,7 +3,8 @@ require_relative 'spec/rake_helper'
 
 # here you need to add task with appropriate parameters
 task :run_parametrized do
-  Rake::Task[:task_6639_ssh_exit_code].execute({ :pathToConfigToVBOXNode=>'TEST/vboxnode', :pathToConfigToMDBCINode=>'TEST1/mdbcinode', :pathToConfigToMDBCIBadNode=>'TEST2/mdbcinodebad', :pathToConfigToMDBCIFolder=>'TEST1' })
+  #Rake::Task[:task_6639_ssh_exit_code].execute({ :pathToConfigToVBOXNode=>'TEST/vboxnode', :pathToConfigToMDBCINode=>'TEST1/mdbcinode', :pathToConfigToMDBCIBadNode=>'TEST2/mdbcinodebad', :pathToConfigToMDBCIFolder=>'TEST1' })
+  Rake::Task[:task_6818_search_box_name_by_config].execute({ :configPath=>'confs/mdbci_up_aws_test_config.json', :nodeName=>'galera0' })
 
   RakeTaskManager.get_failed_tests_info
 end
@@ -27,3 +28,4 @@ end
 task :task_6639_ssh_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_generator do |t| RakeTaskManager.new(t).run end
 task :task_shell_command_testing_example do |t| RakeTaskManager.new(t).run end
+task :task_6818_search_box_name_by_config, [:configPath, :nodeName] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
