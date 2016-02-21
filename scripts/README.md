@@ -23,5 +23,5 @@ Alias "/URL_PATH" "/REAL_PATH_TO_BOXES"
 ```
 * run (use --force to rewrite already downloaded boxes)
 ```
-./download_boxes.rb  --dir DIR_TO_DOWNLOADED_BOXES --boxes_dir DIR_TO_JSON_FILES
+./download_boxes.rb  --dir PATH_TO_DOWNLOADED_BOXES_DIRECTORY --boxes_dir TO_JSON_FILES_DIRECTORY
 ```
