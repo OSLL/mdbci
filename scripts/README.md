@@ -10,3 +10,18 @@ Alias "/URL_PATH" "/REAL_PATH_TO_BOXES"
         Require all granted
 </Directory>
 ```
+* create boxes JSON file with alike content
+```
+{
+  "debian" : {
+    "provider": "virtualbox",
+    "box": "URL_TO_BOX",
+    "platform": "debian",
+    "platform_version": "wheezy"
+  }
+}
+```
+* run (use --force to rewrite already downloaded boxes)
+```
+./download_boxes.rb  --dir test --boxes_dir ../BOXES
+```
