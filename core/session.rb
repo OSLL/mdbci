@@ -275,12 +275,16 @@ class Session
       $out.error "Box #{$session.boxName} is not found"
       return 1
     else
-      if !box.has_key?($session.field)
-        $out.error "Box #{$session.boxName} does not have #{$session.field} key"
-        return 1
+      if $session.field != nil
+        if !box.has_key?($session.field)
+          $out.error "Box #{$session.boxName} does not have #{$session.field} key"
+          return 1
+        else
+          $out.out box[$session.field]
+          return 0
+        end
       else
-        $out.out box[$session.field]
-        return 0
+        $out.out box
       end
     end
   end
