@@ -12,6 +12,7 @@ end
 task :run do
   Rake::Task[:task_generator].execute
   Rake::Task[:task_shell_command_testing_example].execute
+  Rake::Task[:task_6819_show_box_info].execute
 
   RakeTaskManager.get_failed_tests_info
 end
@@ -27,3 +28,4 @@ end
 task :task_6639_ssh_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_generator do |t| RakeTaskManager.new(t).run end
 task :task_shell_command_testing_example do |t| RakeTaskManager.new(t).run end
+task :task_6819_show_box_info do |t| RakeTaskManager.new(t).run end
