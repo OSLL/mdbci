@@ -295,7 +295,7 @@ class Session
         @repos.show
 
       when 'versions'
-        exit_code = boxesPlatformVersions(ARGV.shift)
+        exit_code = boxesPlatformVersions
 
       when 'platforms'
         exit_code = showPlatforms
@@ -626,38 +626,40 @@ class Session
   end
 
   # print boxes platform versions by platform name
-  def boxesPlatformVersions(platform)
+  def boxesPlatformVersions
 
-    exit_code = 1
-    boxes_versions = Array.new
+    if $session.boxPlatform == nil
+      $out.error "Specify parameter --platforms and try again"
+      return 1
+    end
 
     # check for supported platforms
-    some_platform = $session.boxes.boxesManager.find { |box| box[1]['platform'] == platform }
+    some_platform = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
     if some_platform.nil?
-      $out.warning 'Platform '+platform.to_s+' is not supported!'
-      exit_code = 1
+      $out.error "Platform #{$session.boxPlatform} is not supported!"
+      return 1
     else
-      $out.info 'Supported '+platform.to_s+' platforms:'
+      $out.info "Supported versions for #{$session.boxPlatform}:"
     end
+
+    boxes_versions = Array.new
 
     # get boxes platform versions
     $session.boxes.boxesManager.each do |box, params|
-      next if params['platform'] != platform.to_s # skip unknown platform
-      if params.has_value?(platform)
-        box_platform_version = params['platform_version'].to_s
+      next if params['platform'] != $session.boxPlatform # skip unknown platform
+      if params.has_value?($session.boxPlatform)
+        box_platform_version = params['platform_version']
         boxes_versions.push(box_platform_version)
-        exit_code = 0
       else
-        $out.error platform.to_s+' platform does not support! Please check box platform!'
-        exit_code = 1
+        $out.error "#{$session.boxPlatform} has 0 supported versions! Please check box platform!"
       end
     end
 
     # output platforms versions
     boxes_versions = boxes_versions.uniq # delete duplicates values
     boxes_versions.each { |version| $out.out version }
-    #
-    return exit_code
+
+    return 0
   end
 
 

@@ -20,50 +20,50 @@ describe 'Session.boxesPlatformVersions' do
   end
 
   it '#boxesPlatformVersions.ubuntu' do
-
-    exit_code = $session.boxesPlatformVersions('ubuntu')
+    $session.boxPlatform = 'ubuntu'
+    exit_code = $session.boxesPlatformVersions
     exit_code.should eq(0)
 
   end
 
   it '#boxesPlatformVersions.centos' do
-
-    exit_code = $session.boxesPlatformVersions('centos')
+    $session.boxPlatform = 'centos'
+    exit_code = $session.boxesPlatformVersions
     exit_code.should eq(0)
 
   end
 
   it '#boxesPlatformVersions.debian' do
-
-    exit_code = $session.boxesPlatformVersions('debian')
+    $session.boxPlatform = 'debian'
+    exit_code = $session.boxesPlatformVersions
     exit_code.should eq(0)
 
   end
 
   it '#boxesPlatformVersions.opesuse' do
-
-    exit_code = $session.boxesPlatformVersions('opensuse')
+    $session.boxPlatform = 'opensuse'
+    exit_code = $session.boxesPlatformVersions
     exit_code.should eq(0)
 
   end
 
   it '#boxesPlatformVersions.ubuntu_trusty' do
-
-    exit_code = $session.boxesPlatformVersions('ubuntu_trusty')
+    $session.boxPlatform = 'ubuntu_trusty'
+    exit_code = $session.boxesPlatformVersions
     exit_code.should eq(1)
 
   end
 
   it '#boxesPlatformVersions.debian7' do
-
-    exit_code = $session.boxesPlatformVersions('debian7')
+    $session.boxPlatform = 'debian7'
+    exit_code = $session.boxesPlatformVersions
     exit_code.should eq(1)
 
   end
 
   it '#boxesPlatformVersions.centos6' do
-
-    exit_code = $session.boxesPlatformVersions('centos6')
+    $session.boxPlatform = 'centos6'
+    exit_code = $session.boxesPlatformVersions
     exit_code.should eq(1)
 
   end
