@@ -267,6 +267,11 @@ class Session
     return exit_code
   end
 
+  def showBoxByConfig
+    $out.out boxes.getBoxByConfig.to_json
+    return 0
+  end
+
   def show(collection)
     case collection
       when 'boxes'

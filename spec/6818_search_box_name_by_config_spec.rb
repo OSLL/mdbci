@@ -5,6 +5,8 @@ require_relative '../core/exception_handler'
 require_relative '../core/boxes_manager'
 require_relative '../core/session'
 
+
+
 describe 'BoxesManager' do
 
   before :all do
@@ -25,7 +27,7 @@ describe 'BoxesManager' do
   # that can be accessed through ssh
 
   it '#getBoxByConfig return json with box definition' do
-    puts $session.boxes.getBoxByConfig(ENV['configPath'], ENV['nodeName'])
+    $session.boxes.getBoxByConfig(ENV['configPath'], ENV['nodeName'])
              .should(eql({
                              "provider"=>"aws",
                              "ami"=>"ami-b1443fc6",
@@ -37,15 +39,13 @@ describe 'BoxesManager' do
   end
 
   it '#getBoxByConfig return nil for wrong configPath' do
-    puts $session.boxes.getBoxByConfig(ENV['WRONG'], ENV['nodeName']).should(eql(nil))
+    lambda {$session.boxes.getBoxByConfig('WRONG', ENV['nodeName'])}
+        .should(raise_error("ERROR:  Wrong config path or json implementation for WRONG"))
   end
 
   it '#getBoxByConfig return nil for wrong nodeName' do
-    puts $session.boxes.getBoxByConfig(ENV['configPath'], ENV['WRONG']).should(eql(nil))
-  end
-
-  it '#getBoxByConfig return nil for both wrong nodeName and wrong configPath' do
-    puts $session.boxes.getBoxByConfig(ENV['WRONG'], ENV['WRONG']).should(eql(nil))
+    lambda {$session.boxes.getBoxByConfig(ENV['configPath'], 'WRONG')}
+        .should(raise_error("ERROR:  Node WRONG is not found in confs/mdbci_up_aws_test_config.json"))
   end
 
 end
