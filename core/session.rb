@@ -270,22 +270,23 @@ class Session
   end
 
   def showBoxField
+    $out.out findBoxField
+    return 0
+  end
+
+  def findBoxField
     box = $session.boxes.getBox($session.boxName)
     if box == nil
-      $out.error "Box #{$session.boxName} is not found"
-      return 1
+      raise $out.ERROR + "Box #{$session.boxName} is not found"
     else
       if $session.field != nil
         if !box.has_key?($session.field)
-          $out.error "Box #{$session.boxName} does not have #{$session.field} key"
-          return 1
+          raise $out.ERROR + "Box #{$session.boxName} does not have #{$session.field} key"
         else
-          $out.out box[$session.field]
-          return 0
+          return box[$session.field]
         end
       else
-        $out.out box
-        return 0
+        return box.to_json
       end
     end
   end
@@ -295,7 +296,7 @@ class Session
       when 'boxes'
         exit_code = showBoxes
 
-      when 'box'
+      when 'boxinfo'
         exit_code = showBoxField
 
       when 'repos'

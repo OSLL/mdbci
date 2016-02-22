@@ -30,7 +30,7 @@ class RakeTaskManager
 
   # executing rspec test, with cutting stderr application output
   def run
-    @cmd = `rspec #{@rspec_test_name} 2>/dev/null`
+    @cmd = `rspec #{@rspec_test_name}`# 2>/dev/null``
     puts @cmd
   end
 

@@ -6,13 +6,13 @@ module ExecutionHelper
   attr_accessor :original_stderr
 
   def redirect_output
-    @original_stdout, $stdout = $stdout, File.open('/dev/null', 'w')
-    @original_stderr, $stderr = $stderr, File.open('/dev/null', 'w')
+    #@original_stdout, $stdout = $stdout, File.open('/dev/null', 'w')
+    #@original_stderr, $stderr = $stderr, File.open('/dev/null', 'w')
   end
 
   def reset_output
-    $stdout, @original_stdout = @original_stdout, nil
-    $stderr, @original_stderr = @original_stderr, nil
+    #$stdout, @original_stdout = @original_stdout, nil
+    #$stderr, @original_stderr = @original_stderr, nil
   end
 
   module ClassMethods
