@@ -98,6 +98,37 @@ case node[:platform_family]
     end
 end # save iptables rules
 
+# copy server.cnf to my.cnf.d/ dir
+case node[:platform_family]
+
+  when "debian", "ubuntu"
+
+    createcmd = "mkdir -p /etc/mysql/my.cnf.d/"
+    execute "Create cnf_template directory" do
+      command createcmd
+    end
+
+    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/mysql/my.cnf.d/'
+    execute "Copy server.cnf to cnf_template directory" do
+      command copycmd
+    end
+
+  when "rhel", "fedora", "centos", "opensuse"
+
+    createcmd = 'mkdir -p /etc/my.cnf.d/'
+    execute "Create cnf_template directory" do
+      command createcmd
+    end
+
+    # /etc/my.cnf.d -- dir for *.cnf files
+    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/my.cnf.d/'
+    execute "Copy server.cnf to cnf_template directory" do
+      command copycmd
+    end
+
+end
+
+
 # Install packages
 case node[:platform_family]
 when "suse"
@@ -127,20 +158,11 @@ else
   end 
 end
 
-# cnf_template configuration
+
+# add !includedir to my.cnf
 case node[:platform_family]
 
   when "debian", "ubuntu"
-
-    createcmd = "mkdir -p /etc/mysql/my.cnf.d/"
-    execute "Create cnf_template directory" do
-      command createcmd
-    end
-
-    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/mysql/my.cnf.d/'
-    execute "Copy server.cnf to cnf_template directory" do
-      command copycmd
-    end
 
     # /etc/mysql/my.cnf.d -- dir for *.cnf files
     addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d/" >> /etc/mysql/my.cnf'
@@ -149,17 +171,6 @@ case node[:platform_family]
     end
 
   when "rhel", "fedora", "centos", "opensuse"
-
-    createcmd = 'mkdir -p /etc/my.cnf.d/'
-    execute "Create cnf_template directory" do
-      command createcmd
-    end
-
-    # /etc/my.cnf.d -- dir for *.cnf files
-    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/my.cnf.d/'
-    execute "Copy server.cnf to cnf_template directory" do
-      command copycmd
-    end
 
     # create /etc/my.cnf file for MariaDB 5.1
     if node['mariadb']['version'] == "5.1"
@@ -170,4 +181,3 @@ case node[:platform_family]
     end
 
 end
-
