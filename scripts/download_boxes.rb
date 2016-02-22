@@ -54,6 +54,7 @@ end
 puts dir
 puts boxes_dir
 
+# get BOXES/*.json
 boxes = Hash.new
 boxes_files = Dir.glob(boxes_dir + '/' + '*.json', File::FNM_DOTMATCH)
 boxes_files.each do |boxes_file|
@@ -68,15 +69,17 @@ boxes_paths = Array.new
 
 boxes_counter = 0
 boxes.each do |box|
-  url = box[1][BOX]
-  if url =~ /\A#{URI::regexp(['http', 'https'])}\z/
-
+  box_params = box[1][BOX].split('/')
+  box_atlas_url = 'https://atlas.hashicorp.com/'+box_params[0].to_s+'/boxes/'+box_params[1].to_s
+  if box_atlas_url =~ /\A#{URI::regexp(['http', 'https'])}\z/
     boxes_counter += 1
 
-    puts "INFO: #{boxes_counter}/#{boxes_quantity}, downloading from url: '#{url}'"
+    puts "INFO: #{boxes_counter}/#{boxes_quantity}, downloading from url: '#{box_atlas_url}'"
 
-    url_base = url.split('/')[2]
-    url_path = '/'+url.split('/')[3..-1].join('/')
+    url_base = box_atlas_url.split('/')[2]
+    p 'url_base ' + url_base.to_s
+    url_path = '/'+box_atlas_url.split('/')[3..-1].join('/')
+    p 'url_path ' + url_path.to_s
     provider = box[1][PROVIDER]
     platform = box[1][PLATFORM]
     platform_version = box[1][PLATFORM_VERSION]
@@ -119,7 +122,7 @@ boxes.each do |box|
 
     puts "INFO: Box loaded successefully"
   else
-    puts "INFO: Box will not be loaded - url #{url} is wrong"
+    puts "INFO: Box will not be loaded - url #{box_atlas_url} is wrong"
   end
 end
 puts "INFO: Boxes loaded #{boxes_counter}/#{boxes_quantity}"

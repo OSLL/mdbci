@@ -1,4 +1,4 @@
-Boxes downloader usage
+## Boxes downloader usage
 
 * run 'sudo gem install progressbar'
 * create directory with boxes and make it available by adding next lines to /etc/apache2/apache2.conf
@@ -10,12 +10,12 @@ Alias "/URL_PATH" "/REAL_PATH_TO_BOXES"
         Require all granted
 </Directory>
 ```
-* create boxes JSON file with alike content
+* Сreate boxes JSON file with alike below content. **URL_TO_BOX** parameter needs to be in 'platform/platform_version' format.
 ```
 {
   "debian" : {
     "provider": "virtualbox",
-    "box": "URL_TO_BOX",
+    "box": "URL_TO_BOX", 
     "platform": "debian",
     "platform_version": "wheezy"
   }
