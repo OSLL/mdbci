@@ -4,23 +4,14 @@ require_relative 'session'
 
 class BoxesManager
 
-  attr_accessor :boxesList  # Array of Box objects
-  attr_accessor :boxesManager
-  attr_accessor :providers
+  attr_accessor :boxesList    # Array for parsed boxes
+  attr_accessor :boxesManager # Hash with all boxes
 
   def initialize(path)
     @boxesList = Array.new
     @boxesManager = Hash.new
-    @providers = Hash.new
 
     lookup(path)
-
-    # TODO: divide boxes for it's own provider
-    @providers['virtualbox']='virtualbox'
-    @providers['aws']='aws'
-    @providers['libvirt']='libvirt'
-    @providers['mdbci']='mdbci'
-    @providers['docker']='docker'
   end
 
   def lookup(path)
@@ -55,8 +46,6 @@ class BoxesManager
     end
   end
 
-
-  # TODO refactoring: create class Box with boxes get/set methods. Add boxes while parsing BOXES/*.json
   def BoxesManager.getBoxesList(platform, version)
     exit_code = 1
     #
@@ -74,16 +63,15 @@ class BoxesManager
     # check for undefined box
     some_box = $session.boxes.boxesManager.find { |box| box[1]['platform'] == platform }
     if some_box.nil?
-      $out.warning 'Platform '+platform+' is not supported!'
+      $out.warning 'Platform '+platform.to_s+' is not supported!'
       exit_code = 1
     end
     #
-    $out.info platform+' platform boxes list:'
     $session.boxes.boxesManager.each do |box, params|
-      if params.has_value?($session.boxPlatform) and $session.boxPlatformVersion.nil?
+      if params.has_value?(platform) and version.nil?
         $session.boxes.boxesList.push(box)
         exit_code = 0
-      elsif params.has_value?($session.boxPlatform) and params.has_value?($session.boxPlatformVersion)
+      elsif params.has_value?(platform) and params.has_value?(version)
         $session.boxes.boxesList.push(box)
         exit_code = 0
       end
@@ -92,13 +80,12 @@ class BoxesManager
   end
   # print boxes with platform and version
   def BoxesManager.printBoxes(boxes)
-    exit_code = 1
     exit_code = getBoxesList($session.boxPlatform, $session.boxPlatformVersion)
     if !boxes.nil? and exit_code != 1
       boxes.each { |box| $out.out box.to_s }
       exit_code = 0
     else
-      $out.warning 'Boxes list is empty for the '+$session.boxPlatform+' platform!'
+      $out.warning 'Boxes list is empty for the '+$session.boxPlatform.to_s+' platform!'
       exit_code = 1
     end
     return exit_code
