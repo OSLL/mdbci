@@ -65,8 +65,7 @@ class Session
   end
 
   def setup(what)
-
-    exit_code = 0
+    exit_code = 1
     possibly_failed_command = ''
 
     case what
@@ -96,7 +95,7 @@ class Session
         end
       else
         $out.warning 'Cannot setup '+what
-        return 1
+        exit_code = 1
     end
 
     if exit_code != 0
@@ -106,7 +105,6 @@ class Session
     end
 
     return exit_code
-
   end
 
   def checkConfig
@@ -122,13 +120,13 @@ class Session
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return 1
+      exit_code = 1
     end
 
     config = args.split('/')
     unless Dir.exists?(config[0])
       $out.error 'Machine with such name does not exists'
-      return 1
+      exit_code = 1
     end
 
     Dir.chdir config[0]
@@ -177,7 +175,7 @@ class Session
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return 1
+      exit_code = 1
     end
 
     params = args.split('/')
@@ -219,7 +217,7 @@ class Session
     else # aws, vbox nodes
       unless Dir.exist?(params[0])
         $out.error 'Machine with such name does not exist'
-        return 1
+        exit_code = 1
       end
       Dir.chdir params[0]
       cmd = 'vagrant ssh '+params[1].to_s+' -c "'+$session.command+'"'
@@ -336,17 +334,17 @@ class Session
       IO.read($session.configFile)
     rescue
       $out.warning 'Instance configuration file not found!'
-      return 1
+      exit_code = 1
     end
     instanceConfigFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read($session.configFile)}
     if instanceConfigFile.nil?
       $out.warning 'Instance configuration file invalid!'
-      return 1
+      exit_code = 1
     end
     @configs = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(instanceConfigFile)}
     if @configs.nil?
       $out.out 'Template configuration file is empty!'
-      return 1
+      exit_code = 1
     else
       LoadNodesProvider configs
     end
@@ -386,7 +384,7 @@ class Session
     # No arguments provided
     if args.nil?
       $out.info 'Command \'up\' needs one argument, found zero'
-      return
+      exit_code = 1
     end
 
     # No attempts provided
@@ -428,7 +426,7 @@ class Session
     $out.info 'Current provider: ' + @nodesProvider
     if @nodesProvider == 'mdbci'
       $out.warning 'You are using mdbci nodes template. ./mdbci up command doesn\'t supported for this boxes!'
-      return 0
+      exit_code = 0
     else
       (1..@attempts.to_i).each { |i|
         $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') +
@@ -452,7 +450,7 @@ class Session
 	          $out.info 'UP ERROR, exit code '+exit_code.to_s
 	        else
             $out.info 'Configuration UP SUCCESS!'
-            return 0
+            exit_code = 0
           end
   	    end
       }
@@ -471,7 +469,7 @@ class Session
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return 1
+      exit_code = 1
     end
 
     args = args.split('/')
@@ -482,7 +480,7 @@ class Session
       if args[1].nil?     # read ip for all nodes
         if $session.mdbciNodes.empty?
           $out.error "MDBCI nodes not found in #{args[0]}"
-          return 1
+          exit_code = 1
         end
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
@@ -497,7 +495,6 @@ class Session
                             + "\"" + command + "\""
             $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
             vagrant_out = `#{cmd}`
-            # TODO
             exit_code = $?.exitstatus
             possibly_failed_command = cmd
           end
@@ -507,7 +504,7 @@ class Session
 
         if mdbci_node.nil?
           $out.error "No such node with name #{args[1]} in #{args[0]}"
-          return 1
+          exit_code = 1
         end
 
         box = mdbci_node[1]['box'].to_s
@@ -522,19 +519,18 @@ class Session
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
           vagrant_out = `#{cmd}`
-          # TODO
           exit_code = $?.exitstatus
           possibly_failed_command = cmd
         else
           $out.error "Wrong box parameter in node: #{args[1]}"
-          return 1
+          exit_code = 1
         end
       end
     else # aws, vbox, libvirt, docker nodes
 
       unless Dir.exists? args[0]
         $out.error "Directory with nodes does not exists: #{args[1]}"
-        return 1
+        exit_code = 1
       end
 
       network = Network.new
@@ -542,7 +538,7 @@ class Session
 
       if network.nodes.empty?
         $out.error "No aws, vbox, libvirt, docker nodes found in #{args[0]}"
-        return 1
+        exit_code = 1
       end
 
       if args[1].nil? # No node argument, copy keys to all nodes
@@ -561,7 +557,7 @@ class Session
 
         if node.nil?
           $out.error "No such node with name #{args[1]} in #{args[0]}"
-          return 1
+          exit_code = 1
         end
 
         #
