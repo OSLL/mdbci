@@ -197,11 +197,7 @@ class NodeProduct
         end
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
-<<<<<<< HEAD
-        if $session.node == nil
-=======
         if node == nil
->>>>>>> origin/integration
           $out.error "node #{args[1]} not found in #{args[0]}"
           return 1
         end
