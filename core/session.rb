@@ -277,11 +277,11 @@ class Session
   def findBoxField
     box = $session.boxes.getBox($session.boxName)
     if box == nil
-      raise $out.ERROR + "Box #{$session.boxName} is not found"
+      raise "Box #{$session.boxName} is not found"
     else
       if $session.field != nil
         if !box.has_key?($session.field)
-          raise $out.ERROR + "Box #{$session.boxName} does not have #{$session.field} key"
+          raise "Box #{$session.boxName} does not have #{$session.field} key"
         else
           return box[$session.field]
         end
