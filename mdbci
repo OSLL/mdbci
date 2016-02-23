@@ -110,8 +110,8 @@ $session.loadCollections
 begin
   exit_code = $session.commands
 rescue Exception => error
-  puts error.backtrace.join("\n")
-  puts error
+  $out.error error.backtrace.join("\n")
+  $out.error error
   exit_code =  1
 end
 
