@@ -66,6 +66,7 @@ COMMANDS:
 
 
 EXAMPLES:
+  mdbci show versions --platform ubuntu
   mdbci show boxes --platform centos
   mdbci show boxes --platform ubuntu --platform-version trusty
   mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
