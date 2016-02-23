@@ -70,6 +70,10 @@ class NodeProduct
     if File.exist?(args[0]+'/mdbci_template')
       $session.loadMdbciNodes args[0]
       if args[1].nil?     # read ip for all nodes
+        if $session.mdbciNodes.length == 0
+          $out.error "0 nodes found in #{args[0]}"
+          return 1
+        end
         $session.mdbciNodes.each do |node|
           if $session.mdbciNodes.length == 0
             $out.error "0 nodes found in #{args[0]}"

@@ -257,6 +257,25 @@ class Session
     end
   end
 
+  def showBoxes
+    begin
+      $out.out JSON.pretty_generate(@boxes.boxesManager)
+      return 0
+    rescue
+      $out.error "check boxes configuration and try again"
+      return 1
+    end
+  end
+
+  def showPlatforms
+    begin
+      $out.out @boxes.boxesManager.keys
+      return 0
+    rescue
+      $out.error "check boxes configuration and try again"
+      return 1
+    end
+  end
 
   # show boxes with platform and version
   def showBoxes
@@ -330,7 +349,7 @@ class Session
       when 'versions'
         exit_code = boxesPlatformVersions
       when 'platforms'
-        $out.out @boxes.keys
+        exit_code = showPlatforms
       when 'network'
         exit_code = Network.show(ARGV.shift)
       when 'private_ip'

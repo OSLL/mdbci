@@ -21,7 +21,11 @@ end
 task :run do
   Rake::Task[:task_generator].execute
   Rake::Task[:task_shell_command_testing_example].execute
+<<<<<<< HEAD
   Rake::Task[:task_6819_show_box_info].execute
+=======
+  Rake::Task[:task_6782_show_commands_exit_code].execute
+>>>>>>> origin/integration
   Rake::Task[:task_6755_show_platform_versions].execute
 
   RakeTaskManager.get_failed_tests_info
@@ -45,8 +49,8 @@ task :task_6644_show_private_ip_exit_code, [:pathToConfigToVBOXNode, :pathToConf
 task :task_6645_public_keys_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_shell_command_testing_example do |t| RakeTaskManager.new(t).run end
 task :task_6819_show_box_info do |t| RakeTaskManager.new(t).run end
+task :task_6782_show_commands_exit_code do |t| RakeTaskManager.new(t).run end
 task :task_6646_setup_repo_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_6647_install_product_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_6648_generate_exit_code, [:pathToVBOXConfigFile, :pathToMDBCIConfigFile, :pathToDestination] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
->>>>>>> origin/integration
 task :task_6755_show_platform_versions do |t| RakeTaskManager.new(t).run end
