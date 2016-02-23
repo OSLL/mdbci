@@ -33,6 +33,8 @@ class Session
   attr_accessor :nodeProduct
   attr_accessor :productVersion
   attr_accessor :keyFile
+  attr_accessor :boxPlatform
+  attr_accessor :boxPlatformVersion
 
   def initialize
     @boxesDir = './BOXES'
@@ -228,16 +230,53 @@ class Session
   end
 
 
+  # show boxes with platform and version
+  def showBoxes
+
+    exit_code = 1
+
+    if $session.boxPlatform.nil?
+      $out.warning './mdbci show boxes --platform command option is not defined!'
+      return 1
+    elsif $session.boxPlatform.nil? and $session.boxPlatformVersion.nil?
+      $out.warning './mdbci show boxes --platform or --platform-version command parameters are not defined!'
+      return 1
+    end
+    # check for undefined box
+    some_box = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
+    if some_box.nil?
+      $out.warning 'Platform '+$session.boxPlatform+' is not supported!'
+      return 1
+    end
+
+    if !$session.boxPlatformVersion.nil?
+      $out.info 'List of boxes for the '+$session.boxPlatform+'^'+$session.boxPlatformVersion+' platform'
+    else
+      $out.info 'List of boxes for the '+$session.boxPlatform+' platform:'
+    end
+    $session.boxes.boxesManager.each do |box, params|
+      if params.has_value?($session.boxPlatform) and $session.boxPlatformVersion.nil?
+        $out.out box.to_s
+        exit_code = 0
+      elsif params.has_value?($session.boxPlatform) and params.has_value?($session.boxPlatformVersion)
+        $out.out box.to_s
+        exit_code = 0
+      end
+    end
+
+    return exit_code
+  end
+
   def show(collection)
     case collection
       when 'boxes'
-        $out.out JSON.pretty_generate(@boxes)
+        exit_code = showBoxes
 
       when 'repos'
         @repos.show
 
       when 'versions'
-        $out.out @versions
+        exit_code = boxesPlatformVersions
 
       when 'platforms'
         $out.out  @boxes.keys
@@ -403,14 +442,23 @@ class Session
       $out.warning 'You are using mdbci nodes template. ./mdbci up command doesn\'t supported for this boxes!'
       return 0
     else
-      (1..@attempts.to_i).each { |i|
+      (1..@attempts.to_i).each do |i|
         $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') +
           args + ', attempt: ' + i.to_s
-        $out.info 'Destroying current instance'
-        cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
-        exec_cmd_destr = `#{cmd_destr}`
-        $out.info exec_cmd_destr
-        cmd_up = 'vagrant up --destroy-on-error ' + '--provider=' + @nodesProvider + ' ' +
+
+        if i == 1
+          $out.info 'Destroying current instance'
+          cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1]:'')
+          exec_cmd_destr = `#{cmd_destr}`
+          $out.info exec_cmd_destr
+        end
+
+        no_parallel_flag = ""
+        if @nodesProvider == "aws"
+          no_parallel_flag = " --no-parallel "
+        end
+
+        cmd_up = 'vagrant up' + no_parallel_flag + ' --provider=' + @nodesProvider + ' ' +
           (up_type ? config[1]:'')
         $out.info 'Actual command: ' + cmd_up
         Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
@@ -422,14 +470,37 @@ class Session
             stderr.each_line { |line| $out.error line }
             stderr.close
    	        exit_code = wthr.value.exitstatus # error
-	          $out.info 'UP ERROR, exit code '+exit_code.to_s
+	          $out.error 'exit code '+exit_code.to_s
 	        else
             $out.info 'Configuration UP SUCCESS!'
             return 0
           end
   	    end
-      }
+
+        if exit_code != 0
+          $out.info "Checking for all nodes to be started"
+          all_machines_started = true
+          invalid_states = ["not created", "poweroff"]
+          Dir.glob('*.json', File::FNM_DOTMATCH) do |f|
+            machine_name = f.chomp! ".json"
+            status = `vagrant status #{machine_name}`.split("\n")[2]
+            invalid_states.each do |state|
+              if status.include? state
+                all_machines_started = false
+                $out.error "Machine #{machine_name} is in #{state} state"
+              end
+            end
+          end
+
+          if i == @attempts && !all_machines_started
+            $out.error 'Bringing up failed'
+            $out.error 'Some machines are still down'
+            exit_code = 1
+          end
+        end
+      end
     end
+
     Dir.chdir pwd
 
     return exit_code
@@ -534,6 +605,44 @@ class Session
     end
     return exit_code
   end
+
+  # print boxes platform versions by platform name
+  def boxesPlatformVersions
+
+    if $session.boxPlatform == nil
+      $out.error "Specify parameter --platforms and try again"
+      return 1
+    end
+
+    # check for supported platforms
+    some_platform = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
+    if some_platform.nil?
+      $out.error "Platform #{$session.boxPlatform} is not supported!"
+      return 1
+    else
+      $out.info "Supported versions for #{$session.boxPlatform}:"
+    end
+
+    boxes_versions = Array.new
+
+    # get boxes platform versions
+    $session.boxes.boxesManager.each do |box, params|
+      next if params['platform'] != $session.boxPlatform # skip unknown platform
+      if params.has_value?($session.boxPlatform)
+        box_platform_version = params['platform_version']
+        boxes_versions.push(box_platform_version)
+      else
+        $out.error "#{$session.boxPlatform} has 0 supported versions! Please check box platform!"
+      end
+    end
+
+    # output platforms versions
+    boxes_versions = boxes_versions.uniq # delete duplicates values
+    boxes_versions.each { |version| $out.out version }
+
+    return 0
+  end
+
 
   # load node platform by name
   def loadNodePlatform(name)
