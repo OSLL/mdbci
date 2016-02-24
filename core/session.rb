@@ -36,6 +36,8 @@ class Session
   attr_accessor :boxPlatform
   attr_accessor :boxPlatformVersion
 
+  PLATFORM = 'platform'
+
   def initialize
     @boxesDir = './BOXES'
     @repoDir = './repo.d'
@@ -265,14 +267,21 @@ class Session
     end
   end
 
-  def showPlatforms
-    begin
-      $out.out @boxes.boxesManager
-      return 0
-    rescue
-      $out.error "check boxes configuration and try again"
-      return 1
+  def getPlatfroms
+    if !@boxes.boxesManager.empty?
+      platforms = Array.new
+      @boxes.boxesManager.each do |box|
+        platforms.push box[1][PLATFORM]
+      end
+      platforms.uniq!
+    else
+      raise 'Boxes are not found'
     end
+  end
+  
+  def showPlatforms
+      $out.out getPlatfroms
+      0
   end
 
   # show boxes with platform and version
