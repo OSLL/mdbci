@@ -16,6 +16,8 @@ class Session
   attr_accessor :versions
   attr_accessor :configFile
   attr_accessor :boxesFile
+  attr_accessor :boxName
+  attr_accessor :field
   attr_accessor :awsConfig        # aws-config parameters
   attr_accessor :awsConfigFile    # aws-config.yml file
   attr_accessor :awsConfigOption  # path to aws-config.yml in template file
@@ -67,6 +69,10 @@ class Session
   end
 
   def setup(what)
+
+    exit_code = 0
+    possibly_failed_command = ''
+
     case what
       when 'boxes'
         $out.info 'Adding boxes to vagrant'
@@ -87,10 +93,24 @@ class Session
 
           # TODO: resque Exeption
           system shell # THERE CAN BE DONE CUSTOM EXCEPTION
+
+          exit_code = $?.exitstatus
+          possibly_failed_command = shell
+
         end
       else
-        $out.warn 'Cannot setup '+what
+        $out.warning 'Cannot setup '+what
+        return 1
     end
+
+    if exit_code != 0
+      $out.error "command 'setup' exit with non-zero exit code: #{exit_code}"
+      $out.error "failed command: #{possibly_failed_command}"
+      exit_code = 1
+    end
+
+    return exit_code
+
   end
 
   def checkConfig
@@ -100,25 +120,37 @@ class Session
   end
 
   def sudo(args)
+    exit_code = 1
+    possibly_failed_command = ''
+    pwd = Dir.pwd
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return
+      return 1
     end
 
     config = args.split('/')
+    unless Dir.exists?(config[0])
+      $out.error 'Machine with such name does not exists'
+      return 1
+    end
 
-    pwd = Dir.pwd
     Dir.chdir config[0]
-
     cmd = 'vagrant ssh '+config[1]+' -c "/usr/bin/sudo '+$session.command+'"'
-
     $out.info 'Running ['+cmd+'] on '+config[0]+'/'+config[1]
-
     vagrant_out = `#{cmd}`
+    exit_code = $?.exitstatus
+    possibly_failed_command = cmd
     $out.out vagrant_out
 
     Dir.chdir pwd
+
+    if exit_code != 0
+      $out.error "command '#{possibly_failed_command}' exit with non-zero code: #{exit_code}"
+      exit_code = 1
+    end
+
+    return exit_code
   end
 
   # load template nodes
@@ -143,10 +175,8 @@ class Session
 
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
   def ssh(args)
-
-    exit_code = 0
+    exit_code = 1
     possibly_failed_command = ''
-
     pwd = Dir.pwd
 
     if args.nil?
@@ -155,7 +185,6 @@ class Session
     end
 
     params = args.split('/')
-
     # mdbci ppc64 boxes
     if File.exist?(params[0]+'/mdbci_template')
       loadMdbciNodes params[0]
@@ -213,7 +242,6 @@ class Session
     end
 
     return exit_code
-
   end
 
 
@@ -229,6 +257,25 @@ class Session
     end
   end
 
+  def showBoxes
+    begin
+      $out.out JSON.pretty_generate(@boxes.boxesManager)
+      return 0
+    rescue
+      $out.error "check boxes configuration and try again"
+      return 1
+    end
+  end
+
+  def showPlatforms
+    begin
+      $out.out @boxes.boxesManager.keys
+      return 0
+    rescue
+      $out.error "check boxes configuration and try again"
+      return 1
+    end
+  end
 
   # show boxes with platform and version
   def showBoxes
@@ -267,74 +314,82 @@ class Session
     return exit_code
   end
 
+  def showBoxField
+    $out.out findBoxField($session.boxName, $session.field)
+    return 0
+  end
+
+  def findBoxField(boxName, field)
+    box = $session.boxes.getBox(boxName)
+    if box == nil
+      raise "Box #{boxName} is not found"
+    end
+
+    if field != nil
+      if !box.has_key?(field)
+        raise "Box #{boxName} does not have #{field} key"
+      end
+      return box[field]
+    else
+      return box.to_json
+    end
+  end
+
   def show(collection)
+    exit_code = 1
     case collection
       when 'boxes'
         exit_code = showBoxes
 
+      when 'boxinfo'
+        exit_code = showBoxField
+
       when 'repos'
         @repos.show
-
       when 'versions'
-        $out.out @versions
-
+        exit_code = boxesPlatformVersions
       when 'platforms'
-        $out.out  @boxes.keys
-
+        exit_code = showPlatforms
       when 'network'
-        Network.show(ARGV.shift)
-
+        exit_code = Network.show(ARGV.shift)
       when 'private_ip'
-        Network.private_ip(ARGV.shift)
-
+        exit_code = Network.private_ip(ARGV.shift)
       when 'keyfile'
-        Network.showKeyFile(ARGV.shift)
-
+        exit_code = Network.showKeyFile(ARGV.shift)
       when 'boxkeys'
         showBoxKeys
-
       when 'provider'
         exit_code = showProvider(ARGV.shift)
-
       else
-        $out.error 'Unknown collection: '+collection
+        $out.error 'Unknown show command collection: '+collection
     end
     return exit_code
   end
 
   # all mdbci commands swith
   def commands
+    exit_code = 1
     case ARGV.shift
     when 'show'
       exit_code = $session.show(ARGV.shift)
-
     when 'sudo'
       exit_code = $session.sudo(ARGV.shift)
-
     when 'ssh'
       exit_code = $session.ssh(ARGV.shift)
-
     when 'setup'
       exit_code = $session.setup(ARGV.shift)
-
     when 'generate'
       exit_code = $session.generate(ARGV.shift)
-
     when 'up'
       exit_code = $session.up(ARGV.shift)
-
     when 'setup_repo'
       exit_code = NodeProduct.setupProductRepo(ARGV.shift)
-
     when 'install_product'
       exit_code = NodeProduct.installProduct(ARGV.shift)
-
     when 'public_keys'
       exit_code = $session.publicKeys(ARGV.shift)
-
     else
-      exit_code = 1
-      puts 'ERR: Something wrong with command line'
+      $out.error 'Unknown mdbci command. Please look help!'
       Help.display
     end
     return exit_code
@@ -352,6 +407,7 @@ class Session
   end
 
   def generate(name)
+    exit_code = 1
     path = Dir.pwd
 
     if name.nil?
@@ -360,15 +416,31 @@ class Session
       path +='/'+name.to_s
     end
     #
+    # TODO: ExceptionHandler need to be refactored! Don't return 1 for error
+    begin
+      IO.read($session.configFile)
+    rescue
+      $out.warning 'Instance configuration file not found!'
+      return 1
+    end
     instanceConfigFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read($session.configFile)}
+    if instanceConfigFile.nil?
+      $out.warning 'Instance configuration file invalid!'
+      return 1
+    end
     @configs = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(instanceConfigFile)}
-    LoadNodesProvider(configs)
+    if @configs.nil?
+      $out.out 'Template configuration file is empty!'
+      return 1
+    else
+      LoadNodesProvider configs
+    end
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
     @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if @nodesProvider != 'mdbci'
-      Generator.generate(path,configs,boxes,isOverride,nodesProvider)
+      exit_code = Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
       $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_template'
@@ -387,11 +459,12 @@ class Session
       template_file = path+'/template'
       if !File.exists?(template_file); File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }; end
     end
+
+    return exit_code
   end
 
   # Deploy configurations
   def up(args)
-
     std_q_attampts = 10
     exit_code = 1 # error
 
@@ -509,13 +582,13 @@ class Session
 
   # copy ssh keys to config/node
   def publicKeys(args)
-
     pwd = Dir.pwd
-    exit_code = 1 # error
+    possibly_failed_command = ''
+    exit_code = 1
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return
+      return 1
     end
 
     args = args.split('/')
@@ -524,6 +597,10 @@ class Session
     if File.exist?(args[0]+'/mdbci_template')
       loadMdbciNodes args[0]
       if args[1].nil?     # read ip for all nodes
+        if $session.mdbciNodes.empty?
+          $out.error "MDBCI nodes not found in #{args[0]}"
+          return 1
+        end
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           if !box.empty?
@@ -538,11 +615,18 @@ class Session
             $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
             vagrant_out = `#{cmd}`
             # TODO
-            exit_code = 0
+            exit_code = $?.exitstatus
+            possibly_failed_command = cmd
           end
         end
       else
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == args[1] }
+
+        if mdbci_node.nil?
+          $out.error "No such node with name #{args[1]} in #{args[0]}"
+          return 1
+        end
+
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes.getBox(box)
@@ -556,12 +640,27 @@ class Session
           $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
           vagrant_out = `#{cmd}`
           # TODO
-          exit_code = 0
+          exit_code = $?.exitstatus
+          possibly_failed_command = cmd
+        else
+          $out.error "Wrong box parameter in node: #{args[1]}"
+          return 1
         end
       end
     else # aws, vbox, libvirt, docker nodes
+
+      unless Dir.exists? args[0]
+        $out.error "Directory with nodes does not exists: #{args[1]}"
+        return 1
+      end
+
       network = Network.new
       network.loadNodes args[0] # load nodes from dir
+
+      if network.nodes.empty?
+        $out.error "No aws, vbox, libvirt, docker nodes found in #{args[0]}"
+        return 1
+      end
 
       if args[1].nil? # No node argument, copy keys to all nodes
         network.nodes.each do |node|
@@ -570,27 +669,39 @@ class Session
           cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
           $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
           vagrant_out = `#{cmd}`
+          exit_code = $?.exitstatus
+          possibly_failed_command = cmd
           $out.out vagrant_out
-          # TODO
-          exit_code = 0
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
+
+        if node.nil?
+          $out.error "No such node with name #{args[1]} in #{args[0]}"
+          return 1
+        end
+
         #
         keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!"){File.read("#{pwd.to_s}/#{@keyFile.to_s}")}
         # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
         cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
         $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
         vagrant_out = `#{cmd}`
+        exit_code = $?.exitstatus
+        possibly_failed_command = cmd
         $out.out vagrant_out
-        # TODO
-        exit_code = 0
       end
     end
 
     Dir.chdir pwd
 
+    if exit_code != 0
+      $out.error "command #{possibly_failed_command} exit with non-zero code: #{exit_code}"
+      exit_code = 1
+    end
+
     return exit_code
+
   end
 
   def showProvider(name)
@@ -606,9 +717,46 @@ class Session
     return exit_code
   end
 
+  # print boxes platform versions by platform name
+  def boxesPlatformVersions
+
+    if $session.boxPlatform == nil
+      $out.error "Specify parameter --platforms and try again"
+      return 1
+    end
+
+    # check for supported platforms
+    some_platform = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
+    if some_platform.nil?
+      $out.error "Platform #{$session.boxPlatform} is not supported!"
+      return 1
+    else
+      $out.info "Supported versions for #{$session.boxPlatform}:"
+    end
+
+    boxes_versions = Array.new
+
+    # get boxes platform versions
+    $session.boxes.boxesManager.each do |box, params|
+      next if params['platform'] != $session.boxPlatform # skip unknown platform
+      if params.has_value?($session.boxPlatform)
+        box_platform_version = params['platform_version']
+        boxes_versions.push(box_platform_version)
+      else
+        $out.error "#{$session.boxPlatform} has 0 supported versions! Please check box platform!"
+      end
+    end
+
+    # output platforms versions
+    boxes_versions = boxes_versions.uniq # delete duplicates values
+    boxes_versions.each { |version| $out.out version }
+
+    return 0
+  end
+
+
   # load node platform by name
   def loadNodePlatform(name)
-
     pwd = Dir.pwd
     # template file
     templateFile = $exception_handler.handle('Template nodes file not found') {IO.read(pwd.to_s+'/template')}
@@ -625,6 +773,5 @@ class Session
     end
 
   end
-
 
 end
