@@ -119,15 +119,16 @@ boxes.each do |box|
     counter = 0
     Net::HTTP.start(url_base) do |http|
       response = http.request_head(URI.escape(url_path))
-      pbar = ProgressBar.new(box_file_name, response['content-length'].to_i)
+      # TODO: fix #6841 ProgressBar error
+      # pbar = ProgressBar.new(box_file_name, response['content-length'].to_i)
       File.open(downloaded_box_path, 'w') do |f|
         http.get(URI.escape(url_path)) do |str|
           f.write str
           counter += str.length
-          pbar.set(counter)
+          #pbar.set(counter)
         end
       end
-      pbar.finish
+      #pbar.finish
     end
 
     puts "INFO: Box loaded successefully"
