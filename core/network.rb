@@ -139,8 +139,7 @@ class Network
     pwd = Dir.pwd
 
     if name.nil?
-      $out.error 'Configuration name is required'
-      return 1
+      raise 'Configuration name is required'
     end
 
     args = name.split('/')
@@ -150,8 +149,7 @@ class Network
       $session.loadMdbciNodes args[0]
       if args[1].nil?
         if $session.mdbciNodes.empty?
-          $out.error "Nodes not found in #{args[0]}"
-          return 1
+          raise "MDBCI nodes not found in #{args[0]}"
         end
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
@@ -160,15 +158,13 @@ class Network
             $out.info 'Node: ' + node[0].to_s
             $out.out box_params['IP'].to_s
           else
-            $out.error "Can not read parameter 'box' of node #{args[0]}"
-            return 1
+            raise "Can not read box parameter of node #{args[0]}"
           end
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
         if mdbci_node.nil?
-          $out.error "mdbci node #{mdbci_node[1].to_s} not found!"
-          return 1
+          raise "mdbci node #{mdbci_node[1].to_s} not found!"
         end
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
@@ -176,15 +172,13 @@ class Network
           $out.info 'Node: ' + args[1].to_s
           $out.out mdbci_params['IP'].to_s
         else
-          $out.error "Can not read parameter 'box' of node #{args[1]}"
-          return 1
+          raise "Can not read parameter 'box' of node #{args[1]}"
         end
       end
     else # aws, vbox nodes
 
       unless Dir.exists? args[0]
-        $out.error "Configuration not found: #{args[0]}"
-        return 1
+        raise "Configuration not found: #{args[0]}"
       end
 
       network = Network.new
