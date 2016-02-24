@@ -10,12 +10,15 @@ Alias "/URL_PATH" "/REAL_PATH_TO_BOXES"
         Require all granted
 </Directory>
 ```
-* Сreate boxes JSON file with alike below content. **URL_TO_BOX** parameter needs to be in 'platform/platform_version' format.
+* Atlas box has format PLATFORM/PLATFORM_VERSION
+* Atlas box url path has format https://atlas.hashicorp.com/PLATFORM/boxes/PLATFORM_VERSION/versions/BOX_VERSION/providers/PROVIDER.box
+* Сreate boxes JSON file with alike below content.
 ```
 {
   "debian" : {
     "provider": "virtualbox",
     "box": "URL_TO_BOX", 
+    "box_version" : "BOX_VERSION",
     "platform": "debian",
     "platform_version": "wheezy"
   }

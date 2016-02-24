@@ -75,12 +75,10 @@ boxes.each do |box|
   box_version = box[1][BOX_VERSION].to_s
   provider = box[1][PROVIDER].to_s
 
-  # Example box url: https://atlas.hashicorp.com/centos/boxes/7/versions/1601.01/providers/virtualbox.box
   if box_name =~ /\A#{URI::regexp(['http', 'https'])}\z/
     box_atlas_url = box_name
   else
     box_name = box[1][BOX].to_s.split('/')
-    puts 'BOX ALREADY WITH SMALL URL'
     box_atlas_url = "https://atlas.hashicorp.com/#{box_name[0]}/boxes/#{box_name[1]}/versions/#{box_version}/providers/#{provider}.box"
   end
 
