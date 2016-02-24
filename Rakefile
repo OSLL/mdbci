@@ -21,11 +21,8 @@ end
 task :run do
   Rake::Task[:task_generator].execute
   Rake::Task[:task_shell_command_testing_example].execute
-<<<<<<< HEAD
   Rake::Task[:task_6819_show_box_info].execute
-=======
   Rake::Task[:task_6782_show_commands_exit_code].execute
->>>>>>> origin/integration
   Rake::Task[:task_6755_show_platform_versions].execute
 
   RakeTaskManager.get_failed_tests_info
