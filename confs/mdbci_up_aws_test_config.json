@@ -4,7 +4,7 @@
   "galera0" : 
   {
     "hostname" : "galera0",
-    "box" : "ubuntu_vivid",
+    "box" : "ubuntu_vivid_aws",
     "product" : {
       "name": "galera",
       "version": "10.0",
@@ -16,7 +16,7 @@
   "galera1" : 
   {
     "hostname" : "galera1",
-    "box" : "centos7",
+    "box" : "centos7_aws",
     "product" : {
       "name": "galera",
       "version": "10.0",
@@ -28,7 +28,7 @@
   "galera2" : 
   {
     "hostname" : "galera1",
-    "box" : "rhel7",
+    "box" : "rhel7_aws",
     "product" : {
       "name": "galera",
       "version": "10.0",

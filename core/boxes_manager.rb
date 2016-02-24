@@ -47,14 +47,14 @@ class BoxesManager
     begin
       config = JSON.parse(File.read(config_path))
     rescue
-      raise $out.ERROR +  "Wrong config path or json implementation for #{config_path}"
+      raise "Wrong config path or json implementation for #{config_path}"
     end
 
     if config.has_key?(node_name)
       box = getBox(config[node_name]['box'])
       return box
     else
-      raise $out.ERROR +  "Node #{node_name} is not found in #{config_path}"
+      raise "Node #{node_name} is not found in #{config_path}"
     end
   end
 end

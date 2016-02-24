@@ -335,6 +335,12 @@ class Session
     end
   end
 
+  def showBoxByConfig(config_path, node_name)
+    box = $session.boxes.getBoxByConfig(config_path, node_name)
+    $out.out box.to_json
+    0
+  end
+
   def show(collection)
     exit_code = 1
     case collection

@@ -1,11 +1,21 @@
 require 'rspec'
 require 'spec_helper'
+require 'json'
 require_relative '../core/out'
 require_relative '../core/exception_handler'
 require_relative '../core/boxes_manager'
 require_relative '../core/session'
 
+BOX = {
+    "provider"=>"aws",
+    "ami"=>"ami-b1443fc6",
+    "user"=>"ubuntu",
+    "default_instance_type"=>"m3.medium",
+    "platform"=>"ubuntu",
+    "platform_version"=>"vivid"
+}
 
+JSON_BOX = BOX.to_json + "\n"
 
 describe 'BoxesManager' do
 
@@ -27,25 +37,30 @@ describe 'BoxesManager' do
   # that can be accessed through ssh
 
   it '#getBoxByConfig return json with box definition' do
-    $session.boxes.getBoxByConfig(ENV['configPath'], ENV['nodeName'])
-             .should(eql({
-                             "provider"=>"aws",
-                             "ami"=>"ami-b1443fc6",
-                             "user"=>"ubuntu",
-                             "default_instance_type"=>"m3.medium",
-                             "platform"=>"ubuntu",
-                             "platform_version"=>"vivid"
-                         }))
+    $session.boxes.getBoxByConfig(ENV['configPath'], ENV['nodeName']).should(eql(BOX))
   end
 
   it '#getBoxByConfig return nil for wrong configPath' do
     lambda {$session.boxes.getBoxByConfig('WRONG', ENV['nodeName'])}
-        .should(raise_error("ERROR:  Wrong config path or json implementation for WRONG"))
+        .should(raise_error("Wrong config path or json implementation for WRONG"))
   end
 
   it '#getBoxByConfig return nil for wrong nodeName' do
     lambda {$session.boxes.getBoxByConfig(ENV['configPath'], 'WRONG')}
-        .should(raise_error("ERROR:  Node WRONG is not found in confs/mdbci_up_aws_test_config.json"))
+        .should(raise_error("Node WRONG is not found in confs/mdbci_up_aws_test_config.json"))
   end
+
+  it '#showBoxByConfig output json with box definition to stdout' do
+    lambda {$session.showBoxByConfig(ENV['configPath'], ENV['nodeName'])}.should output(JSON_BOX).to_stdout
+  end
+
+  it '#showBoxByConfig return 0' do
+    lambda {$session.showBoxByConfig(ENV['configPath'], ENV['nodeName'])}.eql?(0)
+  end
+
+  it '#showBoxByConfig return 1' do
+    lambda {$session.showBoxByConfig('WRONG', 'WRONG')}.eql?(1)
+  end
+
 
 end
