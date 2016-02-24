@@ -10,6 +10,7 @@ PROVIDER = 'provider'
 PLATFORM = 'platform'
 PLATFORM_VERSION = 'platform_version'
 BOX = 'box'
+BOX_VERSION = 'box_version'
 
 opts = GetoptLong.new(
     [ '--dir', '-d', GetoptLong::REQUIRED_ARGUMENT ],
@@ -56,7 +57,7 @@ puts boxes_dir
 
 # get BOXES/*.json
 boxes = Hash.new
-boxes_files = Dir.glob(boxes_dir + '/' + '*.json', File::FNM_DOTMATCH)
+boxes_files = Dir.glob(boxes_dir.to_s + '/' + '*.json', File::FNM_DOTMATCH)
 boxes_files.each do |boxes_file|
   boxes_json = JSON.parse(File.read boxes_file)
   boxes = boxes.merge boxes_json
@@ -68,19 +69,30 @@ puts boxes_quantity
 boxes_paths = Array.new
 
 boxes_counter = 0
+box_atlas_url = ''
 boxes.each do |box|
-  box_params = box[1][BOX].split('/')
-  box_atlas_url = 'https://atlas.hashicorp.com/'+box_params[0].to_s+'/boxes/'+box_params[1].to_s
+  box_name = box[1][BOX].to_s
+  box_version = box[1][BOX_VERSION].to_s
+  provider = box[1][PROVIDER].to_s
+
+  # Example box url: https://atlas.hashicorp.com/centos/boxes/7/versions/1601.01/providers/virtualbox.box
+  if box_name =~ /\A#{URI::regexp(['http', 'https'])}\z/
+    box_atlas_url = box_name
+  else
+    box_name = box[1][BOX].to_s.split('/')
+    puts 'BOX ALREADY WITH SMALL URL'
+    box_atlas_url = "https://atlas.hashicorp.com/#{box_name[0]}/boxes/#{box_name[1]}/versions/#{box_version}/providers/#{provider}.box"
+  end
+
   if box_atlas_url =~ /\A#{URI::regexp(['http', 'https'])}\z/
     boxes_counter += 1
-
     puts "INFO: #{boxes_counter}/#{boxes_quantity}, downloading from url: '#{box_atlas_url}'"
 
     url_base = box_atlas_url.split('/')[2]
     p 'url_base ' + url_base.to_s
     url_path = '/'+box_atlas_url.split('/')[3..-1].join('/')
     p 'url_path ' + url_path.to_s
-    provider = box[1][PROVIDER]
+
     platform = box[1][PLATFORM]
     platform_version = box[1][PLATFORM_VERSION]
     box_file_name = url_path.split('/')[-1]
