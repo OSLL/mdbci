@@ -275,7 +275,7 @@ class Session
       @boxes.boxesManager.each do |box|
         platforms.push box[1][PLATFORM]
       end
-      platforms.uniq!
+      platforms.uniq
     else
       raise 'Boxes are not found'
     end
