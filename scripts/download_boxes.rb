@@ -87,17 +87,14 @@ boxes.each do |box|
     puts "INFO: #{boxes_counter}/#{boxes_quantity}, downloading from url: '#{box_atlas_url}'"
 
     url_base = box_atlas_url.split('/')[2]
-    p 'url_base ' + url_base.to_s
     url_path = '/'+box_atlas_url.split('/')[3..-1].join('/')
-    p 'url_path ' + url_path.to_s
 
     platform = box[1][PLATFORM]
     platform_version = box[1][PLATFORM_VERSION]
     box_file_name = url_path.split('/')[-1]
 
-    downloaded_box_dir = File.absolute_path([dir, provider, platform, platform_version].join('/'))
+    downloaded_box_dir = File.absolute_path([dir, provider, platform, platform_version, box_version].join('/'))
     downloaded_box_path = File.absolute_path([downloaded_box_dir, box_file_name].join('/'))
-
     boxes_paths.push downloaded_box_path
 
     puts "INFO: Box will be stored in '#{downloaded_box_path}'"
@@ -116,20 +113,13 @@ boxes.each do |box|
       FileUtils.mkpath downloaded_box_dir
     end
 
-    counter = 0
-    Net::HTTP.start(url_base) do |http|
-      response = http.request_head(URI.escape(url_path))
-      # TODO: fix #6841 ProgressBar error
-      # pbar = ProgressBar.new(box_file_name, response['content-length'].to_i)
-      File.open(downloaded_box_path, 'w') do |f|
-        http.get(URI.escape(url_path)) do |str|
-          f.write str
-          counter += str.length
-          #pbar.set(counter)
-        end
-      end
-      #pbar.finish
-    end
+    # download boxes by curl
+    get_redirect_url_cmd = 'curl '+box_atlas_url
+    redirect_vagrant_out = `#{get_redirect_url_cmd}`
+    box_redirect_url = redirect_vagrant_out.split(/"(.*?)"/)[1]
+    download_box_url_cmd = 'curl '+box_redirect_url+' > '+downloaded_box_path
+    download_vagrant_out = `#{download_box_url_cmd}`
+    puts download_vagrant_out
 
     puts "INFO: Box loaded successefully"
   else
