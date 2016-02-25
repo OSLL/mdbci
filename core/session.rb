@@ -283,7 +283,7 @@ class Session
   
   def showPlatforms
       $out.out getPlatfroms
-      0
+      return 0
   end
 
   # show boxes with platform and version
