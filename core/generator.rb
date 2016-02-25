@@ -100,7 +100,7 @@ Vagrant.configure(2) do |config|
       templatedef = ''
     end
     # ssh.pty option
-    ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
+    if ssh_pty == "true"; ssh_pty_option = "\tconfig.ssh.pty = true"; else ssh_pty_option = ''; end
 
     vmdef = "\n#  --> Begin definition for machine: " + name +"\n"\
             "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
@@ -135,7 +135,7 @@ Vagrant.configure(2) do |config|
       templatedef = ''
     end
     # ssh.pty option
-    ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
+    if ssh_pty == "true"; ssh_pty_option = "\tconfig.ssh.pty = true"; else ssh_pty_option = ''; end
 
     qemudef = "\n#  --> Begin definition for machine: " + name +"\n"\
             + "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
@@ -167,7 +167,7 @@ Vagrant.configure(2) do |config|
       templatedef = ""
     end
     # ssh.pty option
-    ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
+    if ssh_pty == "true"; ssh_pty_option = "\tconfig.ssh.pty = true"; else ssh_pty_option = ''; end
 
     dockerdef = "\n#  --> Begin definition for machine: " + name +"\n"\
             + "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
@@ -235,7 +235,7 @@ Vagrant.configure(2) do |config|
       mountdef = ''
     end
     # ssh.pty option
-    ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
+    if ssh_pty == "true"; ssh_pty_option = "\tconfig.ssh.pty = true"; else ssh_pty_option = ''; end
 
     awsdef = "\n#  --> Begin definition for machine: " + name +"\n"\
            + "config.vm.define :"+ name +" do |" + name + "|\n" \
@@ -418,7 +418,7 @@ def Generator.checkPath(path, override)
       # ssh_pty option
       if !box_params['ssh_pty'].nil?
         ssh_pty = box_params['ssh_pty']
-        $out.info 'SSH_PTY option is ' + ssh_pty.to_s + 'for a box ' + box.to_s
+        $out.info 'config.ssh.pty option is ' + ssh_pty.to_s + ' for a box ' + box.to_s
       end
     end
 
