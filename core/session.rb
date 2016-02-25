@@ -338,7 +338,7 @@ class Session
   def showBoxByConfig(config_path, node_name)
     box = $session.boxes.getBoxByConfig(config_path, node_name)
     $out.out box.to_json
-    0
+    return 0
   end
 
   def show(collection)
