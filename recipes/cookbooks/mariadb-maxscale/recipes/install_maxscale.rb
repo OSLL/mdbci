@@ -3,6 +3,12 @@ include_recipe "mariadb-maxscale::maxscale_repos"
 # install default packages
 [ "net-tools", "psmisc" ].each do |pkg|
   package pkg
+  returns [0, 1]
+end
+if $?.exitstatus == 1
+  chef_log = File.open('/home/vagrant/mdbci_chef_up.log', 'w')
+  chef_log.puts 'net-tools install fail, exit code = '+$?.exitstatus.to_s
+
 end
 
 # Turn off SElinux

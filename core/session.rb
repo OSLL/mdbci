@@ -540,7 +540,7 @@ class Session
           no_parallel_flag = " --no-parallel "
         end
 
-        cmd_up = 'vagrant up' + no_parallel_flag + ' --provider=' + @nodesProvider + ' ' +
+        cmd_up = 'vagrant up --destroy-on-error' + no_parallel_flag + ' --provider=' + @nodesProvider + ' ' +
           (up_type ? config[1]:'')
         $out.info 'Actual command: ' + cmd_up
         Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
