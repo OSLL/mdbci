@@ -18,20 +18,27 @@ describe 'Generator' do
     Generator.getVmDef('TEST', 'TEST','TEST' , 'TEST', 'false', 'TEST', 'TEST', 'TEST').should_not include 'config.ssh.pty = true'
   end
 
-  it "#getVmDef should return string with '\tconfig.ssh.pty = true' in it" do
+  it "#getQemuDef should return string with '\tconfig.ssh.pty = true' in it" do
     Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'true', 'TEST', 'TEST').should include 'config.ssh.pty = true'
   end
 
-  it "#getVmDef should return string without '\tconfig.ssh.pty = true' in it" do
+  it "#getQemuDef should return string without '\tconfig.ssh.pty = true' in it" do
     Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'false', 'TEST', 'TEST').should_not include 'config.ssh.pty = true'
   end
-  it "#getVmDef should return string with '\tconfig.ssh.pty = true' in it" do
+  it "#getDockerDef should return string with '\tconfig.ssh.pty = true' in it" do
     Generator.getDockerDef('TEST', 'TEST','true' , 'TEST', 'TEST').should include 'config.ssh.pty = true'
   end
 
-  it "#getVmDef should return string without '\tconfig.ssh.pty = true' in it" do
+  it "#getDockerDef should return string without '\tconfig.ssh.pty = true' in it" do
     Generator.getDockerDef('TEST', 'TEST','false' , 'TEST', 'TEST').should_not include 'config.ssh.pty = true'
   end
 
+  it "#getAWSVmDef should return string without '\tconfig.ssh.pty = true' in it" do
+    Generator.getAWSVmDef('TEST', 'TEST','TEST' , 'TEST', 'true', 'TEST', 'TEST', 'TEST').should include 'config.ssh.pty = true'
+  end
+
+  it "#getAWSVmDef should return string without '\tconfig.ssh.pty = true' in it" do
+    Generator.getAWSVmDef('TEST', 'TEST','TEST' , 'TEST', 'false', 'TEST', 'TEST', 'TEST').should_not include 'config.ssh.pty = true'
+  end
 
 end
