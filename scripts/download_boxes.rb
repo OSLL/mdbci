@@ -60,6 +60,7 @@ boxes = Hash.new
 boxes_files = Dir.glob(boxes_dir.to_s + '/' + '*.json', File::FNM_DOTMATCH)
 boxes_files.each do |boxes_file|
   boxes_json = JSON.parse(File.read boxes_file)
+  puts boxes_json
   boxes = boxes.merge boxes_json
 end
 
