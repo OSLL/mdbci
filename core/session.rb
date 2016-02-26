@@ -341,15 +341,23 @@ class Session
     return 0
   end
 
+  def showBoxByGeneratedConfig(path)
+    boxes = $session.boxes.getBoxByGeneratedConfig(path)
+    $out.out boxes.to_json
+    return 0
+  end
+
+
+
   def show(collection)
     exit_code = 1
     case collection
       when 'boxes'
         exit_code = showBoxes
-
+      when 'box'
+        exit_code = showBoxByGeneratedConfig(ARGV.shift)
       when 'boxinfo'
         exit_code = showBoxField
-
       when 'repos'
         @repos.show
       when 'versions'
