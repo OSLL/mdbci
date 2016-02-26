@@ -69,6 +69,8 @@ EXAMPLES:
   mdbci show versions --platform ubuntu
   mdbci show boxes --platform centos
   mdbci show boxes --platform ubuntu --platform-version trusty
+  mdbci show versions --platform ubuntu
+  mdbci show box T[/node]
   mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
   mdbci ssh --command "cat script.sh" T/node1
   mdbci --repo-dir /home/testbed/config/repos show repos
