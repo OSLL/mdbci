@@ -15,6 +15,8 @@ opts = GetoptLong.new(
     ['--template', '-t', GetoptLong::REQUIRED_ARGUMENT],
     ['--command', '-c', GetoptLong::REQUIRED_ARGUMENT],
     ['--boxes', '-b', GetoptLong::REQUIRED_ARGUMENT],
+    ['--box-name', '-n', GetoptLong::REQUIRED_ARGUMENT],
+    ['--field', '-f', GetoptLong::REQUIRED_ARGUMENT],
     ['--override', '-w', GetoptLong::NO_ARGUMENT],
     ['--silent', '-s', GetoptLong::NO_ARGUMENT],
     ['--repo-dir','-r',GetoptLong::REQUIRED_ARGUMENT],
@@ -34,15 +36,27 @@ $exception_handler = ExceptionHandler.new
 
 $out = Out.new
 
+
 opts.each do |opt, arg|
   case opt
+    when '--silent'
+      $session.isSilent = true
+
     when '--template'
       if arg != ''; $session.configFile = arg; end
-      $out.info 'Using template name '+$session.configFile
+#      $out.info 'Using template name '+$session.configFile
 
     when '--boxes'
       if arg != ''; $session.boxesFile = arg; end
-      $out.info 'Using boxes name '+$session.boxesFile
+#      $out.info 'Using boxes name '+$session.boxesFile
+
+    when '--box-name'
+      if arg != ''; $session.boxName = arg; end
+#      $out.info 'Using boxes name '+ $session.boxName
+
+    when '--field'
+      if arg != ''; $session.field = arg; end
+#      $out.info 'Using boxes field '+$session.field
 
     when '--help'
       Help.display
@@ -53,9 +67,6 @@ opts.each do |opt, arg|
 
     when '--command'
       $session.command = arg
-
-    when '--silent'
-      $session.isSilent = true
 
     when '--repo-dir'
       $session.repoDir = arg
@@ -71,7 +82,7 @@ opts.each do |opt, arg|
 
     when '--key'
       if arg != ''; $session.keyFile = arg; end
-      $out.info 'Using keyfile '+$session.keyFile
+#      $out.info 'Using keyfile '+$session.keyFile
 
     when '--platform'
       if arg != ''; $session.boxPlatform = arg; end
@@ -96,5 +107,13 @@ $session.checkConfig
 $session.loadCollections
 
 # run commands and return 0 for success, 1 for error
-exit_code = $session.commands
-if exit_code != 0; exit 1; else; 0; end
+
+begin
+  exit_code = $session.commands
+rescue Exception => error
+  $out.error error.backtrace.join("\n")
+  $out.error error.to_s
+  exit_code =  1
+end
+
+exit exit_code
