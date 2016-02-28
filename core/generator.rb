@@ -1,5 +1,7 @@
 require 'date'
 require 'fileutils'
+require 'net/http'
+require 'uri'
 
 require_relative '../core/out'
 
@@ -259,6 +261,15 @@ Vagrant.configure(2) do |config|
     return awsdef
   end
 
+  def Generator.checkRepo(repo, repoName)
+    url = repo['repo']
+    uri = URI.parse(url)
+    response = nil
+    Net::HTTP.start(uri.host, uri.port) { |http|
+      response = http.head(uri.path.size > 0 ? uri.path : "/")
+    }
+    raise "Repo link #{url} for #{repoName} is dead" if response.code == "404"
+  end
 
   def Generator.getRoleDef(name, product, box)
 
@@ -282,7 +293,7 @@ Vagrant.configure(2) do |config|
 
       $out.info 'Repo specified ['+repoName.to_s+'] (CORRECT), other product params will be ignored'
       repo = $session.repos.getRepo(repoName)
-
+      checkRepo(repo, repoName)
       product_name = $session.repos.productName(repoName)
     else
       product_name = product['name']
@@ -296,6 +307,10 @@ Vagrant.configure(2) do |config|
 
       if repo.nil?
         repo = $session.repos.findRepo(product_name, product, box)
+        version = (product['version'].nil? ? 'default' : product['version']);
+        platform = $session.platformKey(box)
+        repoName = product_name+'@'+version+'+'+ platform
+        checkRepo(repo, repoName)
       end
 
       if repo.nil?
