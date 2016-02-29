@@ -383,6 +383,12 @@ mdbci [options] <show | setup | generate>
 -b, --boxes [boxes file]:
   Use [boxes file] for existing boxes. By default 'boxes.json'  will be used as boxes file.
 
+-n, --box-name [box name]:
+  Use [box name] for existing box names.
+
+-f, --field [box config field]:
+  Use [box config field] for existing box config field.
+
 -w, --override
   Override previous configuration 
 
@@ -403,7 +409,7 @@ mdbci [options] <show | setup | generate>
 
 ### Commands:
 
-  show [boxes, platforms, versions, network, repos [config | config/node], keyfile [config/node] ]
+  show [boxes, boxinfo, platforms, versions, network, repos [config | config/node], keyfile [config/node] ]
   
   generate
   
@@ -426,6 +432,7 @@ mdbci [options] <show | setup | generate>
 Run command inside of VM
 
 ```
+  ./mdbci show versions --platform ubuntu
   ./mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
   ./mdbci ssh --command "cat anaconda.syslog" T/node0 --silent
   ./mdbci setup_repo --product maxscale T/node0

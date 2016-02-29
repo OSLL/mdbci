@@ -16,6 +16,12 @@ mdbci [option] <show | setup | generate>
 -b, --boxes [boxes file]:
   Uses [boxes file] for existing boxes. By default 'boxes.json'  will be used as boxes file.
 
+-n, --box-name [box name]:
+  Use [box name] for existing box names.
+
+-f, --field [box config field]:
+  Use [box config field] for existing box config field.
+
 -w, --override
   Override previous configuration
 
@@ -60,6 +66,7 @@ COMMANDS:
 
 
 EXAMPLES:
+  mdbci show versions --platform ubuntu
   mdbci show boxes --platform centos
   mdbci show boxes --platform ubuntu --platform-version trusty
   mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
