@@ -16,7 +16,7 @@
   "galera1" : 
   {
     "hostname" : "galera1",
-    "box" : "centos7_aws",
+    "box" : "centos_7_aws",
     "product" : {
       "name": "galera",
       "version": "10.0",
@@ -28,7 +28,7 @@
   "galera2" : 
   {
     "hostname" : "galera1",
-    "box" : "rhel7_aws",
+    "box" : "rhel_7_aws",
     "product" : {
       "name": "galera",
       "version": "10.0",
