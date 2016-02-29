@@ -1,5 +1,8 @@
 #
-#
+# install default packages
+[ "net-tools", "psmisc" ].each do |pkg|
+  package pkg
+end
 #
 case node[:platform_family]
   when "debian", "ubuntu", "mint"
