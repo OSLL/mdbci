@@ -263,12 +263,31 @@ Vagrant.configure(2) do |config|
 
   def Generator.checkRepo(repo, repoName)
     url = repo['repo']
-    uri = URI.parse(url)
-    response = nil
-    Net::HTTP.start(uri.host, uri.port) { |http|
-      response = http.head(uri.path.size > 0 ? uri.path : "/")
-    }
-    raise "Repo link #{url} for #{repoName} is dead" if response.code == "404"
+    $out.info "Checking repo link #{url}"
+    $out.info 'Next links will be checked: '
+    urls = Array.new
+    if url.include? '$basearch'
+      url.sub! '$basearch', 'x86_64/repodata/'
+      urls.push url
+    elsif url.include? ' '
+      url_parts = url.split '/'
+      version = url_parts[-1].split ' '
+      url_base = url.sub url_parts[-1], ''
+      url = [url_base, version[0], 'dists', version[1..-1], 'binary-amd64'].join '/'
+      urls.push url
+      url = [url_base, version[0], 'dists', version[1..-1], 'binary-i386'].join '/'
+      urls.push url
+    end
+    urls.each do |u|
+      $out.info u
+      uri = URI.parse(u)
+      response = nil
+      Net::HTTP.start(uri.host, uri.port) { |http|
+        response = http.head(uri.path.size > 0 ? uri.path : "/")
+      }
+      raise "Repo link #{u} for #{repoName} is dead" if response.code == "404"
+      $out.info 'Repo link is alive'
+    end
   end
 
   def Generator.getRoleDef(name, product, box)
