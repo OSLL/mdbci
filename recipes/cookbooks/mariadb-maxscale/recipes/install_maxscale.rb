@@ -1,48 +1,49 @@
 include_recipe "mariadb-maxscale::maxscale_repos"
 
 # install default packages
-begin
-  [ "net-tools", "psmisc" ].each do |pkg|
-    package pkg do
-      ignore_failure true
-    end
-  end
-rescue
-  # trying solutions with disabling repositories
-  case node[:platform_family]
-    when "debian", "ubuntu"
-      execute "Disabling repository maxscale on suse" do
-        command "mv /etc/apt/sources.list.d/maxscale.list /etc/apt/sources.list.d/maxscale.list.backup"
-      end
-      [ "net-tools", "psmisc" ].each do |pkg|
-        apt_package pkg do
-          action :install
-          options "--fix-broken"
-        end
-      end
-      execute "Enabling repository maxscale on suse" do
-        command "mv /etc/apt/sources.list.d/maxscale.list.backup /etc/apt/sources.list.d/maxscale.list"
-      end
-    when "rhel", "fedora", "centos"
-      [ "net-tools", "psmisc" ].each do |pkg|
-        yum_package pkg do
-          action :install
-          options "--disablerepo=maxscale"
-        end
-      end
-    when "suse"
-      execute "Disabling repository maxscale on suse" do
-        command "zypper mr -d maxscale"
-      end
-      [ "net-tools", "psmisc" ].each do |pkg|
-        package pkg
-      end
-      execute "Enabling repository maxscale on suse" do
-        command "zypper mr -e maxscale"
-      end
+[ "net-tools", "psmisc" ].each do |pkg|
+  package pkg do
+    ignore_failure true
   end
 end
 
+Chef.event_handler do
+  on :resource_failed do
+    # trying solutions with disabling repositories
+    case node[:platform_family]
+      when "debian", "ubuntu"
+        execute "Disabling repository maxscale on suse" do
+          command "mv /etc/apt/sources.list.d/maxscale.list /etc/apt/sources.list.d/maxscale.list.backup"
+        end
+        [ "net-tools", "psmisc" ].each do |pkg|
+          apt_package pkg do
+            action :install
+            options "--fix-broken"
+          end
+        end
+        execute "Enabling repository maxscale on suse" do
+          command "mv /etc/apt/sources.list.d/maxscale.list.backup /etc/apt/sources.list.d/maxscale.list"
+        end
+      when "rhel", "fedora", "centos"
+        [ "net-tools", "psmisc" ].each do |pkg|
+          yum_package pkg do
+            action :install
+            options "--disablerepo=maxscale"
+          end
+        end
+      when "suse"
+        execute "Disabling repository maxscale on suse" do
+          command "zypper mr -d maxscale"
+        end
+        [ "net-tools", "psmisc" ].each do |pkg|
+          package pkg
+        end
+        execute "Enabling repository maxscale on suse" do
+          command "zypper mr -e maxscale"
+        end
+    end
+  end
+end
 
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
