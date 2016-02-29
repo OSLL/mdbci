@@ -551,11 +551,22 @@ class Session
   	    end
 
         if exit_code != 0
-          $out.info "Checking for all nodes to be started"
-          all_machines_started = true
-          invalid_states = ["not created", "poweroff"]
           Dir.glob('*.json', File::FNM_DOTMATCH) do |f|
             machine_name = f.chomp! ".json"
+
+            $out.info "Checking Chef log for failed nodes"
+            $out.info "Node name: #{machine_name}"
+            chef_log_file = "#{machine_name}_chef_up.log"
+            $out.info "Chef log: #{chef_log_file}"
+            chef_log_cmd = "vagrant ssh #{machine_name} -c \"cat /home/vagrant/#{chef_log_file}\""
+            vagrant_out = `#{chef_log_cmd}`
+            $out.info "Chef log for #{machine_name} node:"
+            $out.info "#{vagrant_out}"
+
+
+            $out.info "Checking for all nodes to be started"
+            all_machines_started = true
+            invalid_states = ["not created", "poweroff"]
             status = `vagrant status #{machine_name}`.split("\n")[2]
             invalid_states.each do |state|
               if status.include? state
@@ -563,6 +574,7 @@ class Session
                 $out.error "Machine #{machine_name} is in #{state} state"
               end
             end
+
           end
 
           if i == @attempts && !all_machines_started

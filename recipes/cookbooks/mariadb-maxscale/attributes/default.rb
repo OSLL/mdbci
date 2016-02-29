@@ -1,5 +1,8 @@
 # attributes/default.rb
 
+# maxscale default node name
+default["maxscale"]["node_name"] = 'maxscale'
+
 # maxscale version
 default["maxscale"]["version"] = "1.1.0"
 

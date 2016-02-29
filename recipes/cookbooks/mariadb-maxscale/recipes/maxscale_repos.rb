@@ -1,12 +1,11 @@
 
-require 'fileutils'
 #
 # Chef up log file
 #
-file "/home/vagrant/sync/#{node.name}_chef_up.log" do
+file "/home/vagrant/"+node['maxscale']['node_name']+"_chef_up.log" do
   owner 'vagrant'
   group 'vagrant'
-  mode '0644'
+  mode '0664'
   action :create
 end
 #
@@ -22,9 +21,7 @@ end
           puts "net-tools: DEBIAN OS"
         when "rhel", "fedora", "centos"
           status = system("yum whatprovides ifconfig")
-          if status == false
-            raise "#{pkg} package or some product repo exception: not found"
-          end
+          raise "#{pkg} package or some product repo exception: not found" if status == false
       end
     end
   end
@@ -65,19 +62,23 @@ case node[:platform_family]
     action :create
   end
 
+  # Update maxscale repo
   execute "update" do
     command "yum update maxscale"
     not_if do
       status = system("rpm -qa | grep 'maxscale'")
       if status == false
-        chef_log = File.open("/home/vagrant/sync/#{node.name}_chef_up.log", "w")
-        chef_log.puts "#{node.name} : maxscale package not found : exit status = "+ (status.to_s == "true" ? "1" : "0")
+        # move to separate file logger.rb or use chef_handler cookbook
+        chef_log = File.open("/home/vagrant/"+node['maxscale']['node_name']+"_chef_up.log", "w")
+        unless chef_log.nil?
+          chef_log.puts node['maxscale']['node_name']+":maxscale package not found:exit code:"+(status == true ? "1" : "0")
+        end
         chef_log.close
-        #FileUtils.cp("/home/vagrant/sync/#{node.name}_chef_up.log", "/vagrant/#{node.name}_chef_up.log")
-        raise "mariadb-maxscale package not found!"
+        #raise "mariadb-maxscale package not found! Please check product repo!"
       end
     end
   end
+
 
   when "suse", "opensuse", "sles"
 
