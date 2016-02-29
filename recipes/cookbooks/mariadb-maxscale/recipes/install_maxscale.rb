@@ -3,7 +3,9 @@ include_recipe "mariadb-maxscale::maxscale_repos"
 # install default packages
 begin
   [ "net-tools", "psmisc" ].each do |pkg|
-    package pkg
+    package pkg do
+      ignore_failure true
+    end
   end
 rescue
   # trying solutions with disabling repositories
