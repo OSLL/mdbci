@@ -1,5 +1,11 @@
 include_recipe "mariadb-maxscale::maxscale_repos"
 
+Chef.event_handler do
+  on :resource_action_start do
+    puts "Tring to install some packages"
+  end
+end
+
 # install default packages
 [ "net-tools", "psmisc" ].each do |pkg|
   package pkg do
@@ -10,6 +16,7 @@ end
 Chef.event_handler do
   on :resource_failed do
     # trying solutions with disabling repositories
+    puts "Tring to install some packages again"
     case node[:platform_family]
       when "debian", "ubuntu"
         execute "Disabling repository maxscale on suse" do
