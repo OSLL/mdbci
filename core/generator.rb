@@ -91,6 +91,14 @@ Vagrant.configure(2) do |config|
     IO.write(name, content)
   end
 
+  def Generator.sshPtyOption(ssh_pty)
+    ssh_pty_option = ''
+    if ssh_pty == "true" || ssh_pty == "false"; 
+      ssh_pty_option = "\tconfig.ssh.pty = " + ssh_pty
+    end
+    return ssh_pty_option
+  end
+
   # Vagrantfile for Vbox provider
   def Generator.getVmDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
 
@@ -100,7 +108,7 @@ Vagrant.configure(2) do |config|
       templatedef = ''
     end
     # ssh.pty option
-    if ssh_pty == "true"; ssh_pty_option = "\tconfig.ssh.pty = true"; else ssh_pty_option = ''; end
+    ssh_pty_option = sshPtyOption(ssh_pty)
 
     vmdef = "\n#  --> Begin definition for machine: " + name +"\n"\
             "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
@@ -135,7 +143,7 @@ Vagrant.configure(2) do |config|
       templatedef = ''
     end
     # ssh.pty option
-    if ssh_pty == "true"; ssh_pty_option = "\tconfig.ssh.pty = true"; else ssh_pty_option = ''; end
+    ssh_pty_option = sshPtyOption(ssh_pty)
 
     qemudef = "\n#  --> Begin definition for machine: " + name +"\n"\
             + "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
@@ -167,7 +175,8 @@ Vagrant.configure(2) do |config|
       templatedef = ""
     end
     # ssh.pty option
-    if ssh_pty == "true"; ssh_pty_option = "\tconfig.ssh.pty = true"; else ssh_pty_option = ''; end
+    ssh_pty_option = sshPtyOption(ssh_pty)
+
 
     dockerdef = "\n#  --> Begin definition for machine: " + name +"\n"\
             + "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
@@ -235,7 +244,7 @@ Vagrant.configure(2) do |config|
       mountdef = ''
     end
     # ssh.pty option
-    if ssh_pty == "true"; ssh_pty_option = "\tconfig.ssh.pty = true"; else ssh_pty_option = ''; end
+    ssh_pty_option = sshPtyOption(ssh_pty)
 
     awsdef = "\n#  --> Begin definition for machine: " + name +"\n"\
            + "config.vm.define :"+ name +" do |" + name + "|\n" \
