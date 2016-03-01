@@ -554,16 +554,6 @@ class Session
           Dir.glob('*.json', File::FNM_DOTMATCH) do |f|
             machine_name = f.chomp! ".json"
 
-            $out.info "Checking Chef log for failed nodes"
-            $out.info "Node name: #{machine_name}"
-            chef_log_file = "#{machine_name}_chef_up.log"
-            $out.info "Chef log: #{chef_log_file}"
-            chef_log_cmd = "vagrant ssh #{machine_name} -c \"cat /home/vagrant/#{chef_log_file}\""
-            vagrant_out = `#{chef_log_cmd}`
-            $out.info "Chef log for #{machine_name} node:"
-            $out.info "#{vagrant_out}"
-
-
             $out.info "Checking for all nodes to be started"
             all_machines_started = true
             invalid_states = ["not created", "poweroff"]
@@ -574,6 +564,26 @@ class Session
                 $out.error "Machine #{machine_name} is in #{state} state"
               end
             end
+
+            # Chef logging
+            $out.info "Chef logging for failed #{machine_name} node"
+            chef_log_file = "#{machine_name}_chef_up.log"
+            $out.info "Chef log file: #{chef_log_file}"
+            chef_log_cmd = "vagrant ssh #{machine_name} -c \"cat /home/vagrant/#{chef_log_file}\""
+            chef_log_out = `#{chef_log_cmd}`
+            $out.info "Chef log for #{machine_name} node:"
+            $out.info "#{chef_log_out}"
+            chef_log_node = chef_log_out.split(":")[0] # node name
+
+            # 6830 first solution
+            destroy_cmd = `vagrant destroy #{chef_log_node}`
+            $out.info "#{destroy_cmd}"
+            up_cmd = `vagrant up #{chef_log_node}`
+            $out.info "#{up_cmd}"
+
+            # 6830 second solution
+            #provision_cmd = `vagrant provision #{chef_log_node}`
+            #$out.info "#{provision_cmd}"
 
           end
 
