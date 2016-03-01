@@ -1,0 +1,32 @@
+- job:
+    name: sync-boxes-repo 
+    description: 'This job performs synchronization for boxes repo.'
+    parameters:
+        - string:
+            name: REPO_PATH
+            default: /home/boxes_repo
+            description:  'Directory for boxes path.'
+    scm:
+        - git:
+            url: git@github.com:OSLL/mdbci.git 
+            branches:
+                - master
+    builders:
+        - shell: 
+            './scripts/download_boxes.rb  --dir $REPO_PATH --boxes-dir ./BOXES/'
+    publishers:
+        - email-ext:
+            recipients: $DEFAULT_RECIPIENTS
+            reply-to: $DEFAULT_REPLYTO
+            content-type: default
+            subject: $DEFAULT_SUBJECT
+            body: $DEFAULT_CONTENT
+            attach-build-log: false
+            always: true
+            aborted: true
+            failure: true
+            still-failing: true
+            success: true
+            fixed: true
+            send-to:
+               - recipients
