@@ -6,14 +6,20 @@
             name: REPO_PATH
             default: /home/boxes_repo
             description:  'Directory for boxes path.'
+        - string:
+            name: BOXES_JSON_PATH
+            default: /home/vagrant/mdbci/BOXES/
+            description:  'Directory for box descriptions.'
     scm:
         - git:
             url: git@github.com:OSLL/mdbci.git 
             branches:
-                - master
+                - 6785_boxes_repo
     builders:
         - shell: 
-            './scripts/download_boxes.rb  --dir $REPO_PATH --boxes-dir ./BOXES/'
+            'rm -rf $REPO_PATH/*'
+        - shell: 
+            './scripts/download_boxes.rb  --dir $REPO_PATH --boxes-dir $BOXES_JSON_PATH'
     publishers:
         - email-ext:
             recipients: $DEFAULT_RECIPIENTS
