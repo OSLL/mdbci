@@ -261,8 +261,7 @@ Vagrant.configure(2) do |config|
     return awsdef
   end
 
-  def Generator.checkRepo(repo, repoName)
-    url = repo['repo']
+  def Generator.proceedRepoLink(url)
     $out.info "Checking repo link #{url}"
     $out.info 'Next links will be checked: '
     urls = Array.new
@@ -277,17 +276,33 @@ Vagrant.configure(2) do |config|
       urls.push url
       url = [url_base, version[0], 'dists', version[1..-1], 'binary-i386'].join '/'
       urls.push url
+    else
+      urls.push url
     end
+    return urls
+  end
+
+  def Generator.checkRepoLinks(urls, repoName)
     urls.each do |u|
       $out.info u
       uri = URI.parse(u)
       response = nil
-      Net::HTTP.start(uri.host, uri.port) { |http|
-        response = http.head(uri.path.size > 0 ? uri.path : "/")
-      }
+      begin
+        Net::HTTP.start(uri.host, uri.port) do |http|
+          response = http.head(uri.path.size > 0 ? uri.path : "/")
+        end
+      rescue
+        raise "Inernet connection error, check it and try again"
+      end
       raise "Repo link #{u} for #{repoName} is dead" if response.code == "404"
       $out.info 'Repo link is alive'
     end
+  end
+
+  def Generator.checkRepo(repo, repoName)
+    url = repo['repo']
+    urls = proceedRepoLink url
+    checkRepoLinks urls, repoName
   end
 
   def Generator.getRoleDef(name, product, box)
