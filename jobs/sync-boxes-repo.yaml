@@ -19,7 +19,7 @@
         - shell: 
             'rm -rf $REPO_PATH/*'
         - shell: 
-            './scripts/download_boxes.rb  --dir $REPO_PATH --boxes-dir $BOXES_JSON_PATH'
+            './scripts/download_boxes.rb --force --dir $REPO_PATH --boxes-dir $BOXES_JSON_PATH'
     publishers:
         - email-ext:
             recipients: $DEFAULT_RECIPIENTS
