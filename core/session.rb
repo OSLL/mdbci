@@ -356,6 +356,10 @@ class Session
     return 0
   end
 
+  def showBoxNameByPath(path)
+    $out.out getBoxNameByConfig(config_path, node_name)
+    return 0 
+  end
 
 
   def show(collection)
