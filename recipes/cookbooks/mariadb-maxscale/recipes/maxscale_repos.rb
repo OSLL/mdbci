@@ -18,13 +18,32 @@ end
       case node[:platform_family]
         when "debian", "ubuntu"
           status = system("dpkg -s net-tools")
-          raise "#{pkg} package or some product repo not found" if status == false
+          if status == false
+            # move to separate file logger.rb or use chef_handler cookbook
+            chef_log = File.open("/home/vagrant/"+node['maxscale']['node_name']+"_chef_up.log", "w")
+            unless chef_log.nil?
+              chef_log.puts node['maxscale']['node_name']+":apt:#{pkg} package not found:exit code:"+(status == true ? "0" : "1")
+            end
+            chef_log.close
+          end
         when "rhel", "fedora", "centos"
           status = system("rpm -qa | grep 'net-tools'")
-          raise "#{pkg} package or some product repo not found" if status == false
+          if status == false
+            chef_log = File.open("/home/vagrant/"+node['maxscale']['node_name']+"_chef_up.log", "w")
+            unless chef_log.nil?
+              chef_log.puts node['maxscale']['node_name']+":rpm:#{pkg} package not found:exit code:"+(status == true ? "0" : "1")
+            end
+            chef_log.close
+          end
         when "opensuse", "sles", "suse"
           status = system("rpm -qa | grep 'net-tools'")
-          raise "#{pkg} package or some product repo not found" if status == false
+          if status == false
+            chef_log = File.open("/home/vagrant/"+node['maxscale']['node_name']+"_chef_up.log", "w")
+            unless chef_log.nil?
+              chef_log.puts node['maxscale']['node_name']+":zypper:#{pkg} package not found:exit code:"+(status == true ? "0" : "1")
+            end
+            chef_log.close
+          end
       end
     end
   end

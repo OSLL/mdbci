@@ -556,35 +556,30 @@ class Session
 
             $out.info "Checking for all nodes to be started"
             all_machines_started = true
-            invalid_states = ["not created", "poweroff"]
             status = `vagrant status #{machine_name}`.split("\n")[2]
-            invalid_states.each do |state|
-              if status.include? state
-                all_machines_started = false
-                $out.error "Machine #{machine_name} is in #{state} state"
-              end
+            if status.include? 'running'
+              all_machines_started = false
+              $out.error "Machine #{machine_name} isn't in 'running' state"
             end
 
+            # TODO: add chef log to other recipes
             # Chef logging
-            $out.info "Chef logging for failed #{machine_name} node"
+            $out.info "Checking Chef log for failed nodes"
+            $out.info "Node name: #{machine_name}"
             chef_log_file = "#{machine_name}_chef_up.log"
-            $out.info "Chef log file: #{chef_log_file}"
+            $out.info "Chef log: #{chef_log_file}"
             chef_log_cmd = "vagrant ssh #{machine_name} -c \"cat /home/vagrant/#{chef_log_file}\""
             chef_log_out = `#{chef_log_cmd}`
             $out.info "Chef log for #{machine_name} node:"
             $out.info "#{chef_log_out}"
             chef_log_node = chef_log_out.split(":")[0] # node name
-
-            # 6830 first solution
-            destroy_cmd = `vagrant destroy #{chef_log_node}`
-            $out.info "#{destroy_cmd}"
-            up_cmd = `vagrant up #{chef_log_node}`
-            $out.info "#{up_cmd}"
-
-            # 6830 second solution
-            #provision_cmd = `vagrant provision #{chef_log_node}`
-            #$out.info "#{provision_cmd}"
-
+            chef_status = chef_log_out.split(":")[4] # chef status
+            $out.info "Chef log status: #{chef_status}"
+            # reprovision failed chef node
+            provision_cmd = `vagrant provision #{chef_log_node}`
+            $out.info "#{provision_cmd}"
+            chef_exit_code = $?.exitstatus
+            raise "Chef failed on #{chef_log_node} node" if chef_exit_code != 0
           end
 
           if i == @attempts && !all_machines_started
