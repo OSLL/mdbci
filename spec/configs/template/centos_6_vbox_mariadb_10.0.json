@@ -1,0 +1,13 @@
+{
+  "node0": {
+    "hostname": "test_node",
+    "box": "centos_6_vbox",
+    "product" : {
+      "name": "mariadb",
+      "version": "10.0",
+      "cnf_template" : "server1.cnf",
+      "cnf_template_path" : "../cnf",
+      "node_name" : "test_node"
+    }
+  }
+}
