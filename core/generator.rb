@@ -307,7 +307,6 @@ Vagrant.configure(2) do |config|
       config['version'] = repo['version']
       config['repo'] = repo['repo']
       config['repo_key'] = repo['repo_key']
-      config['node_name'] = name
       if !product['cnf_template'].nil? && !product['cnf_template_path'].nil?
         config['cnf_template'] = product['cnf_template']
         config['cnf_template_path'] = product['cnf_template_path']
