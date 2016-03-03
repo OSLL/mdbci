@@ -56,9 +56,9 @@ task :task_6645_public_keys_exit_code, [:pathToConfigToVBOXNode, :pathToConfigTo
 task :task_6646_setup_repo_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_6647_install_product_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_6648_generate_exit_code, [:pathToVBOXConfigFile, :pathToMDBCIConfigFile, :pathToDestination] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
-task :task_generator do |t| RakeTaskManager.new(t).run end
 
 # tests without parameters
+task :task_generator do |t| RakeTaskManager.new(t).run end
 task :task_shell_command_testing_example do |t| RakeTaskManager.new(t).run end
 task :task_6819_show_box_info do |t| RakeTaskManager.new(t).run end
 task :task_6782_show_commands_exit_code do |t| RakeTaskManager.new(t).run end
