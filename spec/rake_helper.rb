@@ -90,9 +90,11 @@ class RakeTaskManager
   def self.get_failed_tests_info
     if @@failed_tests.length == 0
       puts "\nAll tests passed #{@@tests_counter}/#{@@tests_counter}"
+      exit 0
     else
       puts "\nFailed tests #{@@failed_tests_counter}/#{@@tests_counter}:"
       @@failed_tests.each { |line| puts line}
+      exit 1
     end
   end
 
