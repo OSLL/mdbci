@@ -7,6 +7,7 @@ require_relative 'generator'
 require_relative 'network'
 require_relative 'boxes_manager'
 require_relative 'repo_manager'
+require_relative 'out'
 
 
 class Session
@@ -348,7 +349,7 @@ class Session
     exit_code = 1
     case collection
       when 'boxes'
-        exit_code = showBoxes
+        exit_code = BoxesManager.showBoxes
 
       when 'boxinfo'
         exit_code = showBoxField
