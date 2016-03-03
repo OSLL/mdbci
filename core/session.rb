@@ -344,20 +344,10 @@ class Session
     end
   end
 
-  def showBoxByConfig(config_path, node_name)
-    box = $session.boxes.getBoxByConfig(config_path, node_name)
-    $out.out box.to_json
-    return 0
-  end
-
-  def showBoxByGeneratedConfig(path)
-    boxes = $session.boxes.getBoxByGeneratedConfig(path)
-    $out.out boxes.to_json
-    return 0
-  end
 
   def showBoxNameByPath(path)
-    $out.out getBoxNameByConfig(config_path, node_name)
+    boxName = $session.boxes.getBoxNameByPath(path)
+    $out.out boxName
     return 0 
   end
 
@@ -368,7 +358,7 @@ class Session
       when 'boxes'
         exit_code = showBoxes
       when 'box'
-        exit_code = showBoxByGeneratedConfig(ARGV.shift)
+        exit_code = showBoxNameByPath(ARGV.shift)
       when 'boxinfo'
         exit_code = showBoxField
       when 'repos'

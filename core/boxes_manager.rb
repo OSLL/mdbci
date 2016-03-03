@@ -46,10 +46,6 @@ class BoxesManager
 
 
   def getConfigPathAndNameByPath(path)
-    
-  end
-
-  def getBoxByGeneratedConfig(path)
     directories = path.split('/')
     nodes_directory = ''
     node_name = ''
@@ -71,8 +67,15 @@ class BoxesManager
     if !Dir.exists? nodes_directory
       raise 'Path to generated nodes configurations is wrong'
     end
-
     template_path = File.read(nodes_directory + '/' + TEMPLATE)
+    return {"nodes_directory" => nodes_directory, "node_name" => node_name, "template_path" => template_path}
+  end
+
+  def getBoxByGeneratedConfig(path)
+    pathParse = getConfigPathAndNameByPath(path)
+    nodes_directory = pathParse['nodes_directory']
+    node_name = pathParse['node_name']
+    template_path = pathParse['template_path']
     if node_name.empty?
       boxes = Array.new
       Dir.glob(nodes_directory + '/*.json', File::FNM_DOTMATCH) do |f|
@@ -87,23 +90,30 @@ class BoxesManager
     end
   end
 
-  def getBoxNameByConfig(config_path, node_name)
+  def getBoxNameByPath(path)
+    pathParse = getConfigPathAndNameByPath(path)
+    template_path = pathParse['template_path']
+    node_name = pathParse['node_name']
+    return getBoxNameByConfig(template_path, node_name)
+  end
+
+  def getBoxNameByConfig(template_path, node_name)
     config = nil
     begin
-      config = JSON.parse(File.read(config_path))
+      config = JSON.parse(File.read(template_path))
     rescue
-      raise "Wrong config path or json implementation for #{config_path}"
+      raise "Wrong config path or json implementation for #{template_path}"
     end
      
     if !config.has_key?(node_name)
-      raise "Node #{node_name} is not found in #{config_path}"
+      raise "Node #{node_name} is not found in #{template_path}"
     end
 
     return config[node_name]['box']
   end
 
-  def getBoxByConfig(config_path, node_name)
-    name = getBoxNameByConfig(config_path, node_name)
+  def getBoxByConfig(template_path, node_name)
+    name = getBoxNameByConfig(template_path, node_name)
     box = getBox(name)
     raise "Box #{name} is not found" if box == nil
     return box
