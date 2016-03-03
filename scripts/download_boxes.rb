@@ -3,7 +3,7 @@
 require 'json'
 require 'getoptlong'
 require 'net/http'
-require 'progressbar'
+#require 'progressbar'
 require 'fileutils'
 
 PROVIDER = 'provider'
@@ -59,6 +59,10 @@ puts boxes_dir
 boxes = Hash.new
 boxes_files = Dir.glob(boxes_dir.to_s + '/' + '*.json', File::FNM_DOTMATCH)
 boxes_files.each do |boxes_file|
+  puts "Box file: "+boxes_file.to_s
+  next if boxes_file.to_s.include? 'aws'
+  next if boxes_file.to_s.include? 'mdbci'
+  next if boxes_file.to_s.include? 'docker'
   boxes_json = JSON.parse(File.read boxes_file)
   puts boxes_json
   boxes = boxes.merge boxes_json
