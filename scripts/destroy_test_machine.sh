@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 cur_dir=$(pwd)
 cd INNER_TEST_MACHINE
