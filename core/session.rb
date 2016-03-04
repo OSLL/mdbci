@@ -7,6 +7,7 @@ require_relative 'generator'
 require_relative 'network'
 require_relative 'boxes_manager'
 require_relative 'repo_manager'
+require_relative 'out'
 
 
 class Session
@@ -16,6 +17,8 @@ class Session
   attr_accessor :versions
   attr_accessor :configFile
   attr_accessor :boxesFile
+  attr_accessor :boxName
+  attr_accessor :field
   attr_accessor :awsConfig        # aws-config parameters
   attr_accessor :awsConfigFile    # aws-config.yml file
   attr_accessor :awsConfigOption  # path to aws-config.yml in template file
@@ -35,6 +38,8 @@ class Session
   attr_accessor :keyFile
   attr_accessor :boxPlatform
   attr_accessor :boxPlatformVersion
+
+  PLATFORM = 'platform'
 
   def initialize
     @boxesDir = './BOXES'
@@ -266,6 +271,18 @@ class Session
     return exit_code
   end
 
+  def getPlatfroms
+    if !@boxes.boxesManager.empty?
+      platforms = Array.new
+      @boxes.boxesManager.each do |box|
+        platforms.push box[1][PLATFORM]
+      end
+      platforms.uniq
+    else
+      raise 'Boxes are not found'
+    end
+  end
+  
   def showPlatforms
     exit_code = 1
     begin
@@ -275,6 +292,7 @@ class Session
       $out.error "check boxes configuration and try again"
       exit_code = 1
     end
+    $out.out getPlatfroms
     return exit_code
   end
 
@@ -314,11 +332,36 @@ class Session
     return exit_code
   end
 
+  def showBoxField
+    $out.out findBoxField($session.boxName, $session.field)
+    return 0
+  end
+
+  def findBoxField(boxName, field)
+    box = $session.boxes.getBox(boxName)
+    if box == nil
+      raise "Box #{boxName} is not found"
+    end
+
+    if field != nil
+      if !box.has_key?(field)
+        raise "Box #{boxName} does not have #{field} key"
+      end
+      return box[field]
+    else
+      return box.to_json
+    end
+  end
+
   def show(collection)
     exit_code = 1
     case collection
       when 'boxes'
-        exit_code = showBoxes
+        exit_code = BoxesManager.showBoxes
+
+      when 'boxinfo'
+        exit_code = showBoxField
+
       when 'repos'
         @repos.show
       when 'versions'

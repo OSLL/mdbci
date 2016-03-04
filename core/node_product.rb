@@ -347,7 +347,7 @@ class NodeProduct
           box = node[1]['box'].to_s
           if !box.empty?
             mdbci_params = $session.boxes.getBox(box)
-            platform = $session.platformKey(box).split('^')
+            platform = $session.boxes.platformKey(box).split('^')
 
             packages = validateProduct(platform[0], products)
             if packages == nil
@@ -383,7 +383,7 @@ class NodeProduct
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes.getBox(box)
-          platform = $session.platformKey(box).split('^')
+          platform = $session.boxes.platformKey(box).split('^')
 
           packages = validateProduct(platform[0], products)
           if packages == nil
