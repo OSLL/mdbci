@@ -24,15 +24,11 @@
                 - $MDBCI_BRANCH
     builders:
         - shell:
-            'git clean -fd; git reset --hard HEAD'
-        - shell:
             'ln -s $MDBCI_CONFS/aws-config.yml aws-config.yml; ln -s $MDBCI_CONFS/maxscale.pem maxscale.pem'
         - shell:
             'cp $BOXES_JSON_PATH/* ./BOXES'
         - shell:
-            'git fetch origin ${MDBCI_BRANCH#"refs/heads/"}; git checkout ${MDBCI_BRANCH#"refs/heads/"}'
-        - shell:
-              './scripts/run_tests.sh'
+            './scripts/run_tests.sh'
     publishers:
         - email-ext:
             recipients: $DEFAULT_RECIPIENTS
