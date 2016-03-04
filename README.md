@@ -3,6 +3,7 @@
 
 [MDBCI](https://github.com/OSLL/mdbci) is a standard set of tools for testing MariaDb components on the wide set of configurations. The main features of **mdbci** are:
 
+
 * automatic creation of virtual machine set by configuration template
 * automatic deploy MariaDb/Galera and other packages to VM nodes, running configuration procedures
 * support MariaDb repos on all available platforms (more than 300 at the moment)
