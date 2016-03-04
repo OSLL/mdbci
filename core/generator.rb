@@ -1,5 +1,7 @@
 require 'date'
 require 'fileutils'
+require 'net/http'
+require 'uri'
 
 require_relative '../core/out'
 
@@ -268,6 +270,49 @@ Vagrant.configure(2) do |config|
     return awsdef
   end
 
+  def Generator.proceedRepoLink(url)
+    $out.info "Checking repo link #{url}"
+    $out.info 'Next links will be checked: '
+    urls = Array.new
+    if url.include? '$basearch'
+      url.sub! '$basearch', 'x86_64/repodata/'
+      urls.push url
+    elsif url.include? ' '
+      url_parts = url.split '/'
+      version = url_parts[-1].split ' '
+      url_base = url.sub url_parts[-1], ''
+      url = [url_base, version[0], 'dists', version[1..-1], 'binary-amd64'].join '/'
+      urls.push url
+      url = [url_base, version[0], 'dists', version[1..-1], 'binary-i386'].join '/'
+      urls.push url
+    else
+      urls.push url
+    end
+    return urls
+  end
+
+  def Generator.checkRepoLinks(urls, repoName)
+    urls.each do |u|
+      $out.info u
+      uri = URI.parse(u)
+      response = nil
+      begin
+        Net::HTTP.start(uri.host, uri.port) do |http|
+          response = http.head(uri.path.size > 0 ? uri.path : "/")
+        end
+      rescue
+        raise "Inernet connection error, check it and try again"
+      end
+      raise "Repo link #{u} for #{repoName} is dead" if response.code == "404"
+      $out.info 'Repo link is alive'
+    end
+  end
+
+  def Generator.checkRepo(repo, repoName)
+    url = repo['repo']
+    urls = proceedRepoLink url
+    checkRepoLinks urls, repoName
+  end
 
   def Generator.getRoleDef(name, product, box)
 
@@ -291,7 +336,7 @@ Vagrant.configure(2) do |config|
 
       $out.info 'Repo specified ['+repoName.to_s+'] (CORRECT), other product params will be ignored'
       repo = $session.repos.getRepo(repoName)
-
+      checkRepo(repo, repoName)
       product_name = $session.repos.productName(repoName)
     else
       product_name = product['name']
@@ -305,6 +350,10 @@ Vagrant.configure(2) do |config|
 
       if repo.nil?
         repo = $session.repos.findRepo(product_name, product, box)
+        version = (product['version'].nil? ? 'default' : product['version']);
+        platform = $session.platformKey(box)
+        repoName = product_name+'@'+version+'+'+ platform
+        checkRepo(repo, repoName)
       end
 
       if repo.nil?

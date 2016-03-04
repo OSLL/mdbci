@@ -26,7 +26,7 @@ task :run do
   Rake::Task[:task_6755_show_platform_versions].execute
   Rake::Task[:task_6844_ssh_pty_bug].execute
   Rake::Task[:task_6754_bug].execute
-
+  Rake::Task[:task_6847_check_repo].execute
   RakeTaskManager.get_failed_tests_info
 end
 
@@ -55,3 +55,4 @@ task :task_6648_generate_exit_code, [:pathToVBOXConfigFile, :pathToMDBCIConfigFi
 task :task_6755_show_platform_versions do |t| RakeTaskManager.new(t).run end
 task :task_6844_ssh_pty_bug do |t| RakeTaskManager.new(t).run end
 task :task_6754_bug do |t| RakeTaskManager.new(t).run end
+task :task_6847_check_repo do |t| RakeTaskManager.new(t).run end
