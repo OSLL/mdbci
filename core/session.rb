@@ -417,7 +417,6 @@ class Session
   end
 
   def generate(name)
-    exit_code = 1
     path = Dir.pwd
 
     if name.nil?
@@ -430,27 +429,22 @@ class Session
     begin
       IO.read($session.configFile)
     rescue
-      $out.warning 'Instance configuration file not found!'
-      return 1
+      raise 'Instance configuration file not found!'
     end
     instanceConfigFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read($session.configFile)}
     if instanceConfigFile.nil?
-      $out.warning 'Instance configuration file invalid!'
-      return 1
+      raise 'Instance configuration file invalid!'
     end
     @configs = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(instanceConfigFile)}
-    if @configs.nil?
-      $out.out 'Template configuration file is empty!'
-      return 1
-    else
-      LoadNodesProvider configs
-    end
+    raise 'Template configuration file is empty!' if @configs.nil?
+
+    LoadNodesProvider configs
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
     @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if @nodesProvider != 'mdbci'
-      exit_code = Generator.generate(path,configs,boxes,isOverride,nodesProvider)
+      Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
       $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_template'
@@ -462,15 +456,21 @@ class Session
     end
     # write nodes provider and template to configuration nodes dir file
     provider_file = path+'/provider'
-    if !File.exists?(provider_file)
+    if !File.exist?(provider_file)
       File.open(path+'/provider', 'w') { |f| f.write(@nodesProvider.to_s) }
+    else
+      raise 'Configuration \'provider\' template file don\'t exist'
     end
     if @nodesProvider != 'mdbci'
       template_file = path+'/template'
-      if !File.exists?(template_file); File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }; end
+      if !File.exist?(template_file)
+        File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }
+      else
+        raise 'Configuration \'template\' file don\'t exist'
+      end
     end
 
-    return exit_code
+    return 0
   end
 
   # Deploy configurations
