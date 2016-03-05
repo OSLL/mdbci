@@ -63,7 +63,7 @@ class Node
 
     if provider.nil?
       $out.error "Can not identify configuration for provider #{provider.to_s}"
-      return 1
+      exit_code = 1
     end
 
     case provider
