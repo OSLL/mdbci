@@ -1,6 +1,13 @@
 - job:
     name: run-inner-mdbci-unit-tests
     description: 'This job performs running inner mdbci unit tests.'
+    wrappers:
+        - pre-scm-buildstep:
+            - shell: |
+                #!/bin/bash
+                echo LAST_MODIFIED_BRANCH=$(git log -1 --all --decorate --pretty=oneline | awk -F'[()]' '{print $2}' | awk -F ', ' '{print $NF}') > last_modified_branch
+            - inject:
+                properties-file: $WORKSPACE/last_modified_branch
     parameters:
         - string:
               name: BOXES_JSON_PATH
@@ -10,18 +17,15 @@
               name: MDBCI_CONFS
               default: /home/vagranttest/conf
               description:  'Directory with mdbci configs.'
-        - extended-choice:
-              name: MDBCI_BRANCH
-              description: "Available MDBCI branch"
-              type: 'PT_SINGLE_SELECT'
-              property-file: '/home/vagranttest/mdbci_jenkins_config/branch_list'
-              property-key: 'branch_name'
-              default-value: 'refs/heads/integration'
     scm:
         - git:
             url: git@github.com:OSLL/mdbci.git
             branches:
-                - $MDBCI_BRANCH
+                - $LAST_MODIFIED_BRANCH
+    triggers:
+        - reverse:
+            jobs: 'mdbci_branching'
+            result: 'success' 
     builders:
         - shell:
             'ln -s $MDBCI_CONFS/aws-config.yml aws-config.yml; ln -s $MDBCI_CONFS/maxscale.pem maxscale.pem'
