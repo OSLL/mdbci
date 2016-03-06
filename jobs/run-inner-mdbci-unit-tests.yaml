@@ -5,6 +5,7 @@
         - pre-scm-buildstep:
             - shell: |
                 #!/bin/bash
+                git pull
                 echo LAST_MODIFIED_BRANCH=$(git log -1 --all --decorate --pretty=oneline | awk -F'[()]' '{print $2}' | awk -F ', ' '{print $NF}') > last_modified_branch
             - inject:
                 properties-file: $WORKSPACE/last_modified_branch
@@ -25,7 +26,7 @@
     triggers:
         - reverse:
             jobs: 'mdbci_branching'
-            result: 'success' 
+            result: 'success'
     builders:
         - shell:
             'ln -s $MDBCI_CONFS/aws-config.yml aws-config.yml; ln -s $MDBCI_CONFS/maxscale.pem maxscale.pem'
