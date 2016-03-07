@@ -3,7 +3,6 @@
 require 'json'
 require 'getoptlong'
 require 'net/http'
-require 'progressbar'
 require 'fileutils'
 
 PROVIDER = 'provider'
@@ -43,6 +42,7 @@ download_boxes OPTION
 -f, --force
   if directories already exists - they will be overwritten
       EOF
+      exit 0
     when '--force'
       force = true
     when '--dir'
@@ -52,20 +52,20 @@ download_boxes OPTION
   end
 end
 
-puts dir
-puts boxes_dir
-
 # get BOXES/*.json
 boxes = Hash.new
-boxes_files = Dir.glob(boxes_dir.to_s + '/' + '*.json', File::FNM_DOTMATCH)
+boxes_files = Dir.glob(boxes_dir + '*.json', File::FNM_DOTMATCH)
 boxes_files.each do |boxes_file|
+  next if ( boxes_file.to_s.include? 'boxes_aws' )
+  next if ( boxes_file.to_s.include? 'boxes_docker' )
+  next if ( boxes_file.to_s.include? 'boxes_mdbci' )
   boxes_json = JSON.parse(File.read boxes_file)
-  puts boxes_json
+  puts 'Box file: ' + boxes_file
   boxes = boxes.merge boxes_json
 end
 
 boxes_quantity = boxes.length
-puts boxes_quantity
+puts 'Boxes quantity: ' + boxes_quantity.to_s
 
 boxes_paths = Array.new
 
