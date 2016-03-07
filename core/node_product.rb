@@ -54,14 +54,14 @@ class NodeProduct
   #
   def self.setupProductRepo(args)
 
-    exit_code = 0
+    exit_code = 1
     possibly_failed_command = ''
 
     pwd = Dir.pwd
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return 1
+      exit_code = 1
     end
 
     args = args.split('/')
@@ -72,24 +72,24 @@ class NodeProduct
       if args[1].nil?     # read ip for all nodes
         if $session.mdbciNodes.length == 0
           $out.error "0 nodes found in #{args[0]}"
-          return 1
+          exit_code = 1
         end
         $session.mdbciNodes.each do |node|
           if $session.mdbciNodes.length == 0
             $out.error "0 nodes found in #{args[0]}"
-            return 1
+            exit_code = 1
           end
           box = node[1]['box'].to_s
           if !box.empty?
             mdbci_params = $session.boxes.getBox(box)
             if mdbci_params == nil
               $out.error "box #{box} not found"
-              return 1
+              exit_code = 1
             end
             full_platform = $session.platformKey(box)
             if full_platform == "UNKNOWN"
               $out.error "platform for box #{box} not found"
-              return 1
+              exit_code = 1
             end
             # get product repo
             if $session.nodeProduct == 'maxscale'
@@ -112,7 +112,7 @@ class NodeProduct
               possibly_failed_command = cmd
             else
               $out.error 'No such product for this node!'
-              return 1
+              exit_code = 1
             end
           end
         end
@@ -120,19 +120,19 @@ class NodeProduct
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
         if mdbci_node == nil
           $out.error "node #{args[1]} not found in #{args[0]}"
-          return 1
+          exit_code = 1
         end
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
           mdbci_params = $session.boxes.getBox(box)
           if mdbci_params == nil
             $out.error "box #{box} not found"
-            return 1
+            exit_code = 1
           end
           full_platform = $session.platformKey(box)
           if full_platform == "UNKNOWN"
             $out.error "platform for box #{box} not found"
-            return 1
+            exit_code = 1
           end
           # get product repo
           if $session.nodeProduct == 'maxscale'
@@ -155,11 +155,11 @@ class NodeProduct
             possibly_failed_command = cmd
           else
             $out.error 'No such product for this node!'
-            return 1
+            exit_code = 1
           end
         else
           $out.error "box parameter not found in defenition of node #{args[0]}/#{args[1]}"
-          return 1
+          exit_code = 1
         end
       end
     else # aws, vbox, libvirt, docker nodes
@@ -168,13 +168,13 @@ class NodeProduct
       if args[1].nil? # No node argument, copy keys to all nodes
         if $session.templateNodes.length == 0
           $out.error "0 nodes found in #{args[0]}"
-          return 1
+          exit_code = 1
         end
         $session.templateNodes.each do |node|
           full_platform = $session.loadNodePlatform(node[0].to_s)
           if full_platform == nil
             $out.error "platform for node #{node[0]} not found"
-            return 1
+            exit_code = 1
           end
           # get product repo
           if $session.nodeProduct == 'maxscale'
@@ -192,19 +192,19 @@ class NodeProduct
             possibly_failed_command = cmd
           else
             $out.error 'No such product for this node!'
-            return 1
+            exit_code = 1
           end
         end
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
         if node == nil
           $out.error "node #{args[1]} not found in #{args[0]}"
-          return 1
+          exit_code = 1
         end
         full_platform = $session.loadNodePlatform(node[0].to_s)
         if full_platform == nil
           $out.error "platform for node #{args[1]} not found"
-          return 1
+          exit_code = 1
         end
         # get product repo
         if $session.nodeProduct == 'maxscale'
@@ -222,7 +222,7 @@ class NodeProduct
           possibly_failed_command = cmd
         else
           $out.error 'No such product for this node!'
-          return 1
+          exit_code = 1
         end
       end
     end
@@ -320,7 +320,7 @@ class NodeProduct
 
   def self.installProduct(args)
 
-    exit_code = 0
+    exit_code = 1
     possibly_failed_command = ''
 
     pwd = Dir.pwd
@@ -330,7 +330,7 @@ class NodeProduct
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return 1
+      exit_code = 1
     end
 
     args = args.split('/')
@@ -338,10 +338,9 @@ class NodeProduct
     if File.exist?(args[0]+'/mdbci_template')
       $session.loadMdbciNodes args[0]
       if args[1].nil?     # read ip for all nodes
-
         if $session.mdbciNodes.length == 0
           $our.error "nodes not found in #{args[0]}"
-          return 1
+          exit_code = 1
         end
 
         $session.mdbciNodes.each do |node|
@@ -354,7 +353,7 @@ class NodeProduct
             if packages == nil
               version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
               $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}"
-              return 1
+              exit_code = 1
             end
 
             $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform[0]
@@ -378,7 +377,7 @@ class NodeProduct
 
         if mdbci_node == nil
           $out.error "node #{args[1]} not found in #{args[0]}"
-          return 1
+          exit_code = 1
         end
 
         box = mdbci_node[1]['box'].to_s
@@ -390,7 +389,7 @@ class NodeProduct
           if packages == nil
             version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
             $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}"
-            return 1
+            exit_code = 1
           end
 
           $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0].to_s
@@ -417,7 +416,7 @@ class NodeProduct
 
         if $session.templateNodes.length == 0
           $our.error "nodes not  found in #{args[0]}"
-          return 1
+          exit_code = 1
         end
 
         $session.templateNodes.each do |node|
@@ -427,7 +426,7 @@ class NodeProduct
           if packages == nil
             version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
             $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}"
-            return 1
+            exit_code = 1
           end
 
           $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0]
@@ -445,7 +444,7 @@ class NodeProduct
 
         if node == nil
           $out.error "node #{args[1]} not found in #{args[0]}"
-          return 1
+          exit_code = 1
         end
 
         platform = $session.loadNodePlatform(node[0].to_s).split('^')
@@ -453,7 +452,7 @@ class NodeProduct
         packages = validateProduct(platform[0], products)
         if packages == nil
           $out.error "product #{$session.nodeProduct} not found for platform #{platform[0]}"
-          return 1
+          exit_code = 1
         end
 
         $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
