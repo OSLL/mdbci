@@ -5,7 +5,7 @@
         - pre-scm-buildstep:
             - shell: |
                 #!/bin/bash
-                git pull
+                git reset --hard;git clean -fxd;git pull --no-edit --all
                 echo LAST_MODIFIED_BRANCH=$(git log -1 --all --decorate --pretty=oneline | awk -F'[()]' '{print $2}' | awk -F ', ' '{print $NF}') > last_modified_branch
             - inject:
                 properties-file: $WORKSPACE/last_modified_branch
