@@ -13,6 +13,7 @@ task :run_parametrized do
   Rake::Task[:task_6646_setup_repo_exit_code].execute({ :pathToConfigToVBOXNode=>'TEST/vboxnode', :pathToConfigToVBOXFolder=>'TEST', :pathToConfigToMDBCINode=>'TEST1/mdbcinode', :pathToConfigToMDBCIBadNode=>'TEST2/mdbcinodebad', :pathToConfigToMDBCIFolder=>'TEST1' })
   Rake::Task[:task_6647_install_product_exit_code].execute({ :pathToConfigToVBOXNode=>'TEST/vboxnode', :pathToConfigToMDBCINode=>'TEST1/mdbcinode', :pathToConfigToMDBCIBadNode=>'TEST2/mdbcinodebad', :pathToConfigToMDBCIFolder=>'TEST1' })
   Rake::Task[:task_6648_generate_exit_code].execute({ :pathToVBOXConfigFile=>'spec/test_machine_configurations/vbox.json', :pathToMDBCIConfigFile=>'spec/test_machine_configurations/mdbci.json', :pathToDestination=>'TEST_GEN' })
+  Rake::Task[:task_6803_showKeyFile_exceptions].execute({ :pathToVboxFolder=>'TEST' })
 
   RakeTaskManager.get_failed_tests_info
 end
@@ -56,6 +57,7 @@ task :task_6645_public_keys_exit_code, [:pathToConfigToVBOXNode, :pathToConfigTo
 task :task_6646_setup_repo_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_6647_install_product_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_6648_generate_exit_code, [:pathToVBOXConfigFile, :pathToMDBCIConfigFile, :pathToDestination] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
+task :task_6803_showKeyFile_exceptions, [:pathToVboxFolder] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 
 # tests without parameters
 task :task_generator do |t| RakeTaskManager.new(t).run end
