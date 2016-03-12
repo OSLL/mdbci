@@ -91,6 +91,14 @@ Vagrant.configure(2) do |config|
     IO.write(name, content)
   end
 
+  def Generator.sshPtyOption(ssh_pty)
+    ssh_pty_option = ''
+    if ssh_pty == "true" || ssh_pty == "false"; 
+      ssh_pty_option = "\tconfig.ssh.pty = " + ssh_pty
+    end
+    return ssh_pty_option
+  end
+
   # Vagrantfile for Vbox provider
   def Generator.getVmDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
 
@@ -100,7 +108,7 @@ Vagrant.configure(2) do |config|
       templatedef = ''
     end
     # ssh.pty option
-    ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
+    ssh_pty_option = sshPtyOption(ssh_pty)
 
     vmdef = "\n#  --> Begin definition for machine: " + name +"\n"\
             "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
@@ -135,7 +143,7 @@ Vagrant.configure(2) do |config|
       templatedef = ''
     end
     # ssh.pty option
-    ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
+    ssh_pty_option = sshPtyOption(ssh_pty)
 
     qemudef = "\n#  --> Begin definition for machine: " + name +"\n"\
             + "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
@@ -167,7 +175,8 @@ Vagrant.configure(2) do |config|
       templatedef = ""
     end
     # ssh.pty option
-    ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
+    ssh_pty_option = sshPtyOption(ssh_pty)
+
 
     dockerdef = "\n#  --> Begin definition for machine: " + name +"\n"\
             + "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
@@ -235,7 +244,7 @@ Vagrant.configure(2) do |config|
       mountdef = ''
     end
     # ssh.pty option
-    ssh_pty ? ssh_pty_option = "\tconfig.ssh.pty = true" : ssh_pty_option = ''
+    ssh_pty_option = sshPtyOption(ssh_pty)
 
     awsdef = "\n#  --> Begin definition for machine: " + name +"\n"\
            + "config.vm.define :"+ name +" do |" + name + "|\n" \
@@ -418,7 +427,7 @@ def Generator.checkPath(path, override)
       # ssh_pty option
       if !box_params['ssh_pty'].nil?
         ssh_pty = box_params['ssh_pty']
-        $out.info 'SSH_PTY option is ' + ssh_pty.to_s + 'for a box ' + box.to_s
+        $out.info 'config.ssh.pty option is ' + ssh_pty.to_s + ' for a box ' + box.to_s
       end
     end
 
@@ -463,6 +472,7 @@ def Generator.checkPath(path, override)
   def Generator.generate(path, config, boxes, override, provider)
 
     #TODO Errors check
+    exit_code = 1
 
     #TODO MariaDb Version Validator
 
@@ -506,7 +516,16 @@ def Generator.checkPath(path, override)
         vagrant.puts Generator.vagrantConfigFooter
     end
 
+    if !File.size?(path+'/Vagrantfile') # nil if empty and not exist
+      exit_code = 0
+    else
+      $out.warning 'Generated Vagrantfile is empty! Please check configuration file and regenerate it.'
+      exit_code = 1
+    end
+
     vagrant.close
+
+    return exit_code
   end
 
 end
