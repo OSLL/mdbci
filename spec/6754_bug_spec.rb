@@ -20,7 +20,7 @@ describe 'Session' do
   end
 
   it '#getPlatfroms returns array of platforms' do
-    $session.getPlatfroms.should eq(PLATFORM)
+    $session.getPlatfroms.sort.should eq(PLATFORM.sort)
   end
 
   it '#getPlatfroms should rise error, because boxes are not found' do

@@ -1,7 +1,10 @@
 require 'rspec'
 require 'spec_helper'
 require_relative '../core/session'
+require_relative '../core/node_product'
 require_relative '../core/out'
+require_relative '../core/repo_manager'
+require_relative '../core/exception_handler'
 
 describe 'Session' do
 
@@ -20,23 +23,16 @@ describe 'Session' do
 
   context '.configurationFiles' do
 
-    it "Check boxes loading..." do
-      #pending # useful for Debugging
-
-      session = Session.new
-      #out = Out.new
-
-      session.configFile='instance.json'
-      session.boxesFile='boxes.json'
-      session.awsConfigFile='aws-config.yml'
-
-      boxes = JSON.parse(IO.read(session.boxesFile))
-      #out.out 'Found boxes: ' + boxes.size().to_s
-
-      # boxes is not empty
-      boxes.size().should_not eq(0)
-      boxes.size().should eq(32)
-
+    before :all do
+      $out = Out.new
+      $session = Session.new
+      $session.isSilent = true
+      $session.mdbciDir = Dir.pwd
+      $exception_handler = ExceptionHandler.new
+      boxesPath = './BOXES'
+      $session.boxes = BoxesManager.new boxesPath
+      reposPath = './repo.d'
+      $session.repos = RepoManager.new reposPath
     end
 
     it "Check aws config loading..." do
@@ -49,7 +45,7 @@ describe 'Session' do
 
       # boxes is not empty
       awsConfig.size().should_not eq(0)
-      awsConfig.size().should eq(8)
+      awsConfig.size().should eq(9)
 
     end
 
