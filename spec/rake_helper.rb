@@ -1,4 +1,6 @@
 PATH_TO_RSPEC_SPEC_FOLDER = 'spec/'
+PATH_TO_INTEGRATION_TESTS_FOLDER = 'integration/'
+PATH_TO_UNIT_TESTS_FOLDER = 'unit/'
 
 class RakeTaskManager
 
@@ -19,7 +21,7 @@ class RakeTaskManager
     elsif @silent == 'false'
       @silent = false
     end
-    @rspec_test_name = PATH_TO_RSPEC_SPEC_FOLDER + task_name.to_s.split('_', 2)[1] + '_spec.rb'
+    @rspec_test_name = task_name.to_s.split('_', 2)[1] + '_spec.rb'
     @@tests_counter += 1
   end
 
@@ -41,6 +43,7 @@ class RakeTaskManager
 
   # executing rspec test, with cutting stderr application output
   def run
+    @rspec_test_name = PATH_TO_RSPEC_SPEC_FOLDER + @rspec_test_name
     @cmd = `rspec #{@rspec_test_name}`
     describe_test(@rspec_test_name, @cmd, $?.exitstatus)
     generate_and_expand_output
@@ -85,6 +88,26 @@ class RakeTaskManager
     else
       raise "No arguments provided for #{@rspec_test_name}, fix and try again."
     end
+  end
+
+  def run_unit
+    @rspec_test_name = PATH_TO_UNIT_TESTS_FOLDER + @rspec_test_name
+    run
+  end
+
+  def run_unit_parametrized(arguments)
+    @rspec_test_name = PATH_TO_UNIT_TESTS_FOLDER + @rspec_test_name
+    run_parametrized arguments
+  end
+
+  def run_integration
+    @rspec_test_name = PATH_TO_INTEGRATION_TESTS_FOLDER + @rspec_test_name
+    run
+  end
+
+  def run_integration_parametrized(arguments)
+    @rspec_test_name = PATH_TO_INTEGRATION_TESTS_FOLDER + @rspec_test_name
+    run_parametrized arguments
   end
 
   def self.get_failed_tests_info

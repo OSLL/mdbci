@@ -1,0 +1,17 @@
+{
+  "cookbook_path" : "../recipes/cookbooks/",
+  "aws_config" : "../aws-config.yml",
+  "vboxnode" :
+  {
+    "hostname" : "vbox",
+    "box" : "centos_6_vbox",
+    "product" :
+    {
+      "name": "mariadb",
+      "version"  : "10.0",
+      "node_name" : "vbox",
+      "cnf_template" : "server1.cnf",
+      "cnf_template_path" : "../cnf"
+    }
+  }
+}

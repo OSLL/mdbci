@@ -1,7 +1,7 @@
 require 'rspec'
-require 'spec_helper'
-require_relative '../core/generator'
-require_relative '../core/session'
+require_relative '../spec_helper'
+require_relative '../../core/generator'
+require_relative '../../core/session'
 
 describe "Generator" do
 
