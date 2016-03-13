@@ -40,6 +40,7 @@ class Session
   attr_accessor :boxPlatformVersion
 
   PLATFORM = 'platform'
+  VAGRANT_NO_PARALLEL = '--no-parallel'
 
   def initialize
     @boxesDir = './BOXES'
@@ -544,9 +545,9 @@ class Session
           $out.info exec_cmd_destr
         end
 
-        no_parallel_flag = ""
-        if @nodesProvider == "aws"
-          no_parallel_flag = " --no-parallel "
+        no_parallel_flag = ''
+        if @nodesProvider == 'aws'
+          no_parallel_flag = " #{VAGRANT_NO_PARALLEL} "
         end
 
         cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{(up_type ? config[1]:'')}"
@@ -568,7 +569,7 @@ class Session
   	    end
 
         if exit_code != 0
-          $out.info "Checking for all nodes to be started"
+          $out.info 'Checking for all nodes to be started'
           all_machines_started = true
           Dir.glob('*.json', File::FNM_DOTMATCH) do |f|
             machine_name = f.chomp! ".json"
@@ -580,9 +581,7 @@ class Session
           end
 
           if i == @attempts && !all_machines_started
-            $out.error 'Bringing up failed'
-            $out.error 'Some machines are still down'
-            exit_code = 1
+            raise 'Bringing up failed, some machines are still down'
           end
         end
       end
