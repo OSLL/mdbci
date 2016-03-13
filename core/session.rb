@@ -576,7 +576,7 @@ class Session
             status = `vagrant status #{machine_name}`.split("\n")[2]
             if !status.include? 'running'
               all_machines_started = false
-              $out.error "Machine #{machine_name} is in #{state} state"
+              $out.error "Machine #{machine_name} is not in running state"
             end
           end
 
