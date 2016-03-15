@@ -1,3 +1,9 @@
+#
+# install default packages
+#
+[ "net-tools", "psmisc" ].each do |pkg|
+  package pkg
+end
 
 #
 # MariaDB Maxscale repos

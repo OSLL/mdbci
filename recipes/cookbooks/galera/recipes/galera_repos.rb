@@ -1,4 +1,9 @@
-
+#
+# Default packages
+#
+["net-tools", "psmisc"].each do |pkg|
+  package pkg
+end
 #
 # MariaDB Galera repos
 #

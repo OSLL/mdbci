@@ -1,0 +1,38 @@
+- job:
+    name: sync-boxes-repo 
+    description: 'This job performs synchronization for boxes repo.'
+    parameters:
+        - string:
+            name: REPO_PATH
+            default: /home/boxes_repo
+            description:  'Directory for boxes path.'
+        - string:
+            name: BOXES_JSON_PATH
+            default: /home/vagrant/mdbci/BOXES/
+            description:  'Directory for box descriptions.'
+    scm:
+        - git:
+            url: git@github.com:OSLL/mdbci.git 
+            branches:
+                - 6785_boxes_repo
+    builders:
+        - shell: 
+            'rm -rf $REPO_PATH/*'
+        - shell: 
+            './scripts/download_boxes.rb --force --dir $REPO_PATH --boxes-dir $BOXES_JSON_PATH'
+    publishers:
+        - email-ext:
+            recipients: $DEFAULT_RECIPIENTS
+            reply-to: $DEFAULT_REPLYTO
+            content-type: default
+            subject: $DEFAULT_SUBJECT
+            body: $DEFAULT_CONTENT
+            attach-build-log: false
+            always: true
+            aborted: true
+            failure: true
+            still-failing: true
+            success: true
+            fixed: true
+            send-to:
+               - recipients
