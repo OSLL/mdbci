@@ -202,13 +202,9 @@ class Network
 
   # TODO - move mdbci box definition to new class - MdbciNode < Node
   def self.private_ip(name)
-    exit_code = 1
     pwd = Dir.pwd
 
-    if name.nil?
-      $out.error 'Configuration name is required'
-      exit_code = 1
-    end
+    raise 'Configuration name is required' if name.nil?
 
     args = name.split('/')
 
@@ -216,10 +212,7 @@ class Network
     if File.exist?(args[0]+'/mdbci_template')
       $session.loadMdbciNodes args[0]
       if args[1].nil?     # read ip for all nodes
-        if $session.mdbciNodes.empty?
-          $out.error "MDBCI nodes not found in #{args[0]}"
-          exit_code = 1
-        end
+        raise "MDBCI nodes are not found in #{args[0]}" if $session.mdbciNodes.empty?
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           if !box.empty?
@@ -227,45 +220,44 @@ class Network
             $out.info 'Node: ' + node[0].to_s
             $out.out box_params['IP'].to_s
           else
-            $out.error "Can not find box parameter for node #{args[0]}"
-            exit_code = 1
+            raise "Can not find box parameter for node #{args[0]}"
           end
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
-        if mdbci_node.nil?
-          exit_code = 1
-        end
+        raise "MDBCI node #{args[1]} is not found in #{args[0]}" if mdbci_node.nil?
         box = mdbci_node[1]['box'].to_s
-        if !box.empty?
-          mdbci_params = $session.boxes.getBox(box)
-          $out.info 'Node: ' + args[1].to_s
-          $out.out mdbci_params['IP'].to_s
-        else
-          $out.error "Can not find box parameter for node #{args[1]}"
-          exit_code = 1
-        end
+        raise "Can not find box parameter for node #{args[1]}" if !box.empty?
+        mdbci_params = $session.boxes.getBox(box)
+        raise "Can not find box #{box} node #{args[1]} in #{args[0]}" if !box.empty?
+        $out.info 'Node: ' + args[1].to_s
+        $out.out mdbci_params['IP'].to_s
+
       end
     else # aws, vbox nodes
-      unless Dir.exists? args[0]
-        exit_code = 1
-      end
+      raise "Can not find directory #{args[0]}" unless Dir.exists? args[0]
       network = Network.new
       network.loadNodes pwd.to_s+'/'+args[0] # load nodes from dir
       if args[1].nil? # No node argument, show all config
+        raise "Nodes are not found in #{args[0]}" if network.nodes.empty?
         network.nodes.each do |node|
           exit_code = node.getIp(node.provider, true)
+          raise "Can not get IP for #{node.name} in #{args[0]}" if exit_code != 0
+          $out.info 'Node: ' + node.name
           $out.out node.ip.to_s
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1]}
+        raise "Node #{args[1]} is not found in #{args[0]}" if node.nil?
         exit_code = node.getIp(node.provider, true)
+        raise "Can not get IP for #{node.name} in #{args[0]}" if exit_code != 0
+        $out.info 'Node: ' + node.name
         $out.out node.ip.to_s
       end
     end
     Dir.chdir pwd
 
-    return exit_code
+    return 0
   end
 
 end
