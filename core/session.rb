@@ -283,7 +283,7 @@ class Session
       raise 'Boxes are not found'
     end
   end
-  
+
   def showPlatforms
     exit_code = 1
     begin
@@ -358,7 +358,7 @@ class Session
   def showBoxNameByPath(path)
     boxName = $session.boxes.getBoxNameByPath(path)
     $out.out boxName
-    return 0 
+    return 0
   end
 
 
@@ -494,6 +494,8 @@ class Session
   def up(args)
     std_q_attampts = 10
     exit_code = 1 # error
+    chef_failed_nodes = Array.new
+    provision_status = 1
 
     # No arguments provided
     if args.nil?
@@ -570,26 +572,46 @@ class Session
             stderr.close
    	        exit_code = wthr.value.exitstatus # error
 	          $out.error 'exit code '+exit_code.to_s
-	        else
-            $out.info 'Configuration UP SUCCESS!'
-            exit_code = 0
-          end
-  	    end
 
-        if exit_code != 0
-          $out.info 'Checking for all nodes to be started'
-          all_machines_started = true
-          Dir.glob('*.json', File::FNM_DOTMATCH) do |f|
-            machine_name = f.chomp! ".json"
-            status = `vagrant status #{machine_name}`.split("\n")[2]
-            if !status.include? 'running'
-              all_machines_started = false
-              $out.error "Machine #{machine_name} is not in running state"
+            if exit_code != 0
+              Dir.glob('*.json', File::FNM_DOTMATCH) do |f|
+                machine_name = f.chomp! ".json"
+
+                # Checking for not running nodes
+                $out.info "Checking for all nodes to be started"
+                all_machines_started = true
+                status = `vagrant status #{machine_name}`.split("\n")[2]
+                if !status.include? 'running'
+                  all_machines_started = false
+                  $out.error "Machine #{machine_name} isn't in 'running' state"
+                end
+
+                # Chef logging
+                $out.info "Checking Chef log for failed nodes"
+                chef_log_cmd = "vagrant ssh #{machine_name} -c \"test -e /var/chef/cache/chef-stacktrace.out && printf 'FOUND' || printf 'NOT_FOUND'\""
+                chef_log_out = `#{chef_log_cmd}`
+                if chef_log_out == "FOUND"
+                  $out.info "Chef stacktrace #{chef_log_out} on #{machine_name} node, reprovision this node"
+                  chef_failed_nodes.push("#{machine_name}")
+                  # reprovision failed chef node
+                  provision_cmd = `vagrant provision #{machine_name}`
+                  $out.info "#{provision_cmd}"
+                  provision_status = $?.exitstatus
+                end
+              end
+
+              if i == @attempts && !all_machines_started || provision_status != 0
+                $out.error 'Bringing up failed'
+                # chef provision status
+                $out.info "Failed Chef nodes:"
+                chef_failed_nodes.each { |node| $out.info node.to_s }
+                raise "Some machines are still down or Chef provision failed! Check failed Chef nodes!"
+              end
             end
-          end
-
-          if i == @attempts && !all_machines_started
-            raise 'Bringing up failed, some machines are still down'
+          else
+            provision_status = 0
+            $out.info 'All nodes successfully up!'
+            return 0
           end
         end
       end
@@ -599,6 +621,7 @@ class Session
 
     return exit_code
   end
+
 
 
   # copy ssh keys to config/node
