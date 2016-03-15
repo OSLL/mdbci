@@ -354,15 +354,23 @@ class Session
     end
   end
 
+
+  def showBoxNameByPath(path)
+    boxName = $session.boxes.getBoxNameByPath(path)
+    $out.out boxName
+    return 0 
+  end
+
+
   def show(collection)
     exit_code = 1
     case collection
       when 'boxes'
-        exit_code = BoxesManager.showBoxes
-
+        exit_code = showBoxes
+      when 'box'
+        exit_code = showBoxNameByPath(ARGV.shift)
       when 'boxinfo'
         exit_code = showBoxField
-
       when 'repos'
         @repos.show
       when 'versions'
