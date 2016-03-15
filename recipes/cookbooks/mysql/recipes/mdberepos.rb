@@ -1,3 +1,9 @@
+#
+# install default packages
+[ "net-tools", "psmisc" ].each do |pkg|
+  package pkg
+end
+
 node.set_unless['maria']['version'] = "10.0"
 
 case node[:platform_family]
