@@ -7,6 +7,7 @@ require_relative 'generator'
 require_relative 'network'
 require_relative 'boxes_manager'
 require_relative 'repo_manager'
+require_relative 'out'
 
 
 class Session
@@ -37,6 +38,9 @@ class Session
   attr_accessor :keyFile
   attr_accessor :boxPlatform
   attr_accessor :boxPlatformVersion
+
+  PLATFORM = 'platform'
+  VAGRANT_NO_PARALLEL = '--no-parallel'
 
   def initialize
     @boxesDir = './BOXES'
@@ -69,8 +73,7 @@ class Session
   end
 
   def setup(what)
-
-    exit_code = 0
+    exit_code = 1
     possibly_failed_command = ''
 
     case what
@@ -100,7 +103,7 @@ class Session
         end
       else
         $out.warning 'Cannot setup '+what
-        return 1
+        exit_code = 1
     end
 
     if exit_code != 0
@@ -126,13 +129,13 @@ class Session
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return 1
+      exit_code = 1
     end
 
     config = args.split('/')
     unless Dir.exists?(config[0])
       $out.error 'Machine with such name does not exists'
-      return 1
+      exit_code = 1
     end
 
     Dir.chdir config[0]
@@ -181,7 +184,7 @@ class Session
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return 1
+      exit_code = 1
     end
 
     params = args.split('/')
@@ -223,7 +226,7 @@ class Session
     else # aws, vbox nodes
       unless Dir.exist?(params[0])
         $out.error 'Machine with such name does not exist'
-        return 1
+        exit_code = 1
       end
       Dir.chdir params[0]
       cmd = 'vagrant ssh '+params[1].to_s+' -c "'+$session.command+'"'
@@ -258,42 +261,58 @@ class Session
   end
 
   def showBoxes
+    exit_code = 1
     begin
       $out.out JSON.pretty_generate(@boxes.boxesManager)
-      return 0
+      exit_code = 0
     rescue
       $out.error "check boxes configuration and try again"
-      return 1
+      exit_code = 1
     end
+    return exit_code
   end
 
+  def getPlatfroms
+    if !@boxes.boxesManager.empty?
+      platforms = Array.new
+      @boxes.boxesManager.each do |box|
+        platforms.push box[1][PLATFORM]
+      end
+      platforms.uniq
+    else
+      raise 'Boxes are not found'
+    end
+  end
+  
   def showPlatforms
+    exit_code = 1
     begin
       $out.out @boxes.boxesManager.keys
-      return 0
+      exit_code = 0
     rescue
       $out.error "check boxes configuration and try again"
-      return 1
+      exit_code = 1
     end
+    $out.out getPlatfroms
+    return exit_code
   end
 
   # show boxes with platform and version
   def showBoxes
-
     exit_code = 1
 
     if $session.boxPlatform.nil?
       $out.warning './mdbci show boxes --platform command option is not defined!'
-      return 1
+      exit_code = 1
     elsif $session.boxPlatform.nil? and $session.boxPlatformVersion.nil?
       $out.warning './mdbci show boxes --platform or --platform-version command parameters are not defined!'
-      return 1
+      exit_code = 1
     end
     # check for undefined box
     some_box = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
     if some_box.nil?
       $out.warning 'Platform '+$session.boxPlatform+' is not supported!'
-      return 1
+      exit_code = 1
     end
 
     if !$session.boxPlatformVersion.nil?
@@ -339,7 +358,7 @@ class Session
     exit_code = 1
     case collection
       when 'boxes'
-        exit_code = showBoxes
+        exit_code = BoxesManager.showBoxes
 
       when 'boxinfo'
         exit_code = showBoxField
@@ -407,7 +426,6 @@ class Session
   end
 
   def generate(name)
-    exit_code = 1
     path = Dir.pwd
 
     if name.nil?
@@ -420,27 +438,22 @@ class Session
     begin
       IO.read($session.configFile)
     rescue
-      $out.warning 'Instance configuration file not found!'
-      return 1
+      raise 'Instance configuration file not found!'
     end
     instanceConfigFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read($session.configFile)}
     if instanceConfigFile.nil?
-      $out.warning 'Instance configuration file invalid!'
-      return 1
+      raise 'Instance configuration file invalid!'
     end
     @configs = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(instanceConfigFile)}
-    if @configs.nil?
-      $out.out 'Template configuration file is empty!'
-      return 1
-    else
-      LoadNodesProvider configs
-    end
+    raise 'Template configuration file is empty!' if @configs.nil?
+
+    LoadNodesProvider configs
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
     @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if @nodesProvider != 'mdbci'
-      exit_code = Generator.generate(path,configs,boxes,isOverride,nodesProvider)
+      Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
       $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_template'
@@ -452,15 +465,21 @@ class Session
     end
     # write nodes provider and template to configuration nodes dir file
     provider_file = path+'/provider'
-    if !File.exists?(provider_file)
+    if !File.exist?(provider_file)
       File.open(path+'/provider', 'w') { |f| f.write(@nodesProvider.to_s) }
+    else
+      raise 'Configuration \'provider\' template file don\'t exist'
     end
     if @nodesProvider != 'mdbci'
       template_file = path+'/template'
-      if !File.exists?(template_file); File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }; end
+      if !File.exist?(template_file)
+        File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }
+      else
+        raise 'Configuration \'template\' file don\'t exist'
+      end
     end
 
-    return exit_code
+    return 0
   end
 
   # Deploy configurations
@@ -471,7 +490,7 @@ class Session
     # No arguments provided
     if args.nil?
       $out.info 'Command \'up\' needs one argument, found zero'
-      return
+      exit_code = 1
     end
 
     # No attempts provided
@@ -513,7 +532,7 @@ class Session
     $out.info 'Current provider: ' + @nodesProvider
     if @nodesProvider == 'mdbci'
       $out.warning 'You are using mdbci nodes template. ./mdbci up command doesn\'t supported for this boxes!'
-      return 0
+      exit_code = 0
     else
       (1..@attempts.to_i).each do |i|
         $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') +
@@ -526,13 +545,12 @@ class Session
           $out.info exec_cmd_destr
         end
 
-        no_parallel_flag = ""
-        if @nodesProvider == "aws"
-          no_parallel_flag = " --no-parallel "
+        no_parallel_flag = ''
+        if @nodesProvider == 'aws'
+          no_parallel_flag = " #{VAGRANT_NO_PARALLEL} "
         end
 
-        cmd_up = 'vagrant up' + no_parallel_flag + ' --provider=' + @nodesProvider + ' ' +
-          (up_type ? config[1]:'')
+        cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{(up_type ? config[1]:'')}"
         $out.info 'Actual command: ' + cmd_up
         Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
           stdin.close
@@ -546,29 +564,24 @@ class Session
 	          $out.error 'exit code '+exit_code.to_s
 	        else
             $out.info 'Configuration UP SUCCESS!'
-            return 0
+            exit_code = 0
           end
   	    end
 
         if exit_code != 0
-          $out.info "Checking for all nodes to be started"
+          $out.info 'Checking for all nodes to be started'
           all_machines_started = true
-          invalid_states = ["not created", "poweroff"]
           Dir.glob('*.json', File::FNM_DOTMATCH) do |f|
             machine_name = f.chomp! ".json"
             status = `vagrant status #{machine_name}`.split("\n")[2]
-            invalid_states.each do |state|
-              if status.include? state
-                all_machines_started = false
-                $out.error "Machine #{machine_name} is in #{state} state"
-              end
+            if !status.include? 'running'
+              all_machines_started = false
+              $out.error "Machine #{machine_name} is not in running state"
             end
           end
 
           if i == @attempts && !all_machines_started
-            $out.error 'Bringing up failed'
-            $out.error 'Some machines are still down'
-            exit_code = 1
+            raise 'Bringing up failed, some machines are still down'
           end
         end
       end
@@ -588,7 +601,7 @@ class Session
 
     if args.nil?
       $out.error 'Configuration name is required'
-      return 1
+      exit_code = 1
     end
 
     args = args.split('/')
@@ -599,7 +612,7 @@ class Session
       if args[1].nil?     # read ip for all nodes
         if $session.mdbciNodes.empty?
           $out.error "MDBCI nodes not found in #{args[0]}"
-          return 1
+          exit_code = 1
         end
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
@@ -624,7 +637,7 @@ class Session
 
         if mdbci_node.nil?
           $out.error "No such node with name #{args[1]} in #{args[0]}"
-          return 1
+          exit_code = 1
         end
 
         box = mdbci_node[1]['box'].to_s
@@ -644,14 +657,14 @@ class Session
           possibly_failed_command = cmd
         else
           $out.error "Wrong box parameter in node: #{args[1]}"
-          return 1
+          exit_code = 1
         end
       end
     else # aws, vbox, libvirt, docker nodes
 
       unless Dir.exists? args[0]
         $out.error "Directory with nodes does not exists: #{args[1]}"
-        return 1
+        exit_code = 1
       end
 
       network = Network.new
@@ -659,7 +672,7 @@ class Session
 
       if network.nodes.empty?
         $out.error "No aws, vbox, libvirt, docker nodes found in #{args[0]}"
-        return 1
+        exit_code = 1
       end
 
       if args[1].nil? # No node argument, copy keys to all nodes
@@ -678,7 +691,7 @@ class Session
 
         if node.nil?
           $out.error "No such node with name #{args[1]} in #{args[0]}"
-          return 1
+          exit_code = 1
         end
 
         #
@@ -705,6 +718,7 @@ class Session
   end
 
   def showProvider(name)
+    exit_code = 1
     if $session.boxes.boxesManager.has_key?(name)
       box_params = $session.boxes.getBox(name)
       provider = box_params["provider"].to_s
@@ -719,17 +733,18 @@ class Session
 
   # print boxes platform versions by platform name
   def boxesPlatformVersions
+    exit_code = 1
 
     if $session.boxPlatform == nil
       $out.error "Specify parameter --platforms and try again"
-      return 1
+      exit_code = 1
     end
 
     # check for supported platforms
     some_platform = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
     if some_platform.nil?
       $out.error "Platform #{$session.boxPlatform} is not supported!"
-      return 1
+      exit_code = 1
     else
       $out.info "Supported versions for #{$session.boxPlatform}:"
     end
@@ -742,8 +757,10 @@ class Session
       if params.has_value?($session.boxPlatform)
         box_platform_version = params['platform_version']
         boxes_versions.push(box_platform_version)
+        exit_code = 0
       else
         $out.error "#{$session.boxPlatform} has 0 supported versions! Please check box platform!"
+        exit_code = 1
       end
     end
 
@@ -751,7 +768,7 @@ class Session
     boxes_versions = boxes_versions.uniq # delete duplicates values
     boxes_versions.each { |version| $out.out version }
 
-    return 0
+    return exit_code
   end
 
 
