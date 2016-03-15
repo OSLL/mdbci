@@ -40,6 +40,7 @@ class Session
   attr_accessor :boxPlatformVersion
 
   PLATFORM = 'platform'
+  VAGRANT_NO_PARALLEL = '--no-parallel'
 
   def initialize
     @boxesDir = './BOXES'
@@ -544,13 +545,12 @@ class Session
           $out.info exec_cmd_destr
         end
 
-        no_parallel_flag = ""
-        if @nodesProvider == "aws"
-          no_parallel_flag = " --no-parallel "
+        no_parallel_flag = ''
+        if @nodesProvider == 'aws'
+          no_parallel_flag = " #{VAGRANT_NO_PARALLEL} "
         end
 
-        cmd_up = 'vagrant up' + no_parallel_flag + ' --provider=' + @nodesProvider + ' ' +
-          (up_type ? config[1]:'')
+        cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{(up_type ? config[1]:'')}"
         $out.info 'Actual command: ' + cmd_up
         Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
           stdin.close
@@ -569,24 +569,19 @@ class Session
   	    end
 
         if exit_code != 0
-          $out.info "Checking for all nodes to be started"
+          $out.info 'Checking for all nodes to be started'
           all_machines_started = true
-          invalid_states = ["not created", "poweroff"]
           Dir.glob('*.json', File::FNM_DOTMATCH) do |f|
             machine_name = f.chomp! ".json"
             status = `vagrant status #{machine_name}`.split("\n")[2]
-            invalid_states.each do |state|
-              if status.include? state
-                all_machines_started = false
-                $out.error "Machine #{machine_name} is in #{state} state"
-              end
+            if !status.include? 'running'
+              all_machines_started = false
+              $out.error "Machine #{machine_name} is not in running state"
             end
           end
 
           if i == @attempts && !all_machines_started
-            $out.error 'Bringing up failed'
-            $out.error 'Some machines are still down'
-            exit_code = 1
+            raise 'Bringing up failed, some machines are still down'
           end
         end
       end
