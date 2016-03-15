@@ -4,6 +4,7 @@ require_relative 'spec/rake_helper'
 # here you need to add task with appropriate parameters
 task :run_parametrized do
   Rake::Task[:task_6639_ssh_exit_code].execute({ :pathToConfigToVBOXNode=>'TEST/vboxnode', :pathToConfigToMDBCINode=>'TEST1/mdbcinode', :pathToConfigToMDBCIBadNode=>'TEST2/mdbcinodebad', :pathToConfigToMDBCIFolder=>'TEST1' })
+  Rake::Task[:task_6818_search_box_name_by_config].execute({ :configPath=>'confs/mdbci_up_aws_test_config.json', :nodeName=>'galera0' })
   Rake::Task[:task_6640_sudo_exit_code].execute({ :pathToConfigToVBOXNode=>'TEST/vboxnode' })
   Rake::Task[:task_6641_setup_exit_code].execute( {:pathToTestBoxes=>'TESTBOXES', :testBoxName=>'testbox'} )
   Rake::Task[:task_6642_show_keyfile_exit_code].execute({ :pathToConfigToVBOXNode=>'TEST/vboxnode', :pathToConfigToMDBCINode=>'TEST1/mdbcinode', :pathToConfigToMDBCIBadNode=>'TEST2/mdbcinodebad', :pathToConfigToMDBCIFolder=>'TEST1' })
@@ -14,7 +15,8 @@ task :run_parametrized do
   Rake::Task[:task_6647_install_product_exit_code].execute({ :pathToConfigToVBOXNode=>'TEST/vboxnode', :pathToConfigToMDBCINode=>'TEST1/mdbcinode', :pathToConfigToMDBCIBadNode=>'TEST2/mdbcinodebad', :pathToConfigToMDBCIFolder=>'TEST1' })
   Rake::Task[:task_6648_generate_exit_code].execute({ :pathToVBOXConfigFile=>'spec/test_machine_configurations/vbox.json', :pathToMDBCIConfigFile=>'spec/test_machine_configurations/mdbci.json', :pathToDestination=>'TEST_GEN' })
   Rake::Task[:task_6803_showKeyFile_exceptions].execute({ :pathToVboxFolder=>'TEST' })
-
+  Rake::Task[:task_6821_show_box_config_node].execute({ :pathToConfigNode=>'TEST/vboxnode', :pathToConfig=>'TEST' })
+  
   RakeTaskManager.get_failed_tests_info
 end
 
@@ -54,10 +56,12 @@ task :task_6642_show_keyfile_exit_code, [:pathToConfigToVBOXNode, :pathToConfigT
 task :task_6643_show_network_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_6644_show_private_ip_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_6645_public_keys_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
+task :task_6818_search_box_name_by_config, [:configPath, :nodeName] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_6646_setup_repo_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_6647_install_product_exit_code, [:pathToConfigToVBOXNode, :pathToConfigToMDBCINode, :pathToConfigToMDBCIFolder, :pathToConfigToMDBCINode] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_6648_generate_exit_code, [:pathToVBOXConfigFile, :pathToMDBCIConfigFile, :pathToDestination] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 task :task_6803_showKeyFile_exceptions, [:pathToVboxFolder] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
+task :task_6821_show_box_config_node, [:pathToConfigNode, :pathToConfig] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
 
 # tests without parameters
 task :task_generator do |t| RakeTaskManager.new(t).run end
@@ -73,3 +77,6 @@ task :task_node_product do |t| RakeTaskManager.new(t).run end
 task :task_boxes_manager do |t| RakeTaskManager.new(t).run end
 task :task_repos_manager do |t| RakeTaskManager.new(t).run end
 task :task_session do |t| RakeTaskManager.new(t).run end
+task :task_shell_command_testing_example do |t| RakeTaskManager.new(t).run end
+task :task_6819_show_box_info do |t| RakeTaskManager.new(t).run end
+task :task_6782_show_commands_exit_code do |t| RakeTaskManager.new(t).run end

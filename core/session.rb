@@ -40,6 +40,7 @@ class Session
   attr_accessor :boxPlatformVersion
 
   PLATFORM = 'platform'
+  VAGRANT_NO_PARALLEL = '--no-parallel'
 
   def initialize
     @boxesDir = './BOXES'
@@ -353,15 +354,23 @@ class Session
     end
   end
 
+
+  def showBoxNameByPath(path)
+    boxName = $session.boxes.getBoxNameByPath(path)
+    $out.out boxName
+    return 0 
+  end
+
+
   def show(collection)
     exit_code = 1
     case collection
       when 'boxes'
-        exit_code = BoxesManager.showBoxes
-
+        exit_code = showBoxes
+      when 'box'
+        exit_code = showBoxNameByPath(ARGV.shift)
       when 'boxinfo'
         exit_code = showBoxField
-
       when 'repos'
         @repos.show
       when 'versions'
@@ -425,7 +434,6 @@ class Session
   end
 
   def generate(name)
-    exit_code = 1
     path = Dir.pwd
 
     if name.nil?
@@ -438,27 +446,22 @@ class Session
     begin
       IO.read($session.configFile)
     rescue
-      $out.warning 'Instance configuration file not found!'
-      exit_code = 1
+      raise 'Instance configuration file not found!'
     end
     instanceConfigFile = $exception_handler.handle('INSTANCE configuration file not found'){IO.read($session.configFile)}
     if instanceConfigFile.nil?
-      $out.warning 'Instance configuration file invalid!'
-      exit_code = 1
+      raise 'Instance configuration file invalid!'
     end
     @configs = $exception_handler.handle('INSTANCE configuration file invalid'){JSON.parse(instanceConfigFile)}
-    if @configs.nil?
-      $out.out 'Template configuration file is empty!'
-      exit_code = 1
-    else
-      LoadNodesProvider configs
-    end
+    raise 'Template configuration file is empty!' if @configs.nil?
+
+    LoadNodesProvider configs
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
     @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     #
     if @nodesProvider != 'mdbci'
-      exit_code = Generator.generate(path,configs,boxes,isOverride,nodesProvider)
+      Generator.generate(path,configs,boxes,isOverride,nodesProvider)
       $out.info 'Generating config in ' + path
     else
       $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_template'
@@ -470,15 +473,21 @@ class Session
     end
     # write nodes provider and template to configuration nodes dir file
     provider_file = path+'/provider'
-    if !File.exists?(provider_file)
+    if !File.exist?(provider_file)
       File.open(path+'/provider', 'w') { |f| f.write(@nodesProvider.to_s) }
+    else
+      raise 'Configuration \'provider\' template file don\'t exist'
     end
     if @nodesProvider != 'mdbci'
       template_file = path+'/template'
-      if !File.exists?(template_file); File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }; end
+      if !File.exist?(template_file)
+        File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }
+      else
+        raise 'Configuration \'template\' file don\'t exist'
+      end
     end
 
-    return exit_code
+    return 0
   end
 
   # Deploy configurations
@@ -544,13 +553,12 @@ class Session
           $out.info exec_cmd_destr
         end
 
-        no_parallel_flag = ""
-        if @nodesProvider == "aws"
-          no_parallel_flag = " --no-parallel "
+        no_parallel_flag = ''
+        if @nodesProvider == 'aws'
+          no_parallel_flag = " #{VAGRANT_NO_PARALLEL} "
         end
 
-        cmd_up = 'vagrant up' + no_parallel_flag + ' --provider=' + @nodesProvider + ' ' +
-          (up_type ? config[1]:'')
+        cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{(up_type ? config[1]:'')}"
         $out.info 'Actual command: ' + cmd_up
         Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
           stdin.close
@@ -569,24 +577,19 @@ class Session
   	    end
 
         if exit_code != 0
-          $out.info "Checking for all nodes to be started"
+          $out.info 'Checking for all nodes to be started'
           all_machines_started = true
-          invalid_states = ["not created", "poweroff"]
           Dir.glob('*.json', File::FNM_DOTMATCH) do |f|
             machine_name = f.chomp! ".json"
             status = `vagrant status #{machine_name}`.split("\n")[2]
-            invalid_states.each do |state|
-              if status.include? state
-                all_machines_started = false
-                $out.error "Machine #{machine_name} is in #{state} state"
-              end
+            if !status.include? 'running'
+              all_machines_started = false
+              $out.error "Machine #{machine_name} is not in running state"
             end
           end
 
           if i == @attempts && !all_machines_started
-            $out.error 'Bringing up failed'
-            $out.error 'Some machines are still down'
-            exit_code = 1
+            raise 'Bringing up failed, some machines are still down'
           end
         end
       end

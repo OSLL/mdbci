@@ -471,9 +471,6 @@ def Generator.checkPath(path, override)
 
   def Generator.generate(path, config, boxes, override, provider)
 
-    #TODO Errors check
-    exit_code = 1
-
     #TODO MariaDb Version Validator
 
     checkPath(path, override)
@@ -516,16 +513,13 @@ def Generator.checkPath(path, override)
         vagrant.puts Generator.vagrantConfigFooter
     end
 
-    if !File.size?(path+'/Vagrantfile') # nil if empty and not exist
-      exit_code = 0
-    else
-      $out.warning 'Generated Vagrantfile is empty! Please check configuration file and regenerate it.'
-      exit_code = 1
+    unless !File.size?(path+'/Vagrantfile') # nil if empty and not exist
+      raise 'Generated Vagrantfile is empty! Please check configuration file and regenerate it.'
     end
 
     vagrant.close
 
-    return exit_code
+    return 0
   end
 
 end
