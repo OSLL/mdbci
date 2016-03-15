@@ -31,27 +31,19 @@ describe 'Session' do
   end
 
   it '#findBoxField should return json with machine config' do
-    $session.field = nil
-    $session.boxName = 'ubuntu_trusty_vbox'
-    $session.findBoxField.should(eql('{"provider":"virtualbox","box":"http://localhost/test/Projects/OSLL/mdbci_main/testLibvirt/test.box","platform":"ubuntu","platform_version":"trusty"}'))
+    $session.findBoxField('ubuntu_trusty_vbox', nil).should(eql('{"provider":"virtualbox","box":"bento/ubuntu-14.04","box_version":"2.2.3","platform":"ubuntu","platform_version":"trusty"}'))
   end
 
   it '#findBoxField should return platforn field from machine config' do
-    $session.field = 'platform'
-    $session.boxName = 'ubuntu_trusty_vbox'
-    $session.findBoxField.should(eql('ubuntu'))
+    $session.findBoxField('ubuntu_trusty_vbox', 'platform').should(eql('ubuntu'))
   end
 
   it '#findBoxField should raise error "Box WRONG is not found"' do
-    $session.field = 'platform'
-    $session.boxName = 'WRONG'
-    lambda {$session.findBoxField}.should raise_error(RuntimeError, 'ERROR:  Box WRONG is not found')
+    lambda {$session.findBoxField('WRONG', 'platform')}.should raise_error(RuntimeError, 'Box WRONG is not found')
   end
 
   it '#findBoxField should raise error "ERROR:  Box ubuntu_trusty_vbox does not have WRONG key"' do
-    $session.field = 'WRONG'
-    $session.boxName = 'ubuntu_trusty_vbox'
-    lambda {$session.findBoxField}.should raise_error(RuntimeError, 'ERROR:  Box ubuntu_trusty_vbox does not have WRONG key')
+    lambda {$session.findBoxField('ubuntu_trusty_vbox', 'WRONG')}.should raise_error(RuntimeError, 'Box ubuntu_trusty_vbox does not have WRONG key')
   end
 
 end
