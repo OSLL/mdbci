@@ -4,7 +4,10 @@ require 'getoptlong'
 require 'json'
 
 LOG_FILE_OPTION = '--log-file'
+OUTPUT_LOG_FILE_OPTION = '--output-log-file'
 ONLY_FAILED_OPTION = '--only-failed'
+HUMAN_READABLE_OPTION = '--human-readable'
+HELP_OPTION = '--help'
 
 TEST_NUMBER = 'test_number'
 TEST_NAME = 'test_name'
@@ -16,17 +19,41 @@ FAILED_TESTS_COUNT = 'failed_tests_count'
 FAILED = 'Failed'
 PASSED = 'Passed'
 
+TIME_NOW = Time.now.strftime('[%d.%m.%Y %H:%M:%s]')
+
 opts = GetoptLong.new(
     [LOG_FILE_OPTION, '-l', GetoptLong::REQUIRED_ARGUMENT],
     [ONLY_FAILED_OPTION, '-f', GetoptLong::OPTIONAL_ARGUMENT],
+    [HUMAN_READABLE_OPTION, '-r', GetoptLong::OPTIONAL_ARGUMENT],
+    [OUTPUT_LOG_FILE_OPTION, '-o', GetoptLong::OPTIONAL_ARGUMENT],
+    [HELP_OPTION, '-h', GetoptLong::OPTIONAL_ARGUMENT]
 )
 
 $log_file_path = nil
+$only_failed = false
+$human_readable = false
+$output_log_file_path = nil
 
 opts.each do |opt, arg|
   case opt
     when LOG_FILE_OPTION
       $log_file_path = arg
+    when ONLY_FAILED_OPTION
+      $only_failed = true
+    when HUMAN_READABLE_OPTION
+      $human_readable = true
+    when OUTPUT_LOG_FILE_OPTION
+      $output_log_file_path = arg
+    when HELP_OPTION
+      puts <<-EOT
+CTest parser usage:
+    parse_ctest_log -l ctest_log_file_path
+        [-f true|false] - PARSE ONLY FAILED TESTS
+        [-r true|false] - HUMAN READABLE OUTPUT
+        [-o file_path] - CTEST PARSER OUTPUT LOG FILE
+        [-h help] - SHOW HELP
+      EOT
+      exit 0
   end
 end
 
@@ -35,8 +62,7 @@ def parseCtestLog()
   begin
     log = File.read $log_file_path
   rescue
-    at_exit {puts "ERROR: Can not find log file: #{$log_file_path}"}
-    exit 1
+    raise puts "ERROR: Can not find log file: #{$log_file_path}"
   end
   ctest_first_line_regex = /Constructing a list of tests/
   ctest_last_line_regex = /tests passed, .+ tests failed out of (.+)/
@@ -49,10 +75,7 @@ def parseCtestLog()
     end
     ctest_start_line += 1
   end
-  unless first_line_found
-    at_exit {puts "ERROR: Can not find CTest information (maybe it was not executed)"}
-    exit 1
-  end
+  raise puts "ERROR: Can not find CTest information (maybe it was not executed)" unless first_line_found
   ctest_log = log.split("\n")[ctest_start_line..-1]
   ctest_end_line = 0;
   ctest_log.each do |line|
@@ -85,7 +108,9 @@ def findTestsInfo(ctest_log, tests_quantity)
         if test_success == (FAILED)
           failed_tests_counter += 1
         end
-        tests_info.push(real_test_num=>{TEST_NAME=>current_test_name, TEST_SUCCESS=>test_success})
+        if test_success == FAILED or (!$only_failed and test_success == PASSED)
+          tests_info.push({TEST_NUMBER=>real_test_num, TEST_NAME=>current_test_name, TEST_SUCCESS=>test_success})
+        end
         current_test_name = nil
         real_test_num = nil
         test_counter += 1
@@ -96,5 +121,26 @@ def findTestsInfo(ctest_log, tests_quantity)
   return {FAILED_TESTS_COUNT=>failed_tests_counter, TESTS=>tests_info}
 end
 
+def generateHumanReadableInfo(parsedCTestInfo)
+  hr_tests = Array.new
+  parsedCTestInfo[TESTS].each do |test|
+    hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} - #{test[TEST_SUCCESS]}")
+  end
+  return hr_tests
+end
 
-puts JSON.pretty_generate(parseCtestLog())
+def showParsedInfo
+  parsed_ctest_data = parseCtestLog
+  if !$human_readable
+    puts JSON.pretty_generate(parsed_ctest_data)
+  elsif
+    generateHumanReadableInfo(parsed_ctest_data).each { |line| puts line }
+  end
+  open($output_log_file_path, 'a') do |f|
+    generateHumanReadableInfo(parsed_ctest_data).each do |line|
+      f.puts "#{TIME_NOW} #{line}"
+    end
+  end
+end
+
+showParsedInfo
