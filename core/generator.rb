@@ -141,8 +141,7 @@ Vagrant.configure(2) do |config|
     else
       templatedef = ''
     end
-    # default memory
-    vm_mem = '1024' unless vm_mem.nil?
+
     # ssh.pty option
     ssh_pty_option = sshPtyOption(ssh_pty)
 
@@ -392,7 +391,7 @@ def Generator.checkPath(path, override)
 
   def Generator.nodeDefinition(node, boxes, path, cookbook_path)
 
-    vm_mem = node[1]['memory_size'].nil? ? '1024' : node[1]['memory_size']
+    vm_mem = node[1]['memory_size'].nil? ? '1024' : node[1]['memory_size'].to_s
 
     # cookbook path dir
     if node[0]['cookbook_path']
