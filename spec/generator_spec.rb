@@ -52,8 +52,8 @@ describe "Generator" do
     end
 
     it "Check VBOX vm definition" do
-      vm_def = Generator.getVmDef('../cookbooks/recipes', 'node0', 'node0', 'ubuntu_trusty', '1024', './cnf', true)
-      Generator.getVmDef('../cookbooks/recipes', 'node0', 'node0', 'ubuntu_trusty', '1024', './cnf', true).should eq(vm_def)
+      vm_def = Generator.getVmDef('../cookbooks/recipes', 'node0', 'node0', 'ubuntu_trusty','true', '1024', './cnf', true)
+      Generator.getVmDef('../cookbooks/recipes', 'node0', 'node0', 'ubuntu_trusty', 'true', '1024', './cnf', true).should eq(vm_def)
     end
 
   end
@@ -73,8 +73,8 @@ describe "Generator" do
     end
 
     it "Check AWS VM definition" do
-      aws_def = Generator.getAWSVmDef('../recipes/cookbooks/', 'node1', 'centos7', 'ec2-user', 't1.micro', './cnf', true)
-      aws_def = Generator.getAWSVmDef('../recipes/cookbooks/', 'node1', 'centos7', 'ec2-user', 't1.micro', './cnf', true).should eq(aws_def)
+      aws_def = Generator.getAWSVmDef('../recipes/cookbooks/', 'node1', 'centos7', 'ec2-user', 'true', 't1.micro', './cnf', true)
+      aws_def = Generator.getAWSVmDef('../recipes/cookbooks/', 'node1', 'centos7', 'ec2-user', 'true', 't1.micro', './cnf', true).should eq(aws_def)
     end
 
   end
@@ -90,8 +90,8 @@ describe "Generator" do
     end
 
     it "Check Libvirt VM definition" do
-      qemu_def = Generator.getQemuDef('../cookbooks/recipes/', 'galera0', 'galera0', 'centos_7_libvirt', './cnf', true)
-      Generator.getQemuDef('../cookbooks/recipes/', 'galera0', 'galera0', 'centos_7_libvirt', './cnf', true).should eq(qemu_def)
+      qemu_def = Generator.getQemuDef('../cookbooks/recipes/', 'galera0', 'galera0', 'centos_7_libvirt', 'true', '1024', './cnf', true)
+      Generator.getQemuDef('../cookbooks/recipes/', 'galera0', 'galera0', 'centos_7_libvirt', 'true', '1024', './cnf', true).should eq(qemu_def)
     end
 
   end
@@ -107,8 +107,8 @@ describe "Generator" do
     end
 
     it "Check Docker VM definition" do
-      docker_def = Generator.getDockerDef('../cookbooks/recipes/', 'node0', './cnf', true)
-      Generator.getDockerDef('../cookbooks/recipes/', 'node0', './cnf', true).should eq(docker_def)
+      docker_def = Generator.getDockerDef('../cookbooks/recipes/', 'node0', 'true', './cnf', true)
+      Generator.getDockerDef('../cookbooks/recipes/', 'node0', 'true', './cnf', true).should eq(docker_def)
     end
 
     it "copy docker files" do

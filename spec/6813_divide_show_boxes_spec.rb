@@ -7,7 +7,7 @@ require_relative '../core/out'
 require_relative '../core/repo_manager'
 require_relative '../core/exception_handler'
 
-describe 'BoxesManager.showBoxes' do
+describe 'BoxesManager#showBoxesget' do
 
   before :all do
     $out = Out.new
@@ -25,19 +25,19 @@ describe 'BoxesManager.showBoxes' do
     boxesList = Array.new
     boxesList = ["ubuntu_trusty_libvirt", "ubuntu_trusty_docker", "ubuntu_trusty_vbox", "ubuntu_trusty_aws"]
     BoxesManager.getBoxesList('ubuntu', 'trusty')
-    $session.boxes.boxesList.should eq(boxesList)
+    $session.boxes.boxesList.sort.should eq(boxesList.sort)
   end
-  #
+
   it 'get boxes list ubuntu trusty exit_code 0' do
     exit_code = BoxesManager.getBoxesList('ubuntu', 'trusty')
     exit_code.should eq(0)
   end
-  #
+
   it 'get boxes list ubuntu 7 exit_code 1' do
     exit_code = BoxesManager.getBoxesList('ubuntu', '7')
     exit_code.should eq(1)
   end
-  #
+
   it 'print boxes list ubuntu trusty exit_code' do
     boxesList = Array.new
     boxesList = ["ubuntu_trusty_libvirt", "ubuntu_trusty_docker", "ubuntu_trusty_vbox", "ubuntu_trusty_aws"]
@@ -46,25 +46,24 @@ describe 'BoxesManager.showBoxes' do
     exit_code = BoxesManager.printBoxes(boxesList)
     exit_code.should eq(0)
   end
-  #
+
   it 'get boxes list centos 7' do
     boxesList = Array.new
     boxesList = ["centos_7_libvirt", "centos_7_docker", "centos_7_aws", "centos_7_aws_large"]
     exit_code = BoxesManager.getBoxesList('centos', '7')
-    #exit_code.should eq(0)
-    $session.boxes.boxesList.should eq(boxesList)
+    $session.boxes.boxesList.sort.should eq(boxesList.sort)
   end
-  #
+
   it 'get boxes list centos trusty exit_code 0' do
     exit_code = BoxesManager.getBoxesList('centos', '7')
     exit_code.should eq(0)
   end
-  #
+
   it 'get boxes list centos 7 exit_code 1' do
     exit_code = BoxesManager.getBoxesList('centos', 'trusty')
     exit_code.should eq(1)
   end
-  #
+
   it 'print boxes list centos 7 exit_code' do
     boxesList = Array.new
     boxesList = ["centos_7_libvirt", "centos_7_docker", "centos_7_aws", "centos_7_aws_large"]

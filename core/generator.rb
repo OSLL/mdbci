@@ -134,14 +134,14 @@ Vagrant.configure(2) do |config|
   end
 
   # Vagrantfile for Libvirt provider
-  def Generator.getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, template_path, provisioned)
-
+  def Generator.getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
     if template_path
       templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates') \
                     +", type:"+quote('rsync')
     else
       templatedef = ''
     end
+
     # ssh.pty option
     ssh_pty_option = sshPtyOption(ssh_pty)
 
@@ -153,7 +153,8 @@ Vagrant.configure(2) do |config|
             + "\t"+name+'.vm.synced_folder '+quote('./')+", "+quote('/vagrant')+", type: "+quote('rsync')+"\n" \
             + templatedef + "\n"\
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
-            + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n\tend"
+            + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n" \
+            + "\t\t"+'qemu.memory = ' + vm_mem + "\n\tend"
     if provisioned
       qemudef += "\t##--- Chef binding ---\n"\
             + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
@@ -390,7 +391,7 @@ def Generator.checkPath(path, override)
 
   def Generator.nodeDefinition(node, boxes, path, cookbook_path)
 
-    vm_mem = node[1]['memory_size'].nil? ? '1024' : node[1]['memory_size']
+    vm_mem = node[1]['memory_size'].nil? ? '1024' : node[1]['memory_size'].to_s
 
     # cookbook path dir
     if node[0]['cookbook_path']
@@ -448,7 +449,7 @@ def Generator.checkPath(path, override)
         when 'aws'
           machine = getAWSVmDef(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned)
         when 'libvirt'
-          machine = getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, template_path, provisioned)
+          machine = getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'docker'
           machine = getDockerDef(cookbook_path, name, ssh_pty, template_path, provisioned)
           copyDockerfiles(path, name, platform, platform_version)
@@ -470,9 +471,6 @@ def Generator.checkPath(path, override)
   end
 
   def Generator.generate(path, config, boxes, override, provider)
-
-    #TODO Errors check
-    exit_code = 1
 
     #TODO MariaDb Version Validator
 
@@ -516,16 +514,13 @@ def Generator.checkPath(path, override)
         vagrant.puts Generator.vagrantConfigFooter
     end
 
-    if !File.size?(path+'/Vagrantfile') # nil if empty and not exist
-      exit_code = 0
-    else
-      $out.warning 'Generated Vagrantfile is empty! Please check configuration file and regenerate it.'
-      exit_code = 1
+    unless !File.size?(path+'/Vagrantfile') # nil if empty and not exist
+      raise 'Generated Vagrantfile is empty! Please check configuration file and regenerate it.'
     end
 
     vagrant.close
 
-    return exit_code
+    return 0
   end
 
 end
