@@ -134,14 +134,15 @@ Vagrant.configure(2) do |config|
   end
 
   # Vagrantfile for Libvirt provider
-  def Generator.getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, template_path, provisioned)
-
+  def Generator.getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
     if template_path
       templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates') \
                     +", type:"+quote('rsync')
     else
       templatedef = ''
     end
+    # default memory
+    vm_mem = '1024' unless vm_mem.nil?
     # ssh.pty option
     ssh_pty_option = sshPtyOption(ssh_pty)
 
@@ -153,7 +154,8 @@ Vagrant.configure(2) do |config|
             + "\t"+name+'.vm.synced_folder '+quote('./')+", "+quote('/vagrant')+", type: "+quote('rsync')+"\n" \
             + templatedef + "\n"\
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
-            + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n\tend"
+            + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n" \
+            + "\t\t"+'qemu.memory = ' + vm_mem + "\n\tend"
     if provisioned
       qemudef += "\t##--- Chef binding ---\n"\
             + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
@@ -448,7 +450,7 @@ def Generator.checkPath(path, override)
         when 'aws'
           machine = getAWSVmDef(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned)
         when 'libvirt'
-          machine = getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, template_path, provisioned)
+          machine = getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'docker'
           machine = getDockerDef(cookbook_path, name, ssh_pty, template_path, provisioned)
           copyDockerfiles(path, name, platform, platform_version)
