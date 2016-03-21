@@ -1,10 +1,9 @@
 require 'rspec'
-require 'spec_helper'
-require_relative '../core/out'
-require_relative '../core/exception_handler'
-require_relative '../core/boxes_manager'
-require_relative '../core/session'
-require_relative '../core/network'
+require_relative '../spec_helper'
+require_relative '../../core/out'
+require_relative '../../core/exception_handler'
+require_relative '../../core/boxes_manager'
+require_relative '../../core/session'
 
 describe 'Session' do
 
@@ -28,31 +27,23 @@ describe 'Session' do
   # that can be accessed through ssh
 
   it '#ssh should exit with zero code for concrete mdbci/ppc64 node' do
-    Network.show(ENV['pathToConfigToMDBCINode'].to_s).should(eql(0))
+    $session.ssh(ENV['pathToConfigToMDBCINode'].to_s).should(eql(0))
   end
 
   it '#ssh should exit with zero code for all mdbci/ppc64 nodes' do
-    Network.show(ENV['pathToConfigToMDBCIFolder'].to_s).should(eql(0))
-  end
-
-  it '#ssh should exit with zero code for all mdbci/ppc64 nodes (when mdbci node is wrong)' do
-    Network.show(ENV['pathToConfigToMDBCIFolder'].to_s + '/NOT_EXISTS').should(eql(1))
+    $session.ssh(ENV['pathToConfigToMDBCIFolder'].to_s).should(eql(0))
   end
 
   it '#ssh should exit with zero code for all aws/vbox nodes' do
-    Network.show(ENV['pathToConfigToVBOXNode'].to_s).should(eql(0))
+    $session.ssh(ENV['pathToConfigToVBOXNode'].to_s).should(eql(0))
   end
 
-  it '#ssh should exit with non-zero code for mdbci/ppc64 nodes (when box parameter does npt exists)' do
-    Network.show(ENV['pathToConfigToMDBCIBadNode'].to_s).should(eql(1))
-  end
-
-  it '#ssh should exit with non-zero code (when argument is nil)' do
-    Network.show(nil).should(eql(1))
+  it '#ssh should exit with non-zero code for mdbci/ppc64 nodes (when IP is wrong)' do
+    $session.ssh(ENV['pathToConfigToMDBCIBadNode'].to_s).should(eql(1))
   end
 
   it '#ssh should exit with non-zero code (when no such machine exists)' do
-    Network.show('NOT_EXISTS').should(eql(1))
+    $session.ssh('TEST_MACHINE').should(eql(1))
   end
 
 end

@@ -1,9 +1,9 @@
 require 'rspec'
-require 'spec_helper'
-require_relative '../core/out'
-require_relative '../core/exception_handler'
-require_relative '../core/boxes_manager'
-require_relative '../core/session'
+require_relative '../spec_helper'
+require_relative '../../core/out'
+require_relative '../../core/exception_handler'
+require_relative '../../core/boxes_manager'
+require_relative '../../core/session'
 
 describe 'Session' do
 

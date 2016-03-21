@@ -1,0 +1,8 @@
+{
+  "cookbook_path" : "../recipes/cookbooks/",
+  "aws_config" : "../aws-config.yml",
+  "mdbci_bad_no_box" :
+  {
+    "hostname" : "mdbci_bad_no_box"
+  }
+}

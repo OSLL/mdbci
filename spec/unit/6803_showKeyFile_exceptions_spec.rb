@@ -1,10 +1,11 @@
 require 'rspec'
-require 'spec_helper'
-require_relative '../core/session'
-require_relative '../core/network'
-require_relative '../core/exception_handler'
-require_relative '../core/repo_manager'
-require_relative '../core/boxes_manager'
+
+require_relative '../spec_helper'
+require_relative '../../core/session'
+require_relative '../../core/network'
+require_relative '../../core/exception_handler'
+require_relative '../../core/repo_manager'
+require_relative '../../core/boxes_manager'
 
 describe 'Network' do
 
