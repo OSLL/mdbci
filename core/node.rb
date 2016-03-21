@@ -62,8 +62,7 @@ class Node
     exit_code = 1
 
     if provider.nil?
-      $out.error "Can not identify configuration for provider #{provider.to_s}"
-      exit_code = 1
+      raise $out.error "Can not identify configuration for provider #{provider.to_s}"
     end
 
     case provider
@@ -95,8 +94,7 @@ class Node
     !@ip.to_s.empty? ? $out.info('IP:'+@ip.to_s) : $out.warning('IP address is not received!')
 
     if exit_code != 0
-      $out.error "vagrant ssh get IP command returned non-zero exit code: (#{$?.exitstatus})"
-      exit_code = 1
+      raise $out.error "vagrant ssh get IP command returned non-zero exit code: (#{$?.exitstatus})"
     end
 
     return exit_code

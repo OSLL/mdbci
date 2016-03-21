@@ -90,8 +90,8 @@ describe "Generator" do
     end
 
     it "Check Libvirt VM definition" do
-      qemu_def = Generator.getQemuDef('../cookbooks/recipes/', 'galera0', 'galera0', 'centos_7_libvirt', 'true', './cnf', true)
-      Generator.getQemuDef('../cookbooks/recipes/', 'galera0', 'galera0', 'centos_7_libvirt', 'true', './cnf', true).should eq(qemu_def)
+      qemu_def = Generator.getQemuDef('../cookbooks/recipes/', 'galera0', 'galera0', 'centos_7_libvirt', 'true', '1024', './cnf', true)
+      Generator.getQemuDef('../cookbooks/recipes/', 'galera0', 'galera0', 'centos_7_libvirt', 'true', '1024', './cnf', true).should eq(qemu_def)
     end
 
   end
