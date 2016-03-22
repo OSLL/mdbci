@@ -235,160 +235,89 @@ class NodeProduct
   end
 
   def self.installProduct(args)
-
-    exit_code = 1
-    possibly_failed_command = ''
-
     pwd = Dir.pwd
-
     # Loading file with product packages to every system
     products = JSON.parse(File.read('products.json'))
-
-    if args.nil?
-      $out.error 'Configuration name is required'
-      exit_code = 1
-    end
-
+    raise 'Configuration name is required' if args.nil?
     args = args.split('/')
     # mdbci box
     if File.exist?(args[0]+'/mdbci_template')
       $session.loadMdbciNodes args[0]
       if args[1].nil?     # read ip for all nodes
-        if $session.mdbciNodes.length == 0
-          $our.error "nodes not found in #{args[0]}"
-          exit_code = 1
-        end
-
+        $our.error "nodes not found in #{args[0]}" if $session.mdbciNodes.empty?
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
-          if !box.empty?
-            mdbci_params = $session.boxes.getBox(box)
-            platform = $session.boxes.platformKey(box).split('^')
-
-            packages = validateProduct(platform[0], products)
-            if packages == nil
-              version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
-              $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}"
-              exit_code = 1
-            end
-
-            $out.info 'Install '+$session.nodeProduct.to_s+' repo to '+platform[0]
-
-            # execute command
-            command = installProductToMdbciCmd(platform[0], packages)
-            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
-                            + mdbci_params['user'].to_s + '@'\
-                            + mdbci_params['IP'].to_s + ' '\
-                            + "'" + command.to_s + "'"
-            $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
-            vagrant_out = `#{cmd}`
-            #$out.out vagrant_out
-
-            exit_code = $?.exitstatus
-            possibly_failed_command = cmd
-          end
+          raise "Box parameter is not found for #{node[0]}" if box.empty?
+          mdbci_params = $session.boxes.getBox(box)
+          raise "Box is not found for #{node[0]}" if mdbci_params.nil?
+          platform = $session.boxes.platformKey(box).split('^')
+          packages = validateProduct(platform[0], products)
+          version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
+          raise "Product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}" if packages.nil?
+          $out.info "Install #{$session.nodeProduct} repo to #{platform[0]}"
+          # execute command
+          command = installProductToMdbciCmd(platform[0], packages)
+          cmd = "ssh -i #{pwd}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
+          $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
+          vagrant_out = `#{cmd}`
+          $out.info vagrant_out
+          raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}" if $?.exitstatus != 0
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
-
-        if mdbci_node == nil
-          $out.error "node #{args[1]} not found in #{args[0]}"
+        raise "node #{args[1]} not found in #{args[0]}" if mdbci_node.nil?
+        box = mdbci_node[1]['box'].to_s
+        raise "Box parameter is not found for #{args[1]}/#{args[0]}" if box.empty?
+        mdbci_params = $session.boxes.getBox(box)
+        platform = $session.boxes.platformKey(box).split('^')
+        packages = validateProduct(platform[0], products)
+        if packages == nil
+          version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
+          $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}"
           exit_code = 1
         end
-
-        box = mdbci_node[1]['box'].to_s
-        if !box.empty?
-          mdbci_params = $session.boxes.getBox(box)
-          platform = $session.boxes.platformKey(box).split('^')
-
-          packages = validateProduct(platform[0], products)
-          if packages == nil
-            version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
-            $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}"
-            exit_code = 1
-          end
-
-          $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0].to_s
-
-          # execute command
-          command = installProductToMdbciCmd(platform[0], packages)
-          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + ' '\
-                            + mdbci_params['user'].to_s + '@'\
-                            + mdbci_params['IP'].to_s + ' '\
-                            + "'" + command.to_s + "'"
-          $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
-          vagrant_out = `#{cmd}`
-          #$out.out vagrant_out
-
-          exit_code = $?.exitstatus
-          possibly_failed_command = cmd
-        end
+        $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0].to_s
+        # execute command
+        command = installProductToMdbciCmd(platform[0], packages)
+        cmd = "ssh -i #{pwd}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
+        $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
+        vagrant_out = `#{cmd}`
+        $out.info vagrant_out
+        raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}" if $?.exitstatus != 0
       end
     else # aws, vbox, libvirt, docker nodes
       Dir.chdir args[0]
       $session.loadTemplateNodes
-
       if args[1].nil? # No node argument, copy keys to all nodes
-
-        if $session.templateNodes.length == 0
-          $our.error "nodes not  found in #{args[0]}"
-          exit_code = 1
-        end
-
+        raise "nodes not  found in #{args[0]}" if $session.templateNodes.empty?
         $session.templateNodes.each do |node|
           platform = $session.loadNodePlatform(node[0].to_s).split('^')
-
           packages = validateProduct(platform[0], products)
-          if packages == nil
-            version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
-            $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}"
-            exit_code = 1
-          end
-
+          version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
+          raise "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}" if packages.nil?
           $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0]
-
           # execute command
           cmd = installProductCmd(platform[0], node[0], packages)
           vagrant_out = `#{cmd}`
-          #$out.info vagrant_out
-
-          exit_code = $?.exitstatus
-          possibly_failed_command = cmd
+          $out.info vagrant_out
+          raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}" if $?.exitstatus != 0
         end
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
-
-        if node == nil
-          $out.error "node #{args[1]} not found in #{args[0]}"
-          exit_code = 1
-        end
-
+        raise "node #{args[1]} not found in #{args[0]}" if node.nil?
         platform = $session.loadNodePlatform(node[0].to_s).split('^')
-
         packages = validateProduct(platform[0], products)
-        if packages == nil
-          $out.error "product #{$session.nodeProduct} not found for platform #{platform[0]}"
-          exit_code = 1
-        end
-
+        raise "product #{$session.nodeProduct} not found for platform #{platform[0]}" if packages.nil?
         $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
         # execute command
         cmd = installProductCmd(platform[0], node[0], packages)
         vagrant_out = `#{cmd}`
-
-        exit_code = $?.exitstatus
-        possibly_failed_command = cmd
+        $out.info vagrant_out
+        raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}" if $?.exitstatus != 0
       end
     end
-
     Dir.chdir pwd
-
-    if exit_code != 0
-      $out.error "command #{possibly_failed_command} exit with non-zero code: #{exit_code}"
-      exit_code = 1
-    end
-
-    return exit_code
+    return 0
   end
 
   # install Maxscale product command for Vagrant nodes
