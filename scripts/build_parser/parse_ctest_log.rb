@@ -169,16 +169,15 @@ class CTestParser
 
   def saveParsedDataToEnvironmentalFile(parsed_ctest_data)
     open($output_log_file_path, 'w') do |f|
-      f.puts "#{BUILD_LOG_PARSING_RESULT}=\""
+      f.puts "#{BUILD_LOG_PARSING_RESULT}= \\"
       if @ctest_executed
+        f.puts "#{@ctest_summary} \\"
         generateHumanReadableInfo(parsed_ctest_data).each do |line|
-          f.puts "#{line}"
+          f.puts "#{line} \\"
         end
-        f.puts "#{@ctest_summary}"
       elsif
         f.puts "#{CTEST_NOT_EXECUTED_ERROR}"
       end
-      f.puts "\""
     end
   end
 
