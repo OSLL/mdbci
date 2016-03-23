@@ -105,7 +105,7 @@ class CTestParser
       tests_quantity = ctest_log[-1].match(ctest_last_line_regex).captures[0]
       return {TESTS_COUNT=>tests_quantity}.merge findTestsInfo(ctest_log, tests_quantity)
     end
-    return null
+    return nil
   end
 
   def findTestsInfo(ctest_log, tests_quantity)
