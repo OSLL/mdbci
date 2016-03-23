@@ -154,7 +154,7 @@ class CTestParser
     if @ctest_executed
       puts JSON.pretty_generate(parsed_ctest_data)
     elsif
-      puts JSON.pretty_generate({ERROR=>CTEST_NOT_EXECUTED_ERROR})
+      puts CTEST_NOT_EXECUTED_ERROR
     end
   end
 
