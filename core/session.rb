@@ -792,7 +792,6 @@ class Session
       if params.has_value?(boxPlatform)
         box_platform_version = params['platform_version']
         boxes_versions.push(box_platform_version)
-        exit_code = 0
       else
         raise "#{boxPlatform} has 0 supported versions! Please check box platform!"
       end
