@@ -66,10 +66,12 @@ class CTestParser
 
   attr_accessor :ctest_executed
   attr_accessor :ctest_summary
+  attr_accessor :ctest_test_indexes
 
   def initialize
     @ctest_executed = false
     @ctest_summary = nil
+    @ctest_test_indexes = Array.new
   end
 
   def parseCtestLog()
@@ -131,6 +133,7 @@ class CTestParser
           end
           if test_success == FAILED or (!$only_failed and test_success == PASSED)
             tests_info.push({TEST_NUMBER=>real_test_num, TEST_NAME=>current_test_name, TEST_SUCCESS=>test_success})
+            @ctest_test_indexes.push(real_test_num)
           end
           current_test_name = nil
           real_test_num = nil
@@ -160,8 +163,10 @@ class CTestParser
 
   def showHumanReadableParsedInfo(parsed_ctest_data)
     if @ctest_executed
-      generateHumanReadableInfo(parsed_ctest_data).each { |line| puts line }
       puts "#{@ctest_summary}"
+      puts "CTEST arguments #{@ctest_test_indexes.join(',')}"
+      generateHumanReadableInfo(parsed_ctest_data).each { |line| puts line }
+
     else
       puts "#{CTEST_NOT_EXECUTED_ERROR}"
     end
@@ -172,6 +177,7 @@ class CTestParser
       f.puts "#{BUILD_LOG_PARSING_RESULT}= \\"
       if @ctest_executed
         f.puts "#{@ctest_summary} \\"
+        f.puts "CTEST arguments #{@ctest_test_indexes.join(',')} \\"
         generateHumanReadableInfo(parsed_ctest_data).each do |line|
           f.puts "#{line} \\"
         end
