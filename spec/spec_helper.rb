@@ -2,21 +2,8 @@ require 'open3'
 
 # Suppressing application output (it does not affect rspec output)
 module ExecutionHelper
-  attr_accessor :original_stdout
-  attr_accessor :original_stderr
-
-  def redirect_output
-    @original_stdout, $stdout = $stdout, File.open('/dev/null', 'w')
-    @original_stderr, $stderr = $stderr, File.open('/dev/null', 'w')
-  end
-
-  def reset_output
-    $stdout, @original_stdout = @original_stdout, nil
-    $stderr, @original_stderr = @original_stderr, nil
-  end
-
   module ClassMethods
-    # $shall_command_with_expectations - Array of Hashes like [{'shell_command'=>'echo *', 'expectation'=>1}, ...]
+    # shall_command_with_expectations - Array of Hashes like [{'shell_command'=>'echo *', 'expectation'=>1}, ...]
     def executeShellCommandsAndTestExitCode (shell_commands_with_expectations)
       context 'shell command' do
         shell_commands_with_expectations.each do |shell_command_with_expectation|
@@ -83,14 +70,6 @@ RSpec.configure do |config|
 
   # Making function for suppressing/encouraging available to rspec
   config.include ExecutionHelper
-
-  # Applying them before and after each test
-  config.before(:each) do
-    redirect_output
-  end
-  config.after(:each) do
-    reset_output
-  end
 
 # The settings below are suggested to provide a good initial experience
 # with RSpec, but feel free to customize to your heart's content.

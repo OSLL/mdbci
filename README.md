@@ -432,7 +432,6 @@ mdbci [options] <show | setup | generate>
 Run command inside of VM
 
 ```
-  ./mdbci show versions --platform ubuntu
   ./mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
   ./mdbci ssh --command "cat anaconda.syslog" T/node0 --silent
   ./mdbci setup_repo --product maxscale T/node0
@@ -451,11 +450,15 @@ Show repos with using alternative repo.d repository
 MDBCI scripts are located in the **mdbci/scripts** directory. Their main goal is to setup and control Vagrant infrastructure.
 
 * **./clean_vms.sh** - cleanup launched mdbci virtual machines (vbox, libvirt, docker) at the current platform. One parameter: substring
+* **./run_tests.sh** - run tests that does not require virtual machines to be running. One possible named parameter for printing output: [-s true|false]
    
 Run script examples
 
 ```
   ./clean_vms.sh mdbci - find all VMs with ID prefix mdbci* and cleanup them.
+  ./run_tests.sh -s true - run tests without output from mdbci inner methods
+  ./run_tests.sh - run tests without output from mdbci inner methods
+  ./run_tests.sh -s false - run tests with output from mdbci inner methods
 ```
   
 ## Using vagrant to manage stand

@@ -43,15 +43,17 @@ class RepoManager
   end
 
   def getRepo(key)
-    @repos[key]
+    repo = @repos[key]
+    raise "Repository for key #{key} was not found" if repo.nil?
+    return repo
   end
 
   def lookup(path)
     $out.info 'Looking up for repos '+path
-
     Dir.glob(path+'/**/*.json', File::FNM_DOTMATCH) do |f|
       addRepo(f)
     end
+    raise 'Repositories was not found' if @repos.empty?
     $out.info 'Loaded repos: ' + @repos.size.to_s
   end
 
