@@ -374,7 +374,7 @@ class Session
       when 'repos'
         @repos.show
       when 'versions'
-        exit_code = boxesPlatformVersions
+        exit_code = showBoxesPlatformVersions
       when 'platforms'
         exit_code = showPlatforms
       when 'network'
@@ -763,43 +763,43 @@ class Session
   end
 
   # print boxes platform versions by platform name
-  def boxesPlatformVersions
-    exit_code = 1
-
+  def showBoxesPlatformVersions
+    exit_code = 0
     if $session.boxPlatform == nil
-      $out.error "Specify parameter --platforms and try again"
-      exit_code = 1
+      raise "Specify parameter --platforms and try again"
     end
 
     # check for supported platforms
     some_platform = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
     if some_platform.nil?
-      $out.error "Platform #{$session.boxPlatform} is not supported!"
-      exit_code = 1
+      raise  "Platform #{$session.boxPlatform} is not supported!"
     else
       $out.info "Supported versions for #{$session.boxPlatform}:"
     end
+    
+    boxes_versions = getBoxesPlatformVersions($session.boxPlatform ,$session.boxes.boxesManager)
+    
+    # output platforms versions
+    boxes_versions.each { |version| $out.out version }
+    return exit_code
+  end
 
+  def getBoxesPlatformVersions(boxPlatform, boxesManager)
     boxes_versions = Array.new
-
     # get boxes platform versions
-    $session.boxes.boxesManager.each do |box, params|
-      next if params['platform'] != $session.boxPlatform # skip unknown platform
-      if params.has_value?($session.boxPlatform)
-        box_platform_version = params['platform_version']
-        boxes_versions.push(box_platform_version)
-        exit_code = 0
-      else
-        $out.error "#{$session.boxPlatform} has 0 supported versions! Please check box platform!"
-        exit_code = 1
+    boxesManager.each do |box, params|
+      next if params['platform'] != boxPlatform # skip unknown platform
+      
+      if !(params.has_value?(boxPlatform))
+      	raise "#{boxPlatform} has 0 supported versions! Please check box platform!"
       end
+
+      box_platform_version = params['platform_version']
+      boxes_versions.push(box_platform_version)
     end
 
-    # output platforms versions
     boxes_versions = boxes_versions.uniq # delete duplicates values
-    boxes_versions.each { |version| $out.out version }
-
-    return exit_code
+    return boxes_versions
   end
 
 
