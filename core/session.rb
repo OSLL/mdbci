@@ -631,8 +631,7 @@ class Session
     exit_code = 1
 
     if args.nil?
-      $out.error 'Configuration name is required'
-      exit_code = 1
+      raise 'Configuration name is required'
     end
 
     args = args.split('/')
@@ -694,16 +693,14 @@ class Session
     else # aws, vbox, libvirt, docker nodes
 
       unless Dir.exists? args[0]
-        $out.error "Directory with nodes does not exists: #{args[1]}"
-        exit_code = 1
+        raise "Directory with nodes does not exists: #{args[1]}"
       end
 
       network = Network.new
       network.loadNodes args[0] # load nodes from dir
 
       if network.nodes.empty?
-        $out.error "No aws, vbox, libvirt, docker nodes found in #{args[0]}"
-        exit_code = 1
+        raise "No aws, vbox, libvirt, docker nodes found in #{args[0]}"
       end
 
       if args[1].nil? # No node argument, copy keys to all nodes
