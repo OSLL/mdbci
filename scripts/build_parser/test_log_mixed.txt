@@ -1,0 +1,235 @@
++ ssh -i -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no @ 'sudo  /home//ccore/add_core_cnf.sh'
+Warning: Identity file -o not accessible: No such file or directory.
+ssh: Could not resolve hostname userknownhostsfile=/dev/null: Name or service not known
++ set +x
++ cd /home/vagranttest/.jenkins/jobs/run_test/workspace
++ ctest -VV -D Nightly -I 1,2,,7
+UpdateCTestConfiguration  from :/home/vagranttest/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+Parse Config file:/home/vagranttest/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+   Site: maxscale-jenkins.mariadb.com
+   Build name: BRANCH-develop-MXS-329-1-develop-MXS-329-1
+Determine Nightly Start Time
+   Specified time: 01:00:00 UTC
+Create new tag: 20151110-0100 - Nightly
+CMake Error: Cannot open file for write: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/Temporary/LastUpdate_20151110-0100.log.tmp
+CMake Error: : System Error: Permission denied
+Problem opening file: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/Temporary/LastUpdate_20151110-0100.log
+Cannot create log file: LastUpdate_20151110-0100.log
+   Updating the repository: /home/vagrant/.jenkins/jobs/run_test/workspace
+   Use GIT repository type
+Cannot create directory /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/20151110-0100
+Cannot create resulting XML file: Update.xml
+Cannot open log file
+Configure project
+Cannot create directory /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/20151110-0100
+Cannot create resulting XML file: Configure.xml
+Cannot open configure file
+UpdateCTestConfiguration  from :/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+Parse Config file:/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+Build project
+MakeCommand:/usr/bin/make -i
+CMake Error: Cannot open file for write: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/Temporary/LastBuild_20151110-0100.log.tmp
+CMake Error: : System Error: Permission denied
+Problem opening file: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/Temporary/LastBuild_20151110-0100.log
+Cannot create log file: LastBuild_20151110-0100.log
+Cannot create build log file
+Run command: "/usr/bin/make" "-i"
+   Each symbol represents 1024 bytes of output.
+   '!' represents an error and '*' a warning.
+    .[  0%] Built target binlog_incompl
+[  0%] Built target bug143
+[  0%] Built target bug359
+[  0%] Built target bug422
+[  0%] Built target bug448
+[  0%] Built target bug471
+[  0%] Built target bug473
+[  0%] Built target bug475
+[  0%] Built target bug479
+[  0%] Built target bug488
+[  0%] Built target bug493
+[  0%] Built target bug495
+[  0%] Built target bug507
+[  0%] Built target bug509
+[  0%] Built target bug519
+[  0%] Built target bug526
+[  0%] Built target bug529
+[  0%] Built target bug539
+[  0%] Built target bug547
+[  0%] Built target bug565
+[  0%] Built target bug571
+[  0%] Built target bug572
+[  0%] Built target bug587
+[  0%] Built target bug592
+[  0%] Built target bug601
+[  0%] Built target bug620
+[  0%] Built target bug626
+[  0%] Built target bug634
+[  0%] Built target bug643
+[  0%] Built target bug643_1
+[  0%] Built target bug645
+[  0%] Built target bug645_1
+[  0%] Built target bug649
+[  0%] Built target bug650
+[  0%] Built target bug653
+[  0%] Built target bug654
+[  0%] Built target bug656
+[  0%] .Built target bug657
+[  0%] Built target bug658
+[  0%] Built target bug662
+[  0%] Built target bug664
+[  0%] Built target bug670
+[  0%] Built target bug673
+[  0%] Built target bug676
+[  0%] Built target bug681
+[  0%] Built target bug694
+[  0%] Built target bug699
+[  0%] Built target bug705
+[  0%] Built target bug711
+[  0%] Built target bug718
+[  0%] Built target bug729
+[  0%] Built target bug730
+[  0%] Built target change_master
+[  0%] Built target change_master_during_session
+[  0%] Built target change_user
+[  0%] Built target config_reload
+[  0%] Built target config_reload_stress
+[  0%] Built target connect_to_nonexisting_db
+[  0%] Built target crash_out_of_files
+[  0%] Built target crash_out_of_files_galera
+[  0%] Built target fwf
+[  0%] Built target generate_log_sql
+[  0%] Built target kill_master
+[  0%] Built target load_balancing
+[  0%] Built target maxadmin
+[  0%] Built target mm
+[  0%] Built target mxs118
+[  0%] Built target mxs127
+[  0%] Built target mxs314
+[  0%] Built target mxs321
+[  0%] .Built target mxs431
+[  0%] Built target mxs47
+[  0%] Built target pers_01
+[  0%] Built target pers_02
+[  0%] Built target prepared_statement
+[  0%] Built target readconnrouter_master
+[  0%] Built target readconnrouter_slave
+[  0%] Built target rw_galera_select_insert
+[  0%] Built target rw_select_insert
+[  0%] Built target rwsplit_conn_num
+[  0%] Built target rwsplit_connect
+[  0%] Built target schemarouter_duplicate_db
+[  0%] Built target script
+[  0%] Built target server_weight
+[  0%] Built target session_limits
+[  0%] Built target setup_binlog
+[  0%] Built target setup_binlog_crc_32
+[  0%] Built target setup_binlog_crc_none
+[  0%] Built target sharding
+[  0%] Built target short_sessions
+[  0%] Built target slave_failover
+[  0%] Built target slave_lag
+[  0%] Built target sql_queries
+[  0%] Built target sysbench_kill_slave
+[  0%] Built target t
+[  0%] Built target temporal_tables
+[  0%] Built target transaction_test_wo_maxscale
+ Size of output: 3K
+Command exited with the value: 0
+Cannot create directory /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/20151110-0100
+Cannot create resulting XML file: Build.xml
+Cannot create build XML file
+UpdateCTestConfiguration  from :/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+Parse Config file:/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+Test project /home/vagrant/.jenkins/jobs/run_test/workspace
+CMake Error: Cannot open file for write: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/Temporary/LastTest_20151110-0100.log.tmp
+CMake Error: : System Error: Permission denied
+Problem opening file: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/Temporary/LastTest_20151110-0100.log
+Cannot create log file: LastTest_20151110-0100.log
+Constructing a list of tests
+Checking test dependency graph...
+Checking test dependency graph end
+test 1
+    Start 1: readconnrouter_master
+
+1: Test command: /home/vagrant/.jenkins/jobs/run_test/workspace/readconnrouter_master
+1: Test timeout computed to be: 1500
+1: Reading test setup configuration from environmental variables
+1: Checking node 0
+1: Warning: Identity file -o not accessible: No such file or directory.
+1: Node 0 is not available
+1: stopping node 0: cd
+1: starting node 0: cd
+1: Checking node 1
+1: Warning: Identity file -o not accessible: No such file or directory.
+1: cp: cannot stat 'LogLevel=quiet': No such file or directory
+1: Warning: Identity file -o not accessible: No such file or directory.
+1: ssh: Could not resolve hostname : Name or service not known
+1: chmod: changing permissions of 'LOGS/readconnrouter_master/error1.log': Operation not permitted
+1: chmod: changing permissions of 'LOGS/readconnrouter_master/maxscale.cnf': Operation not permitted
+1: 62.115155: copy_logs.sh executing FAILED!
+1/3 Test #1: readconnrouter_master ............***Failed  456.80 sec
+test 2
+    Start 2: readconnrouter_slave
+
+2: Test command: /home/vagrant/.jenkins/jobs/run_test/workspace/readconnrouter_slave
+2: Test timeout computed to be: 1500
+2: cp: cannot stat 'LogLevel=quiet': No such file or directory
+2: Warning: Identity file -o not accessible: No such file or directory.
+2: ssh: Could not resolve hostname : Name or service not known
+2: chmod: changing permissions of 'LOGS/readconnrouter_slave/error1.log': Operation not permitted
+2: chmod: changing permissions of 'LOGS/readconnrouter_slave/maxscale.cnf': Operation not permitted
+2: 21.091950: copy_logs.sh executing FAILED!
+2/3 Test #2: readconnrouter_slave .............   Passed  415.77 sec
+test 7
+    Start 7: server_weight
+
+7: Test command: /home/vagrant/.jenkins/jobs/run_test/workspace/server_weight
+7: Test timeout computed to be: 1500
+7: Reading test setup configuration from environmental variables
+7: ssh: Could not resolve hostname : Name or service not known
+7: Error copying Maxscale logs
+7: cp: cannot stat 'UserKnownHostsFile=/dev/null': No such file or directory
+7: cp: cannot stat '-o': No such file or directory
+7: cp: cannot stat 'StrictHostKeyChecking=no': No such file or directory
+7: cp: cannot stat '-o': No such file or directory
+7: cp: cannot stat 'LogLevel=quiet': No such file or directory
+7: Warning: Identity file -o not accessible: No such file or directory.
+7: ssh: Could not resolve hostname : Name or service not known
+7: chmod: changing permissions of 'LOGS/server_weight/error1.log': Operation not permitted
+7: chmod: changing permissions of 'LOGS/server_weight/maxscale.cnf': Operation not permitted
+7: 42.172265: copy_logs.sh executing FAILED!
+3/3 Test #7: server_weight ....................***Failed  436.82 sec
+
+66% tests passed, 2 tests failed out of 3
+
+Total Test time (real) = 1317.43 sec
+
+The following tests FAILED:
+CMake Error: Cannot open file for write: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/Temporary/LastTestsFailed_20151110-0100.log.tmp
+CMake Error: : System Error: Permission denied
+Problem opening file: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/Temporary/LastTestsFailed_20151110-0100.log
+Cannot create log file: LastTestsFailed_20151110-0100.log
+	  1 - readconnrouter_master (Failed)
+	  7 - server_weight (Failed)
+Cannot create directory /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/20151110-0100
+Cannot create resulting XML file: Test.xml
+Cannot create testing XML file
+UpdateCTestConfiguration  from :/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+Parse Config file:/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+ target directory list [/home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/TargetDirectories.txt]
+CMake Error: Cannot open file for write: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/Temporary/LastCoverage_20151110-0100.log.tmp
+CMake Error: : System Error: Permission denied
+Problem opening file: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/Temporary/LastCoverage_20151110-0100.log
+Cannot create log file: LastCoverage_20151110-0100.log
+Cannot create LastCoverage.log file
+Performing coverage
+ COVFILE environment variable not found, not running  bullseye
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/Continuous.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousBuild.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousConfigure.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousCoverage.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousMemCheck.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousStart.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousSubmit.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousTest.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousUpdate.dir
