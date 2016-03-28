@@ -22,9 +22,11 @@ PASSED = 'Passed'
 BUILD_LOG_PARSING_RESULT = 'BUILD_LOG_PARSING_RESULT'
 
 ERROR = 'ERROR'
-CTEST_NOT_EXECUTED_ERROR = 'ERROR: CTest has never been executed'
+CTEST_NOT_EXECUTED_ERROR = 'CTest has never been executed'
 
-TIME_NOW = Time.now.strftime('[%d.%m.%Y %H:%M:%s]')
+CTEST_ARGUMENTS = 'CTest arguments'
+
+NEW_LINE_JENKINS_FORMAT = " \\\n"
 
 opts = GetoptLong.new(
     [LOG_FILE_OPTION, '-l', GetoptLong::REQUIRED_ARGUMENT],
@@ -67,10 +69,12 @@ class CTestParser
   attr_accessor :ctest_executed
   attr_accessor :ctest_summary
   attr_accessor :ctest_test_indexes
+  attr_accessor :ctest_arguments
 
   def initialize
     @ctest_executed = false
     @ctest_summary = nil
+    @ctest_arguments = nil
     @ctest_test_indexes = Array.new
   end
 
@@ -81,11 +85,15 @@ class CTestParser
     rescue
       raise puts "ERROR: Can not find log file: #{$log_file_path}"
     end
+    ctest_arguments_regex = /ctest.*-I ([,\d]+)/
     ctest_first_line_regex = /Constructing a list of tests/
     ctest_last_line_regex = /tests passed, .+ tests failed out of (.+)/
     ctest_start_line = 0;
     first_line_found = false;
     log.each_line do |line|
+      if line =~ ctest_arguments_regex
+        @ctest_arguments = "#{CTEST_ARGUMENTS}: #{line.match(ctest_arguments_regex).captures[0]}"
+      end
       if line =~ ctest_first_line_regex
         first_line_found = true;
         @ctest_executed = true
@@ -147,8 +155,14 @@ class CTestParser
 
   def generateHumanReadableInfo(parsedCTestInfo)
     hr_tests = Array.new
-    parsedCTestInfo[TESTS].each do |test|
-      hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} (#{test[TEST_SUCCESS]})")
+    if @ctest_executed
+      hr_tests.push @ctest_summary
+      hr_tests.push @ctest_arguments
+      parsedCTestInfo[TESTS].each do |test|
+        hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} (#{test[TEST_SUCCESS]})")
+      end
+    else
+      hr_tests.push("#{ERROR}: #{CTEST_NOT_EXECUTED_ERROR}")
     end
     return hr_tests
   end
@@ -157,33 +171,18 @@ class CTestParser
     if @ctest_executed
       puts JSON.pretty_generate(parsed_ctest_data)
     elsif
-      puts CTEST_NOT_EXECUTED_ERROR
+      puts "{#{ERROR}: #{CTEST_NOT_EXECUTED_ERROR}}"
     end
   end
 
   def showHumanReadableParsedInfo(parsed_ctest_data)
-    if @ctest_executed
-      puts "#{@ctest_summary}"
-      puts "CTEST arguments #{@ctest_test_indexes.join(',')}"
-      generateHumanReadableInfo(parsed_ctest_data).each { |line| puts line }
-
-    else
-      puts "#{CTEST_NOT_EXECUTED_ERROR}"
-    end
+    puts generateHumanReadableInfo(parsed_ctest_data)
   end
 
   def saveParsedDataToEnvironmentalFile(parsed_ctest_data)
     open($output_log_file_path, 'w') do |f|
       f.puts "#{BUILD_LOG_PARSING_RESULT}= \\"
-      if @ctest_executed
-        f.puts "#{@ctest_summary} \\"
-        f.puts "CTEST arguments #{@ctest_test_indexes.join(',')} \\"
-        generateHumanReadableInfo(parsed_ctest_data).each do |line|
-          f.puts "#{line} \\"
-        end
-      elsif
-        f.puts "#{CTEST_NOT_EXECUTED_ERROR}"
-      end
+      f.puts generateHumanReadableInfo(parsed_ctest_data).join(NEW_LINE_JENKINS_FORMAT)
     end
   end
 
