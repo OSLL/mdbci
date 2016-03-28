@@ -12,8 +12,6 @@ while getopts "hP:p:u:H:d:l:" opt; do
     ;;
     d) database_name="$OPTARG"
     ;;
-    l) local_dump_file="$OPTARG"
-    ;;
     h) show_help=true
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
@@ -23,22 +21,16 @@ done
 
 if [[ $show_help ]]; then
   echo \
-"USAGE: dump_db.sh -d DATABASE_NAME -l LOCAL_DUMP_FILE
+"USAGE: drop_db.sh -d DATABASE_NAME -l LOCAL_DUMP_FILE
     [-P database port]
     [-p database password]
     [-u database user]
-    [-l local dump file]
     [-H database host]
     [-h help]"
   exit 0
 fi
 
 error=0
-
-if [[ -z $local_dump_file ]]; then
-  echo "ERROR: Dump file must be specified" >&2
-  error=1
-fi
 
 if [[ -z $database_name ]]; then
   echo "ERROR: Database name must be specified" >&2
@@ -65,4 +57,4 @@ if [[ -n $database_host ]]; then
   database_host_option="-h $database_host"
 fi
 
-mysqldump $database_port_option $database_host_option -u $database_user $database_password_option $database_name > $local_dump_file
+mysql $database_port_option $database_host_option -u $database_user $database_password_option -e "DROP DATABASE IF EXISTS $database_name"

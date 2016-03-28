@@ -23,7 +23,7 @@ done
 
 if [[ $show_help ]]; then
   echo \
-"USAGE: dump_db.sh -d DATABASE_NAME -l LOCAL_DUMP_FILE
+"USAGE: import_db.sh -d DATABASE_NAME -l LOCAL_DUMP_FILE
     [-P database port]
     [-p database password]
     [-u database user]
@@ -65,4 +65,5 @@ if [[ -n $database_host ]]; then
   database_host_option="-h $database_host"
 fi
 
-mysqldump $database_port_option $database_host_option -u $database_user $database_password_option $database_name > $local_dump_file
+mysql $database_port_option $database_host_option -u $database_user $database_password_option -e "CREATE DATABASE IF NOT EXISTS $database_name"
+mysql $database_port_option $database_host_option -u $database_user $database_password_option --database=$database_name < $local_dump_file
