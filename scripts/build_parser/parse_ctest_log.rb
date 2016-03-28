@@ -74,7 +74,6 @@ class CTestParser
   def initialize
     @ctest_executed = false
     @ctest_summary = nil
-    @ctest_arguments = nil
     @ctest_test_indexes = Array.new
   end
 
@@ -91,9 +90,6 @@ class CTestParser
     ctest_start_line = 0;
     first_line_found = false;
     log.each_line do |line|
-      if line =~ ctest_arguments_regex
-        @ctest_arguments = "#{CTEST_ARGUMENTS}: #{line.match(ctest_arguments_regex).captures[0]}"
-      end
       if line =~ ctest_first_line_regex
         first_line_found = true;
         @ctest_executed = true
@@ -129,6 +125,7 @@ class CTestParser
       if line =~ /^test \d+$/
         test_start_found = true
         real_test_num = line.match(/^test (\d+)$/).captures[0]
+        @ctest_test_indexes.push(real_test_num)
       elsif test_start_found && !real_test_num.nil?
         test_start_found = false
         current_test_name = line.match(/Start #{real_test_num}: (.+)/).captures[0]
@@ -141,7 +138,6 @@ class CTestParser
           end
           if test_success == FAILED or (!$only_failed and test_success == PASSED)
             tests_info.push({TEST_NUMBER=>real_test_num, TEST_NAME=>current_test_name, TEST_SUCCESS=>test_success})
-            @ctest_test_indexes.push(real_test_num)
           end
           current_test_name = nil
           real_test_num = nil
@@ -153,11 +149,24 @@ class CTestParser
     return {FAILED_TESTS_COUNT=>failed_tests_counter, TESTS=>tests_info}
   end
 
+  def generateCTestArgument(test_indexs_array)
+    ctest_arguments = Array.new()
+    test_indexs_array = test_indexs_array.sort
+    test_indexs_array.each do |test_index|
+      if test_index == test_indexs_array[0]
+        ctest_arguments.push(test_index, test_index, '')
+      else
+        ctest_arguments.push(test_index)
+      end
+    end
+    return ctest_arguments.join ','
+  end
+
   def generateHumanReadableInfo(parsedCTestInfo)
     hr_tests = Array.new
     if @ctest_executed
       hr_tests.push @ctest_summary
-      hr_tests.push @ctest_arguments
+      hr_tests.push "#{CTEST_ARGUMENTS}: #{generateCTestArgument(@ctest_test_indexes)}"
       parsedCTestInfo[TESTS].each do |test|
         hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} (#{test[TEST_SUCCESS]})")
       end
