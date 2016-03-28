@@ -7,11 +7,14 @@ LOG_FILE_OPTION = '--log-file'
 OUTPUT_LOG_FILE_OPTION = '--output-log-file'
 ONLY_FAILED_OPTION = '--only-failed'
 HUMAN_READABLE_OPTION = '--human-readable'
+HUMAN_READABLE__FULL_OPTION = '--human-readable-full'
 HELP_OPTION = '--help'
 
+TEST_INDEX_NUMBER = 'test_index_number'
 TEST_NUMBER = 'test_number'
 TEST_NAME = 'test_name'
 TEST_SUCCESS = 'test_success'
+TEST_TIME = 'test_time'
 TESTS = 'tests'
 TESTS_COUNT = 'tests_count'
 FAILED_TESTS_COUNT = 'failed_tests_count'
@@ -32,6 +35,7 @@ opts = GetoptLong.new(
     [LOG_FILE_OPTION, '-l', GetoptLong::REQUIRED_ARGUMENT],
     [ONLY_FAILED_OPTION, '-f', GetoptLong::OPTIONAL_ARGUMENT],
     [HUMAN_READABLE_OPTION, '-r', GetoptLong::OPTIONAL_ARGUMENT],
+    [HUMAN_READABLE__FULL_OPTION, '-e', GetoptLong::OPTIONAL_ARGUMENT],
     [OUTPUT_LOG_FILE_OPTION, '-o', GetoptLong::OPTIONAL_ARGUMENT],
     [HELP_OPTION, '-h', GetoptLong::OPTIONAL_ARGUMENT]
 )
@@ -39,6 +43,7 @@ opts = GetoptLong.new(
 $log_file_path = nil
 $only_failed = false
 $human_readable = false
+$human_readable_full = false
 $output_log_file_path = nil
 
 opts.each do |opt, arg|
@@ -49,6 +54,8 @@ opts.each do |opt, arg|
       $only_failed = true
     when HUMAN_READABLE_OPTION
       $human_readable = true
+    when HUMAN_READABLE__FULL_OPTION
+      $human_readable_full = true
     when OUTPUT_LOG_FILE_OPTION
       $output_log_file_path = arg
     when HELP_OPTION
@@ -57,6 +64,7 @@ CTest parser usage:
     parse_ctest_log -l CTEST_LOG_FILE_PATH
         [ -f ]           - PARSE ONLY FAILED TESTS
         [ -r ]           - HUMAN READABLE OUTPUT
+        [ -e ]           - HUMAN READABLE FULL OUTPUT
         [ -o file_path ] - CTEST PARSER OUTPUT LOG FILE
         [ -h ]           - SHOW HELP
       EOT
@@ -70,28 +78,28 @@ class CTestParser
   attr_accessor :ctest_summary
   attr_accessor :ctest_test_indexes
   attr_accessor :ctest_arguments
+  attr_accessor :ctest_full_test_explanations
 
   def initialize
     @ctest_executed = false
     @ctest_summary = nil
     @ctest_test_indexes = Array.new
+    @ctest_arguments = nil
+    @ctest_full_test_explanations = Array.new
   end
 
-  def parseCtestLog()
+  def parseCTestLog()
     log = nil
     begin
       log = File.read $log_file_path
     rescue
       raise puts "ERROR: Can not find log file: #{$log_file_path}"
     end
-    ctest_arguments_regex = /ctest.*-I ([,\d]+)/
     ctest_first_line_regex = /Constructing a list of tests/
-    ctest_last_line_regex = /tests passed, .+ tests failed out of (.+)/
+    ctest_last_line_regex = /tests passed,.+tests failed out of (.+)/
     ctest_start_line = 0;
-    first_line_found = false;
     log.each_line do |line|
       if line =~ ctest_first_line_regex
-        first_line_found = true;
         @ctest_executed = true
         break
       end
@@ -99,7 +107,7 @@ class CTestParser
     end
     if @ctest_executed
       ctest_log = log.split("\n")[ctest_start_line..-1]
-      ctest_end_line = 0;
+      ctest_end_line = 0
       ctest_log.each do |line|
         if line =~ ctest_last_line_regex
           @ctest_summary = line
@@ -109,51 +117,46 @@ class CTestParser
       end
       ctest_log = ctest_log[0..ctest_end_line]
       tests_quantity = ctest_log[-1].match(ctest_last_line_regex).captures[0]
-      return {TESTS_COUNT=>tests_quantity}.merge findTestsInfo(ctest_log, tests_quantity)
+      return {TESTS_COUNT=>tests_quantity}.merge findTestsInfo(ctest_log)
     end
     return nil
   end
 
-  def findTestsInfo(ctest_log, tests_quantity)
+  def findTestsInfo(ctest_log)
     tests_info = Array.new
     failed_tests_counter = 0
-    test_counter = 1
-    real_test_num = nil
-    test_start_found = false
-    current_test_name = nil
     ctest_log.each do |line|
-      if line =~ /^test \d+$/
-        test_start_found = true
-        real_test_num = line.match(/^test (\d+)$/).captures[0]
-        @ctest_test_indexes.push(real_test_num)
-      elsif test_start_found && !real_test_num.nil?
-        test_start_found = false
-        current_test_name = line.match(/Start #{real_test_num}: (.+)/).captures[0]
-      elsif !current_test_name.nil? && !real_test_num.nil?
-        test_end_regex = /#{test_counter}\/#{tests_quantity} Test ##{real_test_num}: #{current_test_name} .+(Failed|Passed)/
-        if line =~ test_end_regex
-          test_success = line.match(test_end_regex).captures[0]
-          if test_success == (FAILED)
-            failed_tests_counter += 1
-          end
-          if test_success == FAILED or (!$only_failed and test_success == PASSED)
-            tests_info.push({TEST_NUMBER=>real_test_num, TEST_NAME=>current_test_name, TEST_SUCCESS=>test_success})
-          end
-          current_test_name = nil
-          real_test_num = nil
-          test_counter += 1
+      test_end_regex = /(\d+)\/(\d+)\s+Test\s+#(\d+):[\s]+([^\s\.]+)[\s\.\*]+(Passed|Failed)\s+([\d\.]+)/
+      if line =~ test_end_regex
+        test_index_number = line.match(test_end_regex).captures[0]
+        test_number = line.match(test_end_regex).captures[2]
+        test_name = line.match(test_end_regex).captures[3]
+        test_success = line.match(test_end_regex).captures[4]
+        test_time = line.match(test_end_regex).captures[5]
+        if test_success == (FAILED)
+          failed_tests_counter += 1
+        end
+        if test_success == FAILED or (!$only_failed and test_success == PASSED)
+          @ctest_full_test_explanations.push(line)
+          @ctest_test_indexes.push Integer test_number
+          tests_info.push({
+              TEST_INDEX_NUMBER=>test_index_number,
+              TEST_NUMBER=>test_number,
+              TEST_NAME=>test_name ,
+              TEST_SUCCESS=>test_success,
+              TEST_TIME=>test_time
+          })
         end
       end
-      break if (test_counter - 1) == tests_quantity
     end
     return {FAILED_TESTS_COUNT=>failed_tests_counter, TESTS=>tests_info}
   end
 
-  def generateCTestArgument(test_indexs_array)
+  def generateCTestArgument(test_indexes_array)
     ctest_arguments = Array.new()
-    test_indexs_array = test_indexs_array.sort
-    test_indexs_array.each do |test_index|
-      if test_index == test_indexs_array[0]
+    sorted_test_indexes_array = test_indexes_array.sort
+    sorted_test_indexes_array.each do |test_index|
+      if test_index == sorted_test_indexes_array[0]
         ctest_arguments.push(test_index, test_index, '')
       else
         ctest_arguments.push(test_index)
@@ -167,8 +170,12 @@ class CTestParser
     if @ctest_executed
       hr_tests.push @ctest_summary
       hr_tests.push "#{CTEST_ARGUMENTS}: #{generateCTestArgument(@ctest_test_indexes)}"
-      parsedCTestInfo[TESTS].each do |test|
-        hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} (#{test[TEST_SUCCESS]})")
+      if !$human_readable_full
+        parsedCTestInfo[TESTS].each do |test|
+          hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} (#{test[TEST_SUCCESS]})")
+        end
+      else
+        hr_tests = hr_tests + @ctest_full_test_explanations
       end
     else
       hr_tests.push("#{ERROR}: #{CTEST_NOT_EXECUTED_ERROR}")
@@ -198,13 +205,13 @@ class CTestParser
   def showParsedInfo (parsed_ctest_data)
     if !$human_readable
       showMachineReadableParsedInfo parsed_ctest_data
-    elsif
+    else
       showHumanReadableParsedInfo parsed_ctest_data
     end
   end
 
   def parse
-    parsed_ctest_data = parseCtestLog
+    parsed_ctest_data = parseCTestLog
     showParsedInfo parsed_ctest_data
     if !$output_log_file_path.nil?
       saveParsedDataToEnvironmentalFile parsed_ctest_data
