@@ -79,6 +79,8 @@ class Session
     case what
       when 'boxes'
         $out.info 'Adding boxes to vagrant'
+        raise "cannot adding boxes: directory not exist" unless Dir.exists?($session.boxesDir)
+        raise "cannot adding boxes: boxes are not found in #{$session.boxesDir}" unless File.directory?($session.boxesDir)
         @boxes.boxesManager.each do |key, value|
           next if value['provider'] == "aws" # skip 'aws' block
           # TODO: add aws dummy box
@@ -86,20 +88,23 @@ class Session
 
           next if value['provider'] == "mdbci" # skip 'mdbci' block
           #
-          if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
-            puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
-            shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
-          else
-            puts 'vagrant box add --provider virtualbox '+value['box'].to_s
-            shell = 'vagrant box add --provider virtualbox '+value['box'].to_s
-          end
+          begin
+	          if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
+	            puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
+	            shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
+	          else
+	            puts 'vagrant box add --provider virtualbox '+value['box'].to_s
+	            shell = 'vagrant box add --provider virtualbox '+value['box'].to_s
+	          end
 
-          # TODO: resque Exeption
-          system shell # THERE CAN BE DONE CUSTOM EXCEPTION
-
-          exit_code = $?.exitstatus
-          possibly_failed_command = shell
-
+	          system shell # THERE CAN BE DONE CUSTOM EXCEPTION
+	          exit_code = $?.exitstatus
+	          raise "failed command: #{shell}" unless exit_code==0
+	      
+	      rescue Exception => error
+	      	$out.error error.backtrace.join("\n")
+	      	$out.error error.to_s
+	      end
         end
       else
         $out.warning 'Cannot setup '+what
@@ -108,8 +113,6 @@ class Session
 
     if exit_code != 0
       $out.error "command 'setup' exit with non-zero exit code: #{exit_code}"
-      $out.error "failed command: #{possibly_failed_command}"
-      exit_code = 1
     end
 
     return exit_code
