@@ -184,7 +184,7 @@ Vagrant.configure(2) do |config|
             + ssh_pty_option + "\n" \
             + templatedef  + "\n" \
             + "\t"+name+'.vm.provider "docker" do |d|' + "\n" \
-            + "\t\t"+'d.build_dir = ' + quote(name+"/") + "/\n" \
+            + "\t\t"+'d.build_dir = ' + quote(name+"/") + "\n" \
             + "\t\t"+'d.has_ssh = true' + "\n" \
             + "\t\t"+'d.privileged = true' + "\n\tend"
     if provisioned

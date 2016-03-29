@@ -53,7 +53,7 @@ mdbci [option] <show | setup | generate>
   Platform version for the show boxes command. Must be used together with --platform option!
 
 COMMANDS:
-  show [platforms, versions, network, repos [config | config/node], keyfile config/node ]
+  show [platforms, providers, versions, network, repos [config | config/node], keyfile config/node ]
   generate
   setup [boxes]
   show boxes --platform 'box platform' --platform-version 'box platform version'
