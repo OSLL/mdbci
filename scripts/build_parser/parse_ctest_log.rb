@@ -2,12 +2,15 @@
 
 require 'getoptlong'
 require 'json'
+require "net/http"
+require "uri"
 
 LOG_FILE_OPTION = '--log-file'
 OUTPUT_LOG_FILE_OPTION = '--output-log-file'
 ONLY_FAILED_OPTION = '--only-failed'
 HUMAN_READABLE_OPTION = '--human-readable'
 HUMAN_READABLE__FULL_OPTION = '--human-readable-full'
+JENKINS_BUILD_URL = '--jenkins-job-url'
 HELP_OPTION = '--help'
 
 TEST_INDEX_NUMBER = 'test_index_number'
@@ -19,8 +22,14 @@ TESTS = 'tests'
 TESTS_COUNT = 'tests_count'
 FAILED_TESTS_COUNT = 'failed_tests_count'
 
+MAXSCALE_VESRION = "maxscale_version"
+MAXSCALE_COMMIT = "maxscale_commit"
+MAXSCALE_COMMIT_DATETIME = "maxscale_commit_datetime"
+
 FAILED = 'Failed'
 PASSED = 'Passed'
+
+NOT_FOUND = 'NOT FOUND'
 
 BUILD_LOG_PARSING_RESULT = 'BUILD_LOG_PARSING_RESULT'
 
@@ -37,7 +46,8 @@ opts = GetoptLong.new(
     [HUMAN_READABLE_OPTION, '-r', GetoptLong::OPTIONAL_ARGUMENT],
     [HUMAN_READABLE__FULL_OPTION, '-e', GetoptLong::OPTIONAL_ARGUMENT],
     [OUTPUT_LOG_FILE_OPTION, '-o', GetoptLong::OPTIONAL_ARGUMENT],
-    [HELP_OPTION, '-h', GetoptLong::OPTIONAL_ARGUMENT]
+    [HELP_OPTION, '-h', GetoptLong::OPTIONAL_ARGUMENT],
+    [JENKINS_BUILD_URL, '-j', GetoptLong::OPTIONAL_ARGUMENT]
 )
 
 $log_file_path = nil
@@ -45,6 +55,8 @@ $only_failed = false
 $human_readable = false
 $human_readable_full = false
 $output_log_file_path = nil
+$jenkins_job_url = nil
+
 
 opts.each do |opt, arg|
   case opt
@@ -58,6 +70,8 @@ opts.each do |opt, arg|
       $human_readable_full = true
     when OUTPUT_LOG_FILE_OPTION
       $output_log_file_path = arg
+    when JENKINS_BUILD_URL
+      $jenkins_build_url = arg
     when HELP_OPTION
       puts <<-EOT
 CTest parser usage:
@@ -79,6 +93,9 @@ class CTestParser
   attr_accessor :ctest_test_indexes
   attr_accessor :ctest_arguments
   attr_accessor :ctest_full_test_explanations
+  attr_accessor :maxscale_commit
+  attr_accessor :maxscale_version
+  attr_accessor :maxscale_commit_datetime
 
   def initialize
     @ctest_executed = false
@@ -86,6 +103,9 @@ class CTestParser
     @ctest_test_indexes = Array.new
     @ctest_arguments = nil
     @ctest_full_test_explanations = Array.new
+    @maxscale_version = nil
+    @maxscale_commit = nil
+    @maxscale_commit_datetime = nil
   end
 
   def parseCTestLog()
@@ -97,8 +117,19 @@ class CTestParser
     end
     ctest_first_line_regex = /Constructing a list of tests/
     ctest_last_line_regex = /tests passed,.+tests failed out of (.+)/
+    maxscale_commit_regex = /(MaxScale\s+.*\d+\.\d+\.\d+)\s+-\s+(.+)/
+    maxscale_commit_datetime_regex = /MariaDB Corporation\s+.*\d+\.\d+\.\d+\s+(.*)/
     ctest_start_line = 0;
     log.each_line do |line|
+      if line =~ maxscale_commit_regex and @maxscale_commit == nil and @maxscale_version == nil
+        puts line
+        @maxscale_version = line.match(maxscale_commit_regex).captures[0]
+        @maxscale_commit = line.match(maxscale_commit_regex).captures[1]
+      end
+      if line =~ maxscale_commit_datetime_regex and @maxscale_commit_datetime == nil
+        puts line
+        @maxscale_commit_datetime = line.match(maxscale_commit_regex).captures[0]
+      end
       if line =~ ctest_first_line_regex
         @ctest_executed = true
         break
@@ -165,11 +196,28 @@ class CTestParser
     return ctest_arguments.join ','
   end
 
+  def generateJemkimsBuildParameters
+    if $jenkins_job_url != nil
+
+    end
+  end
+
   def generateHumanReadableInfo(parsedCTestInfo)
     hr_tests = Array.new
+    if @jenkins_job_url != nil
+      build_number = @jenkins_job_url.split('/')[-1]
+      build_name = @jenkins_job_url.split('/')[-2]
+      uri = URI.parse("#{@jenkins_job_url}api/json")
+      response = Net::HTTP.get_response(uri)
+      json_body = JSON.parse(response.body)
+      JSON.pretty_generate(json_body)
+    end
     if @ctest_executed
       hr_tests.push @ctest_summary
       hr_tests.push "#{CTEST_ARGUMENTS}: #{generateCTestArgument(@ctest_test_indexes)}"
+      hr_tests.push "#{MAXSCALE_VESRION}: #{if @maxscale_version != nil then @maxscale_version  else NOT_FOUND end}"
+      hr_tests.push "#{MAXSCALE_COMMIT}: #{if @maxscale_commit != nil then @maxscale_commit  else NOT_FOUND end}"
+      hr_tests.push "#{MAXSCALE_COMMIT_DATETIME}: #{if @maxscale_commit_datetime != nil then @maxscale_commit_datetime else NOT_FOUND end}"
       if !$human_readable_full
         parsedCTestInfo[TESTS].each do |test|
           hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} (#{test[TEST_SUCCESS]})")
