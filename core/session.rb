@@ -628,7 +628,6 @@ class Session
   def publicKeys(args)
     pwd = Dir.pwd
     possibly_failed_command = ''
-    exit_code = 1
 
     if args.nil?
       raise 'Configuration name is required'
@@ -641,8 +640,7 @@ class Session
       loadMdbciNodes args[0]
       if args[1].nil?     # read ip for all nodes
         if $session.mdbciNodes.empty?
-          $out.error "MDBCI nodes not found in #{args[0]}"
-          exit_code = 1
+          raise "MDBCI nodes not found in #{args[0]}"
         end
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
@@ -666,8 +664,7 @@ class Session
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == args[1] }
 
         if mdbci_node.nil?
-          $out.error "No such node with name #{args[1]} in #{args[0]}"
-          exit_code = 1
+          raise "No such node with name #{args[1]} in #{args[0]}"
         end
 
         box = mdbci_node[1]['box'].to_s
@@ -683,17 +680,17 @@ class Session
           $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
           vagrant_out = `#{cmd}`
           # TODO
-          exit_code = $?.exitstatus
-          possibly_failed_command = cmd
+          if $?.exitstatus!=0
+          	raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
+          end
         else
-          $out.error "Wrong box parameter in node: #{args[1]}"
-          exit_code = 1
+          raise "Wrong box parameter in node: #{args[1]}"
         end
       end
     else # aws, vbox, libvirt, docker nodes
 
       unless Dir.exists? args[0]
-        raise "Directory with nodes does not exists: #{args[1]}"
+        raise "Directory with nodes does not exists: #{args[0]}"
       end
 
       network = Network.new
@@ -718,8 +715,7 @@ class Session
         node = network.nodes.find { |elem| elem.name == args[1]}
 
         if node.nil?
-          $out.error "No such node with name #{args[1]} in #{args[0]}"
-          exit_code = 1
+          raise "No such node with name #{args[1]} in #{args[0]}"
         end
 
         #
@@ -737,8 +733,7 @@ class Session
     Dir.chdir pwd
 
     if exit_code != 0
-      $out.error "command #{possibly_failed_command} exit with non-zero code: #{exit_code}"
-      exit_code = 1
+      raise "command #{possibly_failed_command} exit with non-zero code: #{exit_code}"
     end
 
     return exit_code
