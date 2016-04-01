@@ -25,6 +25,7 @@ RUN_TEST_BUILD_ENV_VARS = {
   'BUILD_NUMBER'=>nil,
   'JOB_NAME'=>nil,
   'BUILD_TIMESTAMP'=>nil,
+  'name'=>nil,
   'target'=>nil,
   'box'=>nil,
   'product'=>nil,
