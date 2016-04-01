@@ -178,7 +178,7 @@ class CTestParser
   def generateCTestArgument(test_indexes_array)
     ctest_arguments = Array.new()
     sorted_test_indexes_array = test_indexes_array.sort
-    if sorted_test_indexes_array == 0
+    if sorted_test_indexes_array.size == 0
       return NOT_FOUND
     end
     sorted_test_indexes_array.each do |test_index|
