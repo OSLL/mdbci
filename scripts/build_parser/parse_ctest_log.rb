@@ -2,8 +2,6 @@
 
 require 'getoptlong'
 require 'json'
-require "net/http"
-require "uri"
 
 LOG_FILE_OPTION = '--log-file'
 OUTPUT_LOG_FILE_OPTION = '--output-log-file'
@@ -22,6 +20,16 @@ TESTS_COUNT = 'tests_count'
 FAILED_TESTS_COUNT = 'failed_tests_count'
 
 MAXSCALE_COMMIT = "MaxScale commit"
+
+RUN_TEST_BUILD_ENV_VARS = {
+  'BUILD_NUMBER'=>nil,
+  'JOB_NAME'=>nil,
+  'BUILD_TIMESTAMP'=>nil,
+  'target'=>nil,
+  'box'=>nil,
+  'product'=>nil,
+  'version'=>nil
+}
 
 FAILED = 'Failed'
 PASSED = 'Passed'
@@ -185,10 +193,12 @@ class CTestParser
     return ctest_arguments.join ','
   end
 
-  def generateJemkimsBuildParameters
-    if $jenkins_job_url != nil
-
+  def generateRunTestBuildParameters
+    build_params = Array.new
+    RUN_TEST_BUILD_ENV_VARS.each do |key, _|
+      build_params.push "#{key}: #{if ENV[key] then ENV[key] else NOT_FOUND end}"
     end
+    return build_params
   end
 
   def generateHumanReadableInfo(parsedCTestInfo)
@@ -205,6 +215,7 @@ class CTestParser
       hr_tests.push @ctest_summary
       hr_tests.push "#{CTEST_ARGUMENTS}: #{generateCTestArgument(@ctest_test_indexes)}"
       hr_tests.push "#{MAXSCALE_COMMIT}: #{if @maxscale_commit != nil then @maxscale_commit  else NOT_FOUND end}"
+      hr_tests = hr_tests + generateRunTestBuildParameters
       if !$human_readable_full
         parsedCTestInfo[TESTS].each do |test|
           hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} (#{test[TEST_SUCCESS]})")
