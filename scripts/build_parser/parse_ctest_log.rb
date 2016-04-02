@@ -20,7 +20,7 @@ TESTS_COUNT = 'tests_count'
 FAILED_TESTS_COUNT = 'failed_tests_count'
 
 RUN_TEST_BUILD_ENV_VARS_TO_HR = {
-  'BUILD_NUMBER'=>'Job buid number',
+  'BUILD_NUMBER'=>'Job build number',
   'JOB_NAME'=>'Job name',
   'BUILD_TIMESTAMP'=>'Timestamp',
   'name'=>'Test run name',
@@ -31,7 +31,7 @@ RUN_TEST_BUILD_ENV_VARS_TO_HR = {
 }
 
 RUN_TEST_BUILD_ENV_VARS_TO_MR = {
-  'BUILD_NUMBER'=>'job_buid_number',
+  'BUILD_NUMBER'=>'job_build_number',
   'JOB_NAME'=>'job_name',
   'BUILD_TIMESTAMP'=>'timestamp',
   'name'=>'test_run_name',
