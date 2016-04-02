@@ -5,6 +5,7 @@ require 'json'
 
 LOG_FILE_OPTION = '--log-file'
 OUTPUT_LOG_FILE_OPTION = '--output-log-file'
+OUTPUT_LOG_JSON_FILE_OPTION = '--output-log-json-file'
 ONLY_FAILED_OPTION = '--only-failed'
 HUMAN_READABLE_OPTION = '--human-readable'
 HELP_OPTION = '--help'
@@ -19,7 +20,7 @@ TESTS_COUNT = 'tests_count'
 FAILED_TESTS_COUNT = 'failed_tests_count'
 
 RUN_TEST_BUILD_ENV_VARS_TO_HR = {
-  'BUILD_NUMBER'=>'Buid number',
+  'BUILD_NUMBER'=>'Job buid number',
   'JOB_NAME'=>'Job name',
   'BUILD_TIMESTAMP'=>'Timestamp',
   'name'=>'Test run name',
@@ -30,7 +31,7 @@ RUN_TEST_BUILD_ENV_VARS_TO_HR = {
 }
 
 RUN_TEST_BUILD_ENV_VARS_TO_MR = {
-  'BUILD_NUMBER'=>'buid_number',
+  'BUILD_NUMBER'=>'job_buid_number',
   'JOB_NAME'=>'job_name',
   'BUILD_TIMESTAMP'=>'timestamp',
   'name'=>'test_run_name',
@@ -63,6 +64,7 @@ opts = GetoptLong.new(
     [ONLY_FAILED_OPTION, '-f', GetoptLong::OPTIONAL_ARGUMENT],
     [HUMAN_READABLE_OPTION, '-r', GetoptLong::OPTIONAL_ARGUMENT],
     [OUTPUT_LOG_FILE_OPTION, '-o', GetoptLong::OPTIONAL_ARGUMENT],
+    [OUTPUT_LOG_JSON_FILE_OPTION, '-j', GetoptLong::OPTIONAL_ARGUMENT],
     [HELP_OPTION, '-h', GetoptLong::OPTIONAL_ARGUMENT]
 )
 
@@ -70,6 +72,7 @@ $log = nil
 $only_failed = false
 $human_readable = false
 $output_log_file_path = nil
+$output_log_json_file_path = nil
 
 opts.each do |opt, arg|
   case opt
@@ -85,15 +88,17 @@ opts.each do |opt, arg|
       $human_readable = true
     when OUTPUT_LOG_FILE_OPTION
       $output_log_file_path = arg
+    when OUTPUT_LOG_JSON_FILE_OPTION
+      $output_log_json_file_path = arg
     when HELP_OPTION
       puts <<-EOT
 CTest parser usage:
     parse_ctest_log -l CTEST_LOG_FILE_PATH
-        [ -f ]           - PARSE ONLY FAILED TESTS
-        [ -r ]           - HUMAN READABLE OUTPUT
-        [ -e ]           - HUMAN READABLE FULL OUTPUT
-        [ -o file_path ] - CTEST PARSER OUTPUT LOG FILE
-        [ -h ]           - SHOW HELP
+        [ -f ]                - PARSE ONLY FAILED TESTS
+        [ -r ]                - HUMAN READABLE OUTPUT
+        [ -o file_path ]      - CTEST PARSER OUTPUT LOG FILE
+        [ -j json_file_path ] - CTEST PARSER OUTPUT LOG JSON FILE (extension '.json' will be appended)
+        [ -h ]                - SHOW HELP
       EOT
       exit 0
   end
@@ -115,7 +120,7 @@ class CTestParser
     @maxscale_commit = nil
   end
 
-  def parseCTestLog()
+  def parse_ctest_log()
     ctest_first_line_regex = /Constructing a list of tests/
     ctest_last_line_regex = /tests passed,.+tests failed out of (.+)/
     maxscale_commit_regex = /MaxScale\s+.*\d+\.*\d*\.*\d*\s+-\s+(.+)/
@@ -142,12 +147,12 @@ class CTestParser
       end
       ctest_log = ctest_log[0..ctest_end_line]
       tests_quantity = ctest_log[-1].match(ctest_last_line_regex).captures[0]
-      return {TESTS_COUNT=>tests_quantity}.merge findTestsInfo(ctest_log)
+      return {TESTS_COUNT=>tests_quantity}.merge(find_tests_info(ctest_log))
     end
     return nil
   end
 
-  def findTestsInfo(ctest_log)
+  def find_tests_info(ctest_log)
     tests_info = Array.new
     failed_tests_counter = 0
     ctest_log.each do |line|
@@ -180,7 +185,7 @@ class CTestParser
     end
   end
 
-  def generateCTestArgument(test_indexes_array)
+  def generate_ctest_arguments(test_indexes_array)
     ctest_arguments = Array.new()
     sorted_test_indexes_array = test_indexes_array.sort
     if sorted_test_indexes_array.size == 0
@@ -199,7 +204,7 @@ class CTestParser
     return ctest_arguments.join ','
   end
 
-  def generateRunTestBuildParametersHumanReadable
+  def generate_run_test_build_parameters_hr
     build_params = Array.new
     RUN_TEST_BUILD_ENV_VARS_TO_HR.each do |key, value|
       build_params.push "#{value}: #{if ENV[key] then ENV[key] else NOT_FOUND end}"
@@ -207,7 +212,7 @@ class CTestParser
     return build_params
   end
 
-  def generateRunTestBuildParametersMachineReadable
+  def generate_run_test_build_parameters_mr
     build_params = Hash.new
     RUN_TEST_BUILD_ENV_VARS_TO_MR.each do |key, value|
       build_params[value]= if ENV[key] then ENV[key] else NOT_FOUND end
@@ -215,15 +220,15 @@ class CTestParser
     return build_params
   end
 
-  def generateHumanReadableInfo(parsedCTestInfo)
+  def generate_hr_result(parsed_ctest_data)
     hr_tests = Array.new
     if @ctest_executed
       hr_tests.push @ctest_summary
-      hr_tests.push "#{CTEST_ARGUMENTS_HR}: #{generateCTestArgument(@ctest_test_indexes)}"
+      hr_tests.push "#{CTEST_ARGUMENTS_HR}: #{generate_ctest_arguments(@ctest_test_indexes)}"
       hr_tests.push "#{MAXSCALE_COMMIT_HR}: #{if @maxscale_commit != nil then @maxscale_commit  else NOT_FOUND end}"
-      hr_tests = hr_tests + generateRunTestBuildParametersHumanReadable
-      if parsedCTestInfo.has_key? TESTS
-        parsedCTestInfo[TESTS].each do |test|
+      hr_tests = hr_tests + generate_run_test_build_parameters_hr
+      if parsed_ctest_data.has_key? TESTS
+        parsed_ctest_data[TESTS].each do |test|
           hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} (#{test[TEST_SUCCESS]})")
         end
       end
@@ -233,41 +238,55 @@ class CTestParser
     return hr_tests
   end
 
-  def showMachineReadableParsedInfo(parsed_ctest_data)
+  def generate_mr_result(parsed_ctest_data)
     if @ctest_executed
-      parsed_ctest_data = generateRunTestBuildParametersMachineReadable.merge(parsed_ctest_data)
+      parsed_ctest_data = generate_run_test_build_parameters_mr.merge(parsed_ctest_data)
       parsed_ctest_data = {MAXSCALE_COMMIT_MR=>if @maxscale_commit != nil then @maxscale_commit  else NOT_FOUND end}.merge(parsed_ctest_data)
-      parsed_ctest_data = {CTEST_ARGUMENTS_MR=>generateCTestArgument(@ctest_test_indexes)}.merge(parsed_ctest_data)
-      puts JSON.pretty_generate(parsed_ctest_data)
-    elsif
-      puts "{#{ERROR}: #{CTEST_NOT_EXECUTED_ERROR}}"
+      parsed_ctest_data = {CTEST_ARGUMENTS_MR=>generate_ctest_arguments(@ctest_test_indexes)}.merge(parsed_ctest_data)
+      return JSON.pretty_generate(parsed_ctest_data)
+    else
+      return {ERROR=>CTEST_NOT_EXECUTED_ERROR}
     end
   end
 
-  def showHumanReadableParsedInfo(parsed_ctest_data)
-    puts generateHumanReadableInfo(parsed_ctest_data)
+  def show_mr_result(parsed_ctest_data)
+    puts generate_mr_result(parsed_ctest_data)
   end
 
-  def saveParsedDataToEnvironmentalFile(parsed_ctest_data)
+  def show_hr_result(parsed_ctest_data)
+    puts generate_hr_result(parsed_ctest_data)
+  end
+
+  def save_result_to_file(parsed_ctest_data)
     open($output_log_file_path, 'w') do |f|
       f.puts "#{BUILD_LOG_PARSING_RESULT}= \\"
-      f.puts generateHumanReadableInfo(parsed_ctest_data).join(NEW_LINE_JENKINS_FORMAT)
+      f.puts generate_hr_result(parsed_ctest_data).join(NEW_LINE_JENKINS_FORMAT)
     end
   end
 
-  def showParsedInfo (parsed_ctest_data)
+  def save_result_to_json_file(parsed_ctest_data)
+    open("#{$output_log_json_file_path}.json", 'w') do |f|
+        f.puts generate_mr_result(parsed_ctest_data)
+    end
+  end
+
+
+  def show_parsed_info(parsed_ctest_data)
     if !$human_readable
-      showMachineReadableParsedInfo parsed_ctest_data
+      show_mr_result parsed_ctest_data
     else
-      showHumanReadableParsedInfo parsed_ctest_data
+      show_hr_result parsed_ctest_data
     end
   end
 
   def parse
-    parsed_ctest_data = parseCTestLog
-    showParsedInfo parsed_ctest_data
+    parsed_ctest_data = parse_ctest_log
+    show_parsed_info(parsed_ctest_data)
     if !$output_log_file_path.nil?
-      saveParsedDataToEnvironmentalFile parsed_ctest_data
+      save_result_to_file parsed_ctest_data
+    end
+    if !$output_log_json_file_path.nil?
+      save_result_to_json_file parsed_ctest_data
     end
   end
 end
