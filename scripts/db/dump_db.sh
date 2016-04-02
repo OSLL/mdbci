@@ -29,6 +29,7 @@ if [[ $show_help ]]; then
     [-u database user]
     [-l local dump file]
     [-H database host]
+    [-d database name]
     [-h help]"
   exit 0
 fi
