@@ -7,7 +7,6 @@ LOG_FILE_OPTION = '--log-file'
 OUTPUT_LOG_FILE_OPTION = '--output-log-file'
 ONLY_FAILED_OPTION = '--only-failed'
 HUMAN_READABLE_OPTION = '--human-readable'
-HUMAN_READABLE__FULL_OPTION = '--human-readable-full'
 HELP_OPTION = '--help'
 
 TEST_INDEX_NUMBER = 'test_index_number'
@@ -19,17 +18,26 @@ TESTS = 'tests'
 TESTS_COUNT = 'tests_count'
 FAILED_TESTS_COUNT = 'failed_tests_count'
 
-MAXSCALE_COMMIT = "MaxScale commit"
+RUN_TEST_BUILD_ENV_VARS_TO_HR = {
+  'BUILD_NUMBER'=>'Buid number',
+  'JOB_NAME'=>'Job name',
+  'BUILD_TIMESTAMP'=>'Timestamp',
+  'name'=>'Test run name',
+  'target'=>'Target',
+  'box'=>'Box',
+  'product'=>'Product',
+  'version'=>'Version'
+}
 
-RUN_TEST_BUILD_ENV_VARS = {
-  'BUILD_NUMBER'=>nil,
-  'JOB_NAME'=>nil,
-  'BUILD_TIMESTAMP'=>nil,
-  'name'=>nil,
-  'target'=>nil,
-  'box'=>nil,
-  'product'=>nil,
-  'version'=>nil
+RUN_TEST_BUILD_ENV_VARS_TO_MR = {
+  'BUILD_NUMBER'=>'buid_number',
+  'JOB_NAME'=>'job_name',
+  'BUILD_TIMESTAMP'=>'timestamp',
+  'name'=>'test_run_name',
+  'target'=>'target',
+  'box'=>'box',
+  'product'=>'product',
+  'version'=>'version'
 }
 
 FAILED = 'Failed'
@@ -40,9 +48,13 @@ NOT_FOUND = 'NOT FOUND'
 BUILD_LOG_PARSING_RESULT = 'BUILD_LOG_PARSING_RESULT'
 
 ERROR = 'ERROR'
-CTEST_NOT_EXECUTED_ERROR = 'CTest has never been executed'
+CTEST_NOT_EXECUTED_ERROR = 'CTest never been executed'
 
-CTEST_ARGUMENTS = 'CTest arguments'
+CTEST_ARGUMENTS_HR = 'CTest arguments'
+CTEST_ARGUMENTS_MR = 'ctest_arguments'
+
+MAXSCALE_COMMIT_HR = "MaxScale commit"
+MAXSCALE_COMMIT_MR = "maxscale_commit"
 
 NEW_LINE_JENKINS_FORMAT = " \\\n"
 
@@ -50,29 +62,27 @@ opts = GetoptLong.new(
     [LOG_FILE_OPTION, '-l', GetoptLong::REQUIRED_ARGUMENT],
     [ONLY_FAILED_OPTION, '-f', GetoptLong::OPTIONAL_ARGUMENT],
     [HUMAN_READABLE_OPTION, '-r', GetoptLong::OPTIONAL_ARGUMENT],
-    [HUMAN_READABLE__FULL_OPTION, '-e', GetoptLong::OPTIONAL_ARGUMENT],
     [OUTPUT_LOG_FILE_OPTION, '-o', GetoptLong::OPTIONAL_ARGUMENT],
     [HELP_OPTION, '-h', GetoptLong::OPTIONAL_ARGUMENT]
 )
 
-$log_file_path = nil
+$log = nil
 $only_failed = false
 $human_readable = false
-$human_readable_full = false
 $output_log_file_path = nil
-$jenkins_job_url = nil
-
 
 opts.each do |opt, arg|
   case opt
     when LOG_FILE_OPTION
-      $log_file_path = arg
+      begin
+        $log = File.read arg
+      rescue
+        raise puts "ERROR: Can not find log file: #{arg}"
+      end
     when ONLY_FAILED_OPTION
       $only_failed = true
     when HUMAN_READABLE_OPTION
       $human_readable = true
-    when HUMAN_READABLE__FULL_OPTION
-      $human_readable_full = true
     when OUTPUT_LOG_FILE_OPTION
       $output_log_file_path = arg
     when HELP_OPTION
@@ -95,7 +105,6 @@ class CTestParser
   attr_accessor :ctest_summary
   attr_accessor :ctest_test_indexes
   attr_accessor :ctest_arguments
-  attr_accessor :ctest_full_test_explanations
   attr_accessor :maxscale_commit
 
   def initialize
@@ -103,22 +112,15 @@ class CTestParser
     @ctest_summary = nil
     @ctest_test_indexes = Array.new
     @ctest_arguments = nil
-    @ctest_full_test_explanations = Array.new
     @maxscale_commit = nil
   end
 
   def parseCTestLog()
-    log = nil
-    begin
-      log = File.read $log_file_path
-    rescue
-      raise puts "ERROR: Can not find log file: #{$log_file_path}"
-    end
     ctest_first_line_regex = /Constructing a list of tests/
     ctest_last_line_regex = /tests passed,.+tests failed out of (.+)/
     maxscale_commit_regex = /MaxScale\s+.*\d+\.*\d*\.*\d*\s+-\s+(.+)/
     ctest_start_line = 0;
-    log.each_line do |line|
+    $log.each_line do |line|
       if line =~ maxscale_commit_regex and @maxscale_commit == nil
         @maxscale_commit = line.match(maxscale_commit_regex).captures[0]
       end
@@ -129,7 +131,7 @@ class CTestParser
       ctest_start_line += 1
     end
     if @ctest_executed
-      ctest_log = log.split("\n")[ctest_start_line..-1]
+      ctest_log = $log.split("\n")[ctest_start_line..-1]
       ctest_end_line = 0
       ctest_log.each do |line|
         if line =~ ctest_last_line_regex
@@ -160,7 +162,6 @@ class CTestParser
           failed_tests_counter += 1
         end
         if test_success == FAILED or (!$only_failed and test_success == PASSED)
-          @ctest_full_test_explanations.push(line)
           @ctest_test_indexes.push Integer test_number
           tests_info.push({
               TEST_INDEX_NUMBER=>test_index_number,
@@ -172,7 +173,11 @@ class CTestParser
         end
       end
     end
-    return {FAILED_TESTS_COUNT=>failed_tests_counter, TESTS=>tests_info}
+    if tests_info.length > 0
+      return {FAILED_TESTS_COUNT=>failed_tests_counter, TESTS=>tests_info}
+    else
+      return {FAILED_TESTS_COUNT=>failed_tests_counter}
+    end
   end
 
   def generateCTestArgument(test_indexes_array)
@@ -194,35 +199,33 @@ class CTestParser
     return ctest_arguments.join ','
   end
 
-  def generateRunTestBuildParameters
+  def generateRunTestBuildParametersHumanReadable
     build_params = Array.new
-    RUN_TEST_BUILD_ENV_VARS.each do |key, _|
-      build_params.push "#{key}: #{if ENV[key] then ENV[key] else NOT_FOUND end}"
+    RUN_TEST_BUILD_ENV_VARS_TO_HR.each do |key, value|
+      build_params.push "#{value}: #{if ENV[key] then ENV[key] else NOT_FOUND end}"
+    end
+    return build_params
+  end
+
+  def generateRunTestBuildParametersMachineReadable
+    build_params = Hash.new
+    RUN_TEST_BUILD_ENV_VARS_TO_MR.each do |key, value|
+      build_params[value]= if ENV[key] then ENV[key] else NOT_FOUND end
     end
     return build_params
   end
 
   def generateHumanReadableInfo(parsedCTestInfo)
     hr_tests = Array.new
-    if @jenkins_job_url != nil
-      build_number = @jenkins_job_url.split('/')[-1]
-      build_name = @jenkins_job_url.split('/')[-2]
-      uri = URI.parse("#{@jenkins_job_url}api/json")
-      response = Net::HTTP.get_response(uri)
-      json_body = JSON.parse(response.body)
-      JSON.pretty_generate(json_body)
-    end
     if @ctest_executed
       hr_tests.push @ctest_summary
-      hr_tests.push "#{CTEST_ARGUMENTS}: #{generateCTestArgument(@ctest_test_indexes)}"
-      hr_tests.push "#{MAXSCALE_COMMIT}: #{if @maxscale_commit != nil then @maxscale_commit  else NOT_FOUND end}"
-      hr_tests = hr_tests + generateRunTestBuildParameters
-      if !$human_readable_full
+      hr_tests.push "#{CTEST_ARGUMENTS_HR}: #{generateCTestArgument(@ctest_test_indexes)}"
+      hr_tests.push "#{MAXSCALE_COMMIT_HR}: #{if @maxscale_commit != nil then @maxscale_commit  else NOT_FOUND end}"
+      hr_tests = hr_tests + generateRunTestBuildParametersHumanReadable
+      if parsedCTestInfo.has_key? TESTS
         parsedCTestInfo[TESTS].each do |test|
           hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} (#{test[TEST_SUCCESS]})")
         end
-      else
-        hr_tests = hr_tests + @ctest_full_test_explanations
       end
     else
       hr_tests.push("#{ERROR}: #{CTEST_NOT_EXECUTED_ERROR}")
@@ -232,6 +235,9 @@ class CTestParser
 
   def showMachineReadableParsedInfo(parsed_ctest_data)
     if @ctest_executed
+      parsed_ctest_data = generateRunTestBuildParametersMachineReadable.merge(parsed_ctest_data)
+      parsed_ctest_data = {MAXSCALE_COMMIT_MR=>if @maxscale_commit != nil then @maxscale_commit  else NOT_FOUND end}.merge(parsed_ctest_data)
+      parsed_ctest_data = {CTEST_ARGUMENTS_MR=>generateCTestArgument(@ctest_test_indexes)}.merge(parsed_ctest_data)
       puts JSON.pretty_generate(parsed_ctest_data)
     elsif
       puts "{#{ERROR}: #{CTEST_NOT_EXECUTED_ERROR}}"
@@ -266,6 +272,9 @@ class CTestParser
   end
 end
 
+def main
+  parser = CTestParser.new
+  parser.parse
+end
 
-parser = CTestParser.new
-parser.parse
+main if File.identical?(__FILE__, $0)
