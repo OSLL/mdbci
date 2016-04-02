@@ -20,8 +20,7 @@ while getopts "hP:p:u:H:d:l:" opt; do
 done
 
 if [[ $show_help ]]; then
-  echo \
-"USAGE: drop_db.sh -d DATABASE_NAME -l LOCAL_DUMP_FILE
+  echo "USAGE: drop_db.sh -d DATABASE_NAME -l LOCAL_DUMP_FILE
     [-P database port]
     [-p database password]
     [-u database user]
@@ -34,11 +33,7 @@ error=0
 
 if [[ -z $database_name ]]; then
   echo "ERROR: Database name must be specified" >&2
-  error=1
-fi
-
-if [[ $error -ne 0 ]]; then
-  exit $error
+  exit 1
 fi
 
 if [[ -z $database_user ]]; then

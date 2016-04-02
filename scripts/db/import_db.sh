@@ -37,12 +37,12 @@ error=0
 
 if [[ -z $local_dump_file ]]; then
   echo "ERROR: Dump file must be specified" >&2
-  error=1
+  exit 1
 fi
 
 if [[ -z $database_name ]]; then
   echo "ERROR: Database name must be specified" >&2
-  error=1
+  exit 1
 fi
 
 if [[ $error -ne 0 ]]; then
