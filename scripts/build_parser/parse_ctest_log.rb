@@ -245,7 +245,7 @@ class CTestParser
       hr_tests.push @ctest_summary
       hr_tests.push "#{CTEST_ARGUMENTS_HR}: #{generate_ctest_arguments(@ctest_test_indexes)}"
       hr_tests.push "#{MAXSCALE_COMMIT_HR}: #{if @maxscale_commit != nil then @maxscale_commit  else NOT_FOUND end}"
-      build_params.push "#{MAXSCALE_SYSTEM_TEST_COMMIT_HR}: #{get_test_code_commit}"
+      hr_tests.push "#{MAXSCALE_SYSTEM_TEST_COMMIT_HR}: #{get_test_code_commit}"
       hr_tests = hr_tests + generate_run_test_build_parameters_hr
       if parsed_ctest_data.has_key? TESTS
         parsed_ctest_data[TESTS].each do |test|
