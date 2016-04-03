@@ -41,6 +41,8 @@ RUN_TEST_BUILD_ENV_VARS_TO_MR = {
   'version'=>'version'
 }
 
+WORKSPACE = 'WORKSPACE'
+
 FAILED = 'Failed'
 PASSED = 'Passed'
 
@@ -56,6 +58,9 @@ CTEST_ARGUMENTS_MR = 'ctest_arguments'
 
 MAXSCALE_COMMIT_HR = "MaxScale commit"
 MAXSCALE_COMMIT_MR = "maxscale_commit"
+
+MAXSCALE_SYSTEM_TEST_COMMIT_HR = "MaxScale system test commit"
+MAXSCALE_SYSTEM_TEST_COMMIT_MR = "maxscale_system_test_commit"
 
 NEW_LINE_JENKINS_FORMAT = " \\\n"
 
@@ -204,6 +209,20 @@ class CTestParser
     return ctest_arguments.join ','
   end
 
+  def get_test_code_commit
+    return NOT_FOUND if ENV[WORKSPACE].nil?
+    current_directory = Dir.pwd
+    Dir.chdir ENV[WORKSPACE]
+    git_log = `git log -1`
+    Dir.chdir current_directory
+    return NOT_FOUND if git_log.nil?
+    commit_regex = /commit\s+(.+)/
+    if git_log.lines.first =~ commit_regex
+      return git_log.lines.first.match(commit_regex).captures[0]
+    end
+    return NOT_FOUND
+  end
+
   def generate_run_test_build_parameters_hr
     build_params = Array.new
     RUN_TEST_BUILD_ENV_VARS_TO_HR.each do |key, value|
@@ -226,6 +245,7 @@ class CTestParser
       hr_tests.push @ctest_summary
       hr_tests.push "#{CTEST_ARGUMENTS_HR}: #{generate_ctest_arguments(@ctest_test_indexes)}"
       hr_tests.push "#{MAXSCALE_COMMIT_HR}: #{if @maxscale_commit != nil then @maxscale_commit  else NOT_FOUND end}"
+      build_params.push "#{MAXSCALE_SYSTEM_TEST_COMMIT_HR}: #{get_test_code_commit}"
       hr_tests = hr_tests + generate_run_test_build_parameters_hr
       if parsed_ctest_data.has_key? TESTS
         parsed_ctest_data[TESTS].each do |test|
@@ -241,6 +261,7 @@ class CTestParser
   def generate_mr_result(parsed_ctest_data)
     if @ctest_executed
       parsed_ctest_data = generate_run_test_build_parameters_mr.merge(parsed_ctest_data)
+      parsed_ctest_data = {MAXSCALE_SYSTEM_TEST_COMMIT_MR=>get_test_code_commit}.merge(parsed_ctest_data)
       parsed_ctest_data = {MAXSCALE_COMMIT_MR=>if @maxscale_commit != nil then @maxscale_commit  else NOT_FOUND end}.merge(parsed_ctest_data)
       parsed_ctest_data = {CTEST_ARGUMENTS_MR=>generate_ctest_arguments(@ctest_test_indexes)}.merge(parsed_ctest_data)
       return JSON.pretty_generate(parsed_ctest_data)
