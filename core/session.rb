@@ -73,9 +73,7 @@ class Session
   end
 
   def setup(what)
-    exit_code = 1
     possibly_failed_command = ''
-
     case what
       when 'boxes'
         $out.info 'Adding boxes to vagrant'
@@ -87,36 +85,26 @@ class Session
           # vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
 
           next if value['provider'] == "mdbci" # skip 'mdbci' block
-          #
-          begin
-	          if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
-	            puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
-	            shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
-	          else
-	            puts 'vagrant box add --provider virtualbox '+value['box'].to_s
-	            shell = 'vagrant box add --provider virtualbox '+value['box'].to_s
-	          end
+          if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
+	       	puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
+	        shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
+	      else
+	       	puts 'vagrant box add --provider virtualbox '+value['box'].to_s
+	       	shell = 'vagrant box add --provider virtualbox '+value['box'].to_s
+	      end
+	      shellCommand = `#{shell} 2>&1` # THERE CAN BE DONE CUSTOM EXCEPTION
 
-	          system shell # THERE CAN BE DONE CUSTOM EXCEPTION
-	          exit_code = $?.exitstatus
-	          raise "failed command: #{shell}" unless exit_code==0
-	      
-	      rescue Exception => error
-	      	$out.error error.backtrace.join("\n")
-	      	$out.error error.to_s
+      	  puts "#{shellCommand}\n"
+      	  # just one soft exeption - box already exist 
+      	  if shellCommand[/attempting to add already exists/]==nil 
+	        raise "failed command: #{shell}" 
 	      end
         end
       else
-        $out.warning 'Cannot setup '+what
-        exit_code = 1
+        raise "Cannot setup #{what}"
     end
 
-    if exit_code != 0
-      $out.error "command 'setup' exit with non-zero exit code: #{exit_code}"
-    end
-
-    return exit_code
-
+    return 0
   end
 
   def checkConfig
