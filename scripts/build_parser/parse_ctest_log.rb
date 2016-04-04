@@ -101,8 +101,8 @@ CTest parser usage:
     parse_ctest_log -l CTEST_LOG_FILE_PATH
         [ -f ]                - PARSE ONLY FAILED TESTS
         [ -r ]                - HUMAN READABLE OUTPUT
-        [ -o file_path ]      - CTEST PARSER OUTPUT LOG FILE
-        [ -j json_file_path ] - CTEST PARSER OUTPUT LOG JSON FILE
+        [ -o file_path ]      - CTEST PARSER OUTPUT LOG FILE HUMAN READABLE FOR JENKINS (environmental variable format)
+        [ -j json_file_path ] - CTEST PARSER OUTPUT LOG JSON FILE (there will be saved all test results - passed and failed)
         [ -h ]                - SHOW HELP
       EOT
       exit 0
@@ -113,16 +113,26 @@ class CTestParser
 
   attr_accessor :ctest_executed
   attr_accessor :ctest_summary
-  attr_accessor :ctest_test_indexes
-  attr_accessor :ctest_arguments
+  attr_accessor :all_ctest_indexes
+  attr_accessor :failed_ctest_indexes
+  attr_accessor :all_ctest_arguments
+  attr_accessor :failed_ctest_arguments
+  attr_accessor :all_ctest_info
+  attr_accessor :failed_ctest_info
   attr_accessor :maxscale_commit
+  attr_accessor :fail_ctest_counter
 
   def initialize
     @ctest_executed = false
     @ctest_summary = nil
-    @ctest_test_indexes = Array.new
-    @ctest_arguments = nil
     @maxscale_commit = nil
+    @all_ctest_indexes = nil
+    @failed_ctest_indexes = nil
+    @all_ctest_arguments = nil
+    @failed_ctest_arguments = nil
+    @all_ctest_info = nil
+    @failed_ctest_info = nil
+    @fail_ctest_counter = nil
   end
 
   def parse_ctest_log()
@@ -152,14 +162,18 @@ class CTestParser
       end
       ctest_log = ctest_log[0..ctest_end_line]
       tests_quantity = ctest_log[-1].match(ctest_last_line_regex).captures[0]
-      return {TESTS_COUNT => tests_quantity}.merge(find_tests_info(ctest_log))
+      find_tests_info(ctest_log)
+      @all_ctest_info = {TESTS_COUNT => tests_quantity}.merge(@all_ctest_info)
+      @failed_ctest_info = {TESTS_COUNT => tests_quantity}.merge(@failed_ctest_info)
     end
-    return nil
   end
 
   def find_tests_info(ctest_log)
-    tests_info = Array.new
-    failed_tests_counter = 0
+    @all_ctest_indexes = Array.new
+    @failed_ctest_indexes = Array.new
+    @all_ctest_info = Array.new
+    @failed_ctest_info = Array.new
+    @fail_ctest_counter = 0
     ctest_log.each do |line|
       test_end_regex = /(\d+)\/(\d+)\s+Test\s+#(\d+):[\s]+([^\s\.]+)[\s\.\*]+(Passed|Failed)\s+([\d\.]+)/
       if line =~ test_end_regex
@@ -168,40 +182,40 @@ class CTestParser
         test_name = line.match(test_end_regex).captures[3]
         test_success = line.match(test_end_regex).captures[4]
         test_time = line.match(test_end_regex).captures[5]
-        if test_success == (FAILED)
-          failed_tests_counter += 1
-        end
-        if test_success == FAILED or (!$only_failed and test_success == PASSED)
-          @ctest_test_indexes.push Integer test_number
-          tests_info.push({
-                              TEST_INDEX_NUMBER => test_index_number,
-                              TEST_NUMBER => test_number,
-                              TEST_NAME => test_name,
-                              TEST_SUCCESS => test_success,
-                              TEST_TIME => test_time
-                          })
+        @all_ctest_indexes.push(Integer(test_number))
+        @all_ctest_info.push({
+                                 TEST_INDEX_NUMBER => test_index_number,
+                                 TEST_NUMBER => test_number,
+                                 TEST_NAME => test_name,
+                                 TEST_SUCCESS => test_success,
+                                 TEST_TIME => test_time
+                             })
+        if test_success == FAILED
+          @fail_ctest_counter += 1
+          @failed_ctest_indexes.push(Integer(test_number))
+          @failed_ctest_info.push({
+                                      TEST_INDEX_NUMBER => test_index_number,
+                                      TEST_NUMBER => test_number,
+                                      TEST_NAME => test_name,
+                                      TEST_SUCCESS => test_success,
+                                      TEST_TIME => test_time
+                                  })
         end
       end
     end
-    if tests_info.length > 0
-      return {FAILED_TESTS_COUNT => failed_tests_counter, TESTS => tests_info}
-    else
-      return {FAILED_TESTS_COUNT => failed_tests_counter}
-    end
+    @all_ctest_info = {FAILED_TESTS_COUNT => @fail_ctest_counter, TESTS => @all_ctest_info}
+    @failed_ctest_info = {FAILED_TESTS_COUNT => @fail_ctest_counter, TESTS => @failed_ctest_info}
   end
 
-  def generate_ctest_arguments(test_indexes_array)
+  def generate_ctest_arguments
     ctest_arguments = Array.new()
+    test_indexes_array = $only_failed ? @all_ctest_indexes : @failed_ctest_indexes
     sorted_test_indexes_array = test_indexes_array.sort
-    if sorted_test_indexes_array.size == 0
-      return NOT_FOUND
-    end
+    return NOT_FOUND if sorted_test_indexes_array.size == 0
     sorted_test_indexes_array.each do |test_index|
       if test_index == sorted_test_indexes_array[0]
         ctest_arguments.push(test_index, test_index)
-        if sorted_test_indexes_array.size > 1
-          ctest_arguments.push(' ')
-        end
+        ctest_arguments.push(' ') if sorted_test_indexes_array.size > 1
       else
         ctest_arguments.push(test_index)
       end
@@ -226,12 +240,8 @@ class CTestParser
   def generate_run_test_build_parameters_hr
     build_params = Array.new
     RUN_TEST_BUILD_ENV_VARS_TO_HR.each do |key, value|
-      build_params.push "#{value}: #{
-      if ENV[key] then
-        ENV[key]
-      else
-        NOT_FOUND
-      end}"
+      env_value = ENV[key] ? ENV[key] : NOT_FOUND
+      build_params.push "#{value}: #{env_value}"
     end
     return build_params
   end
@@ -239,7 +249,7 @@ class CTestParser
   def generate_run_test_build_parameters_mr
     build_params = Hash.new
     RUN_TEST_BUILD_ENV_VARS_TO_MR.each do |key, value|
-      env_value = if ENV[key] then ENV[key] else NOT_FOUND end
+      env_value = ENV[key] ? ENV[key] : NOT_FOUND
       build_params[value] = env_value
     end
     return build_params
@@ -249,13 +259,9 @@ class CTestParser
     hr_tests = Array.new
     if @ctest_executed
       hr_tests.push @ctest_summary
-      hr_tests.push "#{CTEST_ARGUMENTS_HR}: #{generate_ctest_arguments(@ctest_test_indexes)}"
-      hr_tests.push "#{MAXSCALE_COMMIT_HR}: #{
-      if @maxscale_commit != nil then
-        @maxscale_commit
-      else
-        NOT_FOUND
-      end}"
+      hr_tests.push "#{CTEST_ARGUMENTS_HR}: #{generate_ctest_arguments}"
+      maxscale_commit = @maxscale_commit ? @maxscale_commit : NOT_FOUND
+      hr_tests.push "#{MAXSCALE_COMMIT_HR}: #{maxscale_commit}"
       hr_tests.push "#{MAXSCALE_SYSTEM_TEST_COMMIT_HR}: #{get_test_code_commit}"
       hr_tests = hr_tests + generate_run_test_build_parameters_hr
       if parsed_ctest_data.has_key? TESTS
@@ -273,12 +279,12 @@ class CTestParser
     if @ctest_executed
       parsed_ctest_data = generate_run_test_build_parameters_mr.merge(parsed_ctest_data)
       parsed_ctest_data = {MAXSCALE_SYSTEM_TEST_COMMIT_MR => get_test_code_commit}.merge(parsed_ctest_data)
-      maxscale_commit = if @maxscale_commit != nil then @maxscale_commit else NOT_FOUND end
+      maxscale_commit = @maxscale_commit ? @maxscale_commit : NOT_FOUND
       parsed_ctest_data = {MAXSCALE_COMMIT_MR => maxscale_commit}.merge(parsed_ctest_data)
-      parsed_ctest_data = {CTEST_ARGUMENTS_MR => generate_ctest_arguments(@ctest_test_indexes)}.merge(parsed_ctest_data)
-      return JSON.pretty_generate(parsed_ctest_data)
+      parsed_ctest_data = {CTEST_ARGUMENTS_MR => generate_ctest_arguments}.merge(parsed_ctest_data)
+      return JSON.pretty_generate parsed_ctest_data
     else
-      return {ERROR => CTEST_NOT_EXECUTED_ERROR}
+      return JSON.pretty_generate({ERROR => CTEST_NOT_EXECUTED_ERROR})
     end
   end
 
@@ -290,38 +296,35 @@ class CTestParser
     puts generate_hr_result(parsed_ctest_data)
   end
 
-  def save_result_to_file(parsed_ctest_data)
+  def save_result_to_file()
     open($output_log_file_path, 'w') do |f|
-      f.puts "#{BUILD_LOG_PARSING_RESULT}= \\"
-      f.puts generate_hr_result(parsed_ctest_data).join(NEW_LINE_JENKINS_FORMAT)
+      ctest_info = $only_failed ? @failed_ctest_info : @all_ctest_info
+      f.puts [BUILD_LOG_PARSING_RESULT, generate_hr_result(ctest_info)].join(NEW_LINE_JENKINS_FORMAT)
     end
   end
 
-  def save_result_to_json_file(parsed_ctest_data)
+  def save_all_result_to_json_file()
     open($output_log_json_file_path, 'w') do |f|
-      f.puts generate_mr_result(parsed_ctest_data)
+      f.puts generate_mr_result(@all_ctest_info)
     end
   end
 
 
-  def show_parsed_info(parsed_ctest_data)
+  def show_ctest_parsed_info()
     if !$human_readable
-      show_mr_result parsed_ctest_data
+      show_mr_result($only_failed ? @failed_ctest_info : @all_ctest_info)
     else
-      show_hr_result parsed_ctest_data
+      show_hr_result($only_failed ? @failed_ctest_info : @all_ctest_info)
     end
   end
 
   def parse
-    parsed_ctest_data = parse_ctest_log
-    show_parsed_info(parsed_ctest_data)
-    if !$output_log_file_path.nil?
-      save_result_to_file parsed_ctest_data
-    end
-    if !$output_log_json_file_path.nil?
-      save_result_to_json_file parsed_ctest_data
-    end
+    parse_ctest_log
+    show_ctest_parsed_info
+    save_result_to_file if $output_log_file_path
+    save_all_result_to_json_file if $output_log_json_file_path
   end
+
 end
 
 def main
