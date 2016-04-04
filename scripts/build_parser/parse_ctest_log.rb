@@ -20,25 +20,25 @@ TESTS_COUNT = 'tests_count'
 FAILED_TESTS_COUNT = 'failed_tests_count'
 
 RUN_TEST_BUILD_ENV_VARS_TO_HR = {
-  'BUILD_NUMBER'=>'Job build number',
-  'JOB_NAME'=>'Job name',
-  'BUILD_TIMESTAMP'=>'Timestamp',
-  'name'=>'Test run name',
-  'target'=>'Target',
-  'box'=>'Box',
-  'product'=>'Product',
-  'version'=>'Version'
+    'BUILD_NUMBER' => 'Job build number',
+    'JOB_NAME' => 'Job name',
+    'BUILD_TIMESTAMP' => 'Timestamp',
+    'name' => 'Test run name',
+    'target' => 'Target',
+    'box' => 'Box',
+    'product' => 'Product',
+    'version' => 'Version'
 }
 
 RUN_TEST_BUILD_ENV_VARS_TO_MR = {
-  'BUILD_NUMBER'=>'job_build_number',
-  'JOB_NAME'=>'job_name',
-  'BUILD_TIMESTAMP'=>'timestamp',
-  'name'=>'test_run_name',
-  'target'=>'target',
-  'box'=>'box',
-  'product'=>'product',
-  'version'=>'version'
+    'BUILD_NUMBER' => 'job_build_number',
+    'JOB_NAME' => 'job_name',
+    'BUILD_TIMESTAMP' => 'timestamp',
+    'name' => 'test_run_name',
+    'target' => 'target',
+    'box' => 'box',
+    'product' => 'product',
+    'version' => 'version'
 }
 
 WORKSPACE = 'WORKSPACE'
@@ -102,7 +102,7 @@ CTest parser usage:
         [ -f ]                - PARSE ONLY FAILED TESTS
         [ -r ]                - HUMAN READABLE OUTPUT
         [ -o file_path ]      - CTEST PARSER OUTPUT LOG FILE
-        [ -j json_file_path ] - CTEST PARSER OUTPUT LOG JSON FILE (extension '.json' will be appended)
+        [ -j json_file_path ] - CTEST PARSER OUTPUT LOG JSON FILE
         [ -h ]                - SHOW HELP
       EOT
       exit 0
@@ -152,7 +152,7 @@ class CTestParser
       end
       ctest_log = ctest_log[0..ctest_end_line]
       tests_quantity = ctest_log[-1].match(ctest_last_line_regex).captures[0]
-      return {TESTS_COUNT=>tests_quantity}.merge(find_tests_info(ctest_log))
+      return {TESTS_COUNT => tests_quantity}.merge(find_tests_info(ctest_log))
     end
     return nil
   end
@@ -174,19 +174,19 @@ class CTestParser
         if test_success == FAILED or (!$only_failed and test_success == PASSED)
           @ctest_test_indexes.push Integer test_number
           tests_info.push({
-              TEST_INDEX_NUMBER=>test_index_number,
-              TEST_NUMBER=>test_number,
-              TEST_NAME=>test_name ,
-              TEST_SUCCESS=>test_success,
-              TEST_TIME=>test_time
-          })
+                              TEST_INDEX_NUMBER => test_index_number,
+                              TEST_NUMBER => test_number,
+                              TEST_NAME => test_name,
+                              TEST_SUCCESS => test_success,
+                              TEST_TIME => test_time
+                          })
         end
       end
     end
     if tests_info.length > 0
-      return {FAILED_TESTS_COUNT=>failed_tests_counter, TESTS=>tests_info}
+      return {FAILED_TESTS_COUNT => failed_tests_counter, TESTS => tests_info}
     else
-      return {FAILED_TESTS_COUNT=>failed_tests_counter}
+      return {FAILED_TESTS_COUNT => failed_tests_counter}
     end
   end
 
@@ -226,7 +226,12 @@ class CTestParser
   def generate_run_test_build_parameters_hr
     build_params = Array.new
     RUN_TEST_BUILD_ENV_VARS_TO_HR.each do |key, value|
-      build_params.push "#{value}: #{if ENV[key] then ENV[key] else NOT_FOUND end}"
+      build_params.push "#{value}: #{
+      if ENV[key] then
+        ENV[key]
+      else
+        NOT_FOUND
+      end}"
     end
     return build_params
   end
@@ -234,7 +239,8 @@ class CTestParser
   def generate_run_test_build_parameters_mr
     build_params = Hash.new
     RUN_TEST_BUILD_ENV_VARS_TO_MR.each do |key, value|
-      build_params[value]= if ENV[key] then ENV[key] else NOT_FOUND end
+      env_value = if ENV[key] then ENV[key] else NOT_FOUND end
+      build_params[value] = env_value
     end
     return build_params
   end
@@ -244,7 +250,12 @@ class CTestParser
     if @ctest_executed
       hr_tests.push @ctest_summary
       hr_tests.push "#{CTEST_ARGUMENTS_HR}: #{generate_ctest_arguments(@ctest_test_indexes)}"
-      hr_tests.push "#{MAXSCALE_COMMIT_HR}: #{if @maxscale_commit != nil then @maxscale_commit  else NOT_FOUND end}"
+      hr_tests.push "#{MAXSCALE_COMMIT_HR}: #{
+      if @maxscale_commit != nil then
+        @maxscale_commit
+      else
+        NOT_FOUND
+      end}"
       hr_tests.push "#{MAXSCALE_SYSTEM_TEST_COMMIT_HR}: #{get_test_code_commit}"
       hr_tests = hr_tests + generate_run_test_build_parameters_hr
       if parsed_ctest_data.has_key? TESTS
@@ -261,12 +272,13 @@ class CTestParser
   def generate_mr_result(parsed_ctest_data)
     if @ctest_executed
       parsed_ctest_data = generate_run_test_build_parameters_mr.merge(parsed_ctest_data)
-      parsed_ctest_data = {MAXSCALE_SYSTEM_TEST_COMMIT_MR=>get_test_code_commit}.merge(parsed_ctest_data)
-      parsed_ctest_data = {MAXSCALE_COMMIT_MR=>if @maxscale_commit != nil then @maxscale_commit  else NOT_FOUND end}.merge(parsed_ctest_data)
-      parsed_ctest_data = {CTEST_ARGUMENTS_MR=>generate_ctest_arguments(@ctest_test_indexes)}.merge(parsed_ctest_data)
+      parsed_ctest_data = {MAXSCALE_SYSTEM_TEST_COMMIT_MR => get_test_code_commit}.merge(parsed_ctest_data)
+      maxscale_commit = if @maxscale_commit != nil then @maxscale_commit else NOT_FOUND end
+      parsed_ctest_data = {MAXSCALE_COMMIT_MR => maxscale_commit}.merge(parsed_ctest_data)
+      parsed_ctest_data = {CTEST_ARGUMENTS_MR => generate_ctest_arguments(@ctest_test_indexes)}.merge(parsed_ctest_data)
       return JSON.pretty_generate(parsed_ctest_data)
     else
-      return {ERROR=>CTEST_NOT_EXECUTED_ERROR}
+      return {ERROR => CTEST_NOT_EXECUTED_ERROR}
     end
   end
 
@@ -286,8 +298,8 @@ class CTestParser
   end
 
   def save_result_to_json_file(parsed_ctest_data)
-    open("#{$output_log_json_file_path}.json", 'w') do |f|
-        f.puts generate_mr_result(parsed_ctest_data)
+    open($output_log_json_file_path, 'w') do |f|
+      f.puts generate_mr_result(parsed_ctest_data)
     end
   end
 
@@ -317,4 +329,6 @@ def main
   parser.parse
 end
 
-main if File.identical?(__FILE__, $0)
+if File.identical?(__FILE__, $0)
+  main
+end
