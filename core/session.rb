@@ -256,6 +256,7 @@ class Session
 
   def showBoxKeys
     $session.boxes.boxesManager.values.each do |value|
+      return 1 unless !value['$key'].nil?
       $out.out value['$key']
     end
   end
@@ -384,7 +385,7 @@ class Session
       when 'keyfile'
         exit_code = Network.showKeyFile(ARGV.shift)
       when 'boxkeys'
-        showBoxKeys
+        exit_code = showBoxKeys
       when 'provider'
         exit_code = showProvider(ARGV.shift)
       else
