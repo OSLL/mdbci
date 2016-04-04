@@ -41,13 +41,13 @@ class BuildResultsWriter
   end
 
   def connect_mdb(host, login, password, db_name)
-    @client = Mysql2::Client.new(:host => "#{host}", :username => "#{login}",\
+    @client = Mysql2::Client.new(:host => "#{host}", :username => "#{login}", \
       :password => "#{password}", :database => "#{db_name}")
     puts "Connection to db (:host => #{host}, :username => #{login}, "\
          ":password => #{password}, :database => #{db_name}) established successfuly"
   end
 
-  def write_test_run_table(jenkins_id, start_time, target, box,\
+  def write_test_run_table(jenkins_id, start_time, target, box, \
     product, mariadb_version, test_code_commit_id, maxscale_commit_id, job_name)
 
     test_runs_query = "INSERT INTO test_run (jenkins_id, "\
@@ -83,14 +83,16 @@ class BuildResultsWriter
     maxscale_commit_id = results['maxscale_commit']
     job_name = results['job_name']
     tests = Array.new
-    results['tests'].each do |test|
-      tests.push({TEST_NAME => test[TEST_NAME], TEST_SUCCESS => test[TEST_SUCCESS]})
+    if results.has_key? 'tests'
+      results['tests'].each do |test|
+        tests.push({TEST_NAME => test[TEST_NAME], TEST_SUCCESS => test[TEST_SUCCESS]})
+      end
     end
     #</STUB>
 
 
     # writing results to db
-    id = write_test_run_table(jenkins_id, start_time,target, box,\
+    id = write_test_run_table(jenkins_id, start_time, target, box, \
     product, mariadb_version, test_code_commit_id, maxscale_commit_id, job_name)
     tests.each do |test|
       puts "Preparing to write test=#{test} into results"
