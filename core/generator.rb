@@ -514,11 +514,11 @@ def Generator.checkPath(path, override)
         vagrant.puts Generator.vagrantConfigFooter
     end
 
+    vagrant.close
+
     if File.size?(path+'/Vagrantfile').nil? # nil if empty and not exist
       raise 'Generated Vagrantfile is empty! Please check configuration file and regenerate it.'
     end
-
-    vagrant.close
 
     return 0
   end
