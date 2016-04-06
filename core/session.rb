@@ -256,7 +256,9 @@ class Session
 
   def showBoxKeys
     $session.boxes.boxesManager.values.each do |value|
-      return 1 unless !value['$key'].nil?
+      if(value['$key'].nil?)
+        raise "box keys value is nil"
+      end
       $out.out value['$key']
     end
   end
