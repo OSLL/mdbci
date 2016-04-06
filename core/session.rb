@@ -780,6 +780,7 @@ class Session
     
     # output platforms versions
     boxes_versions.each { |version| $out.out version }
+    
     return exit_code
   end
 
