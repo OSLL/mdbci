@@ -628,7 +628,7 @@ class Session
   def publicKeys(args)
     pwd = Dir.pwd
     possibly_failed_command = ''
-
+    exit_code = 0
     if args.nil?
       raise 'Configuration name is required'
     end
