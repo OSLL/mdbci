@@ -773,9 +773,8 @@ class Session
     some_platform = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
     if some_platform.nil?
       raise  "Platform #{$session.boxPlatform} is not supported!"
-    else
-      $out.info "Supported versions for #{$session.boxPlatform}:"
     end
+    $out.info "Supported versions for #{$session.boxPlatform}:"
     
     boxes_versions = getBoxesPlatformVersions($session.boxPlatform ,$session.boxes.boxesManager)
     
