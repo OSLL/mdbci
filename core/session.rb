@@ -94,9 +94,9 @@ class Session
 	      end
 	      shellCommand = `#{shell} 2>&1` # THERE CAN BE DONE CUSTOM EXCEPTION
 
-      	  puts "#{shellCommand}\n"
-      	  # just one soft exeption - box already exist 
-      	  if shellCommand[/attempting to add already exists/]==nil 
+      	puts "#{shellCommand}\n"
+      	# just one soft exeption - box already exist 
+      	if $?!=0 && shellCommand[/attempting to add already exists/]==nil 
 	        raise "failed command: #{shell}" 
 	      end
         end
