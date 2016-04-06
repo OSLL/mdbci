@@ -681,7 +681,7 @@ class Session
           vagrant_out = `#{cmd}`
           # TODO
           if $?.exitstatus!=0
-          	raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
+            raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
           end
         else
           raise "Wrong box parameter in node: #{args[1]}"
@@ -690,7 +690,7 @@ class Session
     else # aws, vbox, libvirt, docker nodes
 
       unless Dir.exists? args[0]
-        raise "Directory with nodes does not exists: #{args[0]}"
+        raise "Directory with nodes does not exists: #{args[1]}"
       end
 
       network = Network.new
@@ -724,8 +724,9 @@ class Session
         cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
         $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
         vagrant_out = `#{cmd}`
-        exit_code = $?.exitstatus
-        possibly_failed_command = cmd
+        if $?.exitstatus!=0
+          raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
+        end
         $out.out vagrant_out
       end
     end
@@ -736,8 +737,7 @@ class Session
       raise "command #{possibly_failed_command} exit with non-zero code: #{exit_code}"
     end
 
-    return exit_code
-
+    return 0
   end
 
   def showProvider(name)
