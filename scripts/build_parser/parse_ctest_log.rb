@@ -209,7 +209,7 @@ class CTestParser
 
   def generate_ctest_arguments
     ctest_arguments = Array.new()
-    test_indexes_array = $only_failed ? @all_ctest_indexes : @failed_ctest_indexes
+    test_indexes_array = $only_failed ? @failed_ctest_indexes : @all_ctest_indexes
     sorted_test_indexes_array = test_indexes_array.sort
     return NOT_FOUND if sorted_test_indexes_array.size == 0
     sorted_test_indexes_array.each do |test_index|
@@ -259,16 +259,16 @@ class CTestParser
     hr_tests = Array.new
     if @ctest_executed
       hr_tests.push @ctest_summary
+      parsed_ctest_data[TESTS].each do |test|
+        hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} (#{test[TEST_SUCCESS]})")
+      end
+      hr_tests.push ""
       hr_tests.push "#{CTEST_ARGUMENTS_HR}: #{generate_ctest_arguments}"
+      hr_tests.push ""
       maxscale_commit = @maxscale_commit ? @maxscale_commit : NOT_FOUND
       hr_tests.push "#{MAXSCALE_COMMIT_HR}: #{maxscale_commit}"
       hr_tests.push "#{MAXSCALE_SYSTEM_TEST_COMMIT_HR}: #{get_test_code_commit}"
       hr_tests = hr_tests + generate_run_test_build_parameters_hr
-      if parsed_ctest_data.has_key? TESTS
-        parsed_ctest_data[TESTS].each do |test|
-          hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} (#{test[TEST_SUCCESS]})")
-        end
-      end
     else
       hr_tests.push("#{ERROR}: #{CTEST_NOT_EXECUTED_ERROR}")
     end
