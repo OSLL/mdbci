@@ -15,6 +15,10 @@
               name: MDBCI_REPOSITORY
               default: git@github.com:OSLL/mdbci.git
               description:  'MDBCI repository.'
+        - string:
+              name: SORTED_GIT_BRANCHES_FILE_PATH
+              default: *SORTED_GIT_BRANCHES_FILE_PATH
+              description:  'Path to sorted branches (from mdbci_branches job).'
         - extended-choice:
               name: MDBCI_BRANCH
               description: "MDBCI branch"
