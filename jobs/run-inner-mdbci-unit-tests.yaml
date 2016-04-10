@@ -25,9 +25,13 @@
         - pre-scm-buildstep:
             - shell: |
                 git reset --hard;git clean -fxd;git fetch --all
-                echo "LAST_MODIFIED_BRANCH=${MDBCI_BRANCH}" > last_modified_branch
+                if [ -z "$MDBCI_BRANCH" ]; then
+                	echo "LAST_MODIFIED_BRANCH=$(cat $SORTED_GIT_BRANCHES_FILE_PATH | awk -F"=" '{i=index($0,"=");print substr($0,i+1)}' | awk -F"," '{print $1}')" > last_modified_branch
+                else
+                	echo "LAST_MODIFIED_BRANCH=${MDBCI_BRANCH}" > last_modified_branch
+                fi
             - inject:
-                properties-file: last_modified_branch
+                properties-file: $WORKSPACE/last_modified_branch
     scm:
         - git:
             url: $MDBCI_REPOSITORY
