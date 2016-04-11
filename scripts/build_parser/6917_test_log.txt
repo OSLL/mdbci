@@ -1,0 +1,2443 @@
+
+Skip to content
+titletitle Alexander Kaluzny | выход
+
+поиск
+
+Jenkins
+run_test
+#865
+ Назад к проекту
+ Статус.
+ Изменения.
+ Console Output
+ View as plain text
+ Редактировать информацию сборки
+ Удалить сборку
+ Parameters
+ Environment Variables
+ Git Build Data
+ No Tags
+ Rebuild
+ Предыдущая сборка
+УспешноВывод на консоль
+
+Пропущено 314 KB.. Показать весь Log
+vagrant halt node3 --provider=libvirt; cd /home/vagrant/mdbci"'
++++ repl_kill_vm_command_003='"cd /home/vagrant/mdbci/fwf2-testing;vagrant halt node3 --provider=libvirt; cd /home/vagrant/mdbci"'
+++ for prefix in '"repl"' '"galera"'
+++ N_var=galera_N
+++ Nx=4
++++ expr 4 - 1
+++ N=3
++++ seq 0 3
+++ for i in '$(seq 0 $N)'
++++ printf %03d 0
+++ num=000
+++ '[' galera == repl ']'
+++ node_n=galera
+++ ip_var=galera_000
+++ private_ip_var=galera_private_000
++++ ./mdbci show network fwf2-testing/galera0 --silent
+++ ip=192.168.121.150
+++ '[' 0 '!=' 0 ']'
++++ ./mdbci show keyfile fwf2-testing/galera0 --silent
++++ sed 's/"//g'
+++ key=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/galera0/libvirt/private_key
+++ eval 'export "$prefix"_"$num"=$ip'
++++ export galera_000=192.168.121.150
++++ galera_000=192.168.121.150
+++ eval 'export "$prefix"_sshkey_"$num"=$key'
++++ export galera_sshkey_000=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/galera0/libvirt/private_key
++++ galera_sshkey_000=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/galera0/libvirt/private_key
+++ eval 'export "$prefix"_port_"$num"=3306'
++++ export galera_port_000=3306
++++ galera_port_000=3306
++++ ./mdbci show private_ip fwf2-testing/galera0 --silent
+++ private_ip=192.168.121.150
+++ eval 'export "$prefix"_private_"$num"="$private_ip"'
++++ export galera_private_000=192.168.121.150
++++ galera_private_000=192.168.121.150
++++ tr -cd '[:print:]'
++++ ./mdbci ssh --command whoami fwf2-testing/galera0 --silent
+++ au=vagrant
+++ eval 'export "$prefix"_access_user_"$num"="$au"'
++++ export galera_access_user_000=vagrant
++++ galera_access_user_000=vagrant
+++ eval 'export "$prefix"_access_sudo_"$num"=sudo'
++++ export galera_access_sudo_000=sudo
++++ galera_access_sudo_000=sudo
++++ expr 0 + 1
+++ server_num=1
+++ start_cmd_var=galera_start_db_command_000
+++ stop_cmd_var=galera_stop_db_command_000
++++ ./mdbci ssh --command 'ls /etc/init.d/mysql* 2> /dev/null | tr -cd "[:print:]"' fwf2-testing/galera0 --silent
+++ mysql_exe=/etc/init.d/mysql
+++ grep -i mysql
+++ echo /etc/init.d/mysql
+/etc/init.d/mysql
+++ '[' 0 '!=' 0 ']'
+++ eval 'export $start_cmd_var="$mysql_exe start "'
++++ export 'galera_start_db_command_000=/etc/init.d/mysql start '
++++ galera_start_db_command_000='/etc/init.d/mysql start '
+++ eval 'export $stop_cmd_var="$mysql_exe stop "'
++++ export 'galera_stop_db_command_000=/etc/init.d/mysql stop '
++++ galera_stop_db_command_000='/etc/init.d/mysql stop '
+++ eval 'export "$prefix"_start_vm_command_"$num"="\"cd $mdbci_dir/$config_name;vagrant up $node_n$i --provider=$provider; cd $curr_dir\""'
++++ export 'galera_start_vm_command_000="cd /home/vagrant/mdbci/fwf2-testing;vagrant up galera0 --provider=libvirt; cd /home/vagrant/mdbci"'
++++ galera_start_vm_command_000='"cd /home/vagrant/mdbci/fwf2-testing;vagrant up galera0 --provider=libvirt; cd /home/vagrant/mdbci"'
+++ eval 'export "$prefix"_kill_vm_command_"$num"="\"cd $mdbci_dir/$config_name;vagrant halt $node_n$i --provider=$provider; cd $curr_dir\""'
++++ export 'galera_kill_vm_command_000="cd /home/vagrant/mdbci/fwf2-testing;vagrant halt galera0 --provider=libvirt; cd /home/vagrant/mdbci"'
++++ galera_kill_vm_command_000='"cd /home/vagrant/mdbci/fwf2-testing;vagrant halt galera0 --provider=libvirt; cd /home/vagrant/mdbci"'
+++ for i in '$(seq 0 $N)'
++++ printf %03d 1
+++ num=001
+++ '[' galera == repl ']'
+++ node_n=galera
+++ ip_var=galera_001
+++ private_ip_var=galera_private_001
++++ ./mdbci show network fwf2-testing/galera1 --silent
+++ ip=
+++ '[' 1 '!=' 0 ']'
+++ cd fwf2-testing
+++ vagrant destroy galera1 -f
+==> galera1: Removing domain...
+==> galera1: Auto-generating node name for Chef...
+++ vagrant up galera1
+Bringing machine 'galera1' up with 'libvirt' provider...
+==> galera1: Creating image (snapshot of base box volume).
+==> galera1: Creating domain with the following settings...
+==> galera1:  -- Name:              fwf2-testing_galera1
+==> galera1:  -- Domain type:       kvm
+==> galera1:  -- Cpus:              1
+==> galera1:  -- Memory:            2048M
+==> galera1:  -- Management MAC:
+==> galera1:  -- Loader:
+==> galera1:  -- Base box:          centos/7
+==> galera1:  -- Storage pool:      default
+==> galera1:  -- Image:             /var/lib/libvirt/images/fwf2-testing_galera1.img (41G)
+==> galera1:  -- Volume Cache:      default
+==> galera1:  -- Kernel:
+==> galera1:  -- Initrd:
+==> galera1:  -- Graphics Type:     vnc
+==> galera1:  -- Graphics Port:     5900
+==> galera1:  -- Graphics IP:       127.0.0.1
+==> galera1:  -- Graphics Password: Not defined
+==> galera1:  -- Video Type:        cirrus
+==> galera1:  -- Video VRAM:        9216
+==> galera1:  -- Keymap:            en-us
+==> galera1:  -- INPUT:             type=mouse, bus=ps2
+==> galera1:  -- Command line :
+==> galera1: Auto-generating node name for Chef...
+==> galera1: Creating shared folders metadata...
+==> galera1: Starting domain.
+==> galera1: Waiting for domain to get an IP address...
+==> galera1: Waiting for SSH to become available...
+    galera1:
+    galera1: Vagrant insecure key detected. Vagrant will automatically replace
+    galera1: this with a newly generated keypair for better security.
+    galera1:
+    galera1: Inserting generated public key within guest...
+    galera1: Removing insecure key from the guest if it's present...
+    galera1: Key inserted! Disconnecting and reconnecting using new SSH key...
+==> galera1: Setting hostname...
+==> galera1: Configuring and enabling network interfaces...
+==> galera1: Installing rsync to the VM...
+==> galera1: Rsyncing folder: /home/vagrant/mdbci/fwf2-testing/ => /home/vagrant/sync
+==> galera1: Rsyncing folder: /home/vagrant/mdbci/fwf2-testing/ => /vagrant
+==> galera1: Rsyncing folder: /home/vagrant/build-scripts/test-setup-scripts/cnf/ => /home/vagrant/cnf_templates
+==> galera1: Rsyncing folder: /home/vagrant/mdbci/recipes/cookbooks/ => /tmp/vagrant-chef/5647e9fbc8a74e8fe1cfa518d9f38f42/cookbooks
+==> galera1: Rsyncing folder: /home/vagrant/mdbci/fwf2-testing/ => /tmp/vagrant-chef/4f98d8c53ba74de7def1cead04299105/roles
+==> galera1: Running provisioner: chef_solo...
+    galera1: Installing Chef (latest)...
+==> galera1: Generating chef JSON and uploading...
+==> galera1: Running chef-solo...
+==> galera1: [2016-03-30T16:52:53-04:00] INFO: Forking chef instance to converge...
+==> galera1: Starting Chef Client, version 12.8.7
+==> galera1: [2016-03-30T16:52:53-04:00] INFO: *** Chef 12.8.7 ***
+==> galera1: [2016-03-30T16:52:53-04:00] INFO: Platform: x86_64-linux
+==> galera1: [2016-03-30T16:52:53-04:00] INFO: Chef-client pid: 15825
+==> galera1: [2016-03-30T16:52:55-04:00] INFO: Setting the run_list to ["role[galera1]"] from CLI options
+==> galera1: [2016-03-30T16:52:55-04:00] INFO: Run List is [role[galera1]]
+==> galera1: [2016-03-30T16:52:55-04:00] INFO: Run List expands to [galera]
+==> galera1: [2016-03-30T16:52:55-04:00] INFO: Starting Chef Run for vagrant-6d85eb2b
+==> galera1: [2016-03-30T16:52:55-04:00] INFO: Running start handlers
+==> galera1: [2016-03-30T16:52:55-04:00] INFO: Start handlers complete.
+==> galera1: Installing Cookbook Gems:
+==> galera1: Compiling Cookbooks...
+==> galera1: Platform family: rhel
+==> galera1: shell install on: rhel
+==> galera1: Converging 35 resources
+==> galera1: Recipe: galera::galera_repos
+==> galera1:   * yum_package[net-tools] action install
+==> galera1: [2016-03-30T16:52:56-04:00] INFO: yum_package[net-tools] installing net-tools-2.0-0.17.20131004git.el7 from base repository
+==> galera1: [2016-03-30T16:53:01-04:00] INFO: yum_package[net-tools] installed net-tools at 2.0-0.17.20131004git.el7
+==> galera1:
+==> galera1:     - install version 2.0-0.17.20131004git.el7 of package net-tools
+==> galera1:   * yum_package[psmisc] action install
+==> galera1: [2016-03-30T16:53:01-04:00] INFO: yum_package[psmisc] installing psmisc-22.20-9.el7 from base repository
+==> galera1: [2016-03-30T16:53:06-04:00] INFO: yum_package[psmisc] installed psmisc at 22.20-9.el7
+==> galera1:
+==> galera1:     - install version 22.20-9.el7 of package psmisc
+==> galera1:   * template[/etc/yum.repos.d/galera.repo] action create[2016-03-30T16:53:06-04:00] INFO: template[/etc/yum.repos.d/galera.repo] created file /etc/yum.repos.d/galera.repo
+==> galera1:
+==> galera1:     - create new file /etc/yum.repos.d/galera.repo[2016-03-30T16:53:06-04:00] INFO: template[/etc/yum.repos.d/galera.repo] updated file contents /etc/yum.repos.d/galera.repo
+==> galera1:
+==> galera1:     - update content in file /etc/yum.repos.d/galera.repo from none to 23bab5
+==> galera1:     --- /etc/yum.repos.d/galera.repo	2016-03-30 16:53:06.017000000 -0400
+==> galera1:     +++ /etc/yum.repos.d/.chef-galera.repo20160330-15825-1adtnfu	2016-03-30 16:53:06.017000000 -0400
+==> galera1:     @@ -1 +1,6 @@
+==> galera1:     +[maxscale]
+==> galera1:     +name = maxscale
+==> galera1:     +baseurl=http://yum.mariadb.org/5.5/centos7-amd64/
+==> galera1:     +gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+==> galera1:     +gpgcheck=1
+==> galera1:
+==> galera1:     - restore selinux security context
+==> galera1: Recipe: galera::default
+==> galera1:   * yum_package[rsync] action install
+==> galera1:  (up to date)
+==> galera1:   * yum_package[sudo] action install (up to date)
+==> galera1:   * yum_package[sed] action install (up to date)
+==> galera1:   * yum_package[coreutils] action install
+==> galera1:  (up to date)
+==> galera1:   * yum_package[util-linux] action install (up to date)
+==> galera1:   * yum_package[curl] action install (up to date)
+==> galera1:   * yum_package[grep] action install (up to date)
+==> galera1:   * yum_package[findutils] action install (up to date)
+==> galera1:   * yum_package[gawk] action install (up to date)
+==> galera1:   * yum_package[iproute] action install (up to date)
+==> galera1:   * yum_package[wget] action install[2016-03-30T16:53:06-04:00] INFO: yum_package[wget] installing wget-1.14-10.el7_0.1 from base repository
+==> galera1: [2016-03-30T16:53:12-04:00] INFO: yum_package[wget] installed wget at 1.14-10.el7_0.1
+==> galera1:
+==> galera1:     - install version 1.14-10.el7_0.1 of package wget
+==> galera1:   * execute[add_socat_repo_centos_ge6] action run
+==> galera1:
+==> galera1:     [execute] --2016-03-30 16:53:12--  http://www.convirture.com/repos/definitions/rhel/6.x/convirt.repo
+==> galera1:               Resolving www.convirture.com (www.convirture.com)...
+==> galera1: 69.195.93.219
+==> galera1:               Connecting to www.convirture.com (www.convirture.com)|69.195.93.219|:80...
+==> galera1: connected.
+==> galera1:               HTTP request sent, awaiting response...
+==> galera1: 200 OK
+==> galera1:               Length: 184 [text/plain]
+==> galera1:               Saving to: ���/etc/yum.repos.d/convirt.repo���
+==> galera1:
+==> galera1:                    0K                                                       100% 13.8M=0s
+==> galera1:
+==> galera1:               2016-03-30 16:53:12 (13.8 MB/s) - ���/etc/yum.repos.d/convirt.repo��� saved [184/184]
+==> galera1:
+==> galera1: [2016-03-30T16:53:12-04:00] INFO: execute[add_socat_repo_centos_ge6] ran successfully
+==> galera1:     - execute wget -P /etc/yum.repos.d http://www.convirture.com/repos/definitions/rhel/6.x/convirt.repo
+==> galera1:   * yum_package[nc] action install
+==> galera1: [2016-03-30T16:53:22-04:00] INFO: yum_package[nc] installing nmap-ncat-6.40-7.el7 from base repository
+==> galera1: [2016-03-30T16:53:27-04:00] INFO: yum_package[nc] installed nmap-ncat at 6.40-7.el7
+==> galera1:
+==> galera1:     - install version 6.40-7.el7 of package nmap-ncat
+==> galera1:   * yum_package[socat] action install
+==> galera1: [2016-03-30T16:53:28-04:00] INFO: yum_package[socat] installing socat-1.7.2.2-5.el7 from base repository
+==> galera1: [2016-03-30T16:53:32-04:00] INFO: yum_package[socat] installed socat at 1.7.2.2-5.el7
+==> galera1:
+==> galera1:     - install version 1.7.2.2-5.el7 of package socat
+==> galera1:   * bash[Turn off SElinux on CentOS >= 6.0] action run
+==> galera1: [2016-03-30T16:53:32-04:00] INFO: bash[Turn off SElinux on CentOS >= 6.0] ran successfully
+==> galera1:
+==> galera1:     - execute "bash"  "/tmp/chef-script20160330-15825-18tonhq"
+==> galera1:   * cookbook_file[selinux.config] action create[2016-03-30T16:53:32-04:00] INFO: cookbook_file[selinux.config] backed up to /var/chef/backup/etc/selinux/config.chef-20160330165332.350591
+==> galera1: [2016-03-30T16:53:32-04:00] INFO: cookbook_file[selinux.config] updated file contents /etc/selinux/config
+==> galera1:
+==> galera1:     - update content in file /etc/selinux/config from 4d643c to 1220fd
+==> galera1:     --- /etc/selinux/config	2015-10-02 10:37:58.619867000 -0400
+==> galera1:     +++ /etc/selinux/.chef-selinux.config20160330-15825-h2csh2	2016-03-30 16:53:32.348000000 -0400
+==> galera1:     @@ -4,8 +4,8 @@
+==> galera1:      #     enforcing - SELinux security policy is enforced.
+==> galera1:      #     permissive - SELinux prints warnings instead of enforcing.
+==> galera1:      #     disabled - No SELinux policy is loaded.
+==> galera1:     -SELINUX=enforcing
+==> galera1:     -# SELINUXTYPE= can take one of three two values:
+==> galera1:     +SELINUX=permissive
+==> galera1:     +# SELINUXTYPE= can take one of these two values:
+==> galera1:      #     targeted - Targeted processes are protected,
+==> galera1:      #     minimum - Modification of targeted policy. Only selected processes are protected.
+==> galera1:      #     mls - Multi Level Security protection.
+==> galera1:
+==> galera1:     - restore selinux security context
+==> galera1:   * bash[Install and configure iptables] action run
+==> galera1:
+==> galera1:     [execute] Loaded plugins: fastestmirror
+==> galera1:               Loading mirror speeds from cached hostfile
+==> galera1:                * base: centos.quelquesmots.fr
+==> galera1:                * extras: mirror0.babylon.network
+==> galera1:                * updates: mirror1.babylon.network
+==> galera1:               Resolving Dependencies
+==> galera1:               --> Running transaction check
+==> galera1:               ---> Package iptables-services.x86_64 0:1.4.21-16.el7 will be installed
+==> galera1:               --> Processing Dependency: iptables = 1.4.21-16.el7 for package: iptables-services-1.4.21-16.el7.x86_64
+==> galera1:               --> Running transaction check
+==> galera1:               ---> Package iptables.x86_64 0:1.4.21-13.el7 will be updated
+==> galera1:               ---> Package iptables.x86_64 0:1.4.21-16.el7 will be an update
+==> galera1:               --> Finished Dependency Resolution
+==> galera1:
+==> galera1:               Dependencies Resolved
+==> galera1:
+==> galera1:               ================================================================================
+==> galera1:                Package                  Arch          Version               Repository   Size
+==> galera1:               ================================================================================
+==> galera1:               Installing:
+==> galera1:                iptables-services        x86_64        1.4.21-16.el7         base         50 k
+==> galera1:               Updating for dependencies:
+==> galera1:                iptables                 x86_64        1.4.21-16.el7         base        424 k
+==> galera1:
+==> galera1:               Transaction Summary
+==> galera1:               ================================================================================
+==> galera1:               Install  1 Package
+==> galera1:               Upgrade             ( 1 Dependent package)
+==> galera1:
+==> galera1:               Total download size: 474 k
+==> galera1:               Downloading packages:
+==> galera1:               Delta RPMs disabled because /usr/bin/applydeltarpm not installed.
+==> galera1:               --------------------------------------------------------------------------------
+==> galera1:               Total                                              1.7 MB/s | 474 kB  00:00
+==> galera1:               Running transaction check
+==> galera1:               Running transaction test
+==> galera1:               Transaction test succeeded
+==> galera1:               Running transaction
+==> galera1:                 Updating   : iptables-1.4.21-16.el7.x86_64                                1/3
+==> galera1:
+==> galera1:                 Installing : iptables-services-1.4.21-16.el7.x86_64                       2/3
+==> galera1:
+==> galera1:                 Cleanup    : iptables-1.4.21-13.el7.x86_64                                3/3
+==> galera1:
+==> galera1:                 Verifying  : iptables-services-1.4.21-16.el7.x86_64                       1/3
+==> galera1:
+==> galera1:                 Verifying  : iptables-1.4.21-16.el7.x86_64                                2/3
+==> galera1:
+==> galera1:                 Verifying  : iptables-1.4.21-13.el7.x86_64                                3/3
+==> galera1:
+==> galera1:
+==> galera1:               Installed:
+==> galera1:                 iptables-services.x86_64 0:1.4.21-16.el7
+==> galera1:
+==> galera1:               Dependency Updated:
+==> galera1:                 iptables.x86_64 0:1.4.21-16.el7
+==> galera1:
+==> galera1:               Complete!
+==> galera1:               ln -s '/usr/lib/systemd/system/iptables.service' '/etc/systemd/system/basic.target.wants/iptables.service'
+==> galera1: [2016-03-30T16:53:41-04:00] INFO: bash[Install and configure iptables] ran successfully
+==> galera1:     - execute "bash"  "/tmp/chef-script20160330-15825-1ahtcz9"
+==> galera1:   * execute[Open port 4567] action run
+==> galera1: [2016-03-30T16:53:41-04:00] INFO: execute[Open port 4567] ran successfully
+==> galera1:
+==> galera1:     - execute iptables -I INPUT -p tcp --dport 4567 -j ACCEPT -m state --state NEW
+==> galera1:   * execute[Open port 4568] action run
+==> galera1: [2016-03-30T16:53:41-04:00] INFO: execute[Open port 4568] ran successfully
+==> galera1:
+==> galera1:     - execute iptables -I INPUT -p tcp --dport 4568 -j ACCEPT -m state --state NEW
+==> galera1:   * execute[Open port 4444] action run
+==> galera1: [2016-03-30T16:53:41-04:00] INFO: execute[Open port 4444] ran successfully
+==> galera1:
+==> galera1:     - execute iptables -I INPUT -p tcp --dport 4444 -j ACCEPT -m state --state NEW
+==> galera1:   * execute[Open port 3306] action run
+==> galera1: [2016-03-30T16:53:41-04:00] INFO: execute[Open port 3306] ran successfully
+==> galera1:
+==> galera1:     - execute iptables -I INPUT -p tcp --dport 3306 -j ACCEPT -m state --state NEW
+==> galera1:   * execute[Open port 4006] action run
+==> galera1: [2016-03-30T16:53:41-04:00] INFO: execute[Open port 4006] ran successfully
+==> galera1:
+==> galera1:     - execute iptables -I INPUT -p tcp --dport 4006 -j ACCEPT -m state --state NEW
+==> galera1:   * execute[Open port 4008] action run
+==> galera1: [2016-03-30T16:53:41-04:00] INFO: execute[Open port 4008] ran successfully
+==> galera1:
+==> galera1:     - execute iptables -I INPUT -p tcp --dport 4008 -j ACCEPT -m state --state NEW
+==> galera1:   * execute[Open port 4009] action run
+==> galera1: [2016-03-30T16:53:41-04:00] INFO: execute[Open port 4009] ran successfully
+==> galera1:
+==> galera1:     - execute iptables -I INPUT -p tcp --dport 4009 -j ACCEPT -m state --state NEW
+==> galera1:   * execute[Open port 4442] action run
+==> galera1: [2016-03-30T16:53:41-04:00] INFO: execute[Open port 4442] ran successfully
+==> galera1:
+==> galera1:     - execute iptables -I INPUT -p tcp --dport 4442 -j ACCEPT -m state --state NEW
+==> galera1:   * execute[Open port 6444] action run
+==> galera1: [2016-03-30T16:53:41-04:00] INFO: execute[Open port 6444] ran successfully
+==> galera1:
+==> galera1:     - execute iptables -I INPUT -p tcp --dport 6444 -j ACCEPT -m state --state NEW
+==> galera1:   * bash[Save iptables rules on CentOS 7] action run
+==> galera1: [2016-03-30T16:53:41-04:00] INFO: bash[Save iptables rules on CentOS 7] ran successfully
+==> galera1:
+==> galera1:     - execute "bash"  "/tmp/chef-script20160330-15825-ehyf06"
+==> galera1:   * execute[install galera] action run
+==> galera1:
+==> galera1:     [execute] Repository maxscale is listed more than once in the configuration
+==> galera1:               Resolving Dependencies
+==> galera1:               --> Running transaction check
+==> galera1:               ---> Package MariaDB-Galera-server.x86_64 0:5.5.48-1.el7.centos will be installed
+==> galera1:               --> Processing Dependency: perl(Data::Dumper) for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Processing Dependency: perl(File::Basename) for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Processing Dependency: perl(Sys::Hostname) for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Processing Dependency: perl(strict) for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Processing Dependency: MariaDB-common for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Processing Dependency: MariaDB-client for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Processing Dependency: lsof for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Processing Dependency: galera for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Processing Dependency: perl(File::Temp) for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Processing Dependency: perl(File::Path) for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Processing Dependency: perl(POSIX) for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Processing Dependency: perl(File::Copy) for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Processing Dependency: perl(vars) for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Processing Dependency: perl(Getopt::Long) for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Processing Dependency: perl(DBI) for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Processing Dependency: /usr/bin/perl for package: MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64
+==> galera1:               --> Running transaction check
+==> galera1:               ---> Package MariaDB-client.x86_64 0:5.5.48-1.el7.centos will be installed
+==> galera1:               --> Processing Dependency: perl(Exporter) for package: MariaDB-client-5.5.48-1.el7.centos.x86_64
+==> galera1:               ---> Package MariaDB-common.x86_64 0:5.5.48-1.el7.centos will be installed
+==> galera1:               ---> Package galera.x86_64 0:25.3.14-1.rhel7.el7.centos will be installed
+==> galera1:               --> Processing Dependency: libboost_program_options.so.1.53.0()(64bit) for package: galera-25.3.14-1.rhel7.el7.centos.x86_64
+==> galera1:               ---> Package lsof.x86_64 0:4.87-4.el7 will be installed
+==> galera1:               ---> Package perl.x86_64 4:5.16.3-286.el7 will be installed
+==> galera1:               --> Processing Dependency: perl-libs = 4:5.16.3-286.el7 for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(Socket) >= 1.3 for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(Scalar::Util) >= 1.10 for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl-macros for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl-libs for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(threads::shared) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(threads) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(constant) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(Time::Local) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(Time::HiRes) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(Storable) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(Socket) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(Scalar::Util) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(Pod::Simple::XHTML) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(Pod::Simple::Search) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(Filter::Util::Call) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(File::Spec::Unix) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(File::Spec::Functions) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(File::Spec) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(Cwd) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(Carp) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               --> Processing Dependency: libperl.so()(64bit) for package: 4:perl-5.16.3-286.el7.x86_64
+==> galera1:               ---> Package perl-DBI.x86_64 0:1.627-4.el7 will be installed
+==> galera1:               --> Processing Dependency: perl(RPC::PlServer) >= 0.2001 for package: perl-DBI-1.627-4.el7.x86_64
+==> galera1:               --> Processing Dependency: perl(RPC::PlClient) >= 0.2000 for package: perl-DBI-1.627-4.el7.x86_64
+==> galera1:               ---> Package perl-Data-Dumper.x86_64 0:2.145-3.el7 will be installed
+==> galera1:               ---> Package perl-File-Path.noarch 0:2.09-2.el7 will be installed
+==> galera1:               ---> Package perl-File-Temp.noarch 0:0.23.01-3.el7 will be installed
+==> galera1:               ---> Package perl-Getopt-Long.noarch 0:2.40-2.el7 will be installed
+==> galera1:               --> Processing Dependency: perl(Pod::Usage) >= 1.14 for package: perl-Getopt-Long-2.40-2.el7.noarch
+==> galera1:               --> Processing Dependency: perl(Text::ParseWords) for package: perl-Getopt-Long-2.40-2.el7.noarch
+==> galera1:               --> Running transaction check
+==> galera1:               ---> Package boost-program-options.x86_64 0:1.53.0-25.el7 will be installed
+==> galera1:               ---> Package perl-Carp.noarch 0:1.26-244.el7 will be installed
+==> galera1:               ---> Package perl-Exporter.noarch 0:5.68-3.el7 will be installed
+==> galera1:               ---> Package perl-Filter.x86_64 0:1.49-3.el7 will be installed
+==> galera1:               ---> Package perl-PathTools.x86_64 0:3.40-5.el7 will be installed
+==> galera1:               ---> Package perl-PlRPC.noarch 0:0.2020-14.el7 will be installed
+==> galera1:               --> Processing Dependency: perl(Net::Daemon) >= 0.13 for package: perl-PlRPC-0.2020-14.el7.noarch
+==> galera1:               --> Processing Dependency: perl(Net::Daemon::Test) for package: perl-PlRPC-0.2020-14.el7.noarch
+==> galera1:               --> Processing Dependency: perl(Net::Daemon::Log) for package: perl-PlRPC-0.2020-14.el7.noarch
+==> galera1:               --> Processing Dependency: perl(Compress::Zlib) for package: perl-PlRPC-0.2020-14.el7.noarch
+==> galera1:               ---> Package perl-Pod-Simple.noarch 1:3.28-4.el7 will be installed
+==> galera1:               --> Processing Dependency: perl(Pod::Escapes) >= 1.04 for package: 1:perl-Pod-Simple-3.28-4.el7.noarch
+==> galera1:               --> Processing Dependency: perl(Encode) for package: 1:perl-Pod-Simple-3.28-4.el7.noarch
+==> galera1:               ---> Package perl-Pod-Usage.noarch 0:1.63-3.el7 will be installed
+==> galera1:               --> Processing Dependency: perl(Pod::Text) >= 3.15 for package: perl-Pod-Usage-1.63-3.el7.noarch
+==> galera1:               --> Processing Dependency: perl-Pod-Perldoc for package: perl-Pod-Usage-1.63-3.el7.noarch
+==> galera1:               ---> Package perl-Scalar-List-Utils.x86_64 0:1.27-248.el7 will be installed
+==> galera1:               ---> Package perl-Socket.x86_64 0:2.010-3.el7 will be installed
+==> galera1:               ---> Package perl-Storable.x86_64 0:2.45-3.el7 will be installed
+==> galera1:               ---> Package perl-Text-ParseWords.noarch 0:3.29-4.el7 will be installed
+==> galera1:               ---> Package perl-Time-HiRes.x86_64 4:1.9725-3.el7 will be installed
+==> galera1:               ---> Package perl-Time-Local.noarch 0:1.2300-2.el7 will be installed
+==> galera1:               ---> Package perl-constant.noarch 0:1.27-2.el7 will be installed
+==> galera1:               ---> Package perl-libs.x86_64 4:5.16.3-286.el7 will be installed
+==> galera1:               ---> Package perl-macros.x86_64 4:5.16.3-286.el7 will be installed
+==> galera1:               ---> Package perl-threads.x86_64 0:1.87-4.el7 will be installed
+==> galera1:               ---> Package perl-threads-shared.x86_64 0:1.43-6.el7 will be installed
+==> galera1:               --> Running transaction check
+==> galera1:               ---> Package perl-Encode.x86_64 0:2.51-7.el7 will be installed
+==> galera1:               ---> Package perl-IO-Compress.noarch 0:2.061-2.el7 will be installed
+==> galera1:               --> Processing Dependency: perl(Compress::Raw::Zlib) >= 2.061 for package: perl-IO-Compress-2.061-2.el7.noarch
+==> galera1:               --> Processing Dependency: perl(Compress::Raw::Bzip2) >= 2.061 for package: perl-IO-Compress-2.061-2.el7.noarch
+==> galera1:               ---> Package perl-Net-Daemon.noarch 0:0.48-5.el7 will be installed
+==> galera1:               ---> Package perl-Pod-Escapes.noarch 1:1.04-286.el7 will be installed
+==> galera1:               ---> Package perl-Pod-Perldoc.noarch 0:3.20-4.el7 will be installed
+==> galera1:               --> Processing Dependency: perl(parent) for package: perl-Pod-Perldoc-3.20-4.el7.noarch
+==> galera1:               --> Processing Dependency: perl(HTTP::Tiny) for package: perl-Pod-Perldoc-3.20-4.el7.noarch
+==> galera1:               ---> Package perl-podlators.noarch 0:2.5.1-3.el7 will be installed
+==> galera1:               --> Running transaction check
+==> galera1:               ---> Package perl-Compress-Raw-Bzip2.x86_64 0:2.061-3.el7 will be installed
+==> galera1:               ---> Package perl-Compress-Raw-Zlib.x86_64 1:2.061-4.el7 will be installed
+==> galera1:               ---> Package perl-HTTP-Tiny.noarch 0:0.033-3.el7 will be installed
+==> galera1:               ---> Package perl-parent.noarch 1:0.225-244.el7 will be installed
+==> galera1:               --> Processing Conflict: MariaDB-common-5.5.48-1.el7.centos.x86_64 conflicts mariadb-libs < 1:5.5.48-1.el7.centos
+==> galera1:               --> Restarting Dependency Resolution with new changes.
+==> galera1:               --> Running transaction check
+==> galera1:               ---> Package MariaDB-shared.x86_64 0:5.5.48-1.el7.centos will be obsoleting
+==> galera1:               ---> Package mariadb-libs.x86_64 1:5.5.44-1.el7_1 will be obsoleted
+==> galera1:               --> Finished Dependency Resolution
+==> galera1:
+==> galera1:               Dependencies Resolved
+==> galera1:
+==> galera1:               ================================================================================
+==> galera1:                Package                  Arch    Version                       Repository
+==> galera1:                                                                                          Size
+==> galera1:               ================================================================================
+==> galera1:               Installing:
+==> galera1:                MariaDB-Galera-server    x86_64  5.5.48-1.el7.centos           maxscale   23 M
+==> galera1:                MariaDB-shared           x86_64  5.5.48-1.el7.centos           maxscale  1.0 M
+==> galera1:                    replacing  mariadb-libs.x86_64 1:5.5.44-1.el7_1
+==> galera1:               Installing for dependencies:
+==> galera1:                MariaDB-client           x86_64  5.5.48-1.el7.centos           maxscale  8.6 M
+==> galera1:                MariaDB-common           x86_64  5.5.48-1.el7.centos           maxscale   23 k
+==> galera1:                boost-program-options    x86_64  1.53.0-25.el7                 base      155 k
+==> galera1:                galera                   x86_64  25.3.14-1.rhel7.el7.centos    maxscale  7.7 M
+==> galera1:                lsof                     x86_64  4.87-4.el7                    base      331 k
+==> galera1:                perl                     x86_64  4:5.16.3-286.el7              base      8.0 M
+==> galera1:                perl-Carp                noarch  1.26-244.el7                  base       19 k
+==> galera1:                perl-Compress-Raw-Bzip2  x86_64  2.061-3.el7                   base       32 k
+==> galera1:                perl-Compress-Raw-Zlib   x86_64  1:2.061-4.el7                 base       57 k
+==> galera1:                perl-DBI                 x86_64  1.627-4.el7                   base      802 k
+==> galera1:                perl-Data-Dumper         x86_64  2.145-3.el7                   base       47 k
+==> galera1:                perl-Encode              x86_64  2.51-7.el7                    base      1.5 M
+==> galera1:                perl-Exporter            noarch  5.68-3.el7                    base       28 k
+==> galera1:                perl-File-Path           noarch  2.09-2.el7                    base       26 k
+==> galera1:                perl-File-Temp           noarch  0.23.01-3.el7                 base       56 k
+==> galera1:                perl-Filter              x86_64  1.49-3.el7                    base       76 k
+==> galera1:                perl-Getopt-Long         noarch  2.40-2.el7                    base       56 k
+==> galera1:                perl-HTTP-Tiny           noarch  0.033-3.el7                   base       38 k
+==> galera1:                perl-IO-Compress         noarch  2.061-2.el7                   base      260 k
+==> galera1:                perl-Net-Daemon          noarch  0.48-5.el7                    base       51 k
+==> galera1:                perl-PathTools           x86_64  3.40-5.el7                    base       82 k
+==> galera1:                perl-PlRPC               noarch  0.2020-14.el7                 base       36 k
+==> galera1:                perl-Pod-Escapes         noarch  1:1.04-286.el7                base       50 k
+==> galera1:                perl-Pod-Perldoc         noarch  3.20-4.el7                    base       87 k
+==> galera1:                perl-Pod-Simple          noarch  1:3.28-4.el7                  base      216 k
+==> galera1:                perl-Pod-Usage           noarch  1.63-3.el7                    base       27 k
+==> galera1:                perl-Scalar-List-Utils   x86_64  1.27-248.el7                  base       36 k
+==> galera1:                perl-Socket              x86_64  2.010-3.el7                   base       49 k
+==> galera1:                perl-Storable            x86_64  2.45-3.el7                    base       77 k
+==> galera1:                perl-Text-ParseWords     noarch  3.29-4.el7                    base       14 k
+==> galera1:                perl-Time-HiRes          x86_64  4:1.9725-3.el7                base       45 k
+==> galera1:                perl-Time-Local          noarch  1.2300-2.el7                  base       24 k
+==> galera1:                perl-constant            noarch  1.27-2.el7                    base       19 k
+==> galera1:                perl-libs                x86_64  4:5.16.3-286.el7              base      687 k
+==> galera1:                perl-macros              x86_64  4:5.16.3-286.el7              base       43 k
+==> galera1:                perl-parent              noarch  1:0.225-244.el7               base       12 k
+==> galera1:                perl-podlators           noarch  2.5.1-3.el7                   base      112 k
+==> galera1:                perl-threads             x86_64  1.87-4.el7                    base       49 k
+==> galera1:                perl-threads-shared      x86_64  1.43-6.el7                    base       39 k
+==> galera1:
+==> galera1:               Transaction Summary
+==> galera1:               ================================================================================
+==> galera1:               Install  2 Packages (+39 Dependent packages)
+==> galera1:
+==> galera1:               Total download size: 53 M
+==> galera1:               Downloading packages:
+==> galera1:               Public key for MariaDB-5.5.48-centos7-x86_64-client.rpm is not installed
+==> galera1:               warning: /var/cache/yum/maxscale/packages/MariaDB-5.5.48-centos7-x86_64-client.rpm: Header V4 DSA/SHA1 Signature, key ID 1bb943db: NOKEY
+==> galera1:               --------------------------------------------------------------------------------
+==> galera1:               Total                                              5.8 MB/s |  53 MB  00:09
+==> galera1:               Retrieving key from https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+==> galera1:               Importing GPG key 0x1BB943DB:
+==> galera1:                Userid     : "MariaDB Package Signing Key <package-signing-key@mariadb.org>"
+==> galera1:                Fingerprint: 1993 69e5 404b d5fc 7d2f e43b cbcb 082a 1bb9 43db
+==> galera1:                From       : https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+==> galera1:               Running transaction check
+==> galera1:               Running transaction test
+==> galera1:               Transaction test succeeded
+==> galera1:               Running transaction
+==> galera1:                 Installing : MariaDB-common-5.5.48-1.el7.centos.x86_64                   1/42
+==> galera1:
+==> galera1:                 Installing : 1:perl-parent-0.225-244.el7.noarch                          2/42
+==> galera1:
+==> galera1:                 Installing : perl-HTTP-Tiny-0.033-3.el7.noarch                           3/42
+==> galera1:
+==> galera1:                 Installing : perl-podlators-2.5.1-3.el7.noarch                           4/42
+==> galera1:
+==> galera1:                 Installing : perl-Pod-Perldoc-3.20-4.el7.noarch                          5/42
+==> galera1:
+==> galera1:                 Installing : 1:perl-Pod-Escapes-1.04-286.el7.noarch                      6/42
+==> galera1:
+==> galera1:                 Installing : perl-Text-ParseWords-3.29-4.el7.noarch                      7/42
+==> galera1:
+==> galera1:                 Installing : perl-Encode-2.51-7.el7.x86_64                               8/42
+==> galera1:
+==> galera1:                 Installing : perl-Pod-Usage-1.63-3.el7.noarch                            9/42
+==> galera1:
+==> galera1:                 Installing : 4:perl-libs-5.16.3-286.el7.x86_64                          10/42
+==> galera1:
+==> galera1:                 Installing : 4:perl-macros-5.16.3-286.el7.x86_64                        11/42
+==> galera1:
+==> galera1:                 Installing : 4:perl-Time-HiRes-1.9725-3.el7.x86_64                      12/42
+==> galera1:
+==> galera1:                 Installing : perl-Exporter-5.68-3.el7.noarch                            13/42
+==> galera1:
+==> galera1:                 Installing : perl-constant-1.27-2.el7.noarch                            14/42
+==> galera1:
+==> galera1:                 Installing : perl-Time-Local-1.2300-2.el7.noarch                        15/42
+==> galera1:
+==> galera1:                 Installing : perl-Socket-2.010-3.el7.x86_64                             16/42
+==> galera1:
+==> galera1:                 Installing : perl-Storable-2.45-3.el7.x86_64                            17/42
+==> galera1:
+==> galera1:                 Installing : perl-PathTools-3.40-5.el7.x86_64                           18/42
+==> galera1:
+==> galera1:                 Installing : perl-Scalar-List-Utils-1.27-248.el7.x86_64                 19/42
+==> galera1:
+==> galera1:                 Installing : perl-File-Temp-0.23.01-3.el7.noarch                        20/42
+==> galera1:
+==> galera1:                 Installing : perl-File-Path-2.09-2.el7.noarch                           21/42
+==> galera1:
+==> galera1:                 Installing : perl-threads-shared-1.43-6.el7.x86_64                      22/42
+==> galera1:
+==> galera1:                 Installing : perl-threads-1.87-4.el7.x86_64                             23/42
+==> galera1:
+==> galera1:                 Installing : perl-Filter-1.49-3.el7.x86_64                              24/42
+==> galera1:
+==> galera1:                 Installing : perl-Carp-1.26-244.el7.noarch                              25/42
+==> galera1:
+==> galera1:                 Installing : 1:perl-Pod-Simple-3.28-4.el7.noarch                        26/42
+==> galera1:
+==> galera1:                 Installing : perl-Getopt-Long-2.40-2.el7.noarch                         27/42
+==> galera1:
+==> galera1:                 Installing : 4:perl-5.16.3-286.el7.x86_64                               28/42
+==> galera1:
+==> galera1:                 Installing : perl-Data-Dumper-2.145-3.el7.x86_64                        29/42
+==> galera1:
+==> galera1:                 Installing : perl-Compress-Raw-Bzip2-2.061-3.el7.x86_64                 30/42
+==> galera1:
+==> galera1:                 Installing : perl-Net-Daemon-0.48-5.el7.noarch                          31/42
+==> galera1:
+==> galera1:                 Installing : MariaDB-client-5.5.48-1.el7.centos.x86_64                  32/42
+==> galera1:
+==> galera1:                 Installing : 1:perl-Compress-Raw-Zlib-2.061-4.el7.x86_64                33/42
+==> galera1:
+==> galera1:                 Installing : perl-IO-Compress-2.061-2.el7.noarch                        34/42
+==> galera1:
+==> galera1:                 Installing : perl-PlRPC-0.2020-14.el7.noarch                            35/42
+==> galera1:
+==> galera1:                 Installing : perl-DBI-1.627-4.el7.x86_64                                36/42
+==> galera1:
+==> galera1:                 Installing : boost-program-options-1.53.0-25.el7.x86_64                 37/42
+==> galera1:
+==> galera1:                 Installing : galera-25.3.14-1.rhel7.el7.centos.x86_64                   38/42
+==> galera1:
+==> galera1:                 Installing : lsof-4.87-4.el7.x86_64                                     39/42
+==> galera1:
+==> galera1:                 Installing : MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64           40/42
+==> galera1:
+==> galera1:               chown: cannot access ���/var/lib/mysql���: No such file or directory
+==> galera1:               160330 16:55:10 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16275 ...
+==> galera1:               160330 16:55:10 [Note] WSREP: Read nil XID from storage engines, skipping position init
+==> galera1:               160330 16:55:10 [Note] WSREP: wsrep_load(): loading provider library 'none'
+==> galera1:               160330 16:55:16 [Note] WSREP: Service disconnected.
+==> galera1:               160330 16:55:17 [Note] WSREP: Some threads may fail to exit.
+==> galera1:               160330 16:55:18 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16283 ...
+==> galera1:               160330 16:55:18 [Note] WSREP: Read nil XID from storage engines, skipping position init
+==> galera1:               160330 16:55:18 [Note] WSREP: wsrep_load(): loading provider library 'none'
+==> galera1:               160330 16:55:18 [Note] WSREP: Service disconnected.
+==> galera1:               160330 16:55:19 [Note] WSREP: Some threads may fail to exit.
+==> galera1:
+==> galera1:               PLEASE REMEMBER TO SET A PASSWORD FOR THE MariaDB root USER !
+==> galera1:               To do so, start the server, then issue the following commands:
+==> galera1:
+==> galera1:               '/usr/bin/mysqladmin' -u root password 'new-password'
+==> galera1:               '/usr/bin/mysqladmin' -u root -h galera1 password 'new-password'
+==> galera1:
+==> galera1:               Alternatively you can run:
+==> galera1:               '/usr/bin/mysql_secure_installation'
+==> galera1:
+==> galera1:               which will also give you the option of removing the test
+==> galera1:               databases and anonymous user created by default.  This is
+==> galera1:               strongly recommended for production servers.
+==> galera1:
+==> galera1:               See the MariaDB Knowledgebase at http://mariadb.com/kb or the
+==> galera1:               MySQL manual for more instructions.
+==> galera1:
+==> galera1:               Please report any problems at http://mariadb.org/jira
+==> galera1:
+==> galera1:               The latest information about MariaDB is available at http://mariadb.org/.
+==> galera1:               You can find additional information about the MySQL part at:
+==> galera1:               http://dev.mysql.com
+==> galera1:               Support MariaDB development by buying support/new features from MariaDB
+==> galera1:               Corporation Ab. You can contact us about this at sales@mariadb.com.
+==> galera1:               Alternatively consider joining our community based development effort:
+==> galera1:               http://mariadb.com/kb/en/contributing-to-the-mariadb-project/
+==> galera1:
+==> galera1:                 Installing : MariaDB-shared-5.5.48-1.el7.centos.x86_64                  41/42
+==> galera1:
+==> galera1:                 Erasing    : 1:mariadb-libs-5.5.44-1.el7_1.x86_64                       42/42
+==> galera1:
+==> galera1:                 Verifying  : perl-HTTP-Tiny-0.033-3.el7.noarch                           1/42
+==> galera1:
+==> galera1:                 Verifying  : perl-threads-shared-1.43-6.el7.x86_64                       2/42
+==> galera1:
+==> galera1:                 Verifying  : 4:perl-Time-HiRes-1.9725-3.el7.x86_64                       3/42
+==> galera1:
+==> galera1:                 Verifying  : lsof-4.87-4.el7.x86_64                                      4/42
+==> galera1:
+==> galera1:                 Verifying  : perl-Exporter-5.68-3.el7.noarch                             5/42
+==> galera1:
+==> galera1:                 Verifying  : perl-constant-1.27-2.el7.noarch                             6/42
+==> galera1:
+==> galera1:                 Verifying  : perl-PathTools-3.40-5.el7.x86_64                            7/42
+==> galera1:
+==> galera1:                 Verifying  : 4:perl-libs-5.16.3-286.el7.x86_64                           8/42
+==> galera1:
+==> galera1:                 Verifying  : 4:perl-macros-5.16.3-286.el7.x86_64                         9/42
+==> galera1:
+==> galera1:                 Verifying  : perl-Compress-Raw-Bzip2-2.061-3.el7.x86_64                 10/42
+==> galera1:
+==> galera1:                 Verifying  : 1:perl-parent-0.225-244.el7.noarch                         11/42
+==> galera1:
+==> galera1:                 Verifying  : perl-Net-Daemon-0.48-5.el7.noarch                          12/42
+==> galera1:
+==> galera1:                 Verifying  : 4:perl-5.16.3-286.el7.x86_64                               13/42
+==> galera1:
+==> galera1:                 Verifying  : perl-File-Temp-0.23.01-3.el7.noarch                        14/42
+==> galera1:
+==> galera1:                 Verifying  : 1:perl-Pod-Simple-3.28-4.el7.noarch                        15/42
+==> galera1:
+==> galera1:                 Verifying  : perl-Time-Local-1.2300-2.el7.noarch                        16/42
+==> galera1:
+==> galera1:                 Verifying  : perl-Pod-Perldoc-3.20-4.el7.noarch                         17/42
+==> galera1:
+==> galera1:                 Verifying  : perl-DBI-1.627-4.el7.x86_64                                18/42
+==> galera1:
+==> galera1:                 Verifying  : perl-Socket-2.010-3.el7.x86_64                             19/42
+==> galera1:
+==> galera1:                 Verifying  : boost-program-options-1.53.0-25.el7.x86_64                 20/42
+==> galera1:
+==> galera1:                 Verifying  : galera-25.3.14-1.rhel7.el7.centos.x86_64                   21/42
+==> galera1:
+==> galera1:                 Verifying  : perl-Data-Dumper-2.145-3.el7.x86_64                        22/42
+==> galera1:
+==> galera1:                 Verifying  : MariaDB-common-5.5.48-1.el7.centos.x86_64                  23/42
+==> galera1:
+==> galera1:                 Verifying  : perl-Storable-2.45-3.el7.x86_64                            24/42
+==> galera1:
+==> galera1:                 Verifying  : perl-Scalar-List-Utils-1.27-248.el7.x86_64                 25/42
+==> galera1:
+==> galera1:                 Verifying  : MariaDB-client-5.5.48-1.el7.centos.x86_64                  26/42
+==> galera1:
+==> galera1:                 Verifying  : 1:perl-Pod-Escapes-1.04-286.el7.noarch                     27/42
+==> galera1:
+==> galera1:                 Verifying  : perl-IO-Compress-2.061-2.el7.noarch                        28/42
+==> galera1:
+==> galera1:                 Verifying  : perl-Pod-Usage-1.63-3.el7.noarch                           29/42
+==> galera1:
+==> galera1:                 Verifying  : perl-PlRPC-0.2020-14.el7.noarch                            30/42
+==> galera1:
+==> galera1:                 Verifying  : perl-Encode-2.51-7.el7.x86_64                              31/42
+==> galera1:
+==> galera1:                 Verifying  : MariaDB-shared-5.5.48-1.el7.centos.x86_64                  32/42
+==> galera1:
+==> galera1:                 Verifying  : perl-podlators-2.5.1-3.el7.noarch                          33/42
+==> galera1:
+==> galera1:                 Verifying  : perl-Getopt-Long-2.40-2.el7.noarch                         34/42
+==> galera1:
+==> galera1:                 Verifying  : perl-File-Path-2.09-2.el7.noarch                           35/42
+==> galera1:
+==> galera1:                 Verifying  : perl-threads-1.87-4.el7.x86_64                             36/42
+==> galera1:
+==> galera1:                 Verifying  : perl-Filter-1.49-3.el7.x86_64                              37/42
+==> galera1:
+==> galera1:                 Verifying  : perl-Text-ParseWords-3.29-4.el7.noarch                     38/42
+==> galera1:
+==> galera1:                 Verifying  : perl-Carp-1.26-244.el7.noarch                              39/42
+==> galera1:
+==> galera1:                 Verifying  : 1:perl-Compress-Raw-Zlib-2.061-4.el7.x86_64                40/42
+==> galera1:
+==> galera1:                 Verifying  : MariaDB-Galera-server-5.5.48-1.el7.centos.x86_64           41/42
+==> galera1:
+==> galera1:                 Verifying  : 1:mariadb-libs-5.5.44-1.el7_1.x86_64                       42/42
+==> galera1:
+==> galera1:
+==> galera1:               Installed:
+==> galera1:                 MariaDB-Galera-server.x86_64 0:5.5.48-1.el7.centos
+==> galera1:                 MariaDB-shared.x86_64 0:5.5.48-1.el7.centos
+==> galera1:
+==> galera1:               Dependency Installed:
+==> galera1:                 MariaDB-client.x86_64 0:5.5.48-1.el7.centos
+==> galera1:                 MariaDB-common.x86_64 0:5.5.48-1.el7.centos
+==> galera1:                 boost-program-options.x86_64 0:1.53.0-25.el7
+==> galera1:                 galera.x86_64 0:25.3.14-1.rhel7.el7.centos
+==> galera1:                 lsof.x86_64 0:4.87-4.el7
+==> galera1:                 perl.x86_64 4:5.16.3-286.el7
+==> galera1:                 perl-Carp.noarch 0:1.26-244.el7
+==> galera1:                 perl-Compress-Raw-Bzip2.x86_64 0:2.061-3.el7
+==> galera1:                 perl-Compress-Raw-Zlib.x86_64 1:2.061-4.el7
+==> galera1:                 perl-DBI.x86_64 0:1.627-4.el7
+==> galera1:                 perl-Data-Dumper.x86_64 0:2.145-3.el7
+==> galera1:                 perl-Encode.x86_64 0:2.51-7.el7
+==> galera1:                 perl-Exporter.noarch 0:5.68-3.el7
+==> galera1:                 perl-File-Path.noarch 0:2.09-2.el7
+==> galera1:                 perl-File-Temp.noarch 0:0.23.01-3.el7
+==> galera1:                 perl-Filter.x86_64 0:1.49-3.el7
+==> galera1:                 perl-Getopt-Long.noarch 0:2.40-2.el7
+==> galera1:                 perl-HTTP-Tiny.noarch 0:0.033-3.el7
+==> galera1:                 perl-IO-Compress.noarch 0:2.061-2.el7
+==> galera1:                 perl-Net-Daemon.noarch 0:0.48-5.el7
+==> galera1:                 perl-PathTools.x86_64 0:3.40-5.el7
+==> galera1:                 perl-PlRPC.noarch 0:0.2020-14.el7
+==> galera1:                 perl-Pod-Escapes.noarch 1:1.04-286.el7
+==> galera1:                 perl-Pod-Perldoc.noarch 0:3.20-4.el7
+==> galera1:                 perl-Pod-Simple.noarch 1:3.28-4.el7
+==> galera1:                 perl-Pod-Usage.noarch 0:1.63-3.el7
+==> galera1:                 perl-Scalar-List-Utils.x86_64 0:1.27-248.el7
+==> galera1:                 perl-Socket.x86_64 0:2.010-3.el7
+==> galera1:                 perl-Storable.x86_64 0:2.45-3.el7
+==> galera1:                 perl-Text-ParseWords.noarch 0:3.29-4.el7
+==> galera1:                 perl-Time-HiRes.x86_64 4:1.9725-3.el7
+==> galera1:                 perl-Time-Local.noarch 0:1.2300-2.el7
+==> galera1:                 perl-constant.noarch 0:1.27-2.el7
+==> galera1:                 perl-libs.x86_64 4:5.16.3-286.el7
+==> galera1:                 perl-macros.x86_64 4:5.16.3-286.el7
+==> galera1:                 perl-parent.noarch 1:0.225-244.el7
+==> galera1:                 perl-podlators.noarch 0:2.5.1-3.el7
+==> galera1:                 perl-threads.x86_64 0:1.87-4.el7
+==> galera1:                 perl-threads-shared.x86_64 0:1.43-6.el7
+==> galera1:
+==> galera1:               Replaced:
+==> galera1:                 mariadb-libs.x86_64 1:5.5.44-1.el7_1
+==> galera1:
+==> galera1:               Complete!
+==> galera1: [2016-03-30T16:55:50-04:00] INFO: execute[install galera] ran successfully
+==> galera1:     - execute yum --assumeyes -c /etc/yum.repos.d/galera.repo install MariaDB-Galera-server
+==> galera1:   * execute[Copy mdbci_server.cnf to cnf_template directory] action run
+==> galera1: [2016-03-30T16:55:50-04:00] INFO: execute[Copy mdbci_server.cnf to cnf_template directory] ran successfully
+==> galera1:
+==> galera1:     - execute cp /home/vagrant/cnf_templates/galera_server2.cnf /etc/my.cnf.d
+==> galera1:   * bash[Configure Galera server.cnf - Get/Set Galera LIB_PATH] action run
+==> galera1: [2016-03-30T16:55:50-04:00] INFO: bash[Configure Galera server.cnf - Get/Set Galera LIB_PATH] ran successfully
+==> galera1:
+==> galera1:     - execute "bash"  "/tmp/chef-script20160330-15825-xsdj99"
+==> galera1:   * bash[Configure Galera server.cnf - Get Libvirt node IP address] action run
+==> galera1: [2016-03-30T16:55:50-04:00] INFO: bash[Configure Galera server.cnf - Get Libvirt node IP address] ran successfully
+==> galera1:
+==> galera1:     - execute "bash"  "/tmp/chef-script20160330-15825-a5vdt1"
+==> galera1:   * bash[Configure Galera server.cnf - Get/Set Galera NODE_NAME] action run
+==> galera1: [2016-03-30T16:55:50-04:00] INFO: bash[Configure Galera server.cnf - Get/Set Galera NODE_NAME] ran successfully
+==> galera1:
+==> galera1:     - execute "bash"  "/tmp/chef-script20160330-15825-h3lbvi"
+==> galera1: [2016-03-30T16:55:50-04:00] INFO: Chef Run complete in 175.311530467 seconds
+==> galera1: [2016-03-30T16:55:50-04:00] INFO: Skipping removal of unused files from the cache
+==> galera1:
+==> galera1: Running handlers:
+==> galera1: [2016-03-30T16:55:50-04:00] INFO: Running report handlers
+==> galera1: Running handlers complete
+==> galera1: [2016-03-30T16:55:50-04:00] INFO: Report handlers complete
+==> galera1: Chef Client finished, 25/35 resources updated in 02 minutes 56 seconds
+++ cd ..
++++ ./mdbci show network fwf2-testing/galera1 --silent
+++ ip=192.168.121.109
++++ sed 's/"//g'
++++ ./mdbci show keyfile fwf2-testing/galera1 --silent
+++ key=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/galera1/libvirt/private_key
+++ eval 'export "$prefix"_"$num"=$ip'
++++ export galera_001=192.168.121.109
++++ galera_001=192.168.121.109
+++ eval 'export "$prefix"_sshkey_"$num"=$key'
++++ export galera_sshkey_001=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/galera1/libvirt/private_key
++++ galera_sshkey_001=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/galera1/libvirt/private_key
+++ eval 'export "$prefix"_port_"$num"=3306'
++++ export galera_port_001=3306
++++ galera_port_001=3306
++++ ./mdbci show private_ip fwf2-testing/galera1 --silent
+++ private_ip=192.168.121.109
+++ eval 'export "$prefix"_private_"$num"="$private_ip"'
++++ export galera_private_001=192.168.121.109
++++ galera_private_001=192.168.121.109
++++ ./mdbci ssh --command whoami fwf2-testing/galera1 --silent
++++ tr -cd '[:print:]'
+++ au=vagrant
+++ eval 'export "$prefix"_access_user_"$num"="$au"'
++++ export galera_access_user_001=vagrant
++++ galera_access_user_001=vagrant
+++ eval 'export "$prefix"_access_sudo_"$num"=sudo'
++++ export galera_access_sudo_001=sudo
++++ galera_access_sudo_001=sudo
++++ expr 1 + 1
+++ server_num=2
+++ start_cmd_var=galera_start_db_command_001
+++ stop_cmd_var=galera_stop_db_command_001
++++ ./mdbci ssh --command 'ls /etc/init.d/mysql* 2> /dev/null | tr -cd "[:print:]"' fwf2-testing/galera1 --silent
+++ mysql_exe=/etc/init.d/mysql
+++ grep -i mysql
+++ echo /etc/init.d/mysql
+/etc/init.d/mysql
+++ '[' 0 '!=' 0 ']'
+++ eval 'export $start_cmd_var="$mysql_exe start "'
++++ export 'galera_start_db_command_001=/etc/init.d/mysql start '
++++ galera_start_db_command_001='/etc/init.d/mysql start '
+++ eval 'export $stop_cmd_var="$mysql_exe stop "'
++++ export 'galera_stop_db_command_001=/etc/init.d/mysql stop '
++++ galera_stop_db_command_001='/etc/init.d/mysql stop '
+++ eval 'export "$prefix"_start_vm_command_"$num"="\"cd $mdbci_dir/$config_name;vagrant up $node_n$i --provider=$provider; cd $curr_dir\""'
++++ export 'galera_start_vm_command_001="cd /home/vagrant/mdbci/fwf2-testing;vagrant up galera1 --provider=libvirt; cd /home/vagrant/mdbci"'
++++ galera_start_vm_command_001='"cd /home/vagrant/mdbci/fwf2-testing;vagrant up galera1 --provider=libvirt; cd /home/vagrant/mdbci"'
+++ eval 'export "$prefix"_kill_vm_command_"$num"="\"cd $mdbci_dir/$config_name;vagrant halt $node_n$i --provider=$provider; cd $curr_dir\""'
++++ export 'galera_kill_vm_command_001="cd /home/vagrant/mdbci/fwf2-testing;vagrant halt galera1 --provider=libvirt; cd /home/vagrant/mdbci"'
++++ galera_kill_vm_command_001='"cd /home/vagrant/mdbci/fwf2-testing;vagrant halt galera1 --provider=libvirt; cd /home/vagrant/mdbci"'
+++ for i in '$(seq 0 $N)'
++++ printf %03d 2
+++ num=002
+++ '[' galera == repl ']'
+++ node_n=galera
+++ ip_var=galera_002
+++ private_ip_var=galera_private_002
++++ ./mdbci show network fwf2-testing/galera2 --silent
+++ ip=192.168.121.98
+++ '[' 0 '!=' 0 ']'
++++ sed 's/"//g'
++++ ./mdbci show keyfile fwf2-testing/galera2 --silent
+++ key=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/galera2/libvirt/private_key
+++ eval 'export "$prefix"_"$num"=$ip'
++++ export galera_002=192.168.121.98
++++ galera_002=192.168.121.98
+++ eval 'export "$prefix"_sshkey_"$num"=$key'
++++ export galera_sshkey_002=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/galera2/libvirt/private_key
++++ galera_sshkey_002=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/galera2/libvirt/private_key
+++ eval 'export "$prefix"_port_"$num"=3306'
++++ export galera_port_002=3306
++++ galera_port_002=3306
++++ ./mdbci show private_ip fwf2-testing/galera2 --silent
+++ private_ip=192.168.121.98
+++ eval 'export "$prefix"_private_"$num"="$private_ip"'
++++ export galera_private_002=192.168.121.98
++++ galera_private_002=192.168.121.98
++++ ./mdbci ssh --command whoami fwf2-testing/galera2 --silent
++++ tr -cd '[:print:]'
+++ au=vagrant
+++ eval 'export "$prefix"_access_user_"$num"="$au"'
++++ export galera_access_user_002=vagrant
++++ galera_access_user_002=vagrant
+++ eval 'export "$prefix"_access_sudo_"$num"=sudo'
++++ export galera_access_sudo_002=sudo
++++ galera_access_sudo_002=sudo
++++ expr 2 + 1
+++ server_num=3
+++ start_cmd_var=galera_start_db_command_002
+++ stop_cmd_var=galera_stop_db_command_002
++++ ./mdbci ssh --command 'ls /etc/init.d/mysql* 2> /dev/null | tr -cd "[:print:]"' fwf2-testing/galera2 --silent
+++ mysql_exe=/etc/init.d/mysql
+++ echo /etc/init.d/mysql
+++ grep -i mysql
+/etc/init.d/mysql
+++ '[' 0 '!=' 0 ']'
+++ eval 'export $start_cmd_var="$mysql_exe start "'
++++ export 'galera_start_db_command_002=/etc/init.d/mysql start '
++++ galera_start_db_command_002='/etc/init.d/mysql start '
+++ eval 'export $stop_cmd_var="$mysql_exe stop "'
++++ export 'galera_stop_db_command_002=/etc/init.d/mysql stop '
++++ galera_stop_db_command_002='/etc/init.d/mysql stop '
+++ eval 'export "$prefix"_start_vm_command_"$num"="\"cd $mdbci_dir/$config_name;vagrant up $node_n$i --provider=$provider; cd $curr_dir\""'
++++ export 'galera_start_vm_command_002="cd /home/vagrant/mdbci/fwf2-testing;vagrant up galera2 --provider=libvirt; cd /home/vagrant/mdbci"'
++++ galera_start_vm_command_002='"cd /home/vagrant/mdbci/fwf2-testing;vagrant up galera2 --provider=libvirt; cd /home/vagrant/mdbci"'
+++ eval 'export "$prefix"_kill_vm_command_"$num"="\"cd $mdbci_dir/$config_name;vagrant halt $node_n$i --provider=$provider; cd $curr_dir\""'
++++ export 'galera_kill_vm_command_002="cd /home/vagrant/mdbci/fwf2-testing;vagrant halt galera2 --provider=libvirt; cd /home/vagrant/mdbci"'
++++ galera_kill_vm_command_002='"cd /home/vagrant/mdbci/fwf2-testing;vagrant halt galera2 --provider=libvirt; cd /home/vagrant/mdbci"'
+++ for i in '$(seq 0 $N)'
++++ printf %03d 3
+++ num=003
+++ '[' galera == repl ']'
+++ node_n=galera
+++ ip_var=galera_003
+++ private_ip_var=galera_private_003
++++ ./mdbci show network fwf2-testing/galera3 --silent
+++ ip=192.168.121.229
+++ '[' 0 '!=' 0 ']'
++++ ./mdbci show keyfile fwf2-testing/galera3 --silent
++++ sed 's/"//g'
+++ key=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/galera3/libvirt/private_key
+++ eval 'export "$prefix"_"$num"=$ip'
++++ export galera_003=192.168.121.229
++++ galera_003=192.168.121.229
+++ eval 'export "$prefix"_sshkey_"$num"=$key'
++++ export galera_sshkey_003=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/galera3/libvirt/private_key
++++ galera_sshkey_003=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/galera3/libvirt/private_key
+++ eval 'export "$prefix"_port_"$num"=3306'
++++ export galera_port_003=3306
++++ galera_port_003=3306
++++ ./mdbci show private_ip fwf2-testing/galera3 --silent
+++ private_ip=192.168.121.229
+++ eval 'export "$prefix"_private_"$num"="$private_ip"'
++++ export galera_private_003=192.168.121.229
++++ galera_private_003=192.168.121.229
++++ ./mdbci ssh --command whoami fwf2-testing/galera3 --silent
++++ tr -cd '[:print:]'
+++ au=vagrant
+++ eval 'export "$prefix"_access_user_"$num"="$au"'
++++ export galera_access_user_003=vagrant
++++ galera_access_user_003=vagrant
+++ eval 'export "$prefix"_access_sudo_"$num"=sudo'
++++ export galera_access_sudo_003=sudo
++++ galera_access_sudo_003=sudo
++++ expr 3 + 1
+++ server_num=4
+++ start_cmd_var=galera_start_db_command_003
+++ stop_cmd_var=galera_stop_db_command_003
++++ ./mdbci ssh --command 'ls /etc/init.d/mysql* 2> /dev/null | tr -cd "[:print:]"' fwf2-testing/galera3 --silent
+++ mysql_exe=/etc/init.d/mysql
+++ echo /etc/init.d/mysql
+++ grep -i mysql
+/etc/init.d/mysql
+++ '[' 0 '!=' 0 ']'
+++ eval 'export $start_cmd_var="$mysql_exe start "'
++++ export 'galera_start_db_command_003=/etc/init.d/mysql start '
++++ galera_start_db_command_003='/etc/init.d/mysql start '
+++ eval 'export $stop_cmd_var="$mysql_exe stop "'
++++ export 'galera_stop_db_command_003=/etc/init.d/mysql stop '
++++ galera_stop_db_command_003='/etc/init.d/mysql stop '
+++ eval 'export "$prefix"_start_vm_command_"$num"="\"cd $mdbci_dir/$config_name;vagrant up $node_n$i --provider=$provider; cd $curr_dir\""'
++++ export 'galera_start_vm_command_003="cd /home/vagrant/mdbci/fwf2-testing;vagrant up galera3 --provider=libvirt; cd /home/vagrant/mdbci"'
++++ galera_start_vm_command_003='"cd /home/vagrant/mdbci/fwf2-testing;vagrant up galera3 --provider=libvirt; cd /home/vagrant/mdbci"'
+++ eval 'export "$prefix"_kill_vm_command_"$num"="\"cd $mdbci_dir/$config_name;vagrant halt $node_n$i --provider=$provider; cd $curr_dir\""'
++++ export 'galera_kill_vm_command_003="cd /home/vagrant/mdbci/fwf2-testing;vagrant halt galera3 --provider=libvirt; cd /home/vagrant/mdbci"'
++++ galera_kill_vm_command_003='"cd /home/vagrant/mdbci/fwf2-testing;vagrant halt galera3 --provider=libvirt; cd /home/vagrant/mdbci"'
+++ cd /home/vagrant/mdbci
++++ ./mdbci ssh --command whoami fwf2-testing/maxscale --silent
++++ tr -cd '[:print:]'
+++ export maxscale_access_user=vagrant
+++ maxscale_access_user=vagrant
+++ export 'maxscale_access_sudo=sudo '
+++ maxscale_access_sudo='sudo '
++++ ./mdbci ssh --command hostname fwf2-testing/maxscale --silent
++++ tr -cd '[:print:]'
+++ export maxscale_hostname=maxscale
+++ maxscale_hostname=maxscale
+++ export sysbench_dir=/home/vagrant/sysbench_deb7/sysbench/
+++ sysbench_dir=/home/vagrant/sysbench_deb7/sysbench/
+++ export ssl=true
+++ ssl=true
+++ cd /home/vagrant/mdbci
+++ set +x
++ export scr_dir=/home/vagrant/build-scripts/test-setup-scripts
++ scr_dir=/home/vagrant/build-scripts/test-setup-scripts
+++ expr 4 - 1
++ x=3
+++ seq 0 3
++ for i in '$(seq 0 $x)'
+++ printf %03d 0
++ num=000
++ sshkey_var=repl_sshkey_000
++ user_var=repl_access_user_000
++ IP_var=repl_000
++ start_cmd_var=repl_start_db_command_000
++ stop_cmd_var=repl_stop_db_command_000
++ sshkey=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node0/libvirt/private_key
++ user=vagrant
++ IP=192.168.121.85
++ start_cmd='/etc/init.d/mysql start '
++ stop_cmd='/etc/init.d/mysql stop '
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node0/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.85 'sudo  /etc/init.d/mysql stop '
+Warning: Permanently added '192.168.121.85' (ECDSA) to the list of known hosts.
+ ERROR! MySQL server PID file could not be found!
++ sleep 5
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node0/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.85 'sudo sed -i "s/bind-address/#bind-address/g" /etc/mysql/my.cnf'
+Warning: Permanently added '192.168.121.85' (ECDSA) to the list of known hosts.
+sed: can't read /etc/mysql/my.cnf: No such file or directory
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node0/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.85 'sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/usr.sbin.mysqld; sudo service apparmor restart'
+Warning: Permanently added '192.168.121.85' (ECDSA) to the list of known hosts.
+ln: failed to create symbolic link ���/etc/apparmor.d/disable/usr.sbin.mysqld���: No such file or directory
+Redirecting to /bin/systemctl restart  apparmor.service
+Failed to issue method call: Unit apparmor.service failed to load: No such file or directory.
+++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node0/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.85 'mysql --version'
+Warning: Permanently added '192.168.121.85' (ECDSA) to the list of known hosts.
++ mysql_version='mysql  Ver 15.1 Distrib 5.5.48-MariaDB, for Linux (x86_64) using readline 5.1'
++ echo mysql Ver 15.1 Distrib 5.5.48-MariaDB, for Linux '(x86_64)' using readline 5.1
++ grep '5\.7'
++ '[' 1 == 0 ']'
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node0/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.85 'sudo mysql_install_db; sudo chown -R mysql:mysql /var/lib/mysql'
+Warning: Permanently added '192.168.121.85' (ECDSA) to the list of known hosts.
+Installing MariaDB/MySQL system tables in '/var/lib/mysql' ...
+160330 16:58:24 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16538 ...
+160330 16:58:24 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 16:58:24 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 16:58:27 [Note] WSREP: Service disconnected.
+160330 16:58:28 [Note] WSREP: Some threads may fail to exit.
+OK
+Filling help tables...
+160330 16:58:29 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16546 ...
+160330 16:58:29 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 16:58:29 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 16:58:29 [Note] WSREP: Service disconnected.
+160330 16:58:30 [Note] WSREP: Some threads may fail to exit.
+OK
+
+To start mysqld at boot time you have to copy
+support-files/mysql.server to the right place for your system
+
+PLEASE REMEMBER TO SET A PASSWORD FOR THE MariaDB root USER !
+To do so, start the server, then issue the following commands:
+
+'/usr/bin/mysqladmin' -u root password 'new-password'
+'/usr/bin/mysqladmin' -u root -h node0 password 'new-password'
+
+Alternatively you can run:
+'/usr/bin/mysql_secure_installation'
+
+which will also give you the option of removing the test
+databases and anonymous user created by default.  This is
+strongly recommended for production servers.
+
+See the MariaDB Knowledgebase at http://mariadb.com/kb or the
+MySQL manual for more instructions.
+
+You can start the MariaDB daemon with:
+cd '/usr' ; /usr/bin/mysqld_safe --datadir='/var/lib/mysql'
+
+You can test the MariaDB daemon with mysql-test-run.pl
+cd '/usr/mysql-test' ; perl mysql-test-run.pl
+
+Please report any problems at http://mariadb.org/jira
+
+The latest information about MariaDB is available at http://mariadb.org/.
+You can find additional information about the MySQL part at:
+http://dev.mysql.com
+Support MariaDB development by buying support/new features from MariaDB
+Corporation Ab. You can contact us about this at sales@mariadb.com.
+Alternatively consider joining our community based development effort:
+http://mariadb.com/kb/en/contributing-to-the-mariadb-project/
+
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node0/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.85 'sudo /etc/init.d/mysql start '
+Warning: Permanently added '192.168.121.85' (ECDSA) to the list of known hosts.
+Starting MySQL................................. SUCCESS!
++ sleep 15
++ scp -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node0/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /home/vagrant/build-scripts/test-setup-scripts/create_repl_user.sql /home/vagrant/build-scripts/test-setup-scripts/create_skysql_user.sql vagrant@192.168.121.85://home/vagrant/
+Warning: Permanently added '192.168.121.85' (ECDSA) to the list of known hosts.
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node0/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.85 'sudo mysql < /home/vagrant/create_repl_user.sql'
+Warning: Permanently added '192.168.121.85' (ECDSA) to the list of known hosts.
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node0/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.85 'sudo mysql < /home/vagrant/create_skysql_user.sql'
+Warning: Permanently added '192.168.121.85' (ECDSA) to the list of known hosts.
++ for i in '$(seq 0 $x)'
+++ printf %03d 1
++ num=001
++ sshkey_var=repl_sshkey_001
++ user_var=repl_access_user_001
++ IP_var=repl_001
++ start_cmd_var=repl_start_db_command_001
++ stop_cmd_var=repl_stop_db_command_001
++ sshkey=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node1/libvirt/private_key
++ user=vagrant
++ IP=192.168.121.166
++ start_cmd='/etc/init.d/mysql start '
++ stop_cmd='/etc/init.d/mysql stop '
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node1/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.166 'sudo  /etc/init.d/mysql stop '
+Warning: Permanently added '192.168.121.166' (ECDSA) to the list of known hosts.
+ ERROR! MySQL server PID file could not be found!
++ sleep 5
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node1/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.166 'sudo sed -i "s/bind-address/#bind-address/g" /etc/mysql/my.cnf'
+Warning: Permanently added '192.168.121.166' (ECDSA) to the list of known hosts.
+sed: can't read /etc/mysql/my.cnf: No such file or directory
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node1/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.166 'sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/usr.sbin.mysqld; sudo service apparmor restart'
+Warning: Permanently added '192.168.121.166' (ECDSA) to the list of known hosts.
+ln: failed to create symbolic link ���/etc/apparmor.d/disable/usr.sbin.mysqld���: No such file or directory
+Redirecting to /bin/systemctl restart  apparmor.service
+Failed to issue method call: Unit apparmor.service failed to load: No such file or directory.
+++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node1/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.166 'mysql --version'
+Warning: Permanently added '192.168.121.166' (ECDSA) to the list of known hosts.
++ mysql_version='mysql  Ver 15.1 Distrib 5.5.48-MariaDB, for Linux (x86_64) using readline 5.1'
++ echo mysql Ver 15.1 Distrib 5.5.48-MariaDB, for Linux '(x86_64)' using readline 5.1
++ grep '5\.7'
++ '[' 1 == 0 ']'
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node1/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.166 'sudo mysql_install_db; sudo chown -R mysql:mysql /var/lib/mysql'
+Warning: Permanently added '192.168.121.166' (ECDSA) to the list of known hosts.
+Installing MariaDB/MySQL system tables in '/var/lib/mysql' ...
+160330 16:59:42 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16537 ...
+160330 16:59:42 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 16:59:42 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 16:59:45 [Note] WSREP: Service disconnected.
+160330 16:59:46 [Note] WSREP: Some threads may fail to exit.
+OK
+Filling help tables...
+160330 16:59:47 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16545 ...
+160330 16:59:47 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 16:59:47 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 16:59:48 [Note] WSREP: Service disconnected.
+160330 16:59:49 [Note] WSREP: Some threads may fail to exit.
+OK
+
+To start mysqld at boot time you have to copy
+support-files/mysql.server to the right place for your system
+
+PLEASE REMEMBER TO SET A PASSWORD FOR THE MariaDB root USER !
+To do so, start the server, then issue the following commands:
+
+'/usr/bin/mysqladmin' -u root password 'new-password'
+'/usr/bin/mysqladmin' -u root -h node1 password 'new-password'
+
+Alternatively you can run:
+'/usr/bin/mysql_secure_installation'
+
+which will also give you the option of removing the test
+databases and anonymous user created by default.  This is
+strongly recommended for production servers.
+
+See the MariaDB Knowledgebase at http://mariadb.com/kb or the
+MySQL manual for more instructions.
+
+You can start the MariaDB daemon with:
+cd '/usr' ; /usr/bin/mysqld_safe --datadir='/var/lib/mysql'
+
+You can test the MariaDB daemon with mysql-test-run.pl
+cd '/usr/mysql-test' ; perl mysql-test-run.pl
+
+Please report any problems at http://mariadb.org/jira
+
+The latest information about MariaDB is available at http://mariadb.org/.
+You can find additional information about the MySQL part at:
+http://dev.mysql.com
+Support MariaDB development by buying support/new features from MariaDB
+Corporation Ab. You can contact us about this at sales@mariadb.com.
+Alternatively consider joining our community based development effort:
+http://mariadb.com/kb/en/contributing-to-the-mariadb-project/
+
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node1/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.166 'sudo /etc/init.d/mysql start '
+Warning: Permanently added '192.168.121.166' (ECDSA) to the list of known hosts.
+Starting MySQL............................. SUCCESS!
++ sleep 15
++ scp -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node1/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /home/vagrant/build-scripts/test-setup-scripts/create_repl_user.sql /home/vagrant/build-scripts/test-setup-scripts/create_skysql_user.sql vagrant@192.168.121.166://home/vagrant/
+Warning: Permanently added '192.168.121.166' (ECDSA) to the list of known hosts.
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node1/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.166 'sudo mysql < /home/vagrant/create_repl_user.sql'
+Warning: Permanently added '192.168.121.166' (ECDSA) to the list of known hosts.
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node1/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.166 'sudo mysql < /home/vagrant/create_skysql_user.sql'
+Warning: Permanently added '192.168.121.166' (ECDSA) to the list of known hosts.
++ for i in '$(seq 0 $x)'
+++ printf %03d 2
++ num=002
++ sshkey_var=repl_sshkey_002
++ user_var=repl_access_user_002
++ IP_var=repl_002
++ start_cmd_var=repl_start_db_command_002
++ stop_cmd_var=repl_stop_db_command_002
++ sshkey=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node2/libvirt/private_key
++ user=vagrant
++ IP=192.168.121.201
++ start_cmd='/etc/init.d/mysql start '
++ stop_cmd='/etc/init.d/mysql stop '
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node2/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.201 'sudo  /etc/init.d/mysql stop '
+Warning: Permanently added '192.168.121.201' (ECDSA) to the list of known hosts.
+ ERROR! MySQL server PID file could not be found!
++ sleep 5
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node2/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.201 'sudo sed -i "s/bind-address/#bind-address/g" /etc/mysql/my.cnf'
+Warning: Permanently added '192.168.121.201' (ECDSA) to the list of known hosts.
+sed: can't read /etc/mysql/my.cnf: No such file or directory
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node2/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.201 'sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/usr.sbin.mysqld; sudo service apparmor restart'
+Warning: Permanently added '192.168.121.201' (ECDSA) to the list of known hosts.
+ln: failed to create symbolic link ���/etc/apparmor.d/disable/usr.sbin.mysqld���: No such file or directory
+Redirecting to /bin/systemctl restart  apparmor.service
+Failed to issue method call: Unit apparmor.service failed to load: No such file or directory.
+++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node2/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.201 'mysql --version'
+Warning: Permanently added '192.168.121.201' (ECDSA) to the list of known hosts.
++ mysql_version='mysql  Ver 15.1 Distrib 5.5.48-MariaDB, for Linux (x86_64) using readline 5.1'
++ echo mysql Ver 15.1 Distrib 5.5.48-MariaDB, for Linux '(x86_64)' using readline 5.1
++ grep '5\.7'
++ '[' 1 == 0 ']'
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node2/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.201 'sudo mysql_install_db; sudo chown -R mysql:mysql /var/lib/mysql'
+Warning: Permanently added '192.168.121.201' (ECDSA) to the list of known hosts.
+Installing MariaDB/MySQL system tables in '/var/lib/mysql' ...
+160330 17:01:06 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16552 ...
+160330 17:01:06 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 17:01:06 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 17:01:09 [Note] WSREP: Service disconnected.
+160330 17:01:10 [Note] WSREP: Some threads may fail to exit.
+OK
+Filling help tables...
+160330 17:01:10 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16560 ...
+160330 17:01:10 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 17:01:10 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 17:01:11 [Note] WSREP: Service disconnected.
+160330 17:01:12 [Note] WSREP: Some threads may fail to exit.
+OK
+
+To start mysqld at boot time you have to copy
+support-files/mysql.server to the right place for your system
+
+PLEASE REMEMBER TO SET A PASSWORD FOR THE MariaDB root USER !
+To do so, start the server, then issue the following commands:
+
+'/usr/bin/mysqladmin' -u root password 'new-password'
+'/usr/bin/mysqladmin' -u root -h node2 password 'new-password'
+
+Alternatively you can run:
+'/usr/bin/mysql_secure_installation'
+
+which will also give you the option of removing the test
+databases and anonymous user created by default.  This is
+strongly recommended for production servers.
+
+See the MariaDB Knowledgebase at http://mariadb.com/kb or the
+MySQL manual for more instructions.
+
+You can start the MariaDB daemon with:
+cd '/usr' ; /usr/bin/mysqld_safe --datadir='/var/lib/mysql'
+
+You can test the MariaDB daemon with mysql-test-run.pl
+cd '/usr/mysql-test' ; perl mysql-test-run.pl
+
+Please report any problems at http://mariadb.org/jira
+
+The latest information about MariaDB is available at http://mariadb.org/.
+You can find additional information about the MySQL part at:
+http://dev.mysql.com
+Support MariaDB development by buying support/new features from MariaDB
+Corporation Ab. You can contact us about this at sales@mariadb.com.
+Alternatively consider joining our community based development effort:
+http://mariadb.com/kb/en/contributing-to-the-mariadb-project/
+
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node2/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.201 'sudo /etc/init.d/mysql start '
+Warning: Permanently added '192.168.121.201' (ECDSA) to the list of known hosts.
+Starting MySQL................................ SUCCESS!
++ sleep 15
++ scp -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node2/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /home/vagrant/build-scripts/test-setup-scripts/create_repl_user.sql /home/vagrant/build-scripts/test-setup-scripts/create_skysql_user.sql vagrant@192.168.121.201://home/vagrant/
+Warning: Permanently added '192.168.121.201' (ECDSA) to the list of known hosts.
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node2/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.201 'sudo mysql < /home/vagrant/create_repl_user.sql'
+Warning: Permanently added '192.168.121.201' (ECDSA) to the list of known hosts.
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node2/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.201 'sudo mysql < /home/vagrant/create_skysql_user.sql'
+Warning: Permanently added '192.168.121.201' (ECDSA) to the list of known hosts.
++ for i in '$(seq 0 $x)'
+++ printf %03d 3
++ num=003
++ sshkey_var=repl_sshkey_003
++ user_var=repl_access_user_003
++ IP_var=repl_003
++ start_cmd_var=repl_start_db_command_003
++ stop_cmd_var=repl_stop_db_command_003
++ sshkey=/home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node3/libvirt/private_key
++ user=vagrant
++ IP=192.168.121.169
++ start_cmd='/etc/init.d/mysql start '
++ stop_cmd='/etc/init.d/mysql stop '
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node3/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.169 'sudo  /etc/init.d/mysql stop '
+Warning: Permanently added '192.168.121.169' (ECDSA) to the list of known hosts.
+ ERROR! MySQL server PID file could not be found!
++ sleep 5
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node3/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.169 'sudo sed -i "s/bind-address/#bind-address/g" /etc/mysql/my.cnf'
+Warning: Permanently added '192.168.121.169' (ECDSA) to the list of known hosts.
+sed: can't read /etc/mysql/my.cnf: No such file or directory
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node3/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.169 'sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/usr.sbin.mysqld; sudo service apparmor restart'
+Warning: Permanently added '192.168.121.169' (ECDSA) to the list of known hosts.
+ln: failed to create symbolic link ���/etc/apparmor.d/disable/usr.sbin.mysqld���: No such file or directory
+Redirecting to /bin/systemctl restart  apparmor.service
+Failed to issue method call: Unit apparmor.service failed to load: No such file or directory.
+++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node3/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.169 'mysql --version'
+Warning: Permanently added '192.168.121.169' (ECDSA) to the list of known hosts.
++ mysql_version='mysql  Ver 15.1 Distrib 5.5.48-MariaDB, for Linux (x86_64) using readline 5.1'
++ echo mysql Ver 15.1 Distrib 5.5.48-MariaDB, for Linux '(x86_64)' using readline 5.1
++ grep '5\.7'
++ '[' 1 == 0 ']'
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node3/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.169 'sudo mysql_install_db; sudo chown -R mysql:mysql /var/lib/mysql'
+Warning: Permanently added '192.168.121.169' (ECDSA) to the list of known hosts.
+Installing MariaDB/MySQL system tables in '/var/lib/mysql' ...
+160330 17:02:25 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16560 ...
+160330 17:02:25 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 17:02:25 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 17:02:29 [Note] WSREP: Service disconnected.
+160330 17:02:30 [Note] WSREP: Some threads may fail to exit.
+OK
+Filling help tables...
+160330 17:02:30 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16568 ...
+160330 17:02:30 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 17:02:30 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 17:02:31 [Note] WSREP: Service disconnected.
+160330 17:02:32 [Note] WSREP: Some threads may fail to exit.
+OK
+
+To start mysqld at boot time you have to copy
+support-files/mysql.server to the right place for your system
+
+PLEASE REMEMBER TO SET A PASSWORD FOR THE MariaDB root USER !
+To do so, start the server, then issue the following commands:
+
+'/usr/bin/mysqladmin' -u root password 'new-password'
+'/usr/bin/mysqladmin' -u root -h node3 password 'new-password'
+
+Alternatively you can run:
+'/usr/bin/mysql_secure_installation'
+
+which will also give you the option of removing the test
+databases and anonymous user created by default.  This is
+strongly recommended for production servers.
+
+See the MariaDB Knowledgebase at http://mariadb.com/kb or the
+MySQL manual for more instructions.
+
+You can start the MariaDB daemon with:
+cd '/usr' ; /usr/bin/mysqld_safe --datadir='/var/lib/mysql'
+
+You can test the MariaDB daemon with mysql-test-run.pl
+cd '/usr/mysql-test' ; perl mysql-test-run.pl
+
+Please report any problems at http://mariadb.org/jira
+
+The latest information about MariaDB is available at http://mariadb.org/.
+You can find additional information about the MySQL part at:
+http://dev.mysql.com
+Support MariaDB development by buying support/new features from MariaDB
+Corporation Ab. You can contact us about this at sales@mariadb.com.
+Alternatively consider joining our community based development effort:
+http://mariadb.com/kb/en/contributing-to-the-mariadb-project/
+
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node3/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.169 'sudo /etc/init.d/mysql start '
+Warning: Permanently added '192.168.121.169' (ECDSA) to the list of known hosts.
+Starting MySQL....................................... SUCCESS!
++ sleep 15
++ scp -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node3/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /home/vagrant/build-scripts/test-setup-scripts/create_repl_user.sql /home/vagrant/build-scripts/test-setup-scripts/create_skysql_user.sql vagrant@192.168.121.169://home/vagrant/
+Warning: Permanently added '192.168.121.169' (ECDSA) to the list of known hosts.
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node3/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.169 'sudo mysql < /home/vagrant/create_repl_user.sql'
+Warning: Permanently added '192.168.121.169' (ECDSA) to the list of known hosts.
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/node3/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.169 'sudo mysql < /home/vagrant/create_skysql_user.sql'
+Warning: Permanently added '192.168.121.169' (ECDSA) to the list of known hosts.
+Warning: Permanently added '192.168.121.150' (ECDSA) to the list of known hosts.
+Installing MariaDB/MySQL system tables in '/var/lib/mysql' ...
+160330 17:03:37 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16555 ...
+160330 17:03:37 [Note] WSREP: wsrep_provider_init: /usr/lib64/galera/libgalera_smm.so -> none
+160330 17:03:37 [Note] WSREP: Setting wsrep_ready to 0
+160330 17:03:37 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 17:03:37 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 17:03:37 [Note] WSREP: Setting wsrep_ready to 1
+160330 17:03:37 [Note] [Debug] WSREP: dummy_init
+160330 17:03:37 [Warning] No argument was provided to --log-bin and neither --log-basename or --log-bin-index where used;  This may cause repliction to break when this server acts as a master and has its hostname changed! Please use '--log-basename=galera0' or '--log-bin=galera0-bin' to avoid this problem.
+160330 17:03:40 [Note] WSREP: waiting for client connections to close: 0
+160330 17:03:40 [Note] [Debug] WSREP: dummy_disconnect
+160330 17:03:40 [Note] WSREP: Service disconnected.
+160330 17:03:41 [Note] WSREP: Some threads may fail to exit.
+160330 17:03:41 [Note] [Debug] WSREP: dummy_free
+OK
+Filling help tables...
+160330 17:03:41 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16563 ...
+160330 17:03:41 [Note] WSREP: wsrep_provider_init: /usr/lib64/galera/libgalera_smm.so -> none
+160330 17:03:41 [Note] WSREP: Setting wsrep_ready to 0
+160330 17:03:41 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 17:03:41 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 17:03:41 [Note] WSREP: Setting wsrep_ready to 1
+160330 17:03:41 [Note] [Debug] WSREP: dummy_init
+160330 17:03:41 [Warning] No argument was provided to --log-bin and neither --log-basename or --log-bin-index where used;  This may cause repliction to break when this server acts as a master and has its hostname changed! Please use '--log-basename=galera0' or '--log-bin=galera0-bin' to avoid this problem.
+160330 17:03:42 [Note] WSREP: waiting for client connections to close: 0
+160330 17:03:42 [Note] [Debug] WSREP: dummy_disconnect
+160330 17:03:42 [Note] WSREP: Service disconnected.
+160330 17:03:43 [Note] WSREP: Some threads may fail to exit.
+160330 17:03:43 [Note] [Debug] WSREP: dummy_free
+OK
+
+To start mysqld at boot time you have to copy
+support-files/mysql.server to the right place for your system
+
+PLEASE REMEMBER TO SET A PASSWORD FOR THE MariaDB root USER !
+To do so, start the server, then issue the following commands:
+
+'/usr/bin/mysqladmin' -u root password 'new-password'
+'/usr/bin/mysqladmin' -u root -h galera0 password 'new-password'
+
+Alternatively you can run:
+'/usr/bin/mysql_secure_installation'
+
+which will also give you the option of removing the test
+databases and anonymous user created by default.  This is
+strongly recommended for production servers.
+
+See the MariaDB Knowledgebase at http://mariadb.com/kb or the
+MySQL manual for more instructions.
+
+You can start the MariaDB daemon with:
+cd '/usr' ; /usr/bin/mysqld_safe --datadir='/var/lib/mysql'
+
+You can test the MariaDB daemon with mysql-test-run.pl
+cd '/usr/mysql-test' ; perl mysql-test-run.pl
+
+Please report any problems at http://mariadb.org/jira
+
+The latest information about MariaDB is available at http://mariadb.org/.
+You can find additional information about the MySQL part at:
+http://dev.mysql.com
+Support MariaDB development by buying support/new features from MariaDB
+Corporation Ab. You can contact us about this at sales@mariadb.com.
+Alternatively consider joining our community based development effort:
+http://mariadb.com/kb/en/contributing-to-the-mariadb-project/
+
+Warning: Permanently added '192.168.121.150' (ECDSA) to the list of known hosts.
+Warning: Permanently added '192.168.121.150' (ECDSA) to the list of known hosts.
++ rep_username=repl
++ rep_password=repl
++ db_username=skysql
++ db_password=skysql
++ sudo /etc/init.d/mysql restart --wsrep-cluster-address=gcomm://
+ ERROR! MySQL server PID file could not be found!
+Starting MySQL...... SUCCESS!
++ sleep 5
++ mysql -u root -e 'DELETE FROM mysql.user WHERE user = '\'''\''; GRANT ALL PRIVILEGES ON *.* TO repl@'\''%'\'' IDENTIFIED BY '\''repl'\''  WITH GRANT OPTION; GRANT ALL PRIVILEGES ON *.* TO skysql@'\''%'\'' IDENTIFIED BY '\''skysql'\''  WITH GRANT OPTION; GRANT ALL PRIVILEGES ON *.* TO repl@'\''localhost'\'' IDENTIFIED BY '\''repl'\''  WITH GRANT OPTION; GRANT ALL PRIVILEGES ON *.* TO skysql@'\''localhost'\'' IDENTIFIED BY '\''skysql'\''  WITH GRANT OPTION; FLUSH PRIVILEGES;'
++ sudo /etc/init.d/mysql stop
+Shutting down MySQL.... SUCCESS!
++ chkconfig --del mysql
+/home/vagrant/configure.sh: line 49: chkconfig: command not found
++ update-rc.d -f mysql remove
+/home/vagrant/configure.sh: line 50: update-rc.d: command not found
+done
++ echo done
+Warning: Permanently added '192.168.121.109' (ECDSA) to the list of known hosts.
+Installing MariaDB/MySQL system tables in '/var/lib/mysql' ...
+160330 17:04:02 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16471 ...
+160330 17:04:02 [Note] WSREP: wsrep_provider_init: /usr/lib64/galera/libgalera_smm.so -> none
+160330 17:04:02 [Note] WSREP: Setting wsrep_ready to 0
+160330 17:04:02 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 17:04:02 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 17:04:02 [Note] WSREP: Setting wsrep_ready to 1
+160330 17:04:02 [Note] [Debug] WSREP: dummy_init
+160330 17:04:02 [Warning] No argument was provided to --log-bin and neither --log-basename or --log-bin-index where used;  This may cause repliction to break when this server acts as a master and has its hostname changed! Please use '--log-basename=galera1' or '--log-bin=galera1-bin' to avoid this problem.
+160330 17:04:04 [Note] WSREP: waiting for client connections to close: 0
+160330 17:04:04 [Note] [Debug] WSREP: dummy_disconnect
+160330 17:04:04 [Note] WSREP: Service disconnected.
+160330 17:04:05 [Note] WSREP: Some threads may fail to exit.
+160330 17:04:05 [Note] [Debug] WSREP: dummy_free
+OK
+Filling help tables...
+160330 17:04:06 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16479 ...
+160330 17:04:06 [Note] WSREP: wsrep_provider_init: /usr/lib64/galera/libgalera_smm.so -> none
+160330 17:04:06 [Note] WSREP: Setting wsrep_ready to 0
+160330 17:04:06 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 17:04:06 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 17:04:06 [Note] WSREP: Setting wsrep_ready to 1
+160330 17:04:06 [Note] [Debug] WSREP: dummy_init
+160330 17:04:06 [Warning] No argument was provided to --log-bin and neither --log-basename or --log-bin-index where used;  This may cause repliction to break when this server acts as a master and has its hostname changed! Please use '--log-basename=galera1' or '--log-bin=galera1-bin' to avoid this problem.
+160330 17:04:06 [Note] WSREP: waiting for client connections to close: 0
+160330 17:04:06 [Note] [Debug] WSREP: dummy_disconnect
+160330 17:04:06 [Note] WSREP: Service disconnected.
+160330 17:04:07 [Note] WSREP: Some threads may fail to exit.
+160330 17:04:07 [Note] [Debug] WSREP: dummy_free
+OK
+
+To start mysqld at boot time you have to copy
+support-files/mysql.server to the right place for your system
+
+PLEASE REMEMBER TO SET A PASSWORD FOR THE MariaDB root USER !
+To do so, start the server, then issue the following commands:
+
+'/usr/bin/mysqladmin' -u root password 'new-password'
+'/usr/bin/mysqladmin' -u root -h galera1 password 'new-password'
+
+Alternatively you can run:
+'/usr/bin/mysql_secure_installation'
+
+which will also give you the option of removing the test
+databases and anonymous user created by default.  This is
+strongly recommended for production servers.
+
+See the MariaDB Knowledgebase at http://mariadb.com/kb or the
+MySQL manual for more instructions.
+
+You can start the MariaDB daemon with:
+cd '/usr' ; /usr/bin/mysqld_safe --datadir='/var/lib/mysql'
+
+You can test the MariaDB daemon with mysql-test-run.pl
+cd '/usr/mysql-test' ; perl mysql-test-run.pl
+
+Please report any problems at http://mariadb.org/jira
+
+The latest information about MariaDB is available at http://mariadb.org/.
+You can find additional information about the MySQL part at:
+http://dev.mysql.com
+Support MariaDB development by buying support/new features from MariaDB
+Corporation Ab. You can contact us about this at sales@mariadb.com.
+Alternatively consider joining our community based development effort:
+http://mariadb.com/kb/en/contributing-to-the-mariadb-project/
+
+Warning: Permanently added '192.168.121.109' (ECDSA) to the list of known hosts.
+Warning: Permanently added '192.168.121.109' (ECDSA) to the list of known hosts.
++ rep_username=repl
++ rep_password=repl
++ db_username=skysql
++ db_password=skysql
++ sudo /etc/init.d/mysql restart --wsrep-cluster-address=gcomm://
+ ERROR! MySQL server PID file could not be found!
+Starting MySQL....... SUCCESS!
++ sleep 5
++ mysql -u root -e 'DELETE FROM mysql.user WHERE user = '\'''\''; GRANT ALL PRIVILEGES ON *.* TO repl@'\''%'\'' IDENTIFIED BY '\''repl'\''  WITH GRANT OPTION; GRANT ALL PRIVILEGES ON *.* TO skysql@'\''%'\'' IDENTIFIED BY '\''skysql'\''  WITH GRANT OPTION; GRANT ALL PRIVILEGES ON *.* TO repl@'\''localhost'\'' IDENTIFIED BY '\''repl'\''  WITH GRANT OPTION; GRANT ALL PRIVILEGES ON *.* TO skysql@'\''localhost'\'' IDENTIFIED BY '\''skysql'\''  WITH GRANT OPTION; FLUSH PRIVILEGES;'
++ sudo /etc/init.d/mysql stop
+Shutting down MySQL.... SUCCESS!
++ chkconfig --del mysql
+/home/vagrant/configure.sh: line 49: chkconfig: command not found
++ update-rc.d -f mysql remove
+/home/vagrant/configure.sh: line 50: update-rc.d: command not found
+done
++ echo done
+Warning: Permanently added '192.168.121.98' (ECDSA) to the list of known hosts.
+Installing MariaDB/MySQL system tables in '/var/lib/mysql' ...
+160330 17:04:25 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16552 ...
+160330 17:04:25 [Note] WSREP: wsrep_provider_init: /usr/lib64/galera/libgalera_smm.so -> none
+160330 17:04:25 [Note] WSREP: Setting wsrep_ready to 0
+160330 17:04:25 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 17:04:25 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 17:04:25 [Note] WSREP: Setting wsrep_ready to 1
+160330 17:04:25 [Note] [Debug] WSREP: dummy_init
+160330 17:04:25 [Warning] No argument was provided to --log-bin and neither --log-basename or --log-bin-index where used;  This may cause repliction to break when this server acts as a master and has its hostname changed! Please use '--log-basename=galera2' or '--log-bin=galera2-bin' to avoid this problem.
+160330 17:04:29 [Note] WSREP: waiting for client connections to close: 0
+160330 17:04:29 [Note] [Debug] WSREP: dummy_disconnect
+160330 17:04:29 [Note] WSREP: Service disconnected.
+160330 17:04:30 [Note] WSREP: Some threads may fail to exit.
+160330 17:04:30 [Note] [Debug] WSREP: dummy_free
+OK
+Filling help tables...
+160330 17:04:30 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16560 ...
+160330 17:04:30 [Note] WSREP: wsrep_provider_init: /usr/lib64/galera/libgalera_smm.so -> none
+160330 17:04:30 [Note] WSREP: Setting wsrep_ready to 0
+160330 17:04:30 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 17:04:30 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 17:04:30 [Note] WSREP: Setting wsrep_ready to 1
+160330 17:04:30 [Note] [Debug] WSREP: dummy_init
+160330 17:04:30 [Warning] No argument was provided to --log-bin and neither --log-basename or --log-bin-index where used;  This may cause repliction to break when this server acts as a master and has its hostname changed! Please use '--log-basename=galera2' or '--log-bin=galera2-bin' to avoid this problem.
+160330 17:04:31 [Note] WSREP: waiting for client connections to close: 0
+160330 17:04:31 [Note] [Debug] WSREP: dummy_disconnect
+160330 17:04:31 [Note] WSREP: Service disconnected.
+160330 17:04:32 [Note] WSREP: Some threads may fail to exit.
+160330 17:04:32 [Note] [Debug] WSREP: dummy_free
+OK
+
+To start mysqld at boot time you have to copy
+support-files/mysql.server to the right place for your system
+
+PLEASE REMEMBER TO SET A PASSWORD FOR THE MariaDB root USER !
+To do so, start the server, then issue the following commands:
+
+'/usr/bin/mysqladmin' -u root password 'new-password'
+'/usr/bin/mysqladmin' -u root -h galera2 password 'new-password'
+
+Alternatively you can run:
+'/usr/bin/mysql_secure_installation'
+
+which will also give you the option of removing the test
+databases and anonymous user created by default.  This is
+strongly recommended for production servers.
+
+See the MariaDB Knowledgebase at http://mariadb.com/kb or the
+MySQL manual for more instructions.
+
+You can start the MariaDB daemon with:
+cd '/usr' ; /usr/bin/mysqld_safe --datadir='/var/lib/mysql'
+
+You can test the MariaDB daemon with mysql-test-run.pl
+cd '/usr/mysql-test' ; perl mysql-test-run.pl
+
+Please report any problems at http://mariadb.org/jira
+
+The latest information about MariaDB is available at http://mariadb.org/.
+You can find additional information about the MySQL part at:
+http://dev.mysql.com
+Support MariaDB development by buying support/new features from MariaDB
+Corporation Ab. You can contact us about this at sales@mariadb.com.
+Alternatively consider joining our community based development effort:
+http://mariadb.com/kb/en/contributing-to-the-mariadb-project/
+
+Warning: Permanently added '192.168.121.98' (ECDSA) to the list of known hosts.
+Warning: Permanently added '192.168.121.98' (ECDSA) to the list of known hosts.
++ rep_username=repl
++ rep_password=repl
++ db_username=skysql
++ db_password=skysql
++ sudo /etc/init.d/mysql restart --wsrep-cluster-address=gcomm://
+ ERROR! MySQL server PID file could not be found!
+Starting MySQL....... SUCCESS!
++ sleep 5
++ mysql -u root -e 'DELETE FROM mysql.user WHERE user = '\'''\''; GRANT ALL PRIVILEGES ON *.* TO repl@'\''%'\'' IDENTIFIED BY '\''repl'\''  WITH GRANT OPTION; GRANT ALL PRIVILEGES ON *.* TO skysql@'\''%'\'' IDENTIFIED BY '\''skysql'\''  WITH GRANT OPTION; GRANT ALL PRIVILEGES ON *.* TO repl@'\''localhost'\'' IDENTIFIED BY '\''repl'\''  WITH GRANT OPTION; GRANT ALL PRIVILEGES ON *.* TO skysql@'\''localhost'\'' IDENTIFIED BY '\''skysql'\''  WITH GRANT OPTION; FLUSH PRIVILEGES;'
++ sudo /etc/init.d/mysql stop
+Shutting down MySQL.... SUCCESS!
++ chkconfig --del mysql
+/home/vagrant/configure.sh: line 49: chkconfig: command not found
++ update-rc.d -f mysql remove
+/home/vagrant/configure.sh: line 50: update-rc.d: command not found
+done
++ echo done
+Warning: Permanently added '192.168.121.229' (ECDSA) to the list of known hosts.
+Installing MariaDB/MySQL system tables in '/var/lib/mysql' ...
+160330 17:04:51 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16551 ...
+160330 17:04:51 [Note] WSREP: wsrep_provider_init: /usr/lib64/galera/libgalera_smm.so -> none
+160330 17:04:51 [Note] WSREP: Setting wsrep_ready to 0
+160330 17:04:51 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 17:04:51 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 17:04:51 [Note] WSREP: Setting wsrep_ready to 1
+160330 17:04:51 [Note] [Debug] WSREP: dummy_init
+160330 17:04:51 [Warning] No argument was provided to --log-bin and neither --log-basename or --log-bin-index where used;  This may cause repliction to break when this server acts as a master and has its hostname changed! Please use '--log-basename=galera3' or '--log-bin=galera3-bin' to avoid this problem.
+160330 17:04:54 [Note] WSREP: waiting for client connections to close: 0
+160330 17:04:54 [Note] [Debug] WSREP: dummy_disconnect
+160330 17:04:54 [Note] WSREP: Service disconnected.
+160330 17:04:55 [Note] WSREP: Some threads may fail to exit.
+160330 17:04:55 [Note] [Debug] WSREP: dummy_free
+OK
+Filling help tables...
+160330 17:04:56 [Note] /usr/sbin/mysqld (mysqld 5.5.48-MariaDB-wsrep) starting as process 16559 ...
+160330 17:04:56 [Note] WSREP: wsrep_provider_init: /usr/lib64/galera/libgalera_smm.so -> none
+160330 17:04:56 [Note] WSREP: Setting wsrep_ready to 0
+160330 17:04:56 [Note] WSREP: Read nil XID from storage engines, skipping position init
+160330 17:04:56 [Note] WSREP: wsrep_load(): loading provider library 'none'
+160330 17:04:56 [Note] WSREP: Setting wsrep_ready to 1
+160330 17:04:56 [Note] [Debug] WSREP: dummy_init
+160330 17:04:56 [Warning] No argument was provided to --log-bin and neither --log-basename or --log-bin-index where used;  This may cause repliction to break when this server acts as a master and has its hostname changed! Please use '--log-basename=galera3' or '--log-bin=galera3-bin' to avoid this problem.
+160330 17:04:57 [Note] WSREP: waiting for client connections to close: 0
+160330 17:04:57 [Note] [Debug] WSREP: dummy_disconnect
+160330 17:04:57 [Note] WSREP: Service disconnected.
+160330 17:04:58 [Note] WSREP: Some threads may fail to exit.
+160330 17:04:58 [Note] [Debug] WSREP: dummy_free
+OK
+
+To start mysqld at boot time you have to copy
+support-files/mysql.server to the right place for your system
+
+PLEASE REMEMBER TO SET A PASSWORD FOR THE MariaDB root USER !
+To do so, start the server, then issue the following commands:
+
+'/usr/bin/mysqladmin' -u root password 'new-password'
+'/usr/bin/mysqladmin' -u root -h galera3 password 'new-password'
+
+Alternatively you can run:
+'/usr/bin/mysql_secure_installation'
+
+which will also give you the option of removing the test
+databases and anonymous user created by default.  This is
+strongly recommended for production servers.
+
+See the MariaDB Knowledgebase at http://mariadb.com/kb or the
+MySQL manual for more instructions.
+
+You can start the MariaDB daemon with:
+cd '/usr' ; /usr/bin/mysqld_safe --datadir='/var/lib/mysql'
+
+You can test the MariaDB daemon with mysql-test-run.pl
+cd '/usr/mysql-test' ; perl mysql-test-run.pl
+
+Please report any problems at http://mariadb.org/jira
+
+The latest information about MariaDB is available at http://mariadb.org/.
+You can find additional information about the MySQL part at:
+http://dev.mysql.com
+Support MariaDB development by buying support/new features from MariaDB
+Corporation Ab. You can contact us about this at sales@mariadb.com.
+Alternatively consider joining our community based development effort:
+http://mariadb.com/kb/en/contributing-to-the-mariadb-project/
+
+Warning: Permanently added '192.168.121.229' (ECDSA) to the list of known hosts.
+Warning: Permanently added '192.168.121.229' (ECDSA) to the list of known hosts.
++ rep_username=repl
++ rep_password=repl
++ db_username=skysql
++ db_password=skysql
++ sudo /etc/init.d/mysql restart --wsrep-cluster-address=gcomm://
+ ERROR! MySQL server PID file could not be found!
+Starting MySQL...... SUCCESS!
++ sleep 5
++ mysql -u root -e 'DELETE FROM mysql.user WHERE user = '\'''\''; GRANT ALL PRIVILEGES ON *.* TO repl@'\''%'\'' IDENTIFIED BY '\''repl'\''  WITH GRANT OPTION; GRANT ALL PRIVILEGES ON *.* TO skysql@'\''%'\'' IDENTIFIED BY '\''skysql'\''  WITH GRANT OPTION; GRANT ALL PRIVILEGES ON *.* TO repl@'\''localhost'\'' IDENTIFIED BY '\''repl'\''  WITH GRANT OPTION; GRANT ALL PRIVILEGES ON *.* TO skysql@'\''localhost'\'' IDENTIFIED BY '\''skysql'\''  WITH GRANT OPTION; FLUSH PRIVILEGES;'
++ sudo /etc/init.d/mysql stop
+Shutting down MySQL.... SUCCESS!
++ chkconfig --del mysql
+/home/vagrant/configure.sh: line 49: chkconfig: command not found
++ update-rc.d -f mysql remove
+/home/vagrant/configure.sh: line 50: update-rc.d: command not found
+done
++ echo done
+Warning: Permanently added '192.168.121.150' (ECDSA) to the list of known hosts.
+Starting MySQL..... SUCCESS!
+Warning: Permanently added '192.168.121.150' (ECDSA) to the list of known hosts.
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/maxscale/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.23 '$maxscale_access_sudo service iptables stop'
+Warning: Permanently added '192.168.121.23' (ECDSA) to the list of known hosts.
+bash: service: command not found
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/maxscale/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.23 'sudo  mkdir ccore; sudo  chown vagrant ccore'
+Warning: Permanently added '192.168.121.23' (ECDSA) to the list of known hosts.
++ scp -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/maxscale/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no /home/vagrant/build-scripts/test/add_core_cnf.sh vagrant@192.168.121.23:./ccore/
+Warning: Permanently added '192.168.121.23' (ECDSA) to the list of known hosts.
++ ssh -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/maxscale/libvirt/private_key -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no vagrant@192.168.121.23 'sudo  /home/vagrant/ccore/add_core_cnf.sh'
+Warning: Permanently added '192.168.121.23' (ECDSA) to the list of known hosts.
++ chmod 777 /tmp/
++ echo 2
++ sed -i 's/start() {/start() { \n export DAEMON_COREFILE_LIMIT='\''unlimited'\''; ulimit -c unlimited; /' /etc/init.d/maxscale
+sed: can't read /etc/init.d/maxscale: No such file or directory
++ sed -i 's/log_daemon_msg "Starting MaxScale"/export DAEMON_COREFILE_LIMIT='\''unlimited'\''; ulimit -c unlimited; log_daemon_msg "Starting MaxScale" /' /etc/init.d/maxscale
+sed: can't read /etc/init.d/maxscale: No such file or directory
++ echo /tmp/core-%e-%s-%u-%g-%p-%t
++ echo 'kernel.core_pattern = /tmp/core-%e-sig%s-user%u-group%g-pid%p-time%t'
++ echo 'kernel.core_uses_pid = 1'
++ echo 'fs.suid_dumpable = 2'
++ echo DefaultLimitCORE=infinity
++ echo '*       hard        core        unlimited'
++ echo '*       soft        core        unlimited'
++ echo '*       soft     nofile           65536'
++ echo '*       hard     nofile           65536'
++ echo 'fs.file-max = 65536'
++ systemctl daemon-reexec
++ sysctl -p
+fs.file-max = 65536
++ set +x
+Reading test setup configuration from environmental variables
+test_dir is /home/vagrant/.jenkins/jobs/run_test/workspace
+iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+Checking node 0
+Node 0 is OK
+Checking node 1
+Node 1 is OK
+Checking node 2
+Node 2 is OK
+Checking node 3
+Node 3 is OK
+Checking node 0
+Node 0 is OK
+Checking node 1
+Node 1 is OK
+Checking node 2
+Node 2 is OK
+Checking node 3
+Node 3 is OK
+Checking Master/Slave setup
+Node repl0: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+Node repl1: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+Node repl2: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+Node repl3: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+Number if slaves is not equal to N-1
+Slave_IO_Running is not Yes
+Slave_IO_Running is not Yes
+Slave_IO_Running is not Yes
+Backend broken! Restarting replication nodes
+Stopping slave 0
+Stopping 0
+Shutting down MySQL.... SUCCESS!
+Stopping slave 1
+Stopping 1
+Shutting down MySQL.... SUCCESS!
+Stopping slave 2
+Stopping 2
+Shutting down MySQL.... SUCCESS!
+Stopping slave 3
+Stopping 3
+Shutting down MySQL.... SUCCESS!
+Starting back Master
+Starting MySQL..... SUCCESS!
+Starting node 1
+Starting MySQL.... SUCCESS!
+Starting node 2
+Starting MySQL.... SUCCESS!
+Starting node 3
+Starting MySQL.... SUCCESS!
+change master to MASTER_HOST='192.168.121.85',         MASTER_USER='repl',         MASTER_PASSWORD='repl',         MASTER_LOG_FILE='mar-bin.000001',         MASTER_LOG_POS=245,         MASTER_PORT=3306;        start slave;change master to MASTER_HOST='192.168.121.85',         MASTER_USER='repl',         MASTER_PASSWORD='repl',         MASTER_LOG_FILE='mar-bin.000001',         MASTER_LOG_POS=245,         MASTER_PORT=3306;        start slave;change master to MASTER_HOST='192.168.121.85',         MASTER_USER='repl',         MASTER_PASSWORD='repl',         MASTER_LOG_FILE='mar-bin.000001',         MASTER_LOG_POS=245,         MASTER_PORT=3306;        start slave;Checking Galera
+Node galera0: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+Error: can't execute SQL-query: SELECT @@version
+MySQL server has gone away
+
+Node galera1:
+Error: can't execute SQL-query: SELECT @@version
+MySQL server has gone away
+
+Node galera2:
+Error: can't execute SQL-query: SELECT @@version
+MySQL server has gone away
+
+Node galera3:
+wsrep_cluster_size is not 4
+Error connectiong node 1
+Error connectiong node 2
+Error connectiong node 3
+Backend broken! Restarting Galera nodes
+Stopping slave 0
+Stopping 0
+Shutting down MySQL.... SUCCESS!
+Stopping slave 1
+Error: can't execute SQL-query: stop slave;
+MySQL server has gone away
+
+Stopping 1
+ ERROR! MySQL server PID file could not be found!
+Stopping slave 2
+Error: can't execute SQL-query: stop slave;
+MySQL server has gone away
+
+Stopping 2
+ ERROR! MySQL server PID file could not be found!
+Stopping slave 3
+Error: can't execute SQL-query: stop slave;
+MySQL server has gone away
+
+Stopping 3
+ ERROR! MySQL server PID file could not be found!
+Starting new Galera cluster
+Starting MySQL..... SUCCESS!
+Starting node 1
+ --wsrep-cluster-address=gcomm://192.168.121.150
+Starting MySQL.....SST in progress, setting sleep higher. SUCCESS!
+Starting node 2
+ --wsrep-cluster-address=gcomm://192.168.121.150
+Starting MySQL.....SST in progress, setting sleep higher. SUCCESS!
+Starting node 3
+ --wsrep-cluster-address=gcomm://192.168.121.150
+Starting MySQL.....SST in progress, setting sleep higher. SUCCESS!
+Checking Master/Slave setup
+Node repl0: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+Node repl1: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+Node repl2: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+Node repl3: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+Checking Galera
+Node galera0: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+Node galera1: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+Node galera2: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+Node galera3: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+
+Executing configure_maxscale.sh
+Test check_backend
+template check_backend
+copying maxscale.cnf using ssh vagrant
+restarting Maxscale
+Redirecting to /bin/systemctl stop  maxscale.service
+maxscale: no process found
+rm: cannot remove ���/tmp/core*���: No such file or directory
+sudo: ulimit: command not found
+Redirecting to /bin/systemctl restart  maxscale.service
+Waiting 15 seconds
+MaxScale 1.4.1 - 040bbddf751626daa42abafd68367f56447409f0
+
+
+MariaDB Corporation MaxScale 1.4.1	Wed Mar 30 17:08:04 2016
+------------------------------------------------------
+Creating log dir in workspace LOGS/check_backend
+log_dir:         LOGS/check_backend
+maxscale_sshkey: /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/maxscale/libvirt/private_key
+maxscale_IP:     192.168.121.23
+cp: cannot stat ���/tmp/core*���: No such file or directory
+0.000008: Connecting to Maxscale routers with Master/Slave backend
+0.006994: Testing connections
+0.007011: Testing RWSplit, expecting success
+0.007943: Testing ReadConnRoute Master, expecting success
+0.008722: Testing ReadConnRoute Slave, expecting success
+0.009499: Connecting to Maxscale router with Galera backend
+0.010571: Testing connection
+0.012741: Closing connections
+0.012903: Connecting to Maxscale
+0.015840: Trying simple query against all sevices
+0.015850: RWSplit
+0.017167: ReadConn Master
+0.018031: ReadConn Slave
+0.502718: Maxscale_full_version_start:0.782390: Maxscale_full_version_end:3.083865: Executing /home/vagrant/.jenkins/jobs/run_test/workspace/copy_logs.sh check_backend
+4.057838: copy_logs.sh OK!
+UpdateCTestConfiguration  from :/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+Parse Config file:/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+   Site: ns3014560.ip-151-80-21.eu
+   Build name: fwf2-testing
+Determine Nightly Start Time
+   Specified time: 01:00:00 UTC
+Create new tag: 20160330-0100 - Nightly
+   Updating the repository: /home/vagrant/.jenkins/jobs/run_test/workspace
+   Use GIT repository type
+   Old revision of repository is: 78415dfa9869836bda2b61b5bf7c1df71bf9bbe2
+   New revision of repository is: 78415dfa9869836bda2b61b5bf7c1df71bf9bbe2
+   Gathering version information (one . per revision):
+
+   Update command failed: "/usr/bin/git" "fetch"
+Configure project
+Configure with command: "/usr/local/bin/cmake" "/home/vagrant/.jenkins/jobs/run_test/workspace"
+Run command: "/usr/local/bin/cmake" "/home/vagrant/.jenkins/jobs/run_test/workspace"
+-- Using MySQL headers found at: /usr/include/mysql
+-- Generating DEB packages for
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/vagrant/.jenkins/jobs/run_test/workspace
+Command exited with the value: 0
+UpdateCTestConfiguration  from :/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+Parse Config file:/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+Build project
+MakeCommand:/usr/local/bin/cmake --build . --config "${CTEST_CONFIGURATION_TYPE}" -- -i
+Run command: "/usr/local/bin/cmake" "--build" "." "--config" "Release" "--" "-i"
+[  6%] Built target testcore
+[  6%] Built target binlog_big_transaction
+[  7%] Built target binlog_incompl
+[  8%] Built target bug143
+[  9%] Built target bug359
+[  9%] Built target bug422
+[ 10%] Built target bug448
+[ 11%] Built target bug469
+[ 12%] Built target bug471
+[ 13%] Built target bug473
+[ 13%] Built target bug475
+[ 14%] Built target bug479
+[ 15%] Built target bug488
+[ 16%] Built target bug493
+[ 16%] Built target bug495
+[ 17%] Built target bug507
+[ 18%] Built target bug509
+[ 19%] Built target bug519
+[ 20%] Built target bug526
+[ 20%] Built target bug529
+[ 21%] Built target bug547
+[ 22%] Built target bug565
+[ 23%] Built target bug571
+[ 23%] Built target bug572
+[ 24%] Built target bug587
+[ 25%] Built target bug592
+[ 26%] Built target bug601
+[ 27%] Built target bug620
+[ 27%] Built target bug626
+[ 28%] Built target bug634
+[ 29%] Built target bug643
+[ 30%] Built target bug643_1
+[ 31%] Built target bug645
+[ 31%] Built target bug645_1
+[ 32%] Built target bug649
+[ 33%] Built target bug650
+[ 34%] Built target bug653
+[ 34%] Built target bug654
+[ 35%] Built target bug657
+[ 36%] Built target bug658
+[ 37%] Built target bug662
+[ 38%] Built target bug664
+[ 38%] Built target bug670
+[ 39%] Built target bug673
+[ 40%] Built target bug676
+[ 41%] Built target bug681
+[ 41%] Built target bug694
+[ 42%] Built target bug699
+[ 43%] Built target bug705
+[ 44%] Built target bug711
+[ 45%] Built target bug729
+[ 45%] Built target bug730
+[ 46%] Built target change_master_during_session
+[ 47%] Built target change_user
+[ 48%] Built target check_backend
+[ 48%] Built target config_test
+[ 49%] Built target connect_to_nonexisting_db
+[ 50%] Built target crash_out_of_files
+[ 51%] Built target crash_out_of_files_galera
+[ 52%] Built target different_size_binlog
+[ 52%] Built target different_size_rwsplit
+[ 53%] Built target encrypted_passwords
+[ 54%] Built target fwf
+[ 55%] Built target fwf2
+[ 56%] Built target fwf_actions
+[ 56%] Built target fwf_logging
+[ 57%] Built target fwf_syntax
+[ 58%] Built target galera_priority
+[ 59%] Built target kill_master
+[ 59%] Built target load_balancing
+[ 60%] Built target load_balancing_galera
+[ 61%] Built target long_sysbench
+[ 62%] Built target longblob
+[ 63%] Built target lots_of_rows
+[ 63%] Built target max_connections
+[ 64%] Built target maxscale_process_user
+[ 65%] Built target mm
+[ 66%] Built target mxs118
+[ 67%] Built target mxs127
+[ 67%] Built target mxs244_prepared_stmt_loop
+[ 68%] Built target mxs280_select_outfile
+[ 69%] Built target mxs314
+[ 70%] Built target mxs321
+[ 71%] Built target mxs365
+[ 71%] Built target mxs37_table_privilege
+[ 72%] Built target mxs431
+[ 73%] Built target mxs47
+[ 74%] Built target mxs501_tee_usedb
+[ 74%] Built target mxs548_short_session_change_user
+[ 75%] Built target mxs559_block_master
+[ 76%] Built target mxs564_big_dump
+[ 77%] Built target namedserverfilter
+[ 78%] Built target non_native_setup
+[ 78%] Built target open_close_connections
+[ 79%] Built target pers_01
+[ 80%] Built target pers_02
+[ 81%] Built target prepared_statement
+[ 81%] Built target readconnrouter_master
+[ 82%] Built target readconnrouter_slave
+[ 83%] Built target regexfilter1
+[ 84%] Built target rw_galera_select_insert
+[ 85%] Built target rw_select_insert
+[ 85%] Built target rwsplit_conn_num
+[ 86%] Built target rwsplit_connect
+[ 87%] Built target schemarouter_duplicate_db
+[ 88%] Built target script
+[ 88%] Built target server_weight
+[ 89%] Built target session_limits
+[ 90%] Built target setup_binlog
+[ 91%] Built target setup_binlog_crc_32
+[ 92%] Built target setup_binlog_crc_none
+[ 92%] Built target sharding
+[ 93%] Built target short_sessions
+[ 94%] Built target slave_failover
+[ 95%] Built target sql_queries
+[ 96%] Built target sysbench_kill_slave
+[ 96%] Built target t
+[ 97%] Built target temporal_tables
+[ 98%] Built target test_hints
+[ 99%] Built target maxscale_java
+[100%] Built target simplejavatest
+Command exited with the value: 0
+MakeCommand:/usr/local/bin/cmake --build . --config "${CTEST_CONFIGURATION_TYPE}" -- -i
+   0 Compiler errors
+   0 Compiler warnings
+UpdateCTestConfiguration  from :/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+Parse Config file:/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+Test project /home/vagrant/.jenkins/jobs/run_test/workspace
+Constructing a list of tests
+Done constructing a list of tests
+Checking test dependency graph...
+Checking test dependency graph end
+test 93
+    Start 93: fwf2
+
+93: Test command: /home/vagrant/.jenkins/jobs/run_test/workspace/fwf2
+93: Test timeout computed to be: 1500
+93: Reading test setup configuration from environmental variables
+93: test_dir is /home/vagrant/.jenkins/jobs/run_test/workspace
+93: iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+93: iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+93: iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+93: iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+93: iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+93: iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+93: iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+93: iptables -I INPUT -p tcp --dport 3306 -j ACCEPT
+93: Checking node 0
+93: Node 0 is OK
+93: Checking node 1
+93: Node 1 is OK
+93: Checking node 2
+93: Node 2 is OK
+93: Checking node 3
+93: Node 3 is OK
+93: Checking node 0
+93: Node 0 is OK
+93: Checking node 1
+93: Node 1 is OK
+93: Checking node 2
+93: Node 2 is OK
+93: Checking node 3
+93: Node 3 is OK
+93: Checking Master/Slave setup
+93: Node repl0: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93: Node repl1: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93: Node repl2: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93: Node repl3: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93: Checking Galera
+93: Node galera0: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93: Node galera1: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93: Node galera2: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93: Node galera3: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93: Checking Master/Slave setup
+93: Node repl0: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93: Node repl1: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93: Node repl2: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93: Node repl3: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93: Checking Galera
+93: Node galera0: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93: Node galera1: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93: Node galera2: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93: Node galera3: 5.5.48-MariaDB-wsrep	 5.5.48 	 5.5
+93:
+93: Executing configure_maxscale.sh
+93: Test fwf2
+93: template fwf
+93: copying maxscale.cnf using ssh vagrant
+93: restarting Maxscale
+93: Redirecting to /bin/systemctl stop  maxscale.service
+93: maxscale: no process found
+93: rm: cannot remove ���/tmp/core*���: No such file or directory
+93: sudo: ulimit: command not found
+93: Redirecting to /bin/systemctl restart  maxscale.service
+93: Job for maxscale.service failed. See 'systemctl status maxscale.service' and 'journalctl -xn' for details.
+93: Waiting 15 seconds
+93: Redirecting to /bin/systemctl stop  maxscale.service
+93: Warning: Permanently added '192.168.121.23' (ECDSA) to the list of known hosts.
+93: Redirecting to /bin/systemctl start  maxscale.service
+93: Redirecting to /bin/systemctl stop  maxscale.service
+93: Warning: Permanently added '192.168.121.23' (ECDSA) to the list of known hosts.
+93: Redirecting to /bin/systemctl start  maxscale.service
+93: Redirecting to /bin/systemctl stop  maxscale.service
+93: Warning: Permanently added '192.168.121.23' (ECDSA) to the list of known hosts.
+93: Redirecting to /bin/systemctl start  maxscale.service
+93: Creating log dir in workspace LOGS/fwf2
+93: log_dir:         LOGS/fwf2
+93: maxscale_sshkey: /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/maxscale/libvirt/private_key
+93: maxscale_IP:     192.168.121.23
+93: cp: cannot stat ���/tmp/core*���: No such file or directory
+93: 0.590929: Creating rules dir
+93: 0.893862: Copying rules to Maxscale machine: scp -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/maxscale/libvirt/private_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /home/vagrant/.jenkins/jobs/run_test/workspace/fw2//rules1 vagrant@192.168.121.23:/home/vagrant//rules/rules.txt
+93: 1.160112: Copying rules to Maxscale machine
+93: 12.362364: ********** Trying queries that should be OK **********
+93: 12.362462: select * from mysql.user;
+93: 12.365013: use mysql;
+93: 12.366204: set @var = 1;
+93: 12.367317: ********** Trying queries that should FAIL **********
+93: 12.367372: drop table if exists t1;
+93: Error: can't execute SQL-query: drop table if exists t1;
+93:
+93: Access denied for user 'skysql'@'192.168.121.1' to database 'test': Permission denied, query matched regular expression.
+93:
+93: 12.367853: create table t1(id int);
+93: Error: can't execute SQL-query: create table t1(id int);
+93:
+93: Access denied for user 'skysql'@'192.168.121.1' to database 'test': Permission denied, query matched regular expression.
+93:
+93: 12.368853: alter table t1 add column b int;
+93: Error: can't execute SQL-query: alter table t1 add column b int;
+93:
+93: Access denied for user 'skysql'@'192.168.121.1' to database 'test': Permission denied, query matched regular expression.
+93:
+93: 14.211812: Creating rules dir
+93: 14.516786: Copying rules to Maxscale machine: scp -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/maxscale/libvirt/private_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /home/vagrant/.jenkins/jobs/run_test/workspace/fw2//rules2 vagrant@192.168.121.23:/home/vagrant//rules/rules.txt
+93: 14.803937: Copying rules to Maxscale machine
+93: 26.267404: ********** Trying queries that should be OK **********
+93: 26.267504: select * from mysql.user;
+93: 26.270495: use mysql;
+93: 26.272022: set @var = 1;
+93: 26.273543: ********** Trying queries that should FAIL **********
+93: 26.273604: grant select on *.* to 'skysql'@'localhost';
+93: Error: can't execute SQL-query: grant select on *.* to 'skysql'@'localhost';
+93:
+93: Access denied for user 'skysql'@'192.168.121.1' to database 'test': Permission denied, query matched regular expression.
+93:
+93: 26.274186: revoke select on *.* from 'skysql'@'localhost';
+93: Error: can't execute SQL-query: revoke select on *.* from 'skysql'@'localhost';
+93:
+93: Access denied for user 'skysql'@'192.168.121.1' to database 'test': Permission denied, query matched regular expression.
+93:
+93: 28.187612: Creating rules dir
+93: 28.485973: Copying rules to Maxscale machine: scp -i /home/vagrant/mdbci/fwf2-testing/.vagrant/machines/maxscale/libvirt/private_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null /home/vagrant/.jenkins/jobs/run_test/workspace/fw2//rules3 vagrant@192.168.121.23:/home/vagrant//rules/rules.txt
+93: 28.767291: Copying rules to Maxscale machine
+93: 39.953913: ********** Trying queries that should be OK **********
+93: 39.953998: select * from mysql.user;
+93: 39.957179: set @var = 1;
+93: 39.958543: ********** Trying queries that should FAIL **********
+93: 39.958596: use test;
+93: Error: can't execute SQL-query: use test;
+93:
+93: Access denied for user 'skysql'@'192.168.121.1' to database 'test': Permission denied, query matched regular expression.
+93:
+93: 39.958999: load data local infile 'test.csv' into table test.t1;
+93: Error: can't execute SQL-query: load data local infile 'test.csv' into table test.t1;
+93:
+93: Access denied for user 'skysql'@'192.168.121.1' to database 'test': Permission denied, query matched regular expression.
+93:
+93: 42.581308: Executing /home/vagrant/.jenkins/jobs/run_test/workspace/copy_logs.sh fwf2
+93: 43.523081: copy_logs.sh OK!
+1/1 Test #93: fwf2 .............................   Passed   82.61 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =  82.76 sec
+UpdateCTestConfiguration  from :/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+Parse Config file:/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+ target directory list [/home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/TargetDirectories.txt]
+Performing coverage
+ COVFILE environment variable not found, not running  bullseye
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/Continuous.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousBuild.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousConfigure.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousCoverage.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousMemCheck.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousStart.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousSubmit.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousTest.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ContinuousUpdate.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/Experimental.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ExperimentalBuild.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ExperimentalConfigure.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ExperimentalCoverage.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ExperimentalMemCheck.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ExperimentalStart.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ExperimentalSubmit.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ExperimentalTest.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/ExperimentalUpdate.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/Nightly.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/NightlyBuild.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/NightlyConfigure.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/NightlyCoverage.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/NightlyMemCheck.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/NightlyMemoryCheck.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/NightlyStart.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/NightlySubmit.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/NightlyTest.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/NightlyUpdate.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/binlog_big_transaction.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/binlog_incompl.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug143.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug359.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug422.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug448.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug469.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug471.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug473.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug475.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug479.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug488.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug493.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug495.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug507.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug509.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug519.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug526.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug529.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug547.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug565.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug571.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug572.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug587.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug592.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug601.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug620.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug626.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug634.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug643.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug643_1.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug645.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug645_1.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug649.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug650.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug653.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug654.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug657.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug658.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug662.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug664.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug670.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug673.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug676.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug681.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug694.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug699.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug705.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug711.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug729.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/bug730.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/change_master_during_session.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/change_user.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/check_backend.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/config_test.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/connect_to_nonexisting_db.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/crash_out_of_files.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/crash_out_of_files_galera.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/different_size_binlog.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/different_size_rwsplit.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/encrypted_passwords.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/fwf.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/fwf2.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/fwf_actions.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/fwf_logging.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/fwf_syntax.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/galera_priority.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/kill_master.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/load_balancing.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/load_balancing_galera.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/long_sysbench.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/longblob.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/lots_of_rows.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/max_connections.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/maxscale_process_user.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/mm.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/mxs118.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/mxs127.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/mxs244_prepared_stmt_loop.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/mxs280_select_outfile.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/mxs314.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/mxs321.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/mxs365.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/mxs37_table_privilege.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/mxs431.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/mxs47.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/mxs501_tee_usedb.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/mxs548_short_session_change_user.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/mxs559_block_master.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/mxs564_big_dump.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/namedserverfilter.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/non_native_setup.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/open_close_connections.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/pers_01.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/pers_02.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/prepared_statement.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/readconnrouter_master.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/readconnrouter_slave.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/regexfilter1.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/rw_galera_select_insert.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/rw_select_insert.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/rwsplit_conn_num.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/rwsplit_connect.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/schemarouter_duplicate_db.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/script.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/server_weight.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/session_limits.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/setup_binlog.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/setup_binlog_crc_32.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/setup_binlog_crc_none.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/sharding.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/short_sessions.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/slave_failover.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/sql_queries.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/sysbench_kill_slave.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/t.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/temporal_tables.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/test_hints.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/CMakeFiles/testcore.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/maxscale/java/CMakeFiles/maxscale_java.dir
+   globbing for coverage in: /home/vagrant/.jenkins/jobs/run_test/workspace/maxscale/java/test1/CMakeFiles/simplejavatest.dir
+ Cannot find any GCov coverage files.
+ Not a valid Intel Coverage command.
+ Cannot find any Python Trace.py coverage files.
+Cannot find Cobertura XML file: /home/vagrant/.jenkins/jobs/run_test/workspace/coverage.xml
+ Cannot find GTM coverage file: /home/vagrant/.jenkins/jobs/run_test/workspace/gtm_coverage.mcov
+ Cannot find Cache coverage file: /home/vagrant/.jenkins/jobs/run_test/workspace/cache_coverage.cmcov
+ Cannot find Jacoco coverage files: /home/vagrant/.jenkins/jobs/run_test/workspace/*jacoco.xml
+ Cannot find BlanketJS coverage files: /home/vagrant/.jenkins/jobs/run_test/workspace/*.json
+ Cannot find Delphi coverage files: /home/vagrant/.jenkins/jobs/run_test/workspace/*.html
+ Cannot find any coverage files. Ignoring Coverage request.
+UpdateCTestConfiguration  from :/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+Parse Config file:/home/vagrant/.jenkins/jobs/run_test/workspace/DartConfiguration.tcl
+Submit files (using http)
+   Using HTTP submit method
+   Drop site:http://jenkins.engskysql.com/CDash/submit.php?project=MaxScale
+   Upload file: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/20160330-0100/Build.xml to http://jenkins.engskysql.com/CDash/submit.php?project=MaxScale&FileName=ns3014560.ip-151-80-21.eu___fwf2-testing___20160330-0100-Nightly___XML___Build.xml&MD5=dd6da4ce8a8170c410806c1e4846f223 Size: 1082
+   Uploaded: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/20160330-0100/Build.xml
+   Upload file: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/20160330-0100/Configure.xml to http://jenkins.engskysql.com/CDash/submit.php?project=MaxScale&FileName=ns3014560.ip-151-80-21.eu___fwf2-testing___20160330-0100-Nightly___XML___Configure.xml&MD5=ba64bb5e29dcf3aa76551a29b9c3b960 Size: 1340
+   Uploaded: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/20160330-0100/Configure.xml
+   Upload file: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/20160330-0100/Test.xml to http://jenkins.engskysql.com/CDash/submit.php?project=MaxScale&FileName=ns3014560.ip-151-80-21.eu___fwf2-testing___20160330-0100-Nightly___XML___Test.xml&MD5=76f36ab3f02f161eae29aad755fc1c0b Size: 3528
+   Uploaded: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/20160330-0100/Test.xml
+   Upload file: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/20160330-0100/Update.xml to http://jenkins.engskysql.com/CDash/submit.php?project=MaxScale&FileName=ns3014560.ip-151-80-21.eu___fwf2-testing___20160330-0100-Nightly___XML___Update.xml&MD5=b083af0b3841c628aa3025d9efbb3196 Size: 655
+   Uploaded: /home/vagrant/.jenkins/jobs/run_test/workspace/Testing/20160330-0100/Update.xml
+   Submission successful
+Errors while running CTest
+==> maxscale: Removing domain...
+==> maxscale: Auto-generating node name for Chef...
+==> galera3: Removing domain...
+==> galera3: Auto-generating node name for Chef...
+==> galera2: Removing domain...
+==> galera2: Auto-generating node name for Chef...
+==> galera1: Removing domain...
+==> galera1: Auto-generating node name for Chef...
+==> galera0: Removing domain...
+==> galera0: Auto-generating node name for Chef...
+==> node3: Removing domain...
+==> node3: Auto-generating node name for Chef...
+==> node2: Removing domain...
+==> node2: Auto-generating node name for Chef...
+==> node1: Removing domain...
+==> node1: Auto-generating node name for Chef...
+==> node0: Removing domain...
+==> node0: Auto-generating node name for Chef...
+Checking for post-build
+Performing post-build step
+Checking if email needs to be generated
+Email was triggered for: Always
+Email was triggered for: Success
+Sending email for trigger: Always
+messageContentType = text/plain; charset=UTF-8
+Adding recipients from project recipient list
+Adding recipients from trigger recipient list
+Setting In-Reply-To since last build was not successful
+Successfully created MimeMessage
+Sending email to: timofey.turenko@mariadb.com
+Sending email for trigger: Success
+messageContentType = text/plain; charset=UTF-8
+Adding recipients from trigger recipient list
+Setting In-Reply-To since last build was not successful
+Successfully created MimeMessage
+An attempt to send an e-mail to empty list of recipients, ignored.
+Some error occured trying to send the email...check the Jenkins log
+Finished: SUCCESS
+ Помогите нам перевести эту страницу Страница сгенерирована: 31.03.2016 0:43:24 CESTREST APIJenkins ver. 1.650

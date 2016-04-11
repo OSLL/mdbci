@@ -93,7 +93,7 @@ Vagrant.configure(2) do |config|
 
   def Generator.sshPtyOption(ssh_pty)
     ssh_pty_option = ''
-    if ssh_pty == "true" || ssh_pty == "false"; 
+    if ssh_pty == "true" || ssh_pty == "false";
       ssh_pty_option = "\tconfig.ssh.pty = " + ssh_pty
     end
     return ssh_pty_option
@@ -184,7 +184,7 @@ Vagrant.configure(2) do |config|
             + ssh_pty_option + "\n" \
             + templatedef  + "\n" \
             + "\t"+name+'.vm.provider "docker" do |d|' + "\n" \
-            + "\t\t"+'d.build_dir = ' + quote(name+"/") + "/\n" \
+            + "\t\t"+'d.build_dir = ' + quote(name+"/") + "\n" \
             + "\t\t"+'d.has_ssh = true' + "\n" \
             + "\t\t"+'d.privileged = true' + "\n\tend"
     if provisioned
@@ -514,11 +514,11 @@ def Generator.checkPath(path, override)
         vagrant.puts Generator.vagrantConfigFooter
     end
 
-    unless !File.size?(path+'/Vagrantfile') # nil if empty and not exist
+    vagrant.close
+
+    if File.size?(path+'/Vagrantfile').nil? # nil if empty and not exist
       raise 'Generated Vagrantfile is empty! Please check configuration file and regenerate it.'
     end
-
-    vagrant.close
 
     return 0
   end

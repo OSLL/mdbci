@@ -5,58 +5,105 @@ require 'json'
 
 LOG_FILE_OPTION = '--log-file'
 OUTPUT_LOG_FILE_OPTION = '--output-log-file'
+OUTPUT_LOG_JSON_FILE_OPTION = '--output-log-json-file'
 ONLY_FAILED_OPTION = '--only-failed'
 HUMAN_READABLE_OPTION = '--human-readable'
 HELP_OPTION = '--help'
 
+TEST_INDEX_NUMBER = 'test_index_number'
 TEST_NUMBER = 'test_number'
 TEST_NAME = 'test_name'
 TEST_SUCCESS = 'test_success'
+TEST_TIME = 'test_time'
 TESTS = 'tests'
 TESTS_COUNT = 'tests_count'
 FAILED_TESTS_COUNT = 'failed_tests_count'
 
+RUN_TEST_BUILD_ENV_VARS_TO_HR = {
+    'BUILD_NUMBER' => 'Job build number',
+    'JOB_NAME' => 'Job name',
+    'BUILD_TIMESTAMP' => 'Timestamp',
+    'name' => 'Test run name',
+    'target' => 'Target',
+    'box' => 'Box',
+    'product' => 'Product',
+    'version' => 'Version'
+}
+
+RUN_TEST_BUILD_ENV_VARS_TO_MR = {
+    'BUILD_NUMBER' => 'job_build_number',
+    'JOB_NAME' => 'job_name',
+    'BUILD_TIMESTAMP' => 'timestamp',
+    'name' => 'test_run_name',
+    'target' => 'target',
+    'box' => 'box',
+    'product' => 'product',
+    'version' => 'version'
+}
+
+WORKSPACE = 'WORKSPACE'
+
 FAILED = 'Failed'
 PASSED = 'Passed'
+
+NOT_FOUND = 'NOT FOUND'
 
 BUILD_LOG_PARSING_RESULT = 'BUILD_LOG_PARSING_RESULT'
 
 ERROR = 'ERROR'
-CTEST_NOT_EXECUTED_ERROR = 'ERROR: CTest has never been executed'
+CTEST_NOT_EXECUTED_ERROR = 'CTest never been executed'
 
-TIME_NOW = Time.now.strftime('[%d.%m.%Y %H:%M:%s]')
+CTEST_ARGUMENTS_HR = 'CTest arguments'
+CTEST_ARGUMENTS_MR = 'ctest_arguments'
+
+MAXSCALE_COMMIT_HR = "MaxScale commit"
+MAXSCALE_COMMIT_MR = "maxscale_commit"
+
+MAXSCALE_SYSTEM_TEST_COMMIT_HR = "MaxScale system test commit"
+MAXSCALE_SYSTEM_TEST_COMMIT_MR = "maxscale_system_test_commit"
+
+NEW_LINE_JENKINS_FORMAT = " \\\n"
 
 opts = GetoptLong.new(
     [LOG_FILE_OPTION, '-l', GetoptLong::REQUIRED_ARGUMENT],
     [ONLY_FAILED_OPTION, '-f', GetoptLong::OPTIONAL_ARGUMENT],
     [HUMAN_READABLE_OPTION, '-r', GetoptLong::OPTIONAL_ARGUMENT],
     [OUTPUT_LOG_FILE_OPTION, '-o', GetoptLong::OPTIONAL_ARGUMENT],
+    [OUTPUT_LOG_JSON_FILE_OPTION, '-j', GetoptLong::OPTIONAL_ARGUMENT],
     [HELP_OPTION, '-h', GetoptLong::OPTIONAL_ARGUMENT]
 )
 
-$log_file_path = nil
+$log = nil
 $only_failed = false
 $human_readable = false
 $output_log_file_path = nil
+$output_log_json_file_path = nil
 
 opts.each do |opt, arg|
   case opt
     when LOG_FILE_OPTION
-      $log_file_path = arg
+      begin
+        $log = File.read arg
+      rescue
+        raise puts "ERROR: Can not find log file: #{arg}"
+      end
     when ONLY_FAILED_OPTION
       $only_failed = true
     when HUMAN_READABLE_OPTION
       $human_readable = true
     when OUTPUT_LOG_FILE_OPTION
       $output_log_file_path = arg
+    when OUTPUT_LOG_JSON_FILE_OPTION
+      $output_log_json_file_path = arg
     when HELP_OPTION
       puts <<-EOT
 CTest parser usage:
     parse_ctest_log -l CTEST_LOG_FILE_PATH
-        [ -f ]           - PARSE ONLY FAILED TESTS
-        [ -r ]           - HUMAN READABLE OUTPUT
-        [ -o file_path ] - CTEST PARSER OUTPUT LOG FILE
-        [ -h ]           - SHOW HELP
+        [ -f ]                - PARSE ONLY FAILED TESTS
+        [ -r ]                - HUMAN READABLE OUTPUT
+        [ -o file_path ]      - CTEST PARSER OUTPUT LOG FILE HUMAN READABLE FOR JENKINS (environmental variable format)
+        [ -j json_file_path ] - CTEST PARSER OUTPUT LOG JSON FILE (there will be saved all test results - passed and failed)
+        [ -h ]                - SHOW HELP
       EOT
       exit 0
   end
@@ -66,34 +113,46 @@ class CTestParser
 
   attr_accessor :ctest_executed
   attr_accessor :ctest_summary
+  attr_accessor :all_ctest_indexes
+  attr_accessor :failed_ctest_indexes
+  attr_accessor :all_ctest_arguments
+  attr_accessor :failed_ctest_arguments
+  attr_accessor :all_ctest_info
+  attr_accessor :failed_ctest_info
+  attr_accessor :maxscale_commit
+  attr_accessor :fail_ctest_counter
 
   def initialize
     @ctest_executed = false
     @ctest_summary = nil
+    @maxscale_commit = nil
+    @all_ctest_indexes = nil
+    @failed_ctest_indexes = nil
+    @all_ctest_arguments = nil
+    @failed_ctest_arguments = nil
+    @all_ctest_info = nil
+    @failed_ctest_info = nil
+    @fail_ctest_counter = nil
   end
 
-  def parseCtestLog()
-    log = nil
-    begin
-      log = File.read $log_file_path
-    rescue
-      raise puts "ERROR: Can not find log file: #{$log_file_path}"
-    end
+  def parse_ctest_log()
     ctest_first_line_regex = /Constructing a list of tests/
-    ctest_last_line_regex = /tests passed, .+ tests failed out of (.+)/
+    ctest_last_line_regex = /tests passed,.+tests failed out of (.+)/
+    maxscale_commit_regex = /MaxScale\s+.*\d+\.*\d*\.*\d*\s+-\s+(.+)/
     ctest_start_line = 0;
-    first_line_found = false;
-    log.each_line do |line|
+    $log.each_line do |line|
+      if line =~ maxscale_commit_regex and @maxscale_commit == nil
+        @maxscale_commit = line.match(maxscale_commit_regex).captures[0]
+      end
       if line =~ ctest_first_line_regex
-        first_line_found = true;
         @ctest_executed = true
         break
       end
       ctest_start_line += 1
     end
     if @ctest_executed
-      ctest_log = log.split("\n")[ctest_start_line..-1]
-      ctest_end_line = 0;
+      ctest_log = $log.split("\n")[ctest_start_line..-1]
+      ctest_end_line = 0
       ctest_log.each do |line|
         if line =~ ctest_last_line_regex
           @ctest_summary = line
@@ -103,101 +162,176 @@ class CTestParser
       end
       ctest_log = ctest_log[0..ctest_end_line]
       tests_quantity = ctest_log[-1].match(ctest_last_line_regex).captures[0]
-      return {TESTS_COUNT=>tests_quantity}.merge findTestsInfo(ctest_log, tests_quantity)
+      find_tests_info(ctest_log)
+      @all_ctest_info = {TESTS_COUNT => tests_quantity}.merge(@all_ctest_info)
+      @failed_ctest_info = {TESTS_COUNT => tests_quantity}.merge(@failed_ctest_info)
     end
-    return nil
   end
 
-  def findTestsInfo(ctest_log, tests_quantity)
-    tests_info = Array.new
-    failed_tests_counter = 0
-    test_counter = 1
-    real_test_num = nil
-    test_start_found = false
-    current_test_name = nil
+  def find_tests_info(ctest_log)
+    @all_ctest_indexes = Array.new
+    @failed_ctest_indexes = Array.new
+    @all_ctest_info = Array.new
+    @failed_ctest_info = Array.new
+    @fail_ctest_counter = 0
     ctest_log.each do |line|
-      if line =~ /^test \d+$/
-        test_start_found = true
-        real_test_num = line.match(/^test (\d+)$/).captures[0]
-      elsif test_start_found && !real_test_num.nil?
-        test_start_found = false
-        current_test_name = line.match(/Start #{real_test_num}: (.+)/).captures[0]
-      elsif !current_test_name.nil? && !real_test_num.nil?
-        test_end_regex = /#{test_counter}\/#{tests_quantity} Test ##{real_test_num}: #{current_test_name} .+(Failed|Passed)/
-        if line =~ test_end_regex
-          test_success = line.match(test_end_regex).captures[0]
-          if test_success == (FAILED)
-            failed_tests_counter += 1
-          end
-          if test_success == FAILED or (!$only_failed and test_success == PASSED)
-            tests_info.push({TEST_NUMBER=>real_test_num, TEST_NAME=>current_test_name, TEST_SUCCESS=>test_success})
-          end
-          current_test_name = nil
-          real_test_num = nil
-          test_counter += 1
+      test_end_regex = /(\d+)\/(\d+)\s+Test\s+#(\d+):[\s]+([^\s\.]+)[\s\.\*]+(Passed|Failed)\s+([\d\.]+)/
+      if line =~ test_end_regex
+        test_index_number = line.match(test_end_regex).captures[0]
+        test_number = line.match(test_end_regex).captures[2]
+        test_name = line.match(test_end_regex).captures[3]
+        test_success = line.match(test_end_regex).captures[4]
+        test_time = line.match(test_end_regex).captures[5]
+        @all_ctest_indexes.push(Integer(test_number))
+        @all_ctest_info.push({
+                                 TEST_INDEX_NUMBER => test_index_number,
+                                 TEST_NUMBER => test_number,
+                                 TEST_NAME => test_name,
+                                 TEST_SUCCESS => test_success,
+                                 TEST_TIME => test_time
+                             })
+        if test_success == FAILED
+          @fail_ctest_counter += 1
+          @failed_ctest_indexes.push(Integer(test_number))
+          @failed_ctest_info.push({
+                                      TEST_INDEX_NUMBER => test_index_number,
+                                      TEST_NUMBER => test_number,
+                                      TEST_NAME => test_name,
+                                      TEST_SUCCESS => test_success,
+                                      TEST_TIME => test_time
+                                  })
         end
       end
-      break if (test_counter - 1) == tests_quantity
     end
-    return {FAILED_TESTS_COUNT=>failed_tests_counter, TESTS=>tests_info}
+    @all_ctest_info = {FAILED_TESTS_COUNT => @fail_ctest_counter, TESTS => @all_ctest_info}
+    @failed_ctest_info = {FAILED_TESTS_COUNT => @fail_ctest_counter, TESTS => @failed_ctest_info}
   end
 
-  def generateHumanReadableInfo(parsedCTestInfo)
+  def generate_ctest_arguments
+    ctest_arguments = Array.new()
+    test_indexes_array = $only_failed ? @failed_ctest_indexes : @all_ctest_indexes
+    sorted_test_indexes_array = test_indexes_array.sort
+    return NOT_FOUND if sorted_test_indexes_array.size == 0
+    sorted_test_indexes_array.each do |test_index|
+      if test_index == sorted_test_indexes_array[0]
+        ctest_arguments.push(test_index, test_index)
+        ctest_arguments.push(' ') if sorted_test_indexes_array.size > 1
+      else
+        ctest_arguments.push(test_index)
+      end
+    end
+    return ctest_arguments.join ','
+  end
+
+  def get_test_code_commit
+    return NOT_FOUND if ENV[WORKSPACE].nil?
+    current_directory = Dir.pwd
+    Dir.chdir ENV[WORKSPACE]
+    git_log = `git log -1`
+    Dir.chdir current_directory
+    return NOT_FOUND if git_log.nil?
+    commit_regex = /commit\s+(.+)/
+    if git_log.lines.first =~ commit_regex
+      return git_log.lines.first.match(commit_regex).captures[0]
+    end
+    return NOT_FOUND
+  end
+
+  def generate_run_test_build_parameters_hr
+    build_params = Array.new
+    RUN_TEST_BUILD_ENV_VARS_TO_HR.each do |key, value|
+      env_value = ENV[key] ? ENV[key] : NOT_FOUND
+      build_params.push "#{value}: #{env_value}"
+    end
+    return build_params
+  end
+
+  def generate_run_test_build_parameters_mr
+    build_params = Hash.new
+    RUN_TEST_BUILD_ENV_VARS_TO_MR.each do |key, value|
+      env_value = ENV[key] ? ENV[key] : NOT_FOUND
+      build_params[value] = env_value
+    end
+    return build_params
+  end
+
+  def generate_hr_result(parsed_ctest_data)
     hr_tests = Array.new
-    parsedCTestInfo[TESTS].each do |test|
-      hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} (#{test[TEST_SUCCESS]})")
+    if @ctest_executed
+      hr_tests.push @ctest_summary
+      parsed_ctest_data[TESTS].each do |test|
+        hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} (#{test[TEST_SUCCESS]})")
+      end
+      hr_tests.push ""
+      hr_tests.push "#{CTEST_ARGUMENTS_HR}: #{generate_ctest_arguments}"
+      hr_tests.push ""
+      maxscale_commit = @maxscale_commit ? @maxscale_commit : NOT_FOUND
+      hr_tests.push "#{MAXSCALE_COMMIT_HR}: #{maxscale_commit}"
+      hr_tests.push "#{MAXSCALE_SYSTEM_TEST_COMMIT_HR}: #{get_test_code_commit}"
+      hr_tests = hr_tests + generate_run_test_build_parameters_hr
+    else
+      hr_tests.push("#{ERROR}: #{CTEST_NOT_EXECUTED_ERROR}")
     end
     return hr_tests
   end
 
-  def showMachineReadableParsedInfo(parsed_ctest_data)
+  def generate_mr_result(parsed_ctest_data)
     if @ctest_executed
-      puts JSON.pretty_generate(parsed_ctest_data)
-    elsif
-      puts CTEST_NOT_EXECUTED_ERROR
-    end
-  end
-
-  def showHumanReadableParsedInfo(parsed_ctest_data)
-    if @ctest_executed
-      generateHumanReadableInfo(parsed_ctest_data).each { |line| puts line }
-      puts "#{@ctest_summary}"
+      parsed_ctest_data = generate_run_test_build_parameters_mr.merge(parsed_ctest_data)
+      parsed_ctest_data = {MAXSCALE_SYSTEM_TEST_COMMIT_MR => get_test_code_commit}.merge(parsed_ctest_data)
+      maxscale_commit = @maxscale_commit ? @maxscale_commit : NOT_FOUND
+      parsed_ctest_data = {MAXSCALE_COMMIT_MR => maxscale_commit}.merge(parsed_ctest_data)
+      parsed_ctest_data = {CTEST_ARGUMENTS_MR => generate_ctest_arguments}.merge(parsed_ctest_data)
+      return JSON.pretty_generate parsed_ctest_data
     else
-      puts "#{CTEST_NOT_EXECUTED_ERROR}"
+      return JSON.pretty_generate({ERROR => CTEST_NOT_EXECUTED_ERROR})
     end
   end
 
-  def saveParsedDataToEnvironmentalFile(parsed_ctest_data)
+  def show_mr_result(parsed_ctest_data)
+    puts generate_mr_result(parsed_ctest_data)
+  end
+
+  def show_hr_result(parsed_ctest_data)
+    puts generate_hr_result(parsed_ctest_data)
+  end
+
+  def save_result_to_file()
     open($output_log_file_path, 'w') do |f|
-      f.puts "#{BUILD_LOG_PARSING_RESULT}= \\"
-      if @ctest_executed
-        f.puts "#{@ctest_summary} \\"
-        generateHumanReadableInfo(parsed_ctest_data).each do |line|
-          f.puts "#{line} \\"
-        end
-      elsif
-        f.puts "#{CTEST_NOT_EXECUTED_ERROR}"
-      end
+      ctest_info = $only_failed ? @failed_ctest_info : @all_ctest_info
+      f.puts [BUILD_LOG_PARSING_RESULT, generate_hr_result(ctest_info)].join(NEW_LINE_JENKINS_FORMAT)
     end
   end
 
-  def showParsedInfo (parsed_ctest_data)
+  def save_all_result_to_json_file()
+    open($output_log_json_file_path, 'w') do |f|
+      f.puts generate_mr_result(@all_ctest_info)
+    end
+  end
+
+
+  def show_ctest_parsed_info()
     if !$human_readable
-      showMachineReadableParsedInfo parsed_ctest_data
-    elsif
-      showHumanReadableParsedInfo parsed_ctest_data
+      show_mr_result($only_failed ? @failed_ctest_info : @all_ctest_info)
+    else
+      show_hr_result($only_failed ? @failed_ctest_info : @all_ctest_info)
     end
   end
 
   def parse
-    parsed_ctest_data = parseCtestLog
-    showParsedInfo parsed_ctest_data
-    if !$output_log_file_path.nil?
-      saveParsedDataToEnvironmentalFile parsed_ctest_data
-    end
+    parse_ctest_log
+    show_ctest_parsed_info
+    save_result_to_file if $output_log_file_path
+    save_all_result_to_json_file if $output_log_json_file_path
   end
+
 end
 
+def main
+  parser = CTestParser.new
+  parser.parse
+end
 
-parser = CTestParser.new
-parser.parse
+if File.identical?(__FILE__, $0)
+  main
+end

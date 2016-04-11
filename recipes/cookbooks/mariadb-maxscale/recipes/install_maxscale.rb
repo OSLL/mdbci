@@ -23,17 +23,19 @@ end  # Turn off SElinux
 
 # check and install iptables
 case node[:platform_family]
-  when "debian", "ubuntu"  
+  when "debian", "ubuntu"
     execute "Install iptables-persistent" do
       command "DEBIAN_FRONTEND=noninteractive apt-get -y install iptables-persistent"
     end
   when "rhel", "fedora", "centos"
-    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
+    if ((node[:platform] == "centos" or node[:platform] == "rhel" or node[:platform] == "redhat") and node[:platform_version].to_f >= 7.0)
       bash 'Install and configure iptables' do
       code <<-EOF
+        systemctl mask firewalld
+        systemctl stop firewalld
         yum --assumeyes install iptables-services
-        systemctl start iptables
         systemctl enable iptables
+        systemctl start iptables
       EOF
       end
     else
@@ -53,7 +55,7 @@ end
 
 # iptables rules
 case node[:platform_family]
-  when "debian", "ubuntu", "rhel", "fedora", "centos", "suse", "opensuse"  
+  when "debian", "ubuntu", "rhel", "fedora", "centos", "suse", "opensuse"
     ["3306", "4006", "4008", "4009", "4016", "5306", "4442", "6444", "6603"].each do |port|
       execute "Open port #{port}" do
         command "iptables -I INPUT -p tcp -m tcp --dport "+ port +" -j ACCEPT"
