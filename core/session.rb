@@ -73,47 +73,38 @@ class Session
   end
 
   def setup(what)
-    exit_code = 1
     possibly_failed_command = ''
-
     case what
       when 'boxes'
         $out.info 'Adding boxes to vagrant'
+        raise "cannot adding boxes: directory not exist" unless Dir.exists?($session.boxesDir)
+        raise "cannot adding boxes: boxes are not found in #{$session.boxesDir}" unless File.directory?($session.boxesDir)
         @boxes.boxesManager.each do |key, value|
           next if value['provider'] == "aws" # skip 'aws' block
           # TODO: add aws dummy box
           # vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
 
           next if value['provider'] == "mdbci" # skip 'mdbci' block
-          #
           if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
-            puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
-            shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
-          else
-            puts 'vagrant box add --provider virtualbox '+value['box'].to_s
-            shell = 'vagrant box add --provider virtualbox '+value['box'].to_s
-          end
+	       	puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
+	        shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
+	      else
+	       	puts 'vagrant box add --provider virtualbox '+value['box'].to_s
+	       	shell = 'vagrant box add --provider virtualbox '+value['box'].to_s
+	      end
+	      shellCommand = `#{shell} 2>&1` # THERE CAN BE DONE CUSTOM EXCEPTION
 
-          # TODO: resque Exeption
-          system shell # THERE CAN BE DONE CUSTOM EXCEPTION
-
-          exit_code = $?.exitstatus
-          possibly_failed_command = shell
-
+      	puts "#{shellCommand}\n"
+      	# just one soft exeption - box already exist 
+      	if $?!=0 && shellCommand[/attempting to add already exists/]==nil 
+	        raise "failed command: #{shell}" 
+	      end
         end
       else
-        $out.warning 'Cannot setup '+what
-        exit_code = 1
+        raise "Cannot setup #{what}"
     end
 
-    if exit_code != 0
-      $out.error "command 'setup' exit with non-zero exit code: #{exit_code}"
-      $out.error "failed command: #{possibly_failed_command}"
-      exit_code = 1
-    end
-
-    return exit_code
-
+    return 0
   end
 
   def checkConfig
