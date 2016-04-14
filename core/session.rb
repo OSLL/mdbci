@@ -86,19 +86,19 @@ class Session
 
           next if value['provider'] == "mdbci" # skip 'mdbci' block
           if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
-	       	puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
-	        shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
-	      else
-	       	puts 'vagrant box add --provider virtualbox '+value['box'].to_s
-	       	shell = 'vagrant box add --provider virtualbox '+value['box'].to_s
-	      end
-	      shellCommand = `#{shell} 2>&1` # THERE CAN BE DONE CUSTOM EXCEPTION
+            puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
+          shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
+        else
+            puts 'vagrant box add --provider virtualbox '+value['box'].to_s
+            shell = 'vagrant box add --provider virtualbox '+value['box'].to_s
+        end
+        shellCommand = `#{shell} 2>&1` # THERE CAN BE DONE CUSTOM EXCEPTION
 
-      	puts "#{shellCommand}\n"
-      	# just one soft exeption - box already exist 
-      	if $?!=0 && shellCommand[/attempting to add already exists/]==nil 
-	        raise "failed command: #{shell}" 
-	      end
+        puts "#{shellCommand}\n"
+        # just one soft exeption - box already exist 
+        if $?!=0 && shellCommand[/attempting to add already exists/]==nil 
+          raise "failed command: #{shell}" 
+        end
         end
       else
         raise "Cannot setup #{what}"
@@ -561,8 +561,8 @@ class Session
             $out.error 'Bringing up failed'
             stderr.each_line { |line| $out.error line }
             stderr.close
-   	        exit_code = wthr.value.exitstatus # error
-	          $out.error 'exit code '+exit_code.to_s
+              exit_code = wthr.value.exitstatus # error
+            $out.error 'exit code '+exit_code.to_s
 
             if exit_code != 0
               Dir.glob('*.json', File::FNM_DOTMATCH) do |f|
