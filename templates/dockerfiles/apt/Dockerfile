@@ -1,5 +1,8 @@
 FROM ###PLATFORM###:###PLATFORM_VERSION###
+
 RUN apt-get update -y
+RUN apt-get clean -y
+
 RUN apt-get install -y openssh-server sudo
 
 RUN mkdir -p /var/run/sshd

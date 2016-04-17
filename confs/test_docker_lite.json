@@ -4,7 +4,7 @@
   {
         "hostname" : "node0",
         "box" : "centos_7_docker",
-	"memory_size" : "512",
+	"memory_size" : "1024",
 	"product" : {
       		"name": "mariadb",
 		"version": "10.0",

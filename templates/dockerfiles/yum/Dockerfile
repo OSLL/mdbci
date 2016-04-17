@@ -1,9 +1,13 @@
 FROM ###PLATFORM###:###PLATFORM_VERSION###
+
 RUN rm -f /var/lib/rpm/__*
 RUN rpm --rebuilddb -v -v
-RUN yum -y install openssh-server openssh-clients sudo && \
-    rm -f /etc/ssh/ssh_host_rsa_key && \
-    ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key
+RUN yum -y update
+RUN yum clean all
+
+RUN yum -y install openssh-server openssh-clients sudo
+RUN rm -f /etc/ssh/ssh_host_rsa_key
+RUN ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key
 
 RUN useradd -s /bin/bash vagrant
 RUN echo -n 'vagrant:vagrant' | chpasswd
