@@ -211,29 +211,20 @@ Vagrant.configure(2) do |config|
 
     # TODO: make other solution, avoid multi IF
     # copy Dockerfiles to configuration dir nodes
-    dockerfile_path = $session.mdbciDir+"/templates/dockerfiles/"
+    dockerfile_path = $session.mdbciDir+"/templates/dockerfiles"
     case platform
-      when "ubuntu"
-        if platform_version == "trusty"
-          dockerfile_path += "ubuntu/trusty/Dockerfile"
-        else
-          dockerfile_path += "ubuntu/precise/Dockerfile"
-        end
-      when "centos"
-        if platform_version == "6"
-          dockerfile_path += "centos/6/Dockerfile"
-        elsif platform_version == "7"
-          dockerfile_path += "centos/7/Dockerfile"
-        end
+      when "ubuntu", "debian"
+        dockerfile_path = "#{dockerfile_path}/apt/Dockerfile"
+      when "centos", "redhat"
+        dockerfile_path = "#{dockerfile_path}/yum/Dockerfile"
       when "suse"
-        # gen for suse
-        p "Platform: " + platform.to_s
+        dockerfile_path = "#{dockerfile_path}/zypper/Dockerfile"
       else
-        p "Platform: " + platform.to_s
+        raise "Uncknown platform"
     end
-
     FileUtils.cp_r dockerfile_path, node_path
-
+    `sed -i 's/###PLATFORM###/#{platform}/g' #{node_path}/Dockerfile`
+    `sed -i 's/###PLATFORM_VERSION###/#{platform_version}/g' #{node_path}/Dockerfile`
   end
 
   #  Vagrantfile for AWS provider
