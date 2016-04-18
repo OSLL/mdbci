@@ -21,9 +21,38 @@ describe 'Session.showBoxNameByPath' do
 
   it '#boxesPlatformVersions.ubuntu' do
     $session.boxPlatform = 'ubuntu'
-    exit_code = $session.boxesPlatformVersions
-    exit_code.should eq(0)
-
+    boxesList = ["trusty", "utopic", "precise", "wily", "vivid"]
+    resultList = $session.boxesPlatformVersions
+    resultList.sort.should eq(boxesList.sort)
   end
+
+  it '#boxesPlatformVersions.centos' do
+    $session.boxPlatform = 'centos'
+    boxesList = ["5", "6", "7"]
+    resultList = $session.boxesPlatformVersions
+    resultList.sort.should eq(boxesList.sort)
+  end
+
+  it '#boxesPlatformVersions.debian' do
+    $session.boxPlatform = 'debian'
+    boxesList = ["wheezy", "jessie", "squeeze"]
+    resultList = $session.boxesPlatformVersions
+    resultList.sort.should eq(boxesList.sort)
+  end
+
+  it '#boxesPlatformVersions.opesuse' do
+    $session.boxPlatform = 'opesuse'
+    boxesList = ["13"]
+    resultList = $session.boxesPlatformVersions
+    resultList.should eq(boxesList)
+  end
+
+  it '#boxesPlatformVersions.debian123213' do
+    $session.boxPlatform = 'debian123123'
+    boxesList = []
+    resultList = $session.boxesPlatformVersions
+    resultList.should eq(boxesList)
+  end
+
 
 end
