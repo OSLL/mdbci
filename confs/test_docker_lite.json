@@ -1,37 +1,44 @@
 {
-  "cookbook_path" : "../recipes/cookbooks/",
-  "node0" :
-  {
-        "hostname" : "node0",
-        "box" : "centos_7_docker",
-	"memory_size" : "1024",
-	"product" : {
-      		"name": "mariadb",
-		"version": "10.0",
-		"cnf_template" : "server1.cnf",
-		"cnf_template_path": "../cnf"
-	}
-
+  "cookbook_path": "../recipes/cookbooks/",
+  "node0": {
+    "hostname": "node0",
+    "box": "centos_7_docker",
+    "memory_size": "1024",
+    "product": {
+      "name": "mariadb",
+      "version": "10.0",
+      "cnf_template": "server1.cnf",
+      "cnf_template_path": "../cnf"
+    }
   },
-  "galera0" :
-  {
-        "hostname" : "galera0",
-        "box" : "centos_7_docker",
-        "memory_size" : "512",
-        "product" : {
-                "name": "galera",
-                "version": "5.5",
-                "cnf_template" : "galera_server1.cnf",
-		"cnf_template_path": "../cnf"
-        }
+  "node1": {
+    "hostname": "node0",
+    "box": "centos_6.7_docker",
+    "memory_size": "1024",
+    "product": {
+      "name": "mariadb",
+      "version": "10.0",
+      "cnf_template": "server2.cnf",
+      "cnf_template_path": "../cnf"
+    }
   },
-  "maxscale" :
-  {
-        "hostname" : "maxscale",
-        "box" : "ubuntu_trusty_docker",
-	"product" : {
-        	"name" : "packages"
-        },
-        "memory_size" : "512"
+  "galera0": {
+    "hostname": "galera0",
+    "box": "centos_7_docker",
+    "memory_size": "512",
+    "product": {
+      "name": "galera",
+      "version": "5.5",
+      "cnf_template": "galera_server1.cnf",
+      "cnf_template_path": "../cnf"
+    }
+  },
+  "maxscale": {
+    "hostname": "maxscale",
+    "box": "ubuntu_trusty_docker",
+    "product": {
+      "name": "packages"
+    },
+    "memory_size": "512"
   }
 }

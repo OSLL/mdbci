@@ -1,13 +1,25 @@
+# Container with systemd enabled (docker run options must be: --privileged -v /sys/fs/cgroup:/sys/fs/cgroup IMAGE_NAME /sbin/init)
+
 FROM ###PLATFORM###:###PLATFORM_VERSION###
 
+ENV container docker
+
+# Stuck at “loaded plugins: fastestmirror” fix
 RUN rm -f /var/lib/rpm/__*
 RUN rpm --rebuilddb -v -v
+
 RUN yum -y update
+RUN yum -y install openssh-server openssh-clients sudo systemd
 RUN yum clean all
 
-RUN yum -y install openssh-server openssh-clients sudo
+VOLUME [ “/sys/fs/cgroup” ]
+
 RUN rm -f /etc/ssh/ssh_host_rsa_key
+RUN rm -f /etc/ssh/ssh_host_dsa_key
+RUN rm -f /etc/ssh/ssh_host_ecdsa_key
 RUN ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key
+RUN ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key
+RUN ssh-keygen -q -N "" -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key
 
 RUN useradd -s /bin/bash vagrant
 RUN echo -n 'vagrant:vagrant' | chpasswd
@@ -20,5 +32,7 @@ RUN mkdir -p /etc/sudoers.d
 RUN install -b -m 0440 /dev/null /etc/sudoers.d/vagrant
 RUN echo 'vagrant ALL=NOPASSWD: ALL' >> /etc/sudoers.d/vagrant
 RUN sed -i 's/Defaults    requiretty/#Defaults    requiretty/g' /etc/sudoers
+
 EXPOSE 22
+
 CMD ["/usr/sbin/sshd", "-D"]

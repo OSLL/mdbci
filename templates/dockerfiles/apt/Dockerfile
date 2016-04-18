@@ -1,9 +1,20 @@
 FROM ###PLATFORM###:###PLATFORM_VERSION###
 
+ENV container docker
+ENV DEBIAN_FRONTEND noninteractive
+
 RUN apt-get update -y
+RUN apt-get install -y openssh-server sudo systemd-services
 RUN apt-get clean -y
 
-RUN apt-get install -y openssh-server sudo
+VOLUME [ “/sys/fs/cgroup” ]
+
+RUN rm -f /etc/ssh/ssh_host_rsa_key
+RUN rm -f /etc/ssh/ssh_host_dsa_key
+RUN rm -f /etc/ssh/ssh_host_ecdsa_key
+RUN ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key
+RUN ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key
+RUN ssh-keygen -q -N "" -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key
 
 RUN mkdir -p /var/run/sshd
 RUN chmod 0755 /var/run/sshd
@@ -18,5 +29,7 @@ RUN chown -R vagrant: /home/vagrant/.ssh
 RUN mkdir -p /etc/sudoers.d
 RUN install -b -m 0440 /dev/null /etc/sudoers.d/vagrant
 RUN echo 'vagrant ALL=NOPASSWD: ALL' >> /etc/sudoers.d/vagrant
+
 EXPOSE 22
+
 CMD ["/usr/sbin/sshd", "-D"]
