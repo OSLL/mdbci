@@ -36,65 +36,69 @@ $exception_handler = ExceptionHandler.new
 
 $out = Out.new
 
+begin
+  opts.each do |opt, arg|
+    case opt
+      when '--silent'
+        $session.isSilent = true
 
-opts.each do |opt, arg|
-  case opt
-    when '--silent'
-      $session.isSilent = true
+      when '--template'
+        if arg != ''; $session.configFile = arg; end
+  #      $out.info 'Using template name '+$session.configFile
 
-    when '--template'
-      if arg != ''; $session.configFile = arg; end
-#      $out.info 'Using template name '+$session.configFile
+      when '--boxes'
+        if arg != ''; $session.boxesFile = arg; end
+  #      $out.info 'Using boxes name '+$session.boxesFile
 
-    when '--boxes'
-      if arg != ''; $session.boxesFile = arg; end
-#      $out.info 'Using boxes name '+$session.boxesFile
+      when '--box-name'
+        if arg != ''; $session.boxName = arg; end
+  #      $out.info 'Using boxes name '+ $session.boxName
 
-    when '--box-name'
-      if arg != ''; $session.boxName = arg; end
-#      $out.info 'Using boxes name '+ $session.boxName
+      when '--field'
+        if arg != ''; $session.field = arg; end
+  #      $out.info 'Using boxes field '+$session.field
 
-    when '--field'
-      if arg != ''; $session.field = arg; end
-#      $out.info 'Using boxes field '+$session.field
+      when '--help'
+        Help.display
+        exit
 
-    when '--help'
-      Help.display
-      exit
+      when '--override'
+        $session.isOverride = true
 
-    when '--override'
-      $session.isOverride = true
+      when '--command'
+        $session.command = arg
 
-    when '--command'
-      $session.command = arg
+      when '--repo-dir'
+        $session.repoDir = arg
 
-    when '--repo-dir'
-      $session.repoDir = arg
+      when '--attempts'
+        $session.attempts = arg
 
-    when '--attempts'
-      $session.attempts = arg
+      when '--product'
+        if arg != ''; $session.nodeProduct = arg; end
 
-    when '--product'
-      if arg != ''; $session.nodeProduct = arg; end
+      when '--product-version'
+        if arg != ''; $session.productVersion = arg; end
 
-    when '--product-version'
-      if arg != ''; $session.productVersion = arg; end
+      when '--key'
+        if arg != ''; $session.keyFile = arg; end
+  #      $out.info 'Using keyfile '+$session.keyFile
 
-    when '--key'
-      if arg != ''; $session.keyFile = arg; end
-#      $out.info 'Using keyfile '+$session.keyFile
+      when '--platform'
+        if arg != ''; $session.boxPlatform = arg; end
 
-    when '--platform'
-      if arg != ''; $session.boxPlatform = arg; end
+      when '--platform-version'
+        if arg != ''; $session.boxPlatformVersion = arg; end
 
-    when '--platform-version'
-      if arg != ''; $session.boxPlatformVersion = arg; end
-
-    else
-      $out.error 'Option is not supported: '+opt
+      else
+        $out.error 'Option is not supported: '+opt
+    end
   end
-end
-
+  rescue GetoptLong::MissingArgument => error
+    $out.error error.backtrace.join("\n")
+    $out.error error.to_s
+    exit 1
+end  
 #Hello message
 $out.info 'MariaDb CI CLI'
 $out.info 'mdbci called with: '+ARGV.to_s
