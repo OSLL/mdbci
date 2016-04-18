@@ -643,22 +643,21 @@ class Session
           raise "MDBCI nodes not found in #{args[0]}"
         end
         $session.mdbciNodes.each do |node|
-          box = node[1]['box'].to_s
-          raise "Box empty in node: #{node}" unless !box.empty?
-            mdbci_params = $session.boxes.getBox(box)
-            #
-            keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!"){File.read(pwd.to_s+'/'+@keyFile.to_s)}
-            # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
-            command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
-            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
-                            + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
-                            + "\"" + command + "\""
-            $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
-            vagrant_out = `#{cmd}`
-            
-            if $?.exitstatus!=0
-              raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
-            end
+        box = node[1]['box'].to_s
+        raise "Box empty in node: #{node}" unless !box.empty?
+          mdbci_params = $session.boxes.getBox(box)
+          #
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!"){File.read(pwd.to_s+'/'+@keyFile.to_s)}
+          # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
+          command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
+          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+                          + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
+                          + "\"" + command + "\""
+          $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
+          vagrant_out = `#{cmd}`
+          
+          if $?.exitstatus!=0
+            raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
           end
         end
       else
