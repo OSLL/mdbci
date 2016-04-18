@@ -571,7 +571,7 @@ class Session
             stderr.each_line { |line| $out.error line }
             stderr.close
    	        exit_code = wthr.value.exitstatus # error
-	          $out.error 'exit code '+exit_code.to_s
+            $out.error 'exit code '+exit_code.to_s
 
             if exit_code != 0
               Dir.glob('*.json', File::FNM_DOTMATCH) do |f|
@@ -644,7 +644,7 @@ class Session
         end
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
-          if !box.empty?
+          raise "Box empty in node: #{node}" unless !box.empty?
             mdbci_params = $session.boxes.getBox(box)
             #
             keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!"){File.read(pwd.to_s+'/'+@keyFile.to_s)}
@@ -655,9 +655,10 @@ class Session
                             + "\"" + command + "\""
             $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
             vagrant_out = `#{cmd}`
-            # TODO
-            exit_code = $?.exitstatus
-            possibly_failed_command = cmd
+            
+            if $?.exitstatus!=0
+              raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
+            end
           end
         end
       else
