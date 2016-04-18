@@ -95,9 +95,9 @@ class Session
 	      shellCommand = `#{shell} 2>&1` # THERE CAN BE DONE CUSTOM EXCEPTION
 
       	puts "#{shellCommand}\n"
-      	# just one soft exeption - box already exist 
-      	if $?!=0 && shellCommand[/attempting to add already exists/]==nil 
-	        raise "failed command: #{shell}" 
+      	# just one soft exeption - box already exist
+      	if $?!=0 && shellCommand[/attempting to add already exists/]==nil
+	        raise "failed command: #{shell}"
 	      end
         end
       else
@@ -547,7 +547,7 @@ class Session
         end
 
         no_parallel_flag = ''
-        if @nodesProvider == 'aws'
+        if @nodesProvider == 'aws' or @nodesProvider == 'docker'
           no_parallel_flag = " #{VAGRANT_NO_PARALLEL} "
         end
 
@@ -767,9 +767,9 @@ class Session
     else
       $out.info "Supported versions for #{$session.boxPlatform}:"
     end
-    
+
     boxes_versions = getBoxesPlatformVersions($session.boxPlatform ,$session.boxes.boxesManager)
-    
+
     # output platforms versions
     boxes_versions.each { |version| $out.out version }
     return exit_code
