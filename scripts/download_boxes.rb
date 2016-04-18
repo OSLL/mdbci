@@ -4,40 +4,15 @@ require 'json'
 require 'getoptlong'
 require 'net/http'
 require 'fileutils'
-class Download_boxes
-
 
 PROVIDER = 'provider'
 PLATFORM = 'platform'
 PLATFORM_VERSION = 'platform_version'
 BOX = 'box'
 BOX_VERSION = 'box_version'
-	puts 'STATIC!!1'
-init()
 
-def init
-	puts 'INIT!!1'
-
-opts = GetoptLong.new(
-    [ '--dir', '-d', GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--boxes-dir', '-b', GetoptLong::REQUIRED_ARGUMENT ],
-    [ '--force', '-f', GetoptLong::NO_ARGUMENT ],
-    [ '--help', '-h', GetoptLong::NO_ARGUMENT ]
-)
-
-dir = nil
-boxes_dir = nil
-
-force = false
-parseOpts()
-end
-
-def parseOpts
-	puts 'PARSING!!1'
-  opts.each do |opt, arg|
-    case opt
-      when '--help'
-        puts <<-EOF
+def help
+  puts <<-EOF
 download_boxes OPTION
 
 -d, --dir:
@@ -53,21 +28,37 @@ download_boxes OPTION
 -f, --force
   if directories already exists - they will be overwritten
       EOF
-        exit 0
+  exit 0
+end
+
+def parse_options
+  opts = GetoptLong.new(
+      [ '--dir', '-d', GetoptLong::REQUIRED_ARGUMENT ],
+      [ '--boxes-dir', '-b', GetoptLong::REQUIRED_ARGUMENT ],
+      [ '--force', '-f', GetoptLong::NO_ARGUMENT ],
+      [ '--help', '-h', GetoptLong::NO_ARGUMENT ]
+  )
+  params = {}
+  opts.each do |opt, arg|
+    case opt
+      when '--help'
+        help
       when '--force'
-        force = true
+        params["force"] = true
       when '--dir'
-        dir = arg
+        params["dir"] = arg
       when '--boxes-dir'
-        boxes_dir = arg
+        params["boxes_dir"] = arg
     end
   end
+  return params
 end
 
 def main
+  params = parse_options
   # get BOXES/*.json
   boxes = Hash.new
-  boxes_files = Dir.glob(boxes_dir + '*.json', File::FNM_DOTMATCH)
+  boxes_files = Dir.glob(params["boxes_dir"] + '*.json', File::FNM_DOTMATCH)
   boxes_files.each do |boxes_file|
     next if ( boxes_file.to_s.include? 'boxes_aws' )
     next if ( boxes_file.to_s.include? 'boxes_docker' )
@@ -81,9 +72,12 @@ def main
   puts 'Boxes quantity: ' + boxes_quantity.to_s
 
   boxes_paths = Array.new
+  boxes_paths_file = parseFiles(boxes,boxes_quantity,params)
+  pathListStoring(boxes_paths_file, boxes_paths, params)
+
 end
 
-def parseFiles
+def parseFiles(boxes,boxes_quantity,params)
   boxes_counter = 0
   box_atlas_url = ''
   boxes.each do |box|
@@ -98,14 +92,15 @@ def parseFiles
       box_atlas_url = "https://atlas.hashicorp.com/#{box_name[0]}/boxes/#{box_name[1]}/versions/#{box_version}/providers/#{provider}.box"
     end
 
-    downloadBoxes
+    downloadBoxes(boxes_paths, box_atlas_url)
     
   end
   puts "INFO: Boxes loaded #{boxes_counter}/#{boxes_quantity}"
-  boxes_paths_file = File.absolute_path([dir, "boxes_paths"].join('/'))
+  boxes_paths_file = File.absolute_path([params["dir"], "boxes_paths"].join('/'))
+  return boxes_paths_file
 end
 
-def downloadBoxes
+def downloadBoxes(boxes_paths, box_atlas_url)
   if box_atlas_url =~ /\A#{URI::regexp(['http', 'https'])}\z/
     boxes_counter += 1
     puts "INFO: #{boxes_counter}/#{boxes_quantity}, downloading from url: '#{box_atlas_url}'"
@@ -117,14 +112,14 @@ def downloadBoxes
     platform_version = box[1][PLATFORM_VERSION]
     box_file_name = url_path.split('/')[-1]
 
-    downloaded_box_dir = File.absolute_path([dir, provider, platform, platform_version, box_version].join('/'))
+    downloaded_box_dir = File.absolute_path([params["dir"], provider, platform, platform_version, box_version].join('/'))
     downloaded_box_path = File.absolute_path([downloaded_box_dir, box_file_name].join('/'))
     boxes_paths.push downloaded_box_path
 
     puts "INFO: Box will be stored in '#{downloaded_box_path}'"
 
     if Dir.exists?(downloaded_box_dir) && File.exists?(downloaded_box_path)
-      if !force
+      if !params["force"]
         at_exit { puts "ERROR: file '#{downloaded_box_path}' already exists" }
         exit 1
       else
@@ -151,9 +146,9 @@ def downloadBoxes
   end
 end
 
-def pathListStoring
-  if Dir.exists?(dir) && File.exists?(boxes_paths_file )
-    if !force
+def pathListStoring(boxes_paths_file, boxes_paths, params)
+  if Dir.exists?(params["dir"]) && File.exists?(boxes_paths_file )
+    if !params["force"]
       at_exit { puts "ERROR: file '#{boxes_paths_file }' already exists" }
       exit 1
     else
@@ -170,4 +165,7 @@ def pathListStoring
 
   puts "INFO: File with boxes paths is stored as '#{boxes_paths_file}'"
 end
+
+if File.identical?(__FILE__, $0)
+  main
 end
