@@ -255,12 +255,15 @@ class Session
 
 
   def showBoxKeys
+    values = Array.new
     $session.boxes.boxesManager.values.each do |value|
-      if(value['$key'].nil?)
-        raise "box keys value is nil"
+      unless value[$session.field]
+        raise "box keys value #{$session.field} is nil"
       end
-      $out.out value['$key']
+      values.push value[$session.field]
     end
+    puts values.uniq unless values.empty?
+    return 0
   end
 
   def showBoxes
