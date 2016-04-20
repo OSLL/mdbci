@@ -258,7 +258,7 @@ class Session
     values = Array.new
     $session.boxes.boxesManager.values.each do |value|
       unless value[$session.field]
-        raise "box keys value #{$session.field} is nil"
+        raise "box key #{$session.field} is not found"
       end
       values.push value[$session.field]
     end
