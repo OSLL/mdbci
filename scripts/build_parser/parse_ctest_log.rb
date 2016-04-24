@@ -85,6 +85,9 @@ opts.each do |opt, arg|
     when LOG_FILE_OPTION
       begin
         $log = File.read arg
+        # Fixing encodings by encoding it to different encoding and back to utf8
+        # (because encoding to the same encoding make no effect)
+        $log = $log.encode('UTF-16be', :invalid=>:replace).encode('UTF-8')
       rescue
         raise puts "ERROR: Can not find log file: #{arg}"
       end
