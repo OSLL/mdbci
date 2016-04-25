@@ -18,7 +18,7 @@
           "$ref": "product.json#/definitions/product"
         }
       },
-      "required":["hostname", "box"]
+      "required":["hostname", "box", "product"]
     }
   }
 }
