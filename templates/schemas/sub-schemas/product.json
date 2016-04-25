@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "product": {
+      "id": "product",
+      "type": "object",
+      "properties": {
+        "name": {
+          "id": "product/name",
+          "type": "string"
+        },
+        "version": {
+          "id": "product/version",
+          "type": "string"
+        },
+        "cnf_template": {
+          "id": "product/cnf_template",
+          "type": "string",
+          "pattern": ".*.cnf"
+        },
+        "cnf_template_path": {
+          "id": "product/cnf_template_path",
+          "type": "string"
+        },
+        "node_name": {
+          "id": "product/node_name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "cnf_template",
+        "cnf_template_path"
+      ]
+    }
+  }
+}

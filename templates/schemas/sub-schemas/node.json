@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions":{
+    "node": {
+      "id": "node",
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "id": "node/hostname",
+          "type": "string"
+        },
+        "box": {
+          "id": "node/box",
+          "type": "string",
+          "pattern": ".*_.*_.*"
+        },
+        "product": {
+          "$ref": "product.json#/definitions/product"
+        }
+      },
+      "required":["hostname", "box"]
+    }
+  }
+}

@@ -77,6 +77,7 @@ vagrant plugin install vagrant-mutate
 
 <pre>
 sudo gem install ipaddress
+sudo gem install json-schema
 </pre>
 
 #### Install mdbci
@@ -169,7 +170,6 @@ The file boxes.json contains definitions of available boxes. His format is comme
 * platform_version -- name of version of platform
 * user -- user which will be used to access to box
 * default_instance_type -- default instance size/type if provider is amazon
-
 
 #### repo.d files
 
@@ -406,10 +406,13 @@ mdbci [options] <show | setup | generate>
   
 -v, --product-version
   Product version for setup repo and install product commands.
+  
+-e, --template_validation_type
+  Template validation type (aws, no_aws)
 
 ### Commands:
 
-  show [boxes, boxinfo, platforms, versions, network, repos [config | config/node], keyfile [config/node] ]
+  show [boxes, boxinfo, platforms, versions, network, repos [config | config/node], keyfile [config/node], validate_template ]
   
   generate
   
@@ -426,6 +429,8 @@ mdbci [options] <show | setup | generate>
 
   **install_product --product maxscale config/node**
     Install specified product by command option **--product** on a config/node. Currently supported only **Maxscale** product.
+    
+  validate_template -e aws -template TEMPLATE
 
 ### Examples:
 

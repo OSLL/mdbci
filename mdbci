@@ -25,12 +25,14 @@ opts = GetoptLong.new(
     ['--product-version','-v',GetoptLong::REQUIRED_ARGUMENT],
     ['--key','-k',GetoptLong::REQUIRED_ARGUMENT],
     ['--platform','-o',GetoptLong::REQUIRED_ARGUMENT],
-    ['--platform-version','-i',GetoptLong::REQUIRED_ARGUMENT]
+    ['--platform-version','-i',GetoptLong::REQUIRED_ARGUMENT],
+    ['--template_validation_type','-e',GetoptLong::REQUIRED_ARGUMENT]
 )
 
 $session = Session.new
 $session.configFile='instance.json'
 $session.boxesFile='boxes.json'
+$session.templateValidationType = nil
 $session.awsConfigFile='aws-config.yml'
 $exception_handler = ExceptionHandler.new
 
@@ -89,6 +91,9 @@ begin
 
       when '--platform-version'
         if arg != ''; $session.boxPlatformVersion = arg; end
+
+      when '--template_validation_type'
+        $session.templateValidationType = arg
 
       else
         $out.error 'Option is not supported: '+opt

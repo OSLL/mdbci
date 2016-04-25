@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "root",
+  "type": "object",
+  "properties": {
+    "cookbook_path": {
+      "id": "root/cookbook_path",
+      "type": "string"
+    },
+    "aws_config": {
+      "id": "root/aws_config",
+      "type": "string",
+      "pattern": ".*aws-config.yml"
+    }
+  },
+  "patternProperties": {
+    "^(?!aws_config|cookbook_path$).*": {
+      "$ref": "templates/schemas/sub-schemas/node.json#/definitions/node"
+    }
+  },
+  "required": [
+    "aws_config"
+  ],
+  "additionalProperties": false
+}

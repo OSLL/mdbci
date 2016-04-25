@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "root",
+  "type": "object",
+  "properties": {
+    "cookbook_path": {
+      "id": "root/cookbook_path",
+      "type": "string"
+    }
+  },
+  "patternProperties": {
+    "^(?!cookbook_path$).*": {
+      "$ref": "templates/schemas/sub-schemas/node.json#/definitions/node"
+    }
+  },
+  "additionalProperties": false
+}
