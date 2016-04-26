@@ -8,6 +8,7 @@ require_relative 'network'
 require_relative 'boxes_manager'
 require_relative 'repo_manager'
 require_relative 'out'
+require_relative 'docker_manager'
 
 
 class Session
@@ -95,9 +96,9 @@ class Session
 	      shellCommand = `#{shell} 2>&1` # THERE CAN BE DONE CUSTOM EXCEPTION
 
       	puts "#{shellCommand}\n"
-      	# just one soft exeption - box already exist 
-      	if $?!=0 && shellCommand[/attempting to add already exists/]==nil 
-	        raise "failed command: #{shell}" 
+      	# just one soft exeption - box already exist
+      	if $?!=0 && shellCommand[/attempting to add already exists/]==nil
+	        raise "failed command: #{shell}"
 	      end
         end
       else
@@ -481,6 +482,15 @@ class Session
     return 0
   end
 
+  def generateDockerImages(config, nodes_directory)
+    $out.info 'Generating docker images...'
+    config.each do |node|
+      unless node[1]['box'].nil?
+        DockerManager.build_image("#{nodes_directory}/#{node[0]}", node[1]['box'])
+      end
+    end
+  end
+
   # Deploy configurations
   def up(args)
     std_q_attampts = 10
@@ -526,6 +536,8 @@ class Session
       $out.info 'Node isn\'t specified in ' + args
     end
 
+    template = JSON.parse(File.read(File.read "#{up_type ? config[0] : args}/template"))
+
     up_type ? Dir.chdir(config[0]) : Dir.chdir(args)
 
     # Setting provider: VBox, AWS, Libvirt, Docker
@@ -535,6 +547,10 @@ class Session
       $out.warning 'You are using mdbci nodes template. ./mdbci up command doesn\'t supported for this boxes!'
       exit_code = 0
     else
+
+      # Generating docker images (so it will not be loaded for similar nodes repeatedly)
+      generateDockerImages(template, '.') if $session.nodesProvider == 'docker'
+
       (1..@attempts.to_i).each do |i|
         $out.info 'Bringing up ' + (up_type ? 'node ' : 'configuration ') +
           args + ', attempt: ' + i.to_s
@@ -547,7 +563,7 @@ class Session
         end
 
         no_parallel_flag = ''
-        if @nodesProvider == 'aws'
+        if @nodesProvider == 'aws' or @nodesProvider == 'docker'
           no_parallel_flag = " #{VAGRANT_NO_PARALLEL} "
         end
 
@@ -765,10 +781,11 @@ class Session
     if some_platform.nil?
       raise  "Platform #{$session.boxPlatform} is not supported!"
     end
+
     $out.info "Supported versions for #{$session.boxPlatform}:"
     
     boxes_versions = getBoxesPlatformVersions($session.boxPlatform ,$session.boxes.boxesManager)
-    
+
     # output platforms versions
     boxes_versions.each { |version| $out.out version }
     return exit_code
