@@ -780,10 +780,10 @@ class Session
     some_platform = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
     if some_platform.nil?
       raise  "Platform #{$session.boxPlatform} is not supported!"
-    else
-      $out.info "Supported versions for #{$session.boxPlatform}:"
     end
 
+    $out.info "Supported versions for #{$session.boxPlatform}:"
+    
     boxes_versions = getBoxesPlatformVersions($session.boxPlatform ,$session.boxes.boxesManager)
 
     # output platforms versions
@@ -796,12 +796,11 @@ class Session
     # get boxes platform versions
     boxesManager.each do |box, params|
       next if params['platform'] != boxPlatform # skip unknown platform
-      if params.has_value?(boxPlatform)
-        box_platform_version = params['platform_version']
-        boxes_versions.push(box_platform_version)
-      else
-        raise "#{boxPlatform} has 0 supported versions! Please check box platform!"
+      if !(params.has_value?(boxPlatform))
+       	raise "#{boxPlatform} has 0 supported versions! Please check box platform!"
       end
+      box_platform_version = params['platform_version']
+      boxes_versions.push(box_platform_version)
     end
 
     boxes_versions = boxes_versions.uniq # delete duplicates values
