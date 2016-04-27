@@ -619,8 +619,8 @@ class Session
 
         unless dead_machines.empty?
           (1..@attempts).each do |i|
-            $out.info "Attempt: #{i}"
             $out.info 'Trying to force restart broken machines'
+            $out.info "Attempt: #{i}"
             dead_machines.delete_if do |machine|
               puts `vagrant destroy -f #{machine}`
               cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{machine}"
@@ -651,14 +651,14 @@ class Session
             success
           end
           unless machines_with_broken_chef.empty?
-            $out.error 'Some machines still has broken Chef run:'
+            $out.error 'Some machines are still have broken Chef run:'
             machines_with_broken_chef.each { |machine| $out.error "\t#{machine}" }
             (1.. @attempts).each do |i|
-              $out.info "Attempt: #{i}"
               $out.info 'Trying to force restart machines'
-              $out.error 'Some machines are still still has broken Chef run:'
-              dead_machines.delete_if do |machine|
+              $out.info "Attempt: #{i}"
+              machines_with_broken_chef.delete_if do |machine|
                 puts `vagrant destroy -f #{machine}`
+                cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{machine}"
                 success = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
                   stdout.each_line { |line| $out.info line }
                   wthr.value.success?
@@ -666,8 +666,8 @@ class Session
                 success
               end
               if !machines_with_broken_chef.empty?
-                $out.error 'Some machines are still still has broken Chef run:'
-                dead_machines.each { |machine| $out.error "\t#{machine}" }
+                $out.error 'Some machines are still have broken Chef run:'
+                machines_with_broken_chef.each { |machine| $out.error "\t#{machine}" }
               else
                 break
               end
