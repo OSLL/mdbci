@@ -618,9 +618,9 @@ class Session
         end
 
         unless dead_machines.empty?
-          $out.info 'Trying to force restart broken machines'
           (1..@attempts).each do |i|
             $out.info "Attempt: #{i}"
+            $out.info 'Trying to force restart broken machines'
             dead_machines.delete_if do |machine|
               puts `vagrant destroy -f #{machine}`
               cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{machine}"
@@ -653,9 +653,9 @@ class Session
           unless machines_with_broken_chef.empty?
             $out.error 'Some machines still has broken Chef run:'
             machines_with_broken_chef.each { |machine| $out.error "\t#{machine}" }
-            $out.info 'Trying to force restart machines'
             (1.. @attempts).each do |i|
               $out.info "Attempt: #{i}"
+              $out.info 'Trying to force restart machines'
               $out.error 'Some machines are still still has broken Chef run:'
               dead_machines.delete_if do |machine|
                 puts `vagrant destroy -f #{machine}`
