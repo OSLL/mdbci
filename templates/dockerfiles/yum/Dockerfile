@@ -21,7 +21,7 @@ RUN ssh-keygen -q -N "" -t rsa -f /etc/ssh/ssh_host_rsa_key
 RUN ssh-keygen -q -N "" -t dsa -f /etc/ssh/ssh_host_dsa_key
 RUN ssh-keygen -q -N "" -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key
 
-RUN useradd -s /bin/bash vagrant
+RUN useradd -m -s /bin/bash vagrant
 RUN echo -n 'vagrant:vagrant' | chpasswd
 RUN mkdir -p /home/vagrant/.ssh
 RUN chmod 0700 /home/vagrant/.ssh
