@@ -507,7 +507,11 @@ class Session
     raise "Command 'up' needs one argument, found zero" if args.nil?
 
     # No attempts provided
-    @attempts = std_q_attampts if @attempts.nil?
+    if @attempts.nil?
+      @attempts = std_q_attampts
+    else
+      @attempts = @attempts.to_i
+    end
 
     # Saving dir, do then to change it back
     pwd = Dir.pwd
