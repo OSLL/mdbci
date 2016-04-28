@@ -99,40 +99,6 @@ Vagrant.configure(2) do |config|
     return ssh_pty_option
   end
 
-  # Vagrantfile for Vbox provider
-  def Generator.getVmDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
-
-    if template_path
-      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates')
-    else
-      templatedef = ''
-    end
-    # ssh.pty option
-    ssh_pty_option = sshPtyOption(ssh_pty)
-
-    vmdef = "\n#  --> Begin definition for machine: " + name +"\n"\
-            "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
-            + ssh_pty_option + "\n" \
-            + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
-            + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
-            + templatedef + "\n"
-    if provisioned
-      vmdef += "\t##--- Chef binding ---\n"\
-            + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
-            + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
-            + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
-            + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
-    end
-
-    if vm_mem
-      vmdef += "\n\t"+'config.vm.provider :virtualbox do |vbox|' + "\n" \
-               "\t\t"+'vbox.customize ["modifyvm", :id, "--memory", ' + quote(vm_mem) +"]\n\tend\n"
-    end
-    vmdef += "\nend #  <-- End of VM definition for machine: " + name +"\n\n"
-
-    return vmdef
-  end
-
   # Vagrantfile for Libvirt provider
   def Generator.getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
     if template_path
@@ -442,10 +408,12 @@ def Generator.checkPath(path, override)
 
     # generate node definition and role
     machine = ''
+
     if Generator.boxValid?(box, boxes)
       case provider
         when 'virtualbox'
-          machine = getVmDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
+          VboxDef vbox
+          machine = vbox.getBox(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'aws'
           machine = getAWSVmDef(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned)
         when 'libvirt'
@@ -523,4 +491,46 @@ def Generator.checkPath(path, override)
     return 0
   end
 
+end
+
+class Def
+	def getDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned) 
+		raise NotImplementedError, "Nedd a subclasss!"		
+	end
+end
+
+class VboxDef < Def
+	 # Vagrantfile for Vbox provider
+  def getDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
+
+    if template_path
+      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates')
+    else
+      templatedef = ''
+    end
+    # ssh.pty option
+    ssh_pty_option = sshPtyOption(ssh_pty)
+
+    vmdef = "\n#  --> Begin definition for machine: " + name +"\n"\
+            "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
+            + ssh_pty_option + "\n" \
+            + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
+            + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
+            + templatedef + "\n"
+    if provisioned
+      vmdef += "\t##--- Chef binding ---\n"\
+            + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
+            + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
+            + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
+            + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
+    end
+
+    if vm_mem
+      vmdef += "\n\t"+'config.vm.provider :virtualbox do |vbox|' + "\n" \
+               "\t\t"+'vbox.customize ["modifyvm", :id, "--memory", ' + quote(vm_mem) +"]\n\tend\n"
+    end
+    vmdef += "\nend #  <-- End of VM definition for machine: " + name +"\n\n"
+
+    return vmdef
+  end
 end
