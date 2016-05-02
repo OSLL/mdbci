@@ -462,11 +462,10 @@ end
 
 class Def
   attr_accessor :provider
-	attr_accessor :cookbook_path, :name, :host, :boxurl, :ssh_pty, :vm_mem, :template_path, :provisioned
-  attr_accessor :user, :instance_type
+	attr_reader :cookbook_path, :name, :host, :boxurl, :ssh_pty, :vm_mem, :template_path, :provisioned
+  attr_reader :user, :instance_type
   def initialize(context,provider)
     @provider = provider
-    @cookbook_path = context.cookbook_path
     @name = context.name
     @host = context.host
     @boxurl = context.boxurl
@@ -476,6 +475,7 @@ class Def
     @provisioned = context.provisioned
     @user = context.user
     @instance_type = context.instance_type
+    @cookbook_path = context.cookbook_path
   end
 
   def getDef()
@@ -496,8 +496,8 @@ class VboxProvider
     # ssh.pty option
     ssh_pty_option = sshPtyOption(context.ssh_pty)
 
-    vmdef = "\n#  --> Begin definition for machine: " + context.name +"\n"\
-            "\n"+'config.vm.define ' + quote(context.name) +' do |'+ context.name +"|\n" \
+    vmdef = "\n#  --> Begin definition for machine: " + context.name + "\n" \
+            + "\n"+'config.vm.define ' + quote(context.name) +' do |'+ context.name + "|\n" \
             + context.ssh_pty_option + "\n" \
             + "\t"+context.name+'.vm.box = ' + quote(context.boxurl) + "\n" \
             + "\t"+context.name+'.vm.hostname = ' + quote(context.host) + "\n" \
@@ -514,7 +514,7 @@ class VboxProvider
       vmdef += "\n\t"+'config.vm.provider :virtualbox do |vbox|' + "\n" \
                "\t\t"+'vbox.customize ["modifyvm", :id, "--memory", ' + quote(context.vm_mem) +"]\n\tend\n"
     end
-    vmdef += "\nend #  <-- End of VM definition for machine: " + context.name +"\n\n"
+    vmdef += "\nend #  <-- End of VM definition for machine: " + context.name + "\n\n"
 
     return vmdef
   end
@@ -533,8 +533,8 @@ class AwsProvider
     # ssh.pty option
     ssh_pty_option = sshPtyOption(context.ssh_pty)
 
-    awsdef = "\n#  --> Begin definition for machine: " + context.name +"\n"\
-           + "config.vm.define :"+ context.name +" do |" + context.name + "|\n" \
+    awsdef = "\n#  --> Begin definition for machine: " + context.name + "\n"\
+           + "config.vm.define :"+ context.name + " do |" + context.name + "|\n" \
            + context.ssh_pty_option + "\n" \
            + "\t" + context.name + ".vm.provider :aws do |aws,override|\n" \
            + "\t\taws.ami = " + quote(context.boxurl) + "\n"\
@@ -550,7 +550,7 @@ class AwsProvider
            + "\t\tchef.add_role "+ quote(context.name) + "\n" \
            + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend #<-- end of chef binding\n"
     end
-    awsdef +="\nend #  <-- End AWS definition for machine: " + context.name +"\n\n"
+    awsdef +="\nend #  <-- End AWS definition for machine: " + context.name + "\n\n"
 
     return awsdef
   end
