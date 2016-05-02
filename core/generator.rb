@@ -202,40 +202,6 @@ Vagrant.configure(2) do |config|
 
   end
 
-  #  Vagrantfile for AWS provider
-  def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, ssh_pty, instance_type, template_path, provisioned)
-
-    if template_path
-      mountdef = "\t" + name + ".vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync")
-    else
-      mountdef = ''
-    end
-    # ssh.pty option
-    ssh_pty_option = sshPtyOption(ssh_pty)
-
-    awsdef = "\n#  --> Begin definition for machine: " + name +"\n"\
-           + "config.vm.define :"+ name +" do |" + name + "|\n" \
-           + ssh_pty_option + "\n" \
-           + "\t" + name + ".vm.provider :aws do |aws,override|\n" \
-           + "\t\taws.ami = " + quote(boxurl) + "\n"\
-           + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
-           + "\t\toverride.ssh.username = " + quote(user) + "\n" \
-           + "\tend\n" \
-           + mountdef + "\n"
-    if provisioned
-      awsdef += "\t##--- Chef binding ---\n"\
-           + "\t" + name + ".vm.provision "+ quote('chef_solo')+" do |chef| \n"\
-           + "\t\tchef.cookbooks_path = "+ quote(cookbook_path) + "\n" \
-           + "\t\tchef.roles_path = "+ quote('.') + "\n" \
-           + "\t\tchef.add_role "+ quote(name) + "\n" \
-           + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend #<-- end of chef binding\n"
-    end
-    awsdef +="\nend #  <-- End AWS definition for machine: " + name +"\n\n"
-
-    return awsdef
-  end
-
-
   def Generator.getRoleDef(name, product, box)
 
     errorMock = "#NONE, due invalid repo name \n"
@@ -412,10 +378,11 @@ def Generator.checkPath(path, override)
     if Generator.boxValid?(box, boxes)
       case provider
         when 'virtualbox'
-          VboxDef vbox
-          machine = vbox.getBox(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
+          box = Def.new(VboxDef.new)
+          machine = box.getDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'aws'
-          machine = getAWSVmDef(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned)
+          box = Def.new(AwsDef.new)
+          machine = box.getDef(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned)
         when 'libvirt'
           machine = getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'docker'
@@ -494,9 +461,17 @@ def Generator.checkPath(path, override)
 end
 
 class Def
-	def getDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned) 
-		raise NotImplementedError, "Nedd a subclasss!"		
-	end
+  attr_accessor :provider
+	
+  def initialize(provider)
+    @provider = provider
+  end
+
+  def getDef()
+    @provider.detDef(self)
+  end
+
+  
 end
 
 class VboxDef < Def
@@ -532,5 +507,40 @@ class VboxDef < Def
     vmdef += "\nend #  <-- End of VM definition for machine: " + name +"\n\n"
 
     return vmdef
+  end
+end
+
+class AwsDef < Def
+    #  Vagrantfile for AWS provider
+  def getDef(cookbook_path, name, boxurl, user, ssh_pty, instance_type, template_path, provisioned)
+
+    if template_path
+      mountdef = "\t" + name + ".vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync")
+    else
+      mountdef = ''
+    end
+    # ssh.pty option
+    ssh_pty_option = sshPtyOption(ssh_pty)
+
+    awsdef = "\n#  --> Begin definition for machine: " + name +"\n"\
+           + "config.vm.define :"+ name +" do |" + name + "|\n" \
+           + ssh_pty_option + "\n" \
+           + "\t" + name + ".vm.provider :aws do |aws,override|\n" \
+           + "\t\taws.ami = " + quote(boxurl) + "\n"\
+           + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
+           + "\t\toverride.ssh.username = " + quote(user) + "\n" \
+           + "\tend\n" \
+           + mountdef + "\n"
+    if provisioned
+      awsdef += "\t##--- Chef binding ---\n"\
+           + "\t" + name + ".vm.provision "+ quote('chef_solo')+" do |chef| \n"\
+           + "\t\tchef.cookbooks_path = "+ quote(cookbook_path) + "\n" \
+           + "\t\tchef.roles_path = "+ quote('.') + "\n" \
+           + "\t\tchef.add_role "+ quote(name) + "\n" \
+           + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend #<-- end of chef binding\n"
+    end
+    awsdef +="\nend #  <-- End AWS definition for machine: " + name +"\n\n"
+
+    return awsdef
   end
 end
