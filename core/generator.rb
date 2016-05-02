@@ -378,11 +378,11 @@ def Generator.checkPath(path, override)
     if Generator.boxValid?(box, boxes)
       case provider
         when 'virtualbox'
-          box = Def.new(VboxDef.new)
-          machine = box.getDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
+          box = Def.new(self,VboxProvider.new)
+          machine = box.getDef()
         when 'aws'
-          box = Def.new(AwsDef.new)
-          machine = box.getDef(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned)
+          box = Def.new(self,AwsProvider.new)
+          machine = box.getDef()
         when 'libvirt'
           machine = getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'docker'
@@ -462,84 +462,95 @@ end
 
 class Def
   attr_accessor :provider
-	
-  def initialize(provider)
+	attr_accessor :cookbook_path, :name, :host, :boxurl, :ssh_pty, :vm_mem, :template_path, :provisioned
+  attr_accessor :user, :instance_type
+  def initialize(context,provider)
     @provider = provider
+    @cookbook_path = context.cookbook_path
+    @name = context.name
+    @host = context.host
+    @boxurl = context.boxurl
+    @ssh_pty = context.ssh_pty
+    @vm_mem = context.vm_mem
+    @template_path = context.template_path
+    @provisioned = context.provisioned
+    @user = context.user
+    @instance_type = context.instance_type
   end
 
   def getDef()
     @provider.detDef(self)
   end
 
-  
 end
 
-class VboxDef < Def
+class VboxProvider
 	 # Vagrantfile for Vbox provider
-  def getDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
+  def getDef(context)
 
-    if template_path
-      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates')
+    if context.template_path
+      templatedef = "\t"+context.name+'.vm.synced_folder '+quote(context.template_path)+", "+quote('/home/vagrant/cnf_templates')
     else
       templatedef = ''
     end
     # ssh.pty option
-    ssh_pty_option = sshPtyOption(ssh_pty)
+    ssh_pty_option = sshPtyOption(context.ssh_pty)
 
-    vmdef = "\n#  --> Begin definition for machine: " + name +"\n"\
-            "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
-            + ssh_pty_option + "\n" \
-            + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
-            + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
+    vmdef = "\n#  --> Begin definition for machine: " + context.name +"\n"\
+            "\n"+'config.vm.define ' + quote(context.name) +' do |'+ context.name +"|\n" \
+            + context.ssh_pty_option + "\n" \
+            + "\t"+context.name+'.vm.box = ' + quote(context.boxurl) + "\n" \
+            + "\t"+context.name+'.vm.hostname = ' + quote(context.host) + "\n" \
             + templatedef + "\n"
-    if provisioned
+    if context.provisioned
       vmdef += "\t##--- Chef binding ---\n"\
-            + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
-            + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
+            + "\t"+context.name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
+            + "\t\t"+'chef.cookbooks_path = '+ quote(context.cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
-            + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
+            + "\t\t"+'chef.add_role '+ quote(context.name) + "\n\tend"
     end
 
-    if vm_mem
+    if context.vm_mem
       vmdef += "\n\t"+'config.vm.provider :virtualbox do |vbox|' + "\n" \
-               "\t\t"+'vbox.customize ["modifyvm", :id, "--memory", ' + quote(vm_mem) +"]\n\tend\n"
+               "\t\t"+'vbox.customize ["modifyvm", :id, "--memory", ' + quote(context.vm_mem) +"]\n\tend\n"
     end
-    vmdef += "\nend #  <-- End of VM definition for machine: " + name +"\n\n"
+    vmdef += "\nend #  <-- End of VM definition for machine: " + context.name +"\n\n"
 
     return vmdef
   end
 end
 
-class AwsDef < Def
+class AwsProvider
     #  Vagrantfile for AWS provider
-  def getDef(cookbook_path, name, boxurl, user, ssh_pty, instance_type, template_path, provisioned)
+  def getDef(context)
 
-    if template_path
-      mountdef = "\t" + name + ".vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync")
+    if context.template_path
+      mountdef = "\t" + context.name + ".vm.synced_folder " + quote(context.template_path) + ", " 
+      + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync")
     else
       mountdef = ''
     end
     # ssh.pty option
-    ssh_pty_option = sshPtyOption(ssh_pty)
+    ssh_pty_option = sshPtyOption(context.ssh_pty)
 
-    awsdef = "\n#  --> Begin definition for machine: " + name +"\n"\
-           + "config.vm.define :"+ name +" do |" + name + "|\n" \
-           + ssh_pty_option + "\n" \
-           + "\t" + name + ".vm.provider :aws do |aws,override|\n" \
-           + "\t\taws.ami = " + quote(boxurl) + "\n"\
-           + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
-           + "\t\toverride.ssh.username = " + quote(user) + "\n" \
+    awsdef = "\n#  --> Begin definition for machine: " + context.name +"\n"\
+           + "config.vm.define :"+ context.name +" do |" + context.name + "|\n" \
+           + context.ssh_pty_option + "\n" \
+           + "\t" + context.name + ".vm.provider :aws do |aws,override|\n" \
+           + "\t\taws.ami = " + quote(context.boxurl) + "\n"\
+           + "\t\taws.instance_type = " + quote(context.instance_type) + "\n" \
+           + "\t\toverride.ssh.username = " + quote(context.user) + "\n" \
            + "\tend\n" \
            + mountdef + "\n"
-    if provisioned
+    if context.provisioned
       awsdef += "\t##--- Chef binding ---\n"\
-           + "\t" + name + ".vm.provision "+ quote('chef_solo')+" do |chef| \n"\
-           + "\t\tchef.cookbooks_path = "+ quote(cookbook_path) + "\n" \
+           + "\t" + context.name + ".vm.provision "+ quote('chef_solo')+" do |chef| \n"\
+           + "\t\tchef.cookbooks_path = "+ quote(context.cookbook_path) + "\n" \
            + "\t\tchef.roles_path = "+ quote('.') + "\n" \
-           + "\t\tchef.add_role "+ quote(name) + "\n" \
+           + "\t\tchef.add_role "+ quote(context.name) + "\n" \
            + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend #<-- end of chef binding\n"
     end
-    awsdef +="\nend #  <-- End AWS definition for machine: " + name +"\n\n"
+    awsdef +="\nend #  <-- End AWS definition for machine: " + context.name +"\n\n"
 
     return awsdef
   end
