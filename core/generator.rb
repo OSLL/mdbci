@@ -5,6 +5,48 @@ require_relative '../core/out'
 
 
 class Generator
+  attr_reader :cookbook_path, :name, :host, :boxurl, :ssh_pty, :vm_mem, :template_path, :provisioned
+  attr_reader :user, :instance_type
+  
+  def self.cookbook_path
+    @@cookbook_path
+  end
+
+  def self.name
+    @@name
+  end
+
+  def self.host
+    @@host
+  end
+
+  def self.boxurl
+    @@boxurl
+  end
+
+  def self.ssh_pty
+    @@ssh_pty
+  end
+
+  def self.vm_mem
+    @@vm_mem
+  end
+
+  def self.template_path
+    @@template_path
+  end
+
+  def self.provisioned
+    @@provisioned
+  end
+
+  def self.user
+    @@user
+  end
+
+  def self.instance_type
+    @@instance_type
+  end
 
   def Generator.quote(string)
     return '"'+string+'"'
@@ -97,40 +139,6 @@ Vagrant.configure(2) do |config|
       ssh_pty_option = "\tconfig.ssh.pty = " + ssh_pty
     end
     return ssh_pty_option
-  end
-
-  # Vagrantfile for Vbox provider
-  def Generator.getVmDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
-
-    if template_path
-      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates')
-    else
-      templatedef = ''
-    end
-    # ssh.pty option
-    ssh_pty_option = sshPtyOption(ssh_pty)
-
-    vmdef = "\n#  --> Begin definition for machine: " + name +"\n"\
-            "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
-            + ssh_pty_option + "\n" \
-            + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
-            + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
-            + templatedef + "\n"
-    if provisioned
-      vmdef += "\t##--- Chef binding ---\n"\
-            + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
-            + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
-            + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
-            + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
-    end
-
-    if vm_mem
-      vmdef += "\n\t"+'config.vm.provider :virtualbox do |vbox|' + "\n" \
-               "\t\t"+'vbox.customize ["modifyvm", :id, "--memory", ' + quote(vm_mem) +"]\n\tend\n"
-    end
-    vmdef += "\nend #  <-- End of VM definition for machine: " + name +"\n\n"
-
-    return vmdef
   end
 
   # Vagrantfile for Libvirt provider
@@ -235,40 +243,6 @@ Vagrant.configure(2) do |config|
     FileUtils.cp_r dockerfile_path, node_path
 
   end
-
-  #  Vagrantfile for AWS provider
-  def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, ssh_pty, instance_type, template_path, provisioned)
-
-    if template_path
-      mountdef = "\t" + name + ".vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync")
-    else
-      mountdef = ''
-    end
-    # ssh.pty option
-    ssh_pty_option = sshPtyOption(ssh_pty)
-
-    awsdef = "\n#  --> Begin definition for machine: " + name +"\n"\
-           + "config.vm.define :"+ name +" do |" + name + "|\n" \
-           + ssh_pty_option + "\n" \
-           + "\t" + name + ".vm.provider :aws do |aws,override|\n" \
-           + "\t\taws.ami = " + quote(boxurl) + "\n"\
-           + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
-           + "\t\toverride.ssh.username = " + quote(user) + "\n" \
-           + "\tend\n" \
-           + mountdef + "\n"
-    if provisioned
-      awsdef += "\t##--- Chef binding ---\n"\
-           + "\t" + name + ".vm.provision "+ quote('chef_solo')+" do |chef| \n"\
-           + "\t\tchef.cookbooks_path = "+ quote(cookbook_path) + "\n" \
-           + "\t\tchef.roles_path = "+ quote('.') + "\n" \
-           + "\t\tchef.add_role "+ quote(name) + "\n" \
-           + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend #<-- end of chef binding\n"
-    end
-    awsdef +="\nend #  <-- End AWS definition for machine: " + name +"\n\n"
-
-    return awsdef
-  end
-
 
   def Generator.getRoleDef(name, product, box)
 
@@ -391,18 +365,20 @@ def Generator.checkPath(path, override)
 
   def Generator.nodeDefinition(node, boxes, path, cookbook_path)
 
-    vm_mem = node[1]['memory_size'].nil? ? '1024' : node[1]['memory_size'].to_s
-
+    @@vm_mem = node[1]['memory_size'].nil? ? '1024' : node[1]['memory_size'].to_s
+    @@boxurl = nil # default value
+    @@ssh_pty = nil 
+    @@instance_type = nil
     # cookbook path dir
     if node[0]['cookbook_path']
-      cookbook_path = node[1].to_s
+      @@cookbook_path = node[1].to_s
     end
 
     # configuration parameters
-    name = node[0].to_s
-    host = node[1]['hostname'].to_s
+    @@name = node[0].to_s
+    @@host = node[1]['hostname'].to_s
 
-    $out.info 'Requested memory ' + vm_mem
+    $out.info 'Requested memory ' + @@vm_mem
 
     box = node[1]['box'].to_s
     if !box.empty?
@@ -412,42 +388,45 @@ def Generator.checkPath(path, override)
       case provider
         when 'aws'
           amiurl = box_params['ami'].to_s
-          user = box_params['user'].to_s
+          @@user = box_params['user'].to_s
           instance = box_params['default_instance_type'].to_s
-          $out.info 'AWS definition for host:'+host+', ami:'+amiurl+', user:'+user+', instance:'+instance
+          $out.info 'AWS definition for host:'+@@host+', ami:'+amiurl+', user:'+@@user+', instance:'+instance
         when 'mdbci'
           box_params.each do |key, value|
             $session.nodes[key] = value
           end
           $out.info 'MDBCI definition for host:'+host+', with parameters: ' + $session.nodes.to_s
         else
-          boxurl = box_params['box'].to_s
+          @@boxurl = box_params['box'].to_s
           platform = box_params['platform'].to_s
           platform_version = box_params['platform_version'].to_s
       end
       # ssh_pty option
       if !box_params['ssh_pty'].nil?
-        ssh_pty = box_params['ssh_pty']
-        $out.info 'config.ssh.pty option is ' + ssh_pty.to_s + ' for a box ' + box.to_s
+        @@ssh_pty = box_params['ssh_pty']
+        $out.info 'config.ssh.pty option is ' + @@ssh_pty.to_s + ' for a box ' + box.to_s
       end
     end
 
-    provisioned = !node[1]['product'].nil?
-    if (provisioned)
+    @@provisioned = !node[1]['product'].nil?
+    if (@@provisioned)
       product = node[1]['product']
       if !product['cnf_template_path'].nil?
-        template_path = product['cnf_template_path']
+        @@template_path = product['cnf_template_path']
       end
     end
 
     # generate node definition and role
     machine = ''
+
     if Generator.boxValid?(box, boxes)
       case provider
         when 'virtualbox'
-          machine = getVmDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
+          box = Def.new(self,VboxProvider.new)
+          machine = box.getDef()
         when 'aws'
-          machine = getAWSVmDef(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned)
+          box = AwsProvider.new(self)
+          machine = box.getDef()
         when 'libvirt'
           machine = getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'docker'
@@ -461,10 +440,10 @@ def Generator.checkPath(path, override)
     end
 
     # box with mariadb, maxscale provision - create role
-    if provisioned
-      $out.info 'Machine '+name+' is provisioned by '+product.to_s
-      role = getRoleDef(name, product, box)
-      IO.write(roleFileName(path, name), role)
+    if @@provisioned
+      $out.info 'Machine '+@@name+' is provisioned by '+product.to_s
+      role = getRoleDef(@@name, product, box)
+      IO.write(roleFileName(path, @@name), role)
     end
 
     return machine
@@ -476,12 +455,12 @@ def Generator.checkPath(path, override)
 
     checkPath(path, override)
 
-    cookbook_path = '../recipes/cookbooks/' # default cookbook path
+    @@cookbook_path = '../recipes/cookbooks/' # default cookbook path
     unless (config['cookbook_path'].nil?)
-      cookbook_path = config['cookbook_path']
+      @@cookbook_path = config['cookbook_path']
     end
 
-    $out.info 'Global cookbook_path = ' + cookbook_path
+    $out.info 'Global cookbook_path = ' + @@cookbook_path
     $out.info 'Nodes provider = ' + provider
 
     vagrant = File.open(path+'/Vagrantfile', 'w')
@@ -497,7 +476,7 @@ def Generator.checkPath(path, override)
 
       config.each do |node|
         $out.info 'Generate AWS Node definition for ['+node[0]+']'
-        vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
+        vagrant.puts Generator.nodeDefinition(node, boxes, path, @@cookbook_path)
       end
       vagrant.puts Generator.vagrantConfigFooter
     else
@@ -508,7 +487,7 @@ def Generator.checkPath(path, override)
         config.each do |node|
           unless (node[1]['box'].nil?)
             $out.info 'Generate VBox|Libvirt|Docker Node definition for ['+node[0]+']'
-            vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
+            vagrant.puts Generator.nodeDefinition(node, boxes, path, @@cookbook_path)
           end
         end
         vagrant.puts Generator.vagrantConfigFooter
@@ -523,4 +502,108 @@ def Generator.checkPath(path, override)
     return 0
   end
 
+end
+
+class Def
+  attr_accessor :provider
+	attr_reader :cookbook_path, :name, :host, :boxurl, :ssh_pty, :vm_mem, :template_path, :provisioned
+  attr_reader :user, :instance_type
+  def initialize(context,provider)
+    @provider = provider
+    @name = context.name
+    @host = context.host
+    @boxurl = context.boxurl
+    @ssh_pty = context.ssh_pty
+    @vm_mem = context.vm_mem
+    @template_path = context.template_path
+    @provisioned = context.provisioned
+    @user = context.user
+    @instance_type = context.instance_type
+    @cookbook_path = context.cookbook_path
+  end
+
+  def getDef()
+    @provider.detDef(self)
+  end
+
+end
+
+class VboxProvider
+	 # Vagrantfile for Vbox provider
+  def getDef(context)
+
+    if context.template_path
+      templatedef = "\t"+context.name+'.vm.synced_folder '+quote(context.template_path)+", "+quote('/home/vagrant/cnf_templates')
+    else
+      templatedef = ''
+    end
+    # ssh.pty option
+    ssh_pty_option = sshPtyOption(context.ssh_pty)
+
+    vmdef = "\n#  --> Begin definition for machine: " + context.name + "\n" \
+            + "\n"+'config.vm.define ' + quote(context.name) +' do |'+ context.name + "|\n" \
+            + context.ssh_pty_option + "\n" \
+            + "\t"+context.name+'.vm.box = ' + quote(context.boxurl) + "\n" \
+            + "\t"+context.name+'.vm.hostname = ' + quote(context.host) + "\n" \
+            + templatedef + "\n"
+    if context.provisioned
+      vmdef += "\t##--- Chef binding ---\n"\
+            + "\t"+context.name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
+            + "\t\t"+'chef.cookbooks_path = '+ quote(context.cookbook_path)+"\n" \
+            + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
+            + "\t\t"+'chef.add_role '+ quote(context.name) + "\n\tend"
+    end
+
+    if context.vm_mem
+      vmdef += "\n\t"+'config.vm.provider :virtualbox do |vbox|' + "\n" \
+               "\t\t"+'vbox.customize ["modifyvm", :id, "--memory", ' + quote(context.vm_mem) +"]\n\tend\n"
+    end
+    vmdef += "\nend #  <-- End of VM definition for machine: " + context.name + "\n\n"
+
+    return vmdef
+  end
+end
+
+class AwsProvider
+  attr_accessor :context
+  def initialize(context)
+    @context = context
+  end
+  
+  def quote(string)
+    return '"'+string+'"'
+  end
+  #  Vagrantfile for AWS provider
+  def getDef()
+
+    if context.template_path
+      mountdef = "\t" + context.name + ".vm.synced_folder " + quote(context.template_path) + ", " 
+      + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync")
+    else
+      mountdef = ''
+    end
+    # ssh.pty option
+    ssh_pty_option = sshPtyOption(context.ssh_pty)
+
+    awsdef = "\n#  --> Begin definition for machine: " + context.name + "\n"\
+           + "config.vm.define :"+ context.name + " do |" + context.name + "|\n" \
+           + context.ssh_pty_option + "\n" \
+           + "\t" + context.name + ".vm.provider :aws do |aws,override|\n" \
+           + "\t\taws.ami = " + quote(context.boxurl) + "\n"\
+           + "\t\taws.instance_type = " + quote(context.instance_type) + "\n" \
+           + "\t\toverride.ssh.username = " + quote(context.user) + "\n" \
+           + "\tend\n" \
+           + mountdef + "\n"
+    if context.provisioned
+      awsdef += "\t##--- Chef binding ---\n"\
+           + "\t" + context.name + ".vm.provision "+ quote('chef_solo')+" do |chef| \n"\
+           + "\t\tchef.cookbooks_path = "+ quote(context.cookbook_path) + "\n" \
+           + "\t\tchef.roles_path = "+ quote('.') + "\n" \
+           + "\t\tchef.add_role "+ quote(context.name) + "\n" \
+           + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend #<-- end of chef binding\n"
+    end
+    awsdef +="\nend #  <-- End AWS definition for machine: " + context.name + "\n\n"
+
+    return awsdef
+  end
 end

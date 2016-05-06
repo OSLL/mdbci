@@ -31,11 +31,9 @@ case node[:platform_family]
     if ((node[:platform] == "centos" or node[:platform] == "rhel" or node[:platform] == "redhat") and node[:platform_version].to_f >= 7.0)
       bash 'Install and configure iptables' do
       code <<-EOF
-        systemctl mask firewalld
-        systemctl stop firewalld
         yum --assumeyes install iptables-services
-        systemctl enable iptables
         systemctl start iptables
+        systemctl enable iptables
       EOF
       end
     else
