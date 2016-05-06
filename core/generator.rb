@@ -5,6 +5,48 @@ require_relative '../core/out'
 
 
 class Generator
+  attr_reader :cookbook_path, :name, :host, :boxurl, :ssh_pty, :vm_mem, :template_path, :provisioned
+  attr_reader :user, :instance_type
+  
+  def self.cookbook_path
+    @@cookbook_path
+  end
+
+  def self.name
+    @@name
+  end
+
+  def self.host
+    @@host
+  end
+
+  def self.boxurl
+    @@boxurl
+  end
+
+  def self.ssh_pty
+    @@ssh_pty
+  end
+
+  def self.vm_mem
+    @@vm_mem
+  end
+
+  def self.template_path
+    @@template_path
+  end
+
+  def self.provisioned
+    @@provisioned
+  end
+
+  def self.user
+    @@user
+  end
+
+  def self.instance_type
+    @@instance_type
+  end
 
   def Generator.quote(string)
     return '"'+string+'"'
@@ -323,18 +365,20 @@ def Generator.checkPath(path, override)
 
   def Generator.nodeDefinition(node, boxes, path, cookbook_path)
 
-    vm_mem = node[1]['memory_size'].nil? ? '1024' : node[1]['memory_size'].to_s
-
+    @@vm_mem = node[1]['memory_size'].nil? ? '1024' : node[1]['memory_size'].to_s
+    @@boxurl = nil # default value
+    @@ssh_pty = nil 
+    @@instance_type = nil
     # cookbook path dir
     if node[0]['cookbook_path']
-      cookbook_path = node[1].to_s
+      @@cookbook_path = node[1].to_s
     end
 
     # configuration parameters
-    name = node[0].to_s
-    host = node[1]['hostname'].to_s
+    @@name = node[0].to_s
+    @@host = node[1]['hostname'].to_s
 
-    $out.info 'Requested memory ' + vm_mem
+    $out.info 'Requested memory ' + @@vm_mem
 
     box = node[1]['box'].to_s
     if !box.empty?
@@ -344,31 +388,31 @@ def Generator.checkPath(path, override)
       case provider
         when 'aws'
           amiurl = box_params['ami'].to_s
-          user = box_params['user'].to_s
+          @@user = box_params['user'].to_s
           instance = box_params['default_instance_type'].to_s
-          $out.info 'AWS definition for host:'+host+', ami:'+amiurl+', user:'+user+', instance:'+instance
+          $out.info 'AWS definition for host:'+@@host+', ami:'+amiurl+', user:'+@@user+', instance:'+instance
         when 'mdbci'
           box_params.each do |key, value|
             $session.nodes[key] = value
           end
           $out.info 'MDBCI definition for host:'+host+', with parameters: ' + $session.nodes.to_s
         else
-          boxurl = box_params['box'].to_s
+          @@boxurl = box_params['box'].to_s
           platform = box_params['platform'].to_s
           platform_version = box_params['platform_version'].to_s
       end
       # ssh_pty option
       if !box_params['ssh_pty'].nil?
-        ssh_pty = box_params['ssh_pty']
-        $out.info 'config.ssh.pty option is ' + ssh_pty.to_s + ' for a box ' + box.to_s
+        @@ssh_pty = box_params['ssh_pty']
+        $out.info 'config.ssh.pty option is ' + @@ssh_pty.to_s + ' for a box ' + box.to_s
       end
     end
 
-    provisioned = !node[1]['product'].nil?
-    if (provisioned)
+    @@provisioned = !node[1]['product'].nil?
+    if (@@provisioned)
       product = node[1]['product']
       if !product['cnf_template_path'].nil?
-        template_path = product['cnf_template_path']
+        @@template_path = product['cnf_template_path']
       end
     end
 
@@ -381,7 +425,7 @@ def Generator.checkPath(path, override)
           box = Def.new(self,VboxProvider.new)
           machine = box.getDef()
         when 'aws'
-          box = Def.new(self,AwsProvider.new)
+          box = AwsProvider.new(self)
           machine = box.getDef()
         when 'libvirt'
           machine = getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
@@ -396,10 +440,10 @@ def Generator.checkPath(path, override)
     end
 
     # box with mariadb, maxscale provision - create role
-    if provisioned
-      $out.info 'Machine '+name+' is provisioned by '+product.to_s
-      role = getRoleDef(name, product, box)
-      IO.write(roleFileName(path, name), role)
+    if @@provisioned
+      $out.info 'Machine '+@@name+' is provisioned by '+product.to_s
+      role = getRoleDef(@@name, product, box)
+      IO.write(roleFileName(path, @@name), role)
     end
 
     return machine
@@ -411,12 +455,12 @@ def Generator.checkPath(path, override)
 
     checkPath(path, override)
 
-    cookbook_path = '../recipes/cookbooks/' # default cookbook path
+    @@cookbook_path = '../recipes/cookbooks/' # default cookbook path
     unless (config['cookbook_path'].nil?)
-      cookbook_path = config['cookbook_path']
+      @@cookbook_path = config['cookbook_path']
     end
 
-    $out.info 'Global cookbook_path = ' + cookbook_path
+    $out.info 'Global cookbook_path = ' + @@cookbook_path
     $out.info 'Nodes provider = ' + provider
 
     vagrant = File.open(path+'/Vagrantfile', 'w')
@@ -432,7 +476,7 @@ def Generator.checkPath(path, override)
 
       config.each do |node|
         $out.info 'Generate AWS Node definition for ['+node[0]+']'
-        vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
+        vagrant.puts Generator.nodeDefinition(node, boxes, path, @@cookbook_path)
       end
       vagrant.puts Generator.vagrantConfigFooter
     else
@@ -443,7 +487,7 @@ def Generator.checkPath(path, override)
         config.each do |node|
           unless (node[1]['box'].nil?)
             $out.info 'Generate VBox|Libvirt|Docker Node definition for ['+node[0]+']'
-            vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
+            vagrant.puts Generator.nodeDefinition(node, boxes, path, @@cookbook_path)
           end
         end
         vagrant.puts Generator.vagrantConfigFooter
@@ -521,8 +565,16 @@ class VboxProvider
 end
 
 class AwsProvider
-    #  Vagrantfile for AWS provider
-  def getDef(context)
+  attr_accessor :context
+  def initialize(context)
+    @context = context
+  end
+  
+  def quote(string)
+    return '"'+string+'"'
+  end
+  #  Vagrantfile for AWS provider
+  def getDef()
 
     if context.template_path
       mountdef = "\t" + context.name + ".vm.synced_folder " + quote(context.template_path) + ", " 
