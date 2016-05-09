@@ -73,7 +73,7 @@ config.vm.boot_timeout = 60
 ####################################
 Vagrant.configure(2) do |config|
 
-config.omnibus.chef_version = :latest
+config.omnibus.chef_version = '12.9.38'
     EOF
   end
 
