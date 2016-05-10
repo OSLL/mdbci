@@ -71,6 +71,7 @@ vagrant plugin install vagrant-vbguest
 vagrant plugin install vagrant-aws
 vagrant plugin install vagrant-libvirt
 vagrant plugin install vagrant-mutate
+vagrant plugin install vagrant-omnibus
 </pre>
 
 #### Ruby modules pre-install
