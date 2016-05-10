@@ -12,7 +12,7 @@ if [ ! -z $1 ]; then
     done
 
     echo "Cleaning machines with virsh"
-    for i in $(virsh list --name | grep ${1}); do
+    for i in $(virsh list --name --all | grep ${1}); do
       virsh shutdown $i
       virsh destroy $i
       virsh undefine $i
