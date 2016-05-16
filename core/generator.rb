@@ -1,5 +1,6 @@
 require 'date'
 require 'fileutils'
+require 'json'
 
 require_relative '../core/out'
 
@@ -170,7 +171,7 @@ config.omnibus.chef_version = '12.9.38'
   end
 
   # Vagrantfile for Docker provider + Dockerfiles
-  def Generator.getDockerDef(cookbook_path, name, ssh_pty, template_path, provisioned, platform, platform_version, box)
+  def Generator.getDockerDef(cookbook_path, path, name, ssh_pty, template_path, provisioned, platform, platform_version, box)
 
     if template_path
       templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote("/home/vagrant/cnf_templates")
@@ -186,7 +187,7 @@ config.omnibus.chef_version = '12.9.38'
             + ssh_pty_option + "\n" \
             + templatedef + "\n" \
             + "\t"+name+'.vm.provider "docker" do |d|' + "\n" \
-            + "\t\t"+'d.image = ' + quote(box) + "\n" \
+            + "\t\t"+'d.image = ' + "JSON.parse(File.read('#{path}/#{name}/snapshots'))['#{name}']['current_snapshot']" + "\n" \
             + "\t\t"+'d.privileged = true' + "\n "\
             + "\t\t"+'d.has_ssh = true' + "\n"
 
@@ -210,6 +211,13 @@ config.omnibus.chef_version = '12.9.38'
     dockerdef += "\nend #  <-- End of Docker definition for machine: " + name +"\n\n"
 
     return dockerdef
+  end
+
+  # generate snapshot versioning
+  def Generator.createDockerSnapshotsVersions(path, name, box)
+    File.open("#{path}/#{name}/snapshots", 'w') do |f|
+      f.puts({name => {'snapshots'=>[box], 'current_snapshot'=>box}}.to_json)
+    end
   end
 
   # generate Dockerfiles
@@ -456,8 +464,9 @@ config.omnibus.chef_version = '12.9.38'
         when 'libvirt'
           machine = getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'docker'
-          machine = getDockerDef(cookbook_path, name, ssh_pty, template_path, provisioned, platform, platform_version, box)
+          machine = getDockerDef(cookbook_path, path, name, ssh_pty, template_path, provisioned, platform, platform_version, box)
           copyDockerfiles(path, name, platform, platform_version)
+          createDockerSnapshotsVersions(path, name, box)
         else
           $out.warning 'Configuration type invalid! It must be vbox, aws, libvirt or docker type. Check it, please!'
       end
@@ -490,6 +499,10 @@ config.omnibus.chef_version = '12.9.38'
     $out.info 'Nodes provider = ' + provider
 
     vagrant = File.open(path+'/Vagrantfile', 'w')
+
+    if provider == 'docker'
+      vagrant.puts 'require \'json\''
+    end
 
     vagrant.puts vagrantFileHeader
 
