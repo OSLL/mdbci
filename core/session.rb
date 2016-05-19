@@ -597,6 +597,7 @@ class Session
         $out.warning 'Checking for dead machines and checking Chef runs on machines'
         nodes.each do |machine_name|
           status = `vagrant status #{machine_name}`.split("\n")[2]
+          $out.info "#{machine_name} status == #{status}"
           unless status.include? 'running'
             dead_machines.push(machine_name)
             next
@@ -626,6 +627,7 @@ class Session
               cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{machine}"
               success = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
                 stdout.each_line { |line| $out.info line }
+                stderr.each_line { |line| $out.error line }
                 wthr.value.success?
               end
               success
@@ -634,6 +636,7 @@ class Session
               $out.error 'Some machines are still dead:'
               dead_machines.each { |machine| $out.error "\t#{machine}" }
             else
+              $out.info "All dead machines successfuly resurrected"
               break
             end
           end
@@ -646,6 +649,7 @@ class Session
             cmd_up = "vagrant provision #{machine}"
             success = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
               stdout.each_line { |line| $out.info line }
+              stderr.each_line { |line| $out.error line }
               wthr.value.success?
             end
             success
@@ -661,6 +665,7 @@ class Session
                 cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{machine}"
                 success = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
                   stdout.each_line { |line| $out.info line }
+                  stderr.each_line { |line| $out.error line }
                   wthr.value.success?
                 end
                 success
@@ -669,6 +674,7 @@ class Session
                 $out.error 'Some machines are still have broken Chef run:'
                 machines_with_broken_chef.each { |machine| $out.error "\t#{machine}" }
               else
+                $out.info "All broken_chef machines successfuly reprovisioned."
                 break
               end
             end
