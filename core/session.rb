@@ -43,6 +43,14 @@ class Session
   PLATFORM = 'platform'
   VAGRANT_NO_PARALLEL = '--no-parallel'
 
+  CHEF_NOT_FOUND_ERROR = <<EOF
+The chef binary (either `chef-solo` or `chef-client`) was not found on
+the VM and is required for chef provisioning. Please verify that chef
+is installed and that the binary is available on the PATH.
+EOF
+
+  OUTPUT_NODE_NAME_REGEX = "==>\s+(.*):{1}"
+
   def initialize
     @boxesDir = './BOXES'
     @repoDir = './repo.d'
@@ -574,13 +582,35 @@ class Session
 
       cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{(up_type ? config[1] : '')}"
       $out.info "Actual command: #{cmd_up}"
+      chef_not_found_node = nil
       status = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
         stdin.close
-        stdout.each_line { |line| $out.info line }
+        stdout.each_line do |line|
+          $out.info line
+          chef_not_found_node = line if @nodesProvider == 'aws'
+        end
         stdout.close
-        stderr.each_line { |line| $out.error line }
+        error = stderr.read
+        if @nodesProvider == 'aws' and error.to_s.include? CHEF_NOT_FOUND_ERROR
+          chef_not_found_node = chef_not_found_node.to_s.match(OUTPUT_NODE_NAME_REGEX).captures[0]
+        else
+          error.each_line { |line| $out.error line }
+          chef_not_found_node = nil
+        end
         stderr.close
         wthr.value
+      end
+      if chef_not_found_node
+        $out.warning "Chef not is found on aws node: #{chef_not_found_node}, applying quick fix..."
+        cmd_provision = "vagrant provision #{chef_not_found_node}"
+        status = Open3.popen3(cmd_provision) do |stdin, stdout, stderr, wthr|
+          stdin.close
+          stdout.each_line { |line| $out.info line }
+          stdout.close
+          stderr.each_line { |line| $out.error line }
+          stderr.close
+          wthr.value
+        end
       end
       unless status.success?
         $out.error 'Bringing up failed'
