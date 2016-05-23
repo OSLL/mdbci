@@ -158,7 +158,7 @@ PROVIDERS.each do |provider|
     it "#{provider}" do
       find_nodes(destination).each do |node_name|
         # Box will be needed to work with docker (as it's the very first snapshot name)
-        node_box = `./mdbci show box snapshot_test_#{destination}/#{node_name} --silent`
+        node_box = `./mdbci show box #{destination}/#{node_name} --silent`
         # Creating snaphsots for each provider and each node
         execute_bash(cmd_snapshot_take(destination, node_name, "snapshot_test_#{provider}")).should eql? 0
         # Checking that snapshot was created
@@ -188,7 +188,7 @@ PROVIDERS.each do |provider|
           # So docker has after all 2 we have snapshots: first - is one that was created with 'mdbci up' and
           # other one that we created manually, so we can't delete snapshot that we created manually
           # so we will rollback docker machine to very first snapshot and after that delete last snapshot
-          execute_bash(cmd_snapshot_revert(destination, node_name, "#{node_box}")).should eql? 0
+          execute_bash(cmd_snapshot_revert(destination, node_name, node_box)).should eql? 0
           # now we can delete last snapshot
           execute_bash(cmd_snapshot_remove(destination, node_name, "snapshot_test_#{provider}")).should eql? 0
         end

@@ -1,6 +1,7 @@
 require 'date'
 require 'fileutils'
 require 'json'
+require 'securerandom'
 
 require_relative '../core/out'
 
@@ -216,7 +217,7 @@ config.omnibus.chef_version = '12.9.38'
   # generate snapshot versioning
   def Generator.createDockerSnapshotsVersions(path, name, box)
     File.open("#{path}/#{name}/snapshots", 'w') do |f|
-      f.puts({name => {'id'=>Time.now.to_i, 'snapshots'=>[box], 'current_snapshot'=>box, 'initial_snapshot'=>box}}.to_json)
+      f.puts({name => {'id'=>SecureRandom.uuid.to_s.downcase, 'snapshots'=>[box], 'current_snapshot'=>box, 'initial_snapshot'=>box}}.to_json)
     end
   end
 
