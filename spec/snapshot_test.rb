@@ -5,8 +5,7 @@ require 'open3'
 require_relative 'spec_helper'
 require_relative '../core/snapshot'
 
-#PROVIDERS = %w(libvirt docker virtualbox)
-PROVIDERS = %w(docker)
+PROVIDERS = %w(libvirt docker virtualbox)
 PATH_TO_TEMPLATES = 'spec/test_machine_configurations'
 CONFIG_PREFIX = 'snapshot_test'
 
@@ -155,41 +154,72 @@ PROVIDERS.each do |provider|
     end
 
     # Each node testing
-    it "#{provider}" do
+    describe "#{provider}" do
       find_nodes(destination).each do |node_name|
+
         # Box will be needed to work with docker (as it's the very first snapshot name)
         node_box = `./mdbci show box #{destination}/#{node_name} --silent`
-        # Creating snaphsots for each provider and each node
-        execute_bash(cmd_snapshot_take(destination, node_name, "snapshot_test_#{provider}")).should eql? 0
-        # Checking that snapshot was created
-        # For docker we need to get first image (first snapshot) to check right output
-        # because docker has snapshot when it's created (docker snapshot == docker image)
-        output = provider == 'docker' ? "#{node_box}\nsnapshot_test_#{provider}" : "snapshot_test_#{provider}"
-        `#{cmd_snapshot_list(destination)}`.should eql? output
-        # Checking that in initial machine mariadb is not installed
-        execute_bash(cmd_run_command('"mysql -V"', destination, node_name)).should_not eql? 0
-        execute_bash(cmd_run_command('"cat /etc/apt/"', destination, node_name)).should_not eql? 0
-        # Installing mariadb 10 (it's not installed by default)
-        execute_bash(cmd_setup_product_repo('mariadb', '10.0', destination, node_name)).should eql? 0
-        execute_bash(cmd_install_product('mariadb', destination, node_name)).should eql? 0
-        execute_bash(cmd_run_command('"mysql -V"', destination, node_name)).should eql? 0
-        execute_bash(cmd_run_command('"cat /etc/apt/"', destination, node_name)).should eql? 0
-        # Reverting snapshots
-        execute_bash(cmd_snapshot_revert(destination, node_name, "snapshot_test_#{provider}")).should eql? 0
-        # Checking that on reverted machine mariadb is not installed
-        execute_bash(cmd_run_command('"mysql -V"', destination, node_name)).should_not eql? 0
-        execute_bash(cmd_run_command('"cat /etc/apt/"', destination, node_name)).should_not eql? 0
+
+        it "creating snapshots for provider #{provider} in #{destination} for each node" do
+          execute_bash(cmd_snapshot_take(destination, node_name, "snapshot_test_#{provider}")).should eql? 0
+        end
+
+        it 'checking that snapshot was created' do
+          # For docker we need to get first image (first snapshot) to check right output
+          # because docker has snapshot when it's created (docker snapshot == docker image)
+          output = provider == 'docker' ? "#{node_box}\nsnapshot_test_#{provider}" : "snapshot_test_#{provider}"
+          `#{cmd_snapshot_list(destination)}`.should eql? output
+        end
+
+        it 'checking that on initial machine mariadb is not installed' do
+          execute_bash(cmd_run_command('"mysql -V"', destination, node_name)).should_not eql? 0
+        end
+
+        it 'checking mariadb source list on initial machine is not installed' do
+          execute_bash(cmd_run_command('"cat /etc/apt/"', destination, node_name)).should_not eql? 0
+        end
+
+        execute_bash(cmd_setup_product_repo('mariadb', '10.0', destination, node_name))
+        execute_bash(cmd_install_product('mariadb', destination, node_name))
+
+        it 'checking that in initial machine mariadb is installed (after installation)' do
+          execute_bash(cmd_run_command('"mysql -V"', destination, node_name)).should eql? 0
+        end
+
+        it 'checking mariadb source list in initial machine is installed (after installation)' do
+          execute_bash(cmd_run_command('"cat /etc/apt/"', destination, node_name)).should eql? 0
+        end
+
+        it 'reverting snapshots (to initial machine)' do
+          execute_bash(cmd_snapshot_revert(destination, node_name, "snapshot_test_#{provider}")).should eql? 0
+        end
+
+        it 'checking that in initial machine mariadb is not installed (after reverting to initial machine)' do
+          execute_bash(cmd_run_command('"mysql -V"', destination, node_name)).should_not eql? 0
+        end
+
+        it 'checking mariadb source list in initial machine is not installed (after reverting to initial machine)' do
+          execute_bash(cmd_run_command('"cat /etc/apt/"', destination, node_name)).should_not eql? 0
+        end
+
         # Removing newly created snapshot
         if provider != 'docker'
           execute_bash(cmd_snapshot_remove(destination, node_name, "snapshot_test_#{provider}")).should eql? 0
         else
           # Docker now using last snapshot (image) with running machine and could not be deleted
-          execute_bash(cmd_snapshot_remove(destination, node_name, "snapshot_test_#{provider}")).should_not eql? 0
+          it "trying to remove snapshot, but it's not going to happened (because snapshot is in use)" do
+            execute_bash(cmd_snapshot_remove(destination, node_name, "snapshot_test_#{provider}")).should_not eql? 0
+          end
           # So docker has after all 2 we have snapshots: first - is one that was created with 'mdbci up' and
           # other one that we created manually, so we can't delete snapshot that we created manually
           # so we will rollback docker machine to very first snapshot and after that delete last snapshot
-          execute_bash(cmd_snapshot_revert(destination, node_name, node_box)).should eql? 0
+          it 'rolling back docker machine to very first snapshot' do
+            execute_bash(cmd_snapshot_revert(destination, node_name, node_box)).should eql? 0
+          end
           # now we can delete last snapshot
+          it "removing last docker snapshot" do
+            execute_bash(cmd_snapshot_remove(destination, node_name, "snapshot_test_#{provider}")).should_not eql? 0
+          end
           execute_bash(cmd_snapshot_remove(destination, node_name, "snapshot_test_#{provider}")).should eql? 0
         end
       end
@@ -197,27 +227,45 @@ PROVIDERS.each do |provider|
 
     # Bunch of nodes testing
     it "#{provider}" do
-      # Creating snaphsots for each provider and each node
-      execute_bash(cmd_snapshot_take_all(destination)).should eql? 0
-      find_nodes(destination).each do |node_name|
-        # Checking that snapshot was created
-        output = provider == 'docker' ? "ubuntu_trusty_docker\nsnapshot_test_#{provider}" : "snapshot_test_#{provider}"
-        `#{cmd_snapshot_list(destination)}`.should eql? output
-        # Checking that in initial machine mariadb is not installed
-        execute_bash(cmd_run_command('"mysql -V"', destination, node_name)).should_not eql? 0
-        execute_bash(cmd_run_command('"cat /etc/apt/"', destination, node_name)).should_not eql? 0
-        # Installing mariadb 10 (it's not installed by default)
-        execute_bash(cmd_setup_product_repo('mariadb', '10.0', destination, node_name)).should eql? 0
-        execute_bash(cmd_install_product('mariadb', destination, node_name)).should eql? 0
-        execute_bash(cmd_run_command('"mysql -V"', destination, node_name)).should eql? 0
-        execute_bash(cmd_run_command('"cat /etc/apt/"', destination, node_name)).should eql? 0
+      it 'creating snaphsots for each provider and each node' do
+        execute_bash(cmd_snapshot_take_all(destination)).should eql? 0
       end
-      # Reverting snapshots
-      execute_bash(cmd_snapshot_revert_all(destination)).should eql? 0
       find_nodes(destination).each do |node_name|
-        # Checking that on reverted machine mariadb is not installed
-        execute_bash(cmd_run_command('"mysql -V"', destination, node_name)).should_not eql? 0
-        execute_bash(cmd_run_command('"cat /etc/apt/"', destination, node_name)).should_not eql? 0
+        it 'checking that snapshot was created' do
+          output = provider == 'docker' ? "ubuntu_trusty_docker\nsnapshot_test_#{provider}" : "snapshot_test_#{provider}"
+          `#{cmd_snapshot_list(destination)}`.should eql? output
+        end
+        it 'checking that on initial machine mariadb is not installed' do
+          execute_bash(cmd_run_command('"mysql -V"', destination, node_name)).should_not eql? 0
+        end
+
+        it 'checking mariadb source list on initial machine is not installed' do
+          execute_bash(cmd_run_command('"cat /etc/apt/"', destination, node_name)).should_not eql? 0
+        end
+
+        execute_bash(cmd_setup_product_repo('mariadb', '10.0', destination, node_name))
+        execute_bash(cmd_install_product('mariadb', destination, node_name))
+
+        it 'checking that in initial machine mariadb is installed (after installation)' do
+          execute_bash(cmd_run_command('"mysql -V"', destination, node_name)).should eql? 0
+        end
+
+        it 'checking mariadb source list in initial machine is installed (after installation)' do
+          execute_bash(cmd_run_command('"cat /etc/apt/"', destination, node_name)).should eql? 0
+        end
+
+      end
+      it 'reverting snapshots' do
+        execute_bash(cmd_snapshot_revert_all(destination)).should eql? 0
+      end
+      find_nodes(destination).each do |node_name|
+        it 'checking that in initial machine mariadb is not installed (after reverting to initial machine)' do
+          execute_bash(cmd_run_command('"mysql -V"', destination, node_name)).should_not eql? 0
+        end
+
+        it 'checking mariadb source list in initial machine is not installed (after reverting to initial machine)' do
+          execute_bash(cmd_run_command('"cat /etc/apt/"', destination, node_name)).should_not eql? 0
+        end
       end
     end
   end
