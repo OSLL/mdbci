@@ -9,7 +9,7 @@ RUN rm -f /var/lib/rpm/__*
 RUN rpm --rebuilddb -v -v
 
 RUN yum -y update
-RUN yum -y install openssh-server openssh-clients sudo systemd
+RUN yum -y install openssh-server openssh-clients sudo systemd initscripts
 RUN yum clean all
 
 VOLUME [ “/sys/fs/cgroup” ]

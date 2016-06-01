@@ -171,7 +171,6 @@ config.omnibus.chef_version = '12.9.38'
 
   # Vagrantfile for Docker provider + Dockerfiles
   def Generator.getDockerDef(cookbook_path, name, ssh_pty, template_path, provisioned, platform, platform_version, box)
-
     if template_path
       templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote("/home/vagrant/cnf_templates")
     else
@@ -193,7 +192,7 @@ config.omnibus.chef_version = '12.9.38'
     if platform == "centos" or platform == "redhat"
       dockerdef = dockerdef + "\t\t"+'d.privileged = true' + "\n "\
               + "\t\t"+'d.create_args = ["-v", "/sys/fs/cgroup:/sys/fs/cgroup"]' + "\n"
-      if platform_version == 7
+      if platform_version == "7"
         dockerdef = dockerdef + "\t\t"+'d.cmd = ["/usr/sbin/init"]' + "\n"
       end
     end
