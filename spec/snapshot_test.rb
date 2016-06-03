@@ -95,9 +95,9 @@ end
 
 def start_machines(destination)
   if execute_bash(cmd_up(destination)) != 0
-    puts "#{TEST_ERROR_TAG } removing failed configurations (to avoid mess)"
+    puts "#{TEST_ERROR_TAG} removing failed configurations (to avoid mess)"
     remove_config_and_machines(destination)
-    raise "#{TEST_ERROR_TAG } #{CANNOT_START_MACHINE_ERROR} #{destination}"
+    raise "#{TEST_ERROR_TAG} #{CANNOT_START_MACHINE_ERROR} #{destination}"
   end
 end
 
@@ -135,7 +135,7 @@ describe 'Run preparation' do
     destination = "#{CONFIG_PREFIX}_#{provider}"
     puts "#{TEST_INFO_TAG } removing old generated configuration: #{destination}"
     remove_config_and_machines(destination)
-    puts "#{TEST_INFO_TAG } generating and starting machines"
+    puts "#{TEST_INFO_TAG } generating"
     raise "#{TEST_ERROR_TAG } #{CANNOT_GENERATE_CONFIG_ERROR} #{destination}" if execute_bash(cmd_generate(provider, destination)) != 0
   end
 end
@@ -154,7 +154,7 @@ PROVIDERS.each do |provider|
     end
 
     # Each node testing
-    describe "#{provider}" do
+    it "#{provider}" do
       find_nodes(destination).each do |node_name|
 
         # Box will be needed to work with docker (as it's the very first snapshot name)

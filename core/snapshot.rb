@@ -28,6 +28,8 @@ class Snapshot
   PATH_TO_NODES_OPTION = '--path-to-nodes'
   SNAPSHOT_NAME_OPTION = '--snapshot-name'
 
+  SNAPSHOT_GLOBAL_PREFIX = 'mdbci'
+
   LIBVIRT = 'libvirt'
   DOCKER = 'docker'
   VIRTUALBOX = 'virtualbox'
@@ -236,18 +238,18 @@ class Snapshot
     raise SNAPSHOT_ALREADY_EXISTS if get_snapshots(node_name).include? snapshot_name
     case @provider
       when LIBVIRT
-        execute_bash("virsh snapshot-create-as --domain #{@nodes_directory_name}_#{node_name} --name #{snapshot_name}", false, false)
+        execute_bash("virsh snapshot-create-as --domain #{@nodes_directory_name}_#{node_name} --name #{SNAPSHOT_GLOBAL_PREFIX}_#{snapshot_name}", false, false)
       when DOCKER
         raise DOCKER_IMAGE_NAME_EXISTS if get_docker_images.include? snapshot_name
         raise DOCKER_SNAPSHOT_NAME_MUST_BE_DOWNCASE unless snapshot_name == snapshot_name.to_s.downcase
         docker_containers_ids = get_docker_containers_ids
         raise "#{node_name} #{DOCKER_MACHINE_NOT_CREATED}" unless docker_containers_ids.include? node_name
-        execute_bash("docker commit -p #{docker_containers_ids[node_name]} #{snapshot_name}", false, false)
+        execute_bash("docker commit -p #{docker_containers_ids[node_name]} #{SNAPSHOT_GLOBAL_PREFIX}_#{snapshot_name}", false, false)
         add_docker_snapshot_information(node_name, snapshot_name)
       else
         current_dir = Dir.pwd
         Dir.chdir @path_to_nodes
-        execute_bash("vagrant snap take #{node_name} --name=#{snapshot_name}", false, false)
+        execute_bash("vagrant snap take #{node_name} --name=#{SNAPSHOT_GLOBAL_PREFIX}_#{snapshot_name}", false, false)
         Dir.chdir current_dir
     end
   end
