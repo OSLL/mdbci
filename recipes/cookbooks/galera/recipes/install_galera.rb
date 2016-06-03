@@ -7,7 +7,7 @@ include_recipe "galera::galera_repos"
 [
   "rsync", "sudo", "sed", 
   "coreutils", "util-linux", "curl", "grep", 
-  "findutils", "gawk", "iproute", "initscripts", "debianutils"
+  "findutils", "gawk", "iproute"
 ].each do |pkg|
   package pkg
 end
