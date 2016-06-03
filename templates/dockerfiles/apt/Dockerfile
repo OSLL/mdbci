@@ -4,7 +4,7 @@ ENV container docker
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update -y
-RUN apt-get install -y openssh-server sudo systemd-services
+RUN apt-get install -y openssh-server sudo systemd-services initscripts debianutils
 RUN apt-get clean -y
 
 VOLUME [ “/sys/fs/cgroup” ]
