@@ -8,6 +8,7 @@ class Snapshot
 
   PATH_TO_NODES_OPTION_REQUIRED = '--path-to-nodes option must be specified'
   SNAPSHOT_NAME_AND_NODE_NAME_OPTIONS_REQUIRED = '--node-name and --snapshot-name must be specified both or not at all'
+  NODE_NAME_OPTIONS_REQUIRED = '--node-name must be specified'
 
   NON_ZERO_BASH_EXIT_CODE_ERROR = 'command exited with non zero exit code'
 
@@ -95,11 +96,7 @@ class Snapshot
           raise SNAPSHOT_NAME_AND_NODE_NAME_OPTIONS_REQUIRED
         end
       when ACTION_LIST
-        if !@node_name.to_s.empty?
-          list_snapshot node_name
-        else
-          list_snapshots
-        end
+        list_snapshots node_name
     end
     return 0
   end
@@ -207,6 +204,7 @@ class Snapshot
   # args[0] node name
   # no arguments => all nodes
   def get_snapshots(node_name)
+    raise NODE_NAME_OPTIONS_REQUIRED if node_name.to_s.empty?
     case @provider
       when LIBVIRT
         _, output = execute_bash("virsh -q snapshot-list --domain #{@nodes_directory_name}_#{node_name} | awk '{print $1}'", true, true)
@@ -224,14 +222,8 @@ class Snapshot
 
   # args[0] node name
   # no arguments => all nodes
-  def list_snapshot(node_name)
+  def list_snapshots(node_name)
     puts get_snapshots node_name
-  end
-
-  def list_snapshots
-    @nodes.each do |node_name|
-      list_snapshot node_name
-    end
   end
 
   def take_snapshot(node_name, snapshot_name)
