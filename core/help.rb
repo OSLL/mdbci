@@ -52,8 +52,17 @@ mdbci [option] <show | setup | generate>
 -i, --platform-version
   Platform version for the show boxes command. Must be used together with --platform option!
 
+-pn, --path-to-nodes
+  path to directory with nodes
+
+-nn, --node-name
+  name of the node
+
+-sn, --snapshot-name
+  name of the snapshot
+
 COMMANDS:
-  show [platforms, providers, versions, network, repos [config | config/node], keyfile config/node ]
+  show [platforms, providers, versions, network, repos, snapshot [config | config/node], keyfile config/node ]
   generate
   setup [boxes]
   show boxes --platform 'box platform' --platform-version 'box platform version'
@@ -63,6 +72,7 @@ COMMANDS:
   setup_repo --product <product_name> config/node
   install_product --product <product_name> config/node
   public_keys --key keyfile.pem config/node
+  snapshot --path-to-nodes T [--node-name N --snapshot-name S]
 
 
 EXAMPLES:

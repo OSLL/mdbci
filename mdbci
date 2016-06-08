@@ -25,7 +25,10 @@ opts = GetoptLong.new(
     ['--product-version','-v',GetoptLong::REQUIRED_ARGUMENT],
     ['--key','-k',GetoptLong::REQUIRED_ARGUMENT],
     ['--platform','-o',GetoptLong::REQUIRED_ARGUMENT],
-    ['--platform-version','-i',GetoptLong::REQUIRED_ARGUMENT]
+    ['--platform-version','-i',GetoptLong::REQUIRED_ARGUMENT],
+    ['--path-to-nodes', GetoptLong::REQUIRED_ARGUMENT],
+    ['--node-name', GetoptLong::REQUIRED_ARGUMENT],
+    ['--snapshot-name', GetoptLong::REQUIRED_ARGUMENT]
 )
 
 $session = Session.new
@@ -90,6 +93,15 @@ begin
       when '--platform-version'
         if arg != ''; $session.boxPlatformVersion = arg; end
 
+      when '--path-to-nodes'
+        $session.path_to_nodes = arg
+
+      when '--node-name'
+        $session.node_name = arg
+
+      when '--snapshot-name'
+        $session.snapshot_name = arg
+
       else
         $out.error 'Option is not supported: '+opt
     end
@@ -98,7 +110,7 @@ begin
     $out.error error.backtrace.join("\n")
     $out.error error.to_s
     exit 1
-end  
+end
 #Hello message
 $out.info 'MariaDb CI CLI'
 $out.info 'mdbci called with: '+ARGV.to_s
