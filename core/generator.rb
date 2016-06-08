@@ -72,6 +72,8 @@ config.vm.boot_timeout = 60
 ### Vagrant configuration block  ###
 ####################################
 Vagrant.configure(2) do |config|
+
+config.omnibus.chef_version = '12.9.38'
     EOF
   end
 
@@ -168,8 +170,7 @@ Vagrant.configure(2) do |config|
   end
 
   # Vagrantfile for Docker provider + Dockerfiles
-  def Generator.getDockerDef(cookbook_path, name, ssh_pty, template_path, provisioned)
-
+  def Generator.getDockerDef(cookbook_path, name, ssh_pty, template_path, provisioned, platform, platform_version, box)
     if template_path
       templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote("/home/vagrant/cnf_templates")
     else
@@ -182,11 +183,22 @@ Vagrant.configure(2) do |config|
     dockerdef = "\n#  --> Begin definition for machine: " + name +"\n"\
             + "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + ssh_pty_option + "\n" \
-            + templatedef  + "\n" \
+            + templatedef + "\n" \
             + "\t"+name+'.vm.provider "docker" do |d|' + "\n" \
-            + "\t\t"+'d.build_dir = ' + quote(name+"/") + "\n" \
-            + "\t\t"+'d.has_ssh = true' + "\n" \
-            + "\t\t"+'d.privileged = true' + "\n\tend"
+            + "\t\t"+'d.image = ' + quote(box) + "\n" \
+            + "\t\t"+'d.privileged = true' + "\n "\
+            + "\t\t"+'d.has_ssh = true' + "\n"
+
+    if platform == "centos" or platform == "redhat"
+      dockerdef = dockerdef + "\t\t"+'d.privileged = true' + "\n "\
+              + "\t\t"+'d.create_args = ["-v", "/sys/fs/cgroup:/sys/fs/cgroup"]' + "\n"
+      if platform_version == "7"
+        dockerdef = dockerdef + "\t\t"+'d.cmd = ["/usr/sbin/init"]' + "\n"
+      end
+    end
+
+    dockerdef = dockerdef+ "\t\t"+'d.env = {"container"=>"docker"}' + "\n\tend"
+
     if provisioned
       dockerdef += "\t##--- Chef binding ---\n"\
             + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
@@ -198,6 +210,7 @@ Vagrant.configure(2) do |config|
 
     return dockerdef
   end
+
   # generate Dockerfiles
   def Generator.copyDockerfiles(path, name, platform, platform_version)
     # dir for Dockerfile
@@ -206,34 +219,25 @@ Vagrant.configure(2) do |config|
       $out.error "Folder already exists: " + node_path
     elsif
       #FileUtils.rm_rf(node_path)
-      Dir.mkdir(node_path)
+    Dir.mkdir(node_path)
     end
 
     # TODO: make other solution, avoid multi IF
     # copy Dockerfiles to configuration dir nodes
-    dockerfile_path = $session.mdbciDir+"/templates/dockerfiles/"
+    dockerfile_path = $session.mdbciDir+"/templates/dockerfiles"
     case platform
-      when "ubuntu"
-        if platform_version == "trusty"
-          dockerfile_path += "ubuntu/trusty/Dockerfile"
-        else
-          dockerfile_path += "ubuntu/precise/Dockerfile"
-        end
-      when "centos"
-        if platform_version == "6"
-          dockerfile_path += "centos/6/Dockerfile"
-        elsif platform_version == "7"
-          dockerfile_path += "centos/7/Dockerfile"
-        end
+      when "ubuntu", "debian"
+        dockerfile_path = "#{dockerfile_path}/apt/Dockerfile"
+      when "centos", "redhat"
+        dockerfile_path = "#{dockerfile_path}/yum/Dockerfile"
       when "suse"
-        # gen for suse
-        p "Platform: " + platform.to_s
+        dockerfile_path = "#{dockerfile_path}/zypper/Dockerfile"
       else
-        p "Platform: " + platform.to_s
+        raise "Uncknown platform"
     end
-
     FileUtils.cp_r dockerfile_path, node_path
-
+    `sed -i 's/###PLATFORM###/#{platform}/g' #{node_path}/Dockerfile`
+    `sed -i 's/###PLATFORM_VERSION###/#{platform_version}/g' #{node_path}/Dockerfile`
   end
 
   #  Vagrantfile for AWS provider
@@ -373,7 +377,7 @@ Vagrant.configure(2) do |config|
 
   end
 
-def Generator.checkPath(path, override)
+  def Generator.checkPath(path, override)
     if Dir.exist?(path) && !override
       $out.error 'Folder already exists: ' + path
       $out.error 'Please specify another name or delete'
@@ -451,7 +455,7 @@ def Generator.checkPath(path, override)
         when 'libvirt'
           machine = getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'docker'
-          machine = getDockerDef(cookbook_path, name, ssh_pty, template_path, provisioned)
+          machine = getDockerDef(cookbook_path, name, ssh_pty, template_path, provisioned, platform, platform_version, box)
           copyDockerfiles(path, name, platform, platform_version)
         else
           $out.warning 'Configuration type invalid! It must be vbox, aws, libvirt or docker type. Check it, please!'
@@ -501,17 +505,17 @@ def Generator.checkPath(path, override)
       end
       vagrant.puts Generator.vagrantConfigFooter
     else
-        # Generate VBox/Qemu Configuration
-        vagrant.puts Generator.vagrantConfigHeader
-        vagrant.puts Generator.providerConfig
+      # Generate VBox/Qemu Configuration
+      vagrant.puts Generator.vagrantConfigHeader
+      vagrant.puts Generator.providerConfig
 
-        config.each do |node|
-          unless (node[1]['box'].nil?)
-            $out.info 'Generate VBox|Libvirt|Docker Node definition for ['+node[0]+']'
-            vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
-          end
+      config.each do |node|
+        unless (node[1]['box'].nil?)
+          $out.info 'Generate VBox|Libvirt|Docker Node definition for ['+node[0]+']'
+          vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)
         end
-        vagrant.puts Generator.vagrantConfigFooter
+      end
+      vagrant.puts Generator.vagrantConfigFooter
     end
 
     vagrant.close

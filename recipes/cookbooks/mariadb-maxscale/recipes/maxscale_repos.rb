@@ -47,4 +47,17 @@ case node[:platform_family]
       action :create
     end
 
+    execute "Refreshing repositories (to avoid password issue)" do
+      command "zypper ref"
+    end
+
+    execute "Removing maxscale repo (it will be recreated right after removing)" do
+      command "rm /etc/zypp/repos.d/maxscale.repo"
+    end
+
+    template "/etc/zypp/repos.d/maxscale.repo" do
+      source "mdbci.maxscale.suse.erb"
+      action :create
+    end
+
 end
