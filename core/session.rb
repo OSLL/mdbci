@@ -365,13 +365,9 @@ class Session
   end
 
   def validate_template
-    raise "Template type is required, next types are supported: #{TEMPLATE_VALIDATION_TYPES}" unless $session.templateValidationType
-    unless TEMPLATE_VALIDATION_TYPES.include? $session.templateValidationType
-      raise "No such validation template is found #{$session.templateValidationType}"
-    end
     raise 'Template must be specified!' unless $session.configFile
     begin
-      schema = JSON.parse(File.read "templates/schemas/#{$session.templateValidationType}.json")
+      schema = JSON.parse(File.read 'templates/schemas/template.json')
       json = JSON.parse(File.read $session.configFile)
       JSON::Validator.validate!(schema, json)
       $out.info "Template #{$session.configFile} is valid"
