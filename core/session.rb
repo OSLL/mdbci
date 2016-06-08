@@ -47,6 +47,14 @@ class Session
   PLATFORM = 'platform'
   VAGRANT_NO_PARALLEL = '--no-parallel'
 
+  CHEF_NOT_FOUND_ERROR = <<EOF
+The chef binary (either `chef-solo` or `chef-client`) was not found on
+the VM and is required for chef provisioning. Please verify that chef
+is installed and that the binary is available on the PATH.
+EOF
+
+  OUTPUT_NODE_NAME_REGEX = "==>\s+(.*):{1}"
+
   def initialize
     @boxesDir = './BOXES'
     @repoDir = './repo.d'
@@ -581,14 +589,40 @@ class Session
 
       cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{(up_type ? config[1] : '')}"
       $out.info "Actual command: #{cmd_up}"
-      status = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
-        stdin.close
-        stdout.each_line { |line| $out.info line }
-        stdout.close
-        stderr.each_line { |line| $out.error line }
-        stderr.close
-        wthr.value
-      end
+      chef_not_found_node = nil
+      status = nil
+      begin
+        chef_not_found_node = nil
+        status = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
+          stdin.close
+          stdout.each_line do |line|
+            $out.info line
+            chef_not_found_node = line if @nodesProvider == 'aws'
+          end
+          stdout.close
+          error = stderr.read
+          stderr.close
+          if @nodesProvider == 'aws' and error.to_s.include? CHEF_NOT_FOUND_ERROR
+            chef_not_found_node = chef_not_found_node.to_s.match(OUTPUT_NODE_NAME_REGEX).captures[0]
+          else
+            error.each_line { |line| $out.error line }
+            chef_not_found_node = nil
+          end
+          wthr.value
+        end
+        if chef_not_found_node
+          $out.warning "Chef not is found on aws node: #{chef_not_found_node}, applying quick fix..."
+          cmd_provision = "vagrant provision #{chef_not_found_node}"
+          status = Open3.popen3(cmd_provision) do |stdin, stdout, stderr, wthr|
+            stdin.close
+            stdout.each_line { |line| $out.info line }
+            stdout.close
+            stderr.each_line { |line| $out.error line }
+            stderr.close
+            wthr.value
+          end
+        end
+      end while chef_not_found_node != nil
       unless status.success?
         $out.error 'Bringing up failed'
         exit_code = status.exitstatus
@@ -604,6 +638,7 @@ class Session
         $out.warning 'Checking for dead machines and checking Chef runs on machines'
         nodes.each do |machine_name|
           status = `vagrant status #{machine_name}`.split("\n")[2]
+          $out.info "#{machine_name} status == #{status}"
           unless status.include? 'running'
             dead_machines.push(machine_name)
             next
@@ -633,6 +668,7 @@ class Session
               cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{machine}"
               success = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
                 stdout.each_line { |line| $out.info line }
+                stderr.each_line { |line| $out.error line }
                 wthr.value.success?
               end
               success
@@ -641,6 +677,7 @@ class Session
               $out.error 'Some machines are still dead:'
               dead_machines.each { |machine| $out.error "\t#{machine}" }
             else
+              $out.info "All dead machines successfuly resurrected"
               break
             end
           end
@@ -653,6 +690,7 @@ class Session
             cmd_up = "vagrant provision #{machine}"
             success = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
               stdout.each_line { |line| $out.info line }
+              stderr.each_line { |line| $out.error line }
               wthr.value.success?
             end
             success
@@ -668,6 +706,7 @@ class Session
                 cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{machine}"
                 success = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
                   stdout.each_line { |line| $out.info line }
+                  stderr.each_line { |line| $out.error line }
                   wthr.value.success?
                 end
                 success
@@ -676,6 +715,7 @@ class Session
                 $out.error 'Some machines are still have broken Chef run:'
                 machines_with_broken_chef.each { |machine| $out.error "\t#{machine}" }
               else
+                $out.info "All broken_chef machines successfuly reprovisioned."
                 break
               end
             end

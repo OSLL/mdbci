@@ -4,7 +4,7 @@ ENV container docker
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update -y
-RUN apt-get install -y openssh-server sudo systemd-services
+RUN apt-get install -y openssh-server sudo systemd-services initscripts debianutils
 RUN apt-get clean -y
 
 VOLUME [ “/sys/fs/cgroup” ]
@@ -19,7 +19,7 @@ RUN ssh-keygen -q -N "" -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key
 RUN mkdir -p /var/run/sshd
 RUN chmod 0755 /var/run/sshd
 
-RUN useradd -s /bin/bash vagrant
+RUN useradd -m -s /bin/bash vagrant
 RUN echo -n 'vagrant:vagrant' | chpasswd
 RUN mkdir -p /home/vagrant/.ssh
 RUN chmod 0700 /home/vagrant/.ssh
