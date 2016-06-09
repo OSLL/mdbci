@@ -5,10 +5,61 @@ require 'open3'
 require_relative 'spec_helper'
 require_relative '../core/snapshot'
 
-PROVIDERS = %w(libvirt docker virtualbox)
-
 PATH_TO_TEMPLATES = 'spec/test_machine_configurations'
 CONFIG_PREFIX = 'snapshot_test'
+DESTINATIONS = %W(#{CONFIG_PREFIX}_libvirt #{CONFIG_PREFIX}_docker #{CONFIG_PREFIX}_virtualbox)
+NODES_NAMES = %W{node0}
+SNAPSHOTS_NAMES = {
+    DESTINATIONS[0] => {
+        :initial => "#{DESTINATIONS[0]}_initial",
+        :initial_mariadb => "#{DESTINATIONS[0]}_initial_mariadb"
+    },
+    DESTINATIONS[1] => {
+        :initial => "#{DESTINATIONS[1]}_initial",
+        :initial_mariadb => "#{DESTINATIONS[1]}_initial_mariadb"
+    },
+    DESTINATIONS[2] => {
+        :initial => "#{DESTINATIONS[2]}_initial",
+        :initial_mariadb => "#{DESTINATIONS[2]}_initial_mariadb"
+    }
+}
+DOCKER_SNAPSHOT_LIST_INITIAL = <<EOF
+ubuntu_trusty_docker
+mdbci_snapshot_snapshot_test_docker_initial_snapshot_test_docker_node0
+EOF
+DOCKER_SNAPSHOT_LIST_INITIAL_MARIADB = <<EOF
+ubuntu_trusty_docker
+mdbci_snapshot_snapshot_test_docker_initial_snapshot_test_docker_node0
+mdbci_snapshot_snapshot_test_docker_initial_mariadb_snapshot_test_docker_node0
+EOF
+LIBVIRT_SNAPSHOT_LIST_INITIAL = <<EOF
+mdbci_snapshot_snapshot_test_libvirt_initial_snapshot_test_libvirt_node0
+EOF
+LIBVIRT_SNAPSHOT_LIST_INITIAL_MARIADB = <<EOF
+mdbci_snapshot_snapshot_test_libvirt_initial_snapshot_test_libvirt_node0
+mdbci_snapshot_snapshot_test_libvirt_initial_mariadb_snapshot_test_libvirt_node0
+EOF
+VIRTUALBOX_SNAPSHOT_LIST_INITIAL = <<EOF
+mdbci_snapshot_snapshot_test_virtualbox_initial_snapshot_test_virtualbox_node0
+EOF
+VIRTUALBOX_SNAPSHOT_LIST_INITIAL_MARIADB = <<EOF
+mdbci_snapshot_snapshot_test_virtualbox_initial_snapshot_test_virtualbox_node0
+mdbci_snapshot_snapshot_test_virtualbox_initial_mariadb_snapshot_test_virtualbox_node0
+EOF
+SNAPSHOT_LIST_OUTPUT = {
+    DESTINATIONS[0] => {
+        :initial => LIBVIRT_SNAPSHOT_LIST_INITIAL,
+        :initial_mariadb => LIBVIRT_SNAPSHOT_LIST_INITIAL_MARIADB
+    },
+    DESTINATIONS[1] => {
+        :initial => DOCKER_SNAPSHOT_LIST_INITIAL,
+        :initial_mariadb => DOCKER_SNAPSHOT_LIST_INITIAL_MARIADB
+    },
+    DESTINATIONS[2] => {
+        :initial => VIRTUALBOX_SNAPSHOT_LIST_INITIAL,
+        :initial_mariadb => VIRTUALBOX_SNAPSHOT_LIST_INITIAL_MARIADB
+    }
+}
 
 VAGRANT_DESTROY_FORCE = 'vagrant destroy -f'
 TEST_INFO_TAG = 'TEST_INFO:'
@@ -21,34 +72,6 @@ CANNOT_GENERATE_CONFIG_ERROR = 'can not generate configuration'
 CANNOT_START_MACHINE_ERROR = 'can start machine'
 NODES_NOT_FOUND_ERROR = 'nodes are not found'
 
-def docker_list_output_initial(node_box, provider)
-  return <<EOF
-#{node_box}
-mdbci_snapshot_snapshot_test_initial_#{provider}
-EOF
-end
-
-def docker_list_output_with_mariadb(node_box, provider)
-  return <<EOF
-#{node_box}
-mdbci_snapshot_snapshot_test_initial_#{provider}
-mdbci_snapshot_snapshot_test_#{provider}
-EOF
-end
-
-def standard_list_output_initial(provider)
-  return <<EOF
-mdbci_snapshot_snapshot_test_initial_#{provider}
-EOF
-end
-
-def standard_list_output_with_mariadb(provider)
-  return <<EOF
-mdbci_snapshot_snapshot_test_initial_#{provider}
-mdbci_snapshot_snapshot_test_#{provider}
-EOF
-end
-
 def execute_bash(cmd)
   puts "#{TEST_INFO_TAG} executing #{cmd}"
   exit_code = Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
@@ -59,7 +82,7 @@ def execute_bash(cmd)
     stderr.close
     wait_thr.value.exitstatus
   end
-  puts "RETEUEN CODE = #{exit_code}"
+  puts "#{TEST_INFO_TAG} RETURN CODE = #{exit_code}"
   return exit_code
 end
 
@@ -75,8 +98,8 @@ def find_nodes(destination)
   return nodes
 end
 
-def cmd_generate(provider, destination)
-  return "./mdbci --template #{PATH_TO_TEMPLATES}/#{CONFIG_PREFIX}_#{provider}.json generate #{destination}"
+def cmd_generate(destination)
+  return "./mdbci --template #{PATH_TO_TEMPLATES}/#{destination}.json generate #{destination}"
 end
 
 def cmd_up(destination)
@@ -103,12 +126,26 @@ def cmd_snapshot_take(destination, node_name, snapshot_name)
   return "./mdbci snapshot take --path-to-nodes #{destination} --node-name #{node_name} --snapshot-name #{snapshot_name}"
 end
 
+def cmd_snapshots_take(destination, snapshot_name)
+  return "./mdbci snapshot take --path-to-nodes #{destination} --snapshot-name #{snapshot_name}"
+end
+
 def cmd_snapshot_revert(destination, node_name, snapshot_name)
   return "./mdbci snapshot revert --path-to-nodes #{destination} --node-name #{node_name} --snapshot-name #{snapshot_name}"
 end
 
+def cmd_snapshots_revert(destination, snapshot_name)
+  return "./mdbci snapshot revert --path-to-nodes #{destination} --snapshot-name #{snapshot_name}"
+end
+
 def cmd_snapshot_remove(destination, node_name, snapshot_name)
   return "./mdbci snapshot remove --path-to-nodes #{destination} --node-name #{node_name} --snapshot-name #{snapshot_name}"
+end
+
+def generate_machines(destination)
+  if execute_bash(cmd_generate(destination)) != 0
+    raise "#{TEST_ERROR_TAG} #{CANNOT_GENERATE_CONFIG_ERROR} #{destination}"
+  end
 end
 
 def start_machines(destination)
@@ -127,6 +164,8 @@ def remove_config_and_machines(destination)
     Dir.chdir current_dir
     FileUtils.rm_rf destination
   end
+  execute_bash('docker rmi mdbci_snapshot_snapshot_test_docker_initial_snapshot_test_docker_node0')
+  execute_bash('docker rmi mdbci_snapshot_snapshot_test_docker_initial_mariadb_snapshot_test_docker_node0')
 end
 
 def clear_network_configurations
@@ -148,47 +187,29 @@ def clear_network_configurations
   end
 end
 
-describe 'Run preparation' do
-  PROVIDERS.each do |provider|
-    destination = "#{CONFIG_PREFIX}_#{provider}"
-    puts "#{TEST_INFO_TAG } removing old generated configuration: #{destination}"
-    remove_config_and_machines(destination)
-    puts "#{TEST_INFO_TAG } generating"
-    raise "#{TEST_ERROR_TAG } #{CANNOT_GENERATE_CONFIG_ERROR} #{destination}" if execute_bash(cmd_generate(provider, destination)) != 0
-  end
-end
+DESTINATIONS.each do |destination|
 
-
-PROVIDERS.each do |provider|
-  describe "Snapshot test for provider: #{provider}" do
-
-    destination = "#{CONFIG_PREFIX}_#{provider}"
+  describe "Individual nodes snapshot test in destination: #{destination}" do
 
     before :all do
+      remove_config_and_machines destination
       clear_network_configurations
+      generate_machines destination
       start_machines destination
     end
+
     after :all do
       remove_config_and_machines destination
     end
 
-    # Each node testing
-    find_nodes(destination).each do |node_name|
-
-      node_box = `./mdbci show box #{destination}/#{node_name} --silent`.delete "\n"
+    NODES_NAMES.each do |node_name|
 
       it "creating initial snapshot in #{destination} for #{node_name}" do
-        execute_bash(cmd_snapshot_take(destination, node_name, "snapshot_test_initial_#{provider}")).should eql 0
+        execute_bash(cmd_snapshot_take(destination, node_name, SNAPSHOTS_NAMES[destination][:initial])).should eql 0
       end
 
       it 'checking that snapshot was created' do
-        # For docker we need to get first image (first snapshot) to check right output
-        # because docker has snapshot when it's created (docker snapshot == docker image)
-        if provider == 'docker'
-          `#{cmd_snapshot_list(destination, node_name)}`.should eql docker_list_output_initial(node_box, provider)
-        else
-          `#{cmd_snapshot_list(destination, node_name)}`.should eql standard_list_output_initial(provider)
-        end
+        `#{cmd_snapshot_list(destination, node_name)}`.should eql SNAPSHOT_LIST_OUTPUT[destination][:initial]
       end
 
       it 'installing mariadb 5.5 on initial machine and checking it' do
@@ -198,21 +219,15 @@ PROVIDERS.each do |provider|
       end
 
       it "creating snapshot with mariadb 5.5 installed in #{destination} for #{node_name}" do
-        execute_bash(cmd_snapshot_take(destination, node_name, "snapshot_test_#{provider}")).should eql 0
+        execute_bash(cmd_snapshot_take(destination, node_name, SNAPSHOTS_NAMES[destination][:initial_mariadb])).should eql 0
       end
 
       it 'checking that snapshot was created' do
-        # For docker we need to get first image (first snapshot) to check right output
-        # because docker has snapshot when it's created (docker snapshot == docker image)
-        if provider == 'docker'
-          `#{cmd_snapshot_list(destination, node_name)}`.should eql docker_list_output_with_mariadb(node_box, provider)
-        else
-          `#{cmd_snapshot_list(destination, node_name)}`.should eql standard_list_output_with_mariadb(provider)
-        end
+        `#{cmd_snapshot_list(destination, node_name)}`.should eql SNAPSHOT_LIST_OUTPUT[destination][:initial_mariadb]
       end
 
-      it 'reverting snapshots (to initial machine)' do
-        execute_bash(cmd_snapshot_revert(destination, node_name, "mdbci_snapshot_snapshot_test_initial_#{provider}")).should eql 0
+      it "reverting #{node_name} to initial snapshot" do
+        execute_bash(cmd_snapshot_revert(destination, node_name, SNAPSHOTS_NAMES[destination][:initial])).should eql 0
       end
 
       it 'checking that mariadb is not installed on reverted machine' do
@@ -225,8 +240,8 @@ PROVIDERS.each do |provider|
         execute_bash(cmd_run_command('"mysql -V | grep 10.0"', destination, node_name)).should eql 0
       end
 
-      it 'reverting snapshots to state with mariadb 5.5 installed' do
-        execute_bash(cmd_snapshot_revert(destination, node_name, "mdbci_snapshot_snapshot_test_#{provider}")).should eql 0
+      it "reverting #{node_name} to snapshot with mariadb 5.5 installed" do
+        execute_bash(cmd_snapshot_revert(destination, node_name, SNAPSHOTS_NAMES[destination][:initial_mariadb])).should eql 0
       end
 
       it 'checking that on reverted machine mariadb has version 5.5' do
@@ -235,31 +250,120 @@ PROVIDERS.each do |provider|
 
       # Removing initial snapshot
       it 'removing initial snapshot' do
-        execute_bash(cmd_snapshot_remove(destination, node_name, "mdbci_snapshot_snapshot_test_initial_#{provider}")).should eql 0
+        execute_bash(cmd_snapshot_remove(destination, node_name, SNAPSHOTS_NAMES[destination][:initial])).should eql 0
       end
 
       # Removing last snapshot
-      if provider != 'docker'
+      if destination != DESTINATIONS[1] # DESTINATION[1] = snapshot_test_docker
         it 'removing snapshot with mariadb 5.5' do
-          execute_bash(cmd_snapshot_remove(destination, node_name, "mdbci_snapshot_snapshot_test_#{provider}")).should eql 0
+          execute_bash(cmd_snapshot_remove(destination, node_name, SNAPSHOTS_NAMES[destination][:initial_mariadb])).should eql 0
         end
       else
         # Docker now using last snapshot (image) with running machine and could not be deleted
-        it "trying to remove initial docker snapshot, but it's not going to happened (because snapshot is in use)" do
-          execute_bash(cmd_snapshot_remove(destination, node_name, "mdbci_snapshot_snapshot_test_#{provider}")).should_not eql 0
+        it "trying to remove last docker snapshot, but it's not going to happened (because snapshot is in use)" do
+          execute_bash(cmd_snapshot_remove(destination, node_name, SNAPSHOTS_NAMES[destination][:initial_mariadb])).should_not eql 0
         end
-        # So docker has after all 2 we have snapshots: first - is one that was created with 'mdbci up' and
-        # other one that we created manually, so we can't delete snapshot that we created manually
-        # so we will rollback docker machine to very first snapshot and after that delete last snapshot
-        it 'reverting docker machine to very first snapshot' do
-          execute_bash(cmd_snapshot_revert(destination, node_name, node_box)).should eql 0
+
+      end
+
+    end
+
+  end
+
+end
+
+DESTINATIONS.each do |destination|
+
+  describe "Buch of nodes snapshot test in destination: #{destination}" do
+
+    before :all do
+      remove_config_and_machines destination
+      clear_network_configurations
+      generate_machines destination
+      start_machines destination
+    end
+
+    after :all do
+      remove_config_and_machines destination
+    end
+
+    it "creating initial snapshots in #{destination} for all nodes" do
+      execute_bash(cmd_snapshots_take(destination, SNAPSHOTS_NAMES[destination][:initial])).should eql 0
+    end
+
+    NODES_NAMES.each do |node_name|
+
+      it 'checking that snapshot was created' do
+        `#{cmd_snapshot_list(destination, node_name)}`.should eql SNAPSHOT_LIST_OUTPUT[destination][:initial]
+      end
+
+      it 'installing mariadb 5.5 on initial machine and checking it' do
+        execute_bash(cmd_setup_product_repo('mariadb', '5.5', destination, node_name))
+        execute_bash(cmd_install_product('mariadb', destination, node_name))
+        execute_bash(cmd_run_command('"mysql -V | grep 5.5"', destination, node_name)).should eql 0
+      end
+
+    end
+
+    it "creating snapshot with mariadb 5.5 installed in #{destination} for all nodes" do
+      execute_bash(cmd_snapshots_take(destination, SNAPSHOTS_NAMES[destination][:initial_mariadb])).should eql 0
+    end
+
+    NODES_NAMES.each do |node_name|
+
+      it 'checking that snapshot was created' do
+        `#{cmd_snapshot_list(destination, node_name)}`.should eql SNAPSHOT_LIST_OUTPUT[destination][:initial_mariadb]
+      end
+
+    end
+
+    it 'reverting all nodes to initial snapshots' do
+      execute_bash(cmd_snapshots_revert(destination, SNAPSHOTS_NAMES[destination][:initial])).should eql 0
+    end
+
+    NODES_NAMES.each do |node_name|
+
+      it 'checking that mariadb is not installed on reverted machine' do
+        execute_bash(cmd_run_command('"mysql -V"', destination, node_name)).should_not eql 0
+      end
+
+      it 'installing mariadb 10.0 on initial machine and checking it' do
+        execute_bash(cmd_setup_product_repo('mariadb', '10.0', destination, node_name))
+        execute_bash(cmd_install_product('mariadb', destination, node_name))
+        execute_bash(cmd_run_command('"mysql -V | grep 10.0"', destination, node_name)).should eql 0
+      end
+
+    end
+
+    it 'reverting nodes to snapshot with mariadb 5.5 installed' do
+      execute_bash(cmd_snapshots_revert(destination, SNAPSHOTS_NAMES[destination][:initial_mariadb])).should eql 0
+    end
+
+    NODES_NAMES.each do |node_name|
+
+      it 'checking that on reverted machine mariadb has version 5.5' do
+        execute_bash(cmd_run_command('"mysql -V | grep 5.5"', destination, node_name)).should eql 0
+      end
+
+      # Removing initial snapshot
+      it 'removing initial snapshot' do
+        execute_bash(cmd_snapshot_remove(destination, node_name, SNAPSHOTS_NAMES[destination][:initial])).should eql 0
+      end
+
+      # Removing last snapshot
+      if destination != DESTINATIONS[1] # DESTINATION[1] = snapshot_test_docker
+        it 'removing snapshot with mariadb 5.5' do
+          execute_bash(cmd_snapshot_remove(destination, node_name, SNAPSHOTS_NAMES[destination][:initial_mariadb])).should eql 0
         end
-        # now we can delete last snapshot
-        it 'removing last docker snapshot' do
-          execute_bash(cmd_snapshot_remove(destination, node_name, "mdbci_snapshot_snapshot_test_#{provider}")).should eql 0
+      else
+        # Docker now using last snapshot (image) with running machine and could not be deleted
+        it "trying to remove last docker snapshot, but it's not going to happened (because snapshot is in use)" do
+          execute_bash(cmd_snapshot_remove(destination, node_name, SNAPSHOTS_NAMES[destination][:initial_mariadb])).should_not eql 0
         end
       end
 
     end
+
   end
+
 end

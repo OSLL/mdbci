@@ -7,7 +7,7 @@ class Snapshot
   SNAPSHOT_ACTION_REQUIRED = 'snapshot action is required (take, revert, delete)'
 
   PATH_TO_NODES_OPTION_REQUIRED = '--path-to-nodes option must be specified'
-  SNAPSHOT_NAME_AND_NODE_NAME_OPTIONS_REQUIRED = '--node-name and --snapshot-name must be specified both or not at all'
+  SNAPSHOT_NAME_AND_NODE_NAME_OPTIONS_REQUIRED = '--node-name and --snapshot-name must be specified both or only --snapshot-name'
   NODE_NAME_OPTIONS_REQUIRED = '--node-name must be specified'
 
   NON_ZERO_BASH_EXIT_CODE_ERROR = 'command exited with non zero exit code'
@@ -68,21 +68,22 @@ class Snapshot
     case action
       when ACTION_TAKE
         if !@node_name.to_s.empty? and !@snapshot_name.to_s.empty?
-          $out.info "Taking snapshot of #{@node_name} to #{SNAPSHOT_GLOBAL_PREFIX}_#{@snapshot_name}"
-          take_snapshot(@node_name, "#{SNAPSHOT_GLOBAL_PREFIX}_#{@snapshot_name}")
+          take_snapshot(@node_name, @snapshot_name)
+        elsif @node_name.to_s.empty? and !@snapshot_name.to_s.empty?
+          take_snapshots(@snapshot_name)
         else
           raise SNAPSHOT_NAME_AND_NODE_NAME_OPTIONS_REQUIRED
         end
       when ACTION_REVERT
         if !@node_name.to_s.empty? and !@snapshot_name.to_s.empty?
-          $out.info "Reverting node #{@node_name} to snapshot #{@snapshot_name}"
           revert_snapshot(@node_name, @snapshot_name)
+        elsif @node_name.to_s.empty? and !@snapshot_name.to_s.empty?
+          revert_snapshots(@snapshot_name)
         else
           raise SNAPSHOT_NAME_AND_NODE_NAME_OPTIONS_REQUIRED
         end
       when ACTION_REMOVE
         if !@node_name.to_s.empty? and !@snapshot_name.to_s.empty?
-          $out.info "Removing snapshot #{@snapshot_name} for node #{@node_name}"
           remove_snapshot(@node_name, @snapshot_name)
         else
           raise SNAPSHOT_NAME_AND_NODE_NAME_OPTIONS_REQUIRED
@@ -200,7 +201,7 @@ class Snapshot
     case @provider
       when LIBVIRT
         _, output = execute_bash("virsh -q snapshot-list --domain #{@nodes_directory_name}_#{node_name} | awk '{print $1}'", true, true)
-        return output.split("\n")
+        return output.split("\n").reverse
       when DOCKER
         return get_docker_snapshots(node_name)
       else
@@ -219,36 +220,46 @@ class Snapshot
   end
 
   def take_snapshot(node_name, snapshot_name)
-    raise SNAPSHOT_ALREADY_EXISTS if get_snapshots(node_name).include? snapshot_name
+    full_snapshot_name = "#{SNAPSHOT_GLOBAL_PREFIX}_#{snapshot_name}_#{@nodes_directory_name}_#{node_name}"
+    $out.info "Taking snapshot of #{node_name} to #{full_snapshot_name}"
+    raise SNAPSHOT_ALREADY_EXISTS if get_snapshots(node_name).include? full_snapshot_name
     case @provider
       when LIBVIRT
-        execute_bash("virsh snapshot-create-as --domain #{@nodes_directory_name}_#{node_name} --name #{snapshot_name}", false, false)
+        execute_bash("virsh snapshot-create-as --domain #{@nodes_directory_name}_#{node_name} --name #{full_snapshot_name}", false, false)
       when DOCKER
-        raise DOCKER_IMAGE_NAME_EXISTS if get_docker_images.include? snapshot_name
-        unless snapshot_name == snapshot_name.to_s.downcase
+        raise DOCKER_IMAGE_NAME_EXISTS if get_docker_images.include? full_snapshot_name
+        unless full_snapshot_name == full_snapshot_name.to_s.downcase
           $out.warning DOCKER_SNAPSHOT_NAME_MUST_BE_DOWNCASE
-          snapshot_name = snapshot_name.to_s.downcase
+          full_snapshot_name = full_snapshot_name.to_s.downcase
         end
         docker_containers_ids = get_docker_containers_ids
         raise "#{node_name} #{DOCKER_MACHINE_NOT_CREATED}" unless docker_containers_ids.include? node_name
-        execute_bash("docker commit -p #{docker_containers_ids[node_name]} #{snapshot_name}", false, false)
-        add_docker_snapshot_information(node_name, snapshot_name)
+        execute_bash("docker commit -p #{docker_containers_ids[node_name]} #{full_snapshot_name}", false, false)
+        add_docker_snapshot_information(node_name, full_snapshot_name)
       else
         current_dir = Dir.pwd
         Dir.chdir @path_to_nodes
-        execute_bash("vagrant snap take #{node_name} --name=#{snapshot_name}", false, false)
+        execute_bash("vagrant snap take #{node_name} --name=#{full_snapshot_name}", false, false)
         Dir.chdir current_dir
     end
   end
 
+  def take_snapshots(snapshot_name)
+    get_nodes.each do |node_name|
+      take_snapshot(node_name, snapshot_name)
+    end
+  end
+
   def revert_snapshot(node_name, snapshot_name)
+    full_snapshot_name = "#{SNAPSHOT_GLOBAL_PREFIX}_#{snapshot_name}_#{@nodes_directory_name}_#{node_name}"
+    $out.info "Reverting node #{node_name} to snapshot #{full_snapshot_name}"
     raise SNAPSHOTS_NOT_FOUND if get_snapshots(node_name).empty?
-    raise SNAPSHOT_NOT_EXISTS unless get_snapshots(node_name).include? snapshot_name
+    raise SNAPSHOT_NOT_EXISTS unless get_snapshots(node_name).include? full_snapshot_name
     case @provider
       when LIBVIRT
-        execute_bash("virsh snapshot-revert --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{snapshot_name}", false, false)
+        execute_bash("virsh snapshot-revert --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{full_snapshot_name}", false, false)
       when DOCKER
-        change_current_docker_snapshot(node_name, snapshot_name)
+        change_current_docker_snapshot(node_name, full_snapshot_name)
         current_dir = Dir.pwd
         Dir.chdir @path_to_nodes
         execute_bash("vagrant destroy -f #{node_name}", false, false)
@@ -257,29 +268,37 @@ class Snapshot
       else
         current_dir = Dir.pwd
         Dir.chdir @path_to_nodes
-        execute_bash("vagrant snap rollback #{node_name} --name=#{snapshot_name}", false, false)
+        execute_bash("vagrant snap rollback #{node_name} --name=#{full_snapshot_name}", false, false)
         Dir.chdir current_dir
     end
   end
 
+  def revert_snapshots(snapshot_name)
+    get_nodes.each do |node_name|
+      revert_snapshot(node_name, snapshot_name)
+    end
+  end
+
   def remove_snapshot(node_name, snapshot_name)
+    full_snapshot_name = "#{SNAPSHOT_GLOBAL_PREFIX}_#{snapshot_name}_#{@nodes_directory_name}_#{node_name}"
+    $out.info "Removing snapshot #{full_snapshot_name} for node #{node_name}"
     raise SNAPSHOTS_NOT_FOUND if get_snapshots(node_name).empty?
-    raise SNAPSHOT_NOT_EXISTS unless get_snapshots(node_name).include? snapshot_name
+    raise SNAPSHOT_NOT_EXISTS unless get_snapshots(node_name).include? full_snapshot_name
     case @provider
       when LIBVIRT
-        execute_bash("virsh snapshot-delete --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{snapshot_name}", false, false)
+        execute_bash("virsh snapshot-delete --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{full_snapshot_name}", false, false)
       when DOCKER
-        if get_docker_initial_snapshot(node_name) == snapshot_name or get_docker_current_snapshot(node_name) == snapshot_name
-          raise "#{snapshot_name} #{DOCKER_SNAPSHOT_INITIAL_OR_IN_USE_NO_DELETION}"
+        if get_docker_initial_snapshot(node_name) == full_snapshot_name or get_docker_current_snapshot(node_name) == full_snapshot_name
+          raise "#{full_snapshot_name} #{DOCKER_SNAPSHOT_INITIAL_OR_IN_USE_NO_DELETION}"
         end
         raise "#{node_name} #{DOCKER_MACHINE_NOT_CREATED}" unless get_docker_containers_ids.include? node_name
-        raise "#{snapshot_name} #{DOCKER_SNAPSHOT_EXISTS}" unless get_docker_snapshots(node_name).include? snapshot_name
-        execute_bash("docker rmi #{snapshot_name}", false, false)
-        remove_docker_snapshot_information(node_name, snapshot_name)
+        raise "#{full_snapshot_name} #{DOCKER_SNAPSHOT_EXISTS}" unless get_docker_snapshots(node_name).include? full_snapshot_name
+        execute_bash("docker rmi #{full_snapshot_name}", false, false)
+        remove_docker_snapshot_information(node_name, full_snapshot_name)
       else
         current_dir = Dir.pwd
         Dir.chdir @path_to_nodes
-        execute_bash("vagrant snap delete #{node_name} --name=#{snapshot_name}", false, false)
+        execute_bash("vagrant snap delete #{node_name} --name=#{full_snapshot_name}", false, false)
         Dir.chdir current_dir
     end
   end
