@@ -189,6 +189,8 @@ end
 
 DESTINATIONS.each do |destination|
 
+  next if destination == DESTINATIONS[2]
+
   describe "Individual nodes snapshot test in destination: #{destination}" do
 
     before :all do
@@ -273,6 +275,8 @@ DESTINATIONS.each do |destination|
 end
 
 DESTINATIONS.each do |destination|
+
+  next if destination == DESTINATIONS[2]
 
   describe "Buch of nodes snapshot test in destination: #{destination}" do
 
