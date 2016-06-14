@@ -1,0 +1,51 @@
+#!/usr/bin/env ruby
+
+require 'open3'
+require 'getoptlong'
+
+
+ARG_COMMAND = '-c [ARG]'
+ARG_FILENAME = '--filename [ARG]'
+COMMAND = ''
+FILENAME = ''
+
+#Reading options
+opts = GetoptLong.new(
+    [ARG_COMMAND, GetoptLong::REQUIRED_ARGUMENT],
+    [ARG_FILENAME, GetoptLong::REQUIRED_ARGUMENT]
+)
+
+opts.each do |opt, arg|
+    case opt
+        when ARG_FILENAME
+            if arg != ''; FILENAME = arg; end
+        when ARG_COMMAND
+            if arg != ''; COMMAND = arg; end
+    end
+end
+
+if COMMAND != ''
+    Open3.popen3(COMMAND) do |stdin, stdout, stderr, wthr|
+        stdin.close
+        puts 'exitcode', wthr.value.exitstatus
+        if !wthr.value.success?
+            puts 'stderr', stderr.read
+            raise "Error while executing command " + COMMAND
+        else
+            puts 'stdout', stdout.read
+        end
+        stdout.close
+    end
+end
+
+
+def commands
+    exit_code = 1
+    case ARGV.shift
+        when 'run_command'
+            exit_code = $session.command(ARGV.shift)
+        when 'validate'
+            exit_code = $session.validate(ARGV.shift)
+    end
+    return exit_code
+puts 'OK'
