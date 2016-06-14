@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-
+require 'rubygems'
 require 'open3'
 require 'getoptlong'
 require 'json'
@@ -19,14 +19,14 @@ opts = GetoptLong.new(
 opts.each do |opt, arg|
     case opt        
         when ARG_FILENAME
-            if arg != ''; FILENAME = arg; end
+            if arg != ''; FILE_NAME = arg; end
         when ARG_COMMAND
             if arg != ''; COMMAND = arg; end
     end
 end
 
 
-def command
+def run_command
     Open3.popen3(COMMAND) do |stdin, stdout, stderr, wthr|
         stdin.close
         puts 'exitcode', wthr.value.exitstatus
@@ -44,26 +44,34 @@ end
 
 def validate
     exit_code = 1
-    config = IO.read(FILE_NAME)
+    begin
+        config = IO.read(FILE_NAME)
+    rescue
+        puts "ERROR WHILE OPENING FILE", FILE_NAME
+        return exit_code
+    end
     begin
         res = JSON.parse(config)
     rescue 
-        puts "ERROR WHILE PARSING FILE"
-        return -1
+        puts "ERROR WHILE PARSING FILE", FILE_NAME
+        return exit_code
     end
+    puts res
+    puts res[KEY_STR]
     if res[KEY_STR].class != String
         raise "Value type in str key is not valid ERROR"
-        return -1
+        return exit_code
     end
     if res[KEY_ARR].class != Array
         raise "Value type in arr key is not valid ERROR"
-        return -1
+        return exit_code
     else
         if res[KEY_ARR].size != 5
             raise "Value in arr key doesn't have valid size ERROR"
-            return -1
+            return exit_code
         end
     end
+    exit_code = 0
     return exit_code
 end
 
@@ -72,9 +80,10 @@ def commands
     exit_code = 1
     case ARGV.shift
         when 'run_command'
-            exit_code = command(ARGV.shift)
+            exit_code = run_command
         when 'validate'
-            exit_code = validate(ARGV.shift)
+            exit_code = validate
+            puts exit_code
     end
     return exit_code
 end
