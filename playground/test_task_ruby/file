@@ -2,21 +2,22 @@
 
 require 'open3'
 require 'getoptlong'
+require 'json'
 
 
-ARG_COMMAND = '-c [ARG]'
-ARG_FILENAME = '--filename [ARG]'
-COMMAND = ''
-FILENAME = ''
+ARG_COMMAND = '--c'
+ARG_FILENAME = '--filename'
 
-#Reading options
+
+# Reading options
 opts = GetoptLong.new(
     [ARG_COMMAND, GetoptLong::REQUIRED_ARGUMENT],
     [ARG_FILENAME, GetoptLong::REQUIRED_ARGUMENT]
 )
 
+
 opts.each do |opt, arg|
-    case opt
+    case opt        
         when ARG_FILENAME
             if arg != ''; FILENAME = arg; end
         when ARG_COMMAND
@@ -24,7 +25,8 @@ opts.each do |opt, arg|
     end
 end
 
-if COMMAND != ''
+
+def command
     Open3.popen3(COMMAND) do |stdin, stdout, stderr, wthr|
         stdin.close
         puts 'exitcode', wthr.value.exitstatus
@@ -35,7 +37,34 @@ if COMMAND != ''
             puts 'stdout', stdout.read
         end
         stdout.close
+        return wthr.value.exitstatus
     end
+end
+
+
+def validate
+    exit_code = 1
+    config = IO.read(FILE_NAME)
+    begin
+        res = JSON.parse(config)
+    rescue 
+        puts "ERROR WHILE PARSING FILE"
+        return -1
+    end
+    if res[KEY_STR].class != String
+        raise "Value type in str key is not valid ERROR"
+        return -1
+    end
+    if res[KEY_ARR].class != Array
+        raise "Value type in arr key is not valid ERROR"
+        return -1
+    else
+        if res[KEY_ARR].size != 5
+            raise "Value in arr key doesn't have valid size ERROR"
+            return -1
+        end
+    end
+    return exit_code
 end
 
 
@@ -43,9 +72,21 @@ def commands
     exit_code = 1
     case ARGV.shift
         when 'run_command'
-            exit_code = $session.command(ARGV.shift)
+            exit_code = command(ARGV.shift)
         when 'validate'
-            exit_code = $session.validate(ARGV.shift)
+            exit_code = validate(ARGV.shift)
     end
     return exit_code
-puts 'OK'
+end
+
+begin
+    exit_code = commands
+rescue Exception => error
+    exit_code =  1
+end
+
+if exit_code != 1
+    puts 'OK'
+end
+
+exit exit_code
