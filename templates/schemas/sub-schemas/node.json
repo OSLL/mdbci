@@ -20,8 +20,7 @@
       },
       "required":[
         "hostname",
-        "box",
-        "product"
+        "box"
       ]
     }
   }
