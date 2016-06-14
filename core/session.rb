@@ -10,6 +10,7 @@ require_relative 'boxes_manager'
 require_relative 'repo_manager'
 require_relative 'out'
 require_relative 'docker_manager'
+require_relative 'snapshot'
 
 
 class Session
@@ -40,7 +41,9 @@ class Session
   attr_accessor :keyFile
   attr_accessor :boxPlatform
   attr_accessor :boxPlatformVersion
-  attr_accessor :templateValidationType
+  attr_accessor :path_to_nodes
+  attr_accessor :node_name
+  attr_accessor :snapshot_name
 
   PLATFORM = 'platform'
   VAGRANT_NO_PARALLEL = '--no-parallel'
@@ -440,7 +443,9 @@ EOF
         exit_code = $session.publicKeys(ARGV.shift)
       when 'validate_template'
         exit_code = $session.validate_template
-
+      when 'snapshot'
+        snapshot = Snapshot.new
+        exit_code = snapshot.do(ARGV.shift)
       else
         $out.error 'Unknown mdbci command. Please look help!'
         Help.display
