@@ -1,3 +1,4 @@
+require 'json-schema'
 require 'json'
 require 'fileutils'
 require 'uri'
@@ -373,6 +374,20 @@ EOF
     return 0
   end
 
+  def validate_template
+    raise 'Template must be specified!' unless $session.configFile
+    begin
+      schema = JSON.parse(File.read 'templates/schemas/template.json')
+      json = JSON.parse(File.read $session.configFile)
+      JSON::Validator.validate!(schema, json)
+      $out.info "Template #{$session.configFile} is valid"
+    rescue JSON::Schema::ValidationError => e
+      $out.error "Template #{$session.configFile} is NOT valid"
+      raise e.message
+    end
+    return 0
+  end
+
 
   def show(collection)
     exit_code = 1
@@ -427,6 +442,8 @@ EOF
         exit_code = NodeProduct.installProduct(ARGV.shift)
       when 'public_keys'
         exit_code = $session.publicKeys(ARGV.shift)
+      when 'validate_template'
+        exit_code = $session.validate_template
       when 'snapshot'
         snapshot = Snapshot.new
         exit_code = snapshot.do(ARGV.shift)
