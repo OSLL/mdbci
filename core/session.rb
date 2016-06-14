@@ -382,6 +382,7 @@ EOF
       JSON::Validator.validate!(schema, json)
       $out.info "Template #{$session.configFile} is valid"
     rescue JSON::Schema::ValidationError => e
+      $out.error "Template #{$session.configFile} is NOT valid"
       raise e.message
     end
     return 0
