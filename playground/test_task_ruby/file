@@ -4,6 +4,8 @@ require 'open3'
 require 'getoptlong'
 require 'json'
 
+KEY_STR = 'str'
+KEY_ARR = 'arr'
 
 ARG_COMMAND = '--c'
 ARG_FILENAME = '--filename'
@@ -50,25 +52,22 @@ def validate
         puts "ERROR WHILE OPENING FILE", FILE_NAME
         return exit_code
     end
+
     begin
         res = JSON.parse(config)
     rescue 
         puts "ERROR WHILE PARSING FILE", FILE_NAME
         return exit_code
     end
-    puts res
-    puts res[KEY_STR]
+
     if res[KEY_STR].class != String
         raise "Value type in str key is not valid ERROR"
-        return exit_code
     end
     if res[KEY_ARR].class != Array
         raise "Value type in arr key is not valid ERROR"
-        return exit_code
     else
         if res[KEY_ARR].size != 5
             raise "Value in arr key doesn't have valid size ERROR"
-            return exit_code
         end
     end
     exit_code = 0
@@ -83,7 +82,6 @@ def commands
             exit_code = run_command
         when 'validate'
             exit_code = validate
-            puts exit_code
     end
     return exit_code
 end
