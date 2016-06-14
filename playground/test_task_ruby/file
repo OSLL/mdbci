@@ -90,6 +90,7 @@ begin
     exit_code = commands
 rescue Exception => error
     exit_code =  1
+    puts error
 end
 
 if exit_code != 1
