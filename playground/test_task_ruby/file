@@ -1,0 +1,100 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'open3'
+require 'getoptlong'
+require 'json'
+
+KEY_STR = 'str'
+KEY_ARR = 'arr'
+
+ARG_COMMAND = '--c'
+ARG_FILENAME = '--filename'
+
+
+# Reading options
+opts = GetoptLong.new(
+    [ARG_COMMAND, GetoptLong::REQUIRED_ARGUMENT],
+    [ARG_FILENAME, GetoptLong::REQUIRED_ARGUMENT]
+)
+
+
+opts.each do |opt, arg|
+    case opt        
+        when ARG_FILENAME
+            if arg != ''; FILE_NAME = arg; end
+        when ARG_COMMAND
+            if arg != ''; COMMAND = arg; end
+    end
+end
+
+
+def run_command
+    Open3.popen3(COMMAND) do |stdin, stdout, stderr, wthr|
+        stdin.close
+        puts 'exitcode', wthr.value.exitstatus
+        if !wthr.value.success?
+            puts 'stderr', stderr.read
+            raise "Error while executing command " + COMMAND
+        else
+            puts 'stdout', stdout.read
+        end
+        stdout.close
+        return wthr.value.exitstatus
+    end
+end
+
+
+def validate
+    exit_code = 1
+    begin
+        config = IO.read(FILE_NAME)
+    rescue
+        puts "ERROR WHILE OPENING FILE", FILE_NAME
+        return exit_code
+    end
+
+    begin
+        res = JSON.parse(config)
+    rescue 
+        puts "ERROR WHILE PARSING FILE", FILE_NAME
+        return exit_code
+    end
+
+    if res[KEY_STR].class != String
+        raise "Value type in str key is not valid ERROR"
+    end
+    if res[KEY_ARR].class != Array
+        raise "Value type in arr key is not valid ERROR"
+    else
+        if res[KEY_ARR].size != 5
+            raise "Value in arr key doesn't have valid size ERROR"
+        end
+    end
+    exit_code = 0
+    return exit_code
+end
+
+
+def commands
+    exit_code = 1
+    case ARGV.shift
+        when 'run_command'
+            exit_code = run_command
+        when 'validate'
+            exit_code = validate
+    end
+    return exit_code
+end
+
+begin
+    exit_code = commands
+rescue Exception => error
+    exit_code =  1
+    puts error
+end
+
+if exit_code != 1
+    puts 'OK'
+end
+
+exit exit_code
