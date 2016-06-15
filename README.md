@@ -64,6 +64,12 @@ wget https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.deb
 sudo dpkg -i vagrant_1.8.1_x86_64.deb
 </pre>
 
+#### Libvirt DNS problem (when guest vm does not resolve hosts) quick fix
+Run next command on host machine
+<pre>
+sudo sh -c 'echo "nameserver 8.8.8.8" >> /etc/resolv.conf'
+</pre>
+
 #### Vagrant plugins pre-install
 
 <pre>
