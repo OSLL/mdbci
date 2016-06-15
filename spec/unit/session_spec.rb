@@ -45,7 +45,6 @@ describe 'Session' do
 
       # boxes is not empty
       awsConfig.size().should_not eq(0)
-      awsConfig.size().should eq(9)
 
     end
 
