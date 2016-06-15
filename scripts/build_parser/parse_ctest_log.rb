@@ -183,12 +183,12 @@ class CTestParser
     @failed_ctest_info = Array.new
     @fail_ctest_counter = 0
     ctest_log.each do |line|
-      test_end_regex = /(\d+)\/(\d+)\s+Test\s+#(\d+):[\s]+([^\s\.]+)[\s\.\*]+(Passed|Failed)\s+([\d\.]+)/
+      test_end_regex = /(\d+)\/(\d+)\s+Test\s+#(\d+):[\s]+([^\s]+)\s+[\.\*]+([^\d]+)\s+([\d\.]+)/
       if line =~ test_end_regex
         test_index_number = line.match(test_end_regex).captures[0]
         test_number = line.match(test_end_regex).captures[2]
         test_name = line.match(test_end_regex).captures[3]
-        test_success = line.match(test_end_regex).captures[4]
+        test_success = line.match(test_end_regex).captures[4].strip
         test_time = line.match(test_end_regex).captures[5]
         @all_ctest_indexes.push(Integer(test_number))
         @all_ctest_info.push({
@@ -198,7 +198,7 @@ class CTestParser
                                  TEST_SUCCESS => test_success,
                                  TEST_TIME => test_time
                              })
-        if test_success == FAILED
+        if test_success != PASSED
           @fail_ctest_counter += 1
           @failed_ctest_indexes.push(Integer(test_number))
           @failed_ctest_info.push({
