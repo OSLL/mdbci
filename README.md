@@ -65,6 +65,7 @@ sudo dpkg -i vagrant_1.8.1_x86_64.deb
 </pre>
 
 #### Libvirt DNS problem (when guest vm does not resolve hosts) quick fix
+Run next commaon host machine
 <pre>
 sudo sh -c 'echo "nameserver 8.8.8.8" >> /etc/resolv.conf'
 </pre>
