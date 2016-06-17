@@ -3,6 +3,7 @@
 require 'getoptlong'
 require 'open3'
 require 'json'
+require 'fileutils'
 
 INFORMATION_TAG = 'INFO: '
 ERROR_TAG = 'ERROR:'
@@ -32,7 +33,7 @@ BOX_CONFIG_TEMPLATE = {
     :platform_version => nil
 }
 
-is_for_removing = false
+$is_for_removing = false
 
 def parse_options_and_args
   opts = GetoptLong.new(
@@ -46,7 +47,7 @@ def parse_options_and_args
           puts HELP_MESSAGE
           exit
         when '--remove'
-          is_for_removing = true
+          $is_for_removing = true
       end
     end
   end
@@ -84,9 +85,7 @@ def get_nodes(template_path)
   return nodes
 end
 
-def main
-  template_path = parse_options_and_args
-  nodes_names = get_nodes template_path
+def prepare_mdbci_environment(template_path)
   config_name = File.basename("#{Dir.pwd}/#{template_path}", File.extname("#{Dir.pwd}/#{template_path}"))
   config_name_docker = "#{GLOBAL_PREFIX_DOCKER_MACHINE}_#{config_name}"
   config_name_mdbci_from_docker = "#{GLOBAL_PREFIX_MDBCI_FROM_DOCKER_MACHINE}_#{config_name}"
@@ -96,6 +95,7 @@ def main
   # Creating boxes config for running machines
   boxes_config = Hash.new
   config_hash = JSON.parse(File.read(template_path))
+  nodes_names = get_nodes template_path
   nodes_names.each do |node_name|
     box_config = BOX_CONFIG_TEMPLATE.clone
     # Getting ip of node
@@ -132,6 +132,34 @@ def main
   end
   File.open("#{config_name_mdbci_from_docker}/provider", 'w') do |file|
     file.write('mdbci')
+  end
+end
+
+def remove_mdbci_environment(template_path)
+  config_name = File.basename("#{Dir.pwd}/#{template_path}", File.extname("#{Dir.pwd}/#{template_path}"))
+  config_name_docker = "#{GLOBAL_PREFIX_DOCKER_MACHINE}_#{config_name}"
+  config_name_mdbci_from_docker = "#{GLOBAL_PREFIX_MDBCI_FROM_DOCKER_MACHINE}_#{config_name}"
+  # Removing mavhine (if exists)
+  mdbci_root = Dir.pwd
+  Dir.chdir config_name_docker
+  execute_bash('vagrant destroy -f')
+  Dir.chdir mdbci_root
+  # Removing docker config directory
+  FileUtils.rm_rf config_name_docker
+  # Removing, generated from docker, mdbci config directory
+  FileUtils.rm_rf config_name_mdbci_from_docker
+  # Removing generated boxes
+  FileUtils.rm_rf "BOXES/#{GLOBAL_PREFIX_MDBCI_FROM_DOCKER_MACHINE}.json"
+  # Removing generated private keys
+  FileUtils.rm_rf Dir.glob("KEYS/#{GLOBAL_PREFIX_MDBCI_FROM_DOCKER_MACHINE}_*")
+end
+
+def main
+  template_path = parse_options_and_args
+  unless $is_for_removing
+    prepare_mdbci_environment template_path
+  else
+    remove_mdbci_environment template_path
   end
 end
 
