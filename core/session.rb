@@ -257,12 +257,12 @@ class Session
   def showBoxKeys
     values = Array.new
     $session.boxes.boxesManager.values.each do |value|
-      unless value[$session.field]
-        raise "box key #{$session.field} is not found"
-      end
-      values.push value[$session.field]
+      values.push value[$session.field] if value[$session.field]
     end
-    puts values.uniq unless values.empty?
+    if values.empty?
+      raise "box key #{$session.field} is not found"
+    end
+    puts values.uniq 
     return 0
   end
 
