@@ -107,8 +107,8 @@ describe "Generator" do
     end
 
     it "Check Docker VM definition" do
-      docker_def = Generator.getDockerDef('../cookbooks/recipes/', 'node0', 'true', './cnf', true)
-      Generator.getDockerDef('../cookbooks/recipes/', 'node0', 'true', './cnf', true).should eq(docker_def)
+      docker_def = Generator.getDockerDef('../cookbooks/recipes/', 'path', 'node0', 'true', './cnf', true, 'centos', '7', 'centos_7_libvirt')
+      Generator.getDockerDef('../cookbooks/recipes/', 'path', 'node0', 'true', './cnf', true, 'centos', '7', 'centos_7_libvirt').should eq(docker_def)
     end
 
     it "copy docker files" do
