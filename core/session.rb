@@ -207,26 +207,22 @@ EOF
       if params[1].nil? # ssh for all nodes
         @mdbciNodes.each do |node|
           box = node[1]['box'].to_s
-          if !box.empty?
-            mdbci_box_params = $session.boxes.getBox(box)
-            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_box_params['keyfile'].to_s + " "\
-                            + mdbci_box_params['user'].to_s + "@"\
-                            + mdbci_box_params['IP'].to_s + " "\
-                            + "'" + $session.command + "'"
-            $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
-            vagrant_out = `#{cmd}`
-            exit_code = $?.exitstatus
-            possibly_failed_command = cmd
-            $out.out vagrant_out
-          end
+          raise "box in " + node[1].to_s +" is not found" if box.empty?
+          mdbci_box_params = $session.boxes.getBox(box)
+          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_box_params['keyfile'].to_s + " "\
+                          + mdbci_box_params['user'].to_s + "@"\
+                          + mdbci_box_params['IP'].to_s + " "\
+                          + "'" + $session.command + "'"
+          $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
+          vagrant_out = `#{cmd}`
+          exit_code = $?.exitstatus
+          possibly_failed_command = cmd
+          $out.out vagrant_out
         end
       else
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == params[1] }
         box = mdbci_node[1]['box'].to_s
-        if box.empty?
-            exit_code = 1
-            raise "box in " + mdbci_node[1].to_s +" is not found"
-        end
+        raise "box in " + mdbci_node[1].to_s +" is not found" if box.empty?
         mdbci_params = $session.boxes.getBox(box)
         cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                         + mdbci_params['user'].to_s + "@"\
@@ -460,10 +456,9 @@ EOF
   def LoadNodesProvider(configs)
     configs.each do |node|
       box = node[1]['box'].to_s
-      if !box.empty?
-        box_params = @boxes.getBox(box)
-        @nodesProvider = box_params["provider"].to_s
-      end
+      raise "box in " + node[1].to_s +" is not found" if box.empty?
+      box_params = @boxes.getBox(box)
+      @nodesProvider = box_params["provider"].to_s
     end
   end
 
@@ -771,21 +766,20 @@ EOF
         end
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
-          if !box.empty?
-            mdbci_params = $session.boxes.getBox(box)
-            #
-            keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(pwd.to_s+'/'+@keyFile.to_s) }
-            # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
-            command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
-            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
-                            + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
-                            + "\"" + command + "\""
-            $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
-            vagrant_out = `#{cmd}`
-            # TODO
-            exit_code = $?.exitstatus
-            possibly_failed_command = cmd
-          end
+          raise "box in " + node[1].to_s +" is not found" if box.empty?
+          mdbci_params = $session.boxes.getBox(box)
+          #
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(pwd.to_s+'/'+@keyFile.to_s) }
+          # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
+          command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
+          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+                          + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
+                          + "\"" + command + "\""
+          $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
+          vagrant_out = `#{cmd}`
+          # TODO
+          exit_code = $?.exitstatus
+          possibly_failed_command = cmd
         end
       else
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == args[1] }
@@ -796,24 +790,20 @@ EOF
         end
 
         box = mdbci_node[1]['box'].to_s
-        if !box.empty?
-          mdbci_params = $session.boxes.getBox(box)
-          #
-          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(pwd.to_s+'/'+@keyFile.to_s) }
-          # add to the end of the authorized_keys file in ~/.ssh directory
-          command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
-          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
-                          + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
-                          + "\"" + command + "\""
-          $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
-          vagrant_out = `#{cmd}`
-          # TODO
-          exit_code = $?.exitstatus
-          possibly_failed_command = cmd
-        else
-          $out.error "Wrong box parameter in node: #{args[1]}"
-          exit_code = 1
-        end
+        raise "box in #{args[1]} is not found" if box.empty?
+        mdbci_params = $session.boxes.getBox(box)
+        #
+        keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(pwd.to_s+'/'+@keyFile.to_s) }
+        # add to the end of the authorized_keys file in ~/.ssh directory
+        command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
+        cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+                        + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
+                        + "\"" + command + "\""
+        $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
+        vagrant_out = `#{cmd}`
+        # TODO
+        exit_code = $?.exitstatus
+        possibly_failed_command = cmd
       end
     else # aws, vbox, libvirt, docker nodes
 
