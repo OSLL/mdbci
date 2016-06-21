@@ -18,6 +18,5 @@
       "$ref": "templates/schemas/sub-schemas/node.json#/definitions/node"
     }
   },
-  "additionalProperties": false,
-  "minProperties": 2
+  "additionalProperties": false
 }
