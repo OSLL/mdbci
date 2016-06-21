@@ -1,0 +1,27 @@
+{
+  "cookbook_path" : "../recipes/cookbooks/",
+  "node0" :
+  {
+    "hostname" : "node1",
+    "box" : "ubuntu_trusty_libvirt",
+     "product" : {
+      "name": "test"
+    }
+  },
+  "node1" :
+  {
+    "hostname" : "node1",
+    "box" : "ubuntu_trusty_libvirt",
+     "product" : {
+      "name": "test"
+    }
+  },
+  "node2" :
+  {
+    "hostname" : "node2",
+    "box" : "ubuntu_trusty_libvirt",
+     "product" : {
+      "name": "test"
+    }
+  }
+}
