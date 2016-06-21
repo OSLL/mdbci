@@ -43,19 +43,28 @@ def ssh(config)
 end
 
 Dir.glob('confs/*.json') do |file|
+
   it "Validates template: #{file}" do
     validate(file).should eql 0
   end
+
   it "Generates template: #{file} to config: #{File.basename(file, File.extname(file))}" do
-    validate(file).should eql 0
+    generate(file).should eql 0
   end
-  it "Starts config: #{File.basename(file, File.extname(file))}" do
-    validate(file).should eql 0
-  end
-  it "Runs ssh command on nodes for config: #{File.basename(file, File.extname(file))}" do
-    nodes_namesfind_nodes(File.basename(file, File.extname(file)))
-    nodes_names.each_char do |node_name|
-      ssh(node_name).should eql 0
+
+  unless(file.include? "aws" or file.include? "vbox")
+
+    it "Starts config: #{File.basename(file, File.extname(file))}" do
+      up(file).should eql 0
     end
+
+    it "Runs ssh command on nodes for config: #{File.basename(file, File.extname(file))}" do
+      nodes_namesfind_nodes(File.basename(file, File.extname(file)))
+      nodes_names.each_char do |node_name|
+        ssh(node_name).should eql 0
+      end
+    end
+
   end
+
 end
