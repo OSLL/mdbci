@@ -207,7 +207,7 @@ EOF
       if params[1].nil? # ssh for all nodes
         @mdbciNodes.each do |node|
           box = node[1]['box'].to_s
-          raise "box in " + node[1].to_s +" is not found" if box.empty?
+          raise "box in " + node[1].to_s + " is not found" if box.empty?
           mdbci_box_params = $session.boxes.getBox(box)
           cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_box_params['keyfile'].to_s + " "\
                           + mdbci_box_params['user'].to_s + "@"\
@@ -222,7 +222,7 @@ EOF
       else
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == params[1] }
         box = mdbci_node[1]['box'].to_s
-        raise "box in " + mdbci_node[1].to_s +" is not found" if box.empty?
+        raise "box in " + mdbci_node[1].to_s + " is not found" if box.empty?
         mdbci_params = $session.boxes.getBox(box)
         cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                         + mdbci_params['user'].to_s + "@"\
@@ -456,7 +456,7 @@ EOF
   def LoadNodesProvider(configs)
     configs.each do |node|
       box = node[1]['box'].to_s
-      raise "box in " + node[1].to_s +" is not found" if box.empty?
+      raise "box in " + node[1].to_s + " is not found" if box.empty?
       box_params = @boxes.getBox(box)
       @nodesProvider = box_params["provider"].to_s
     end
@@ -766,7 +766,7 @@ EOF
         end
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
-          raise "box in " + node[1].to_s +" is not found" if box.empty?
+          raise "box in " + node[1].to_s + " is not found" if box.empty?
           mdbci_params = $session.boxes.getBox(box)
           #
           keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(pwd.to_s+'/'+@keyFile.to_s) }
