@@ -3,7 +3,7 @@
   "node0" :
   {
     "hostname" : "node0",
-    "box" : "centos_7_docker",
+    "box" : "rhel_6_ppc64",
     "memory_size" : "1024",
     "product" : {
       "name": "mariadb",
@@ -11,12 +11,11 @@
       "cnf_template" : "server1.cnf",
       "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
     }
-
   },
   "galera0" :
   {
     "hostname" : "galera0",
-    "box" : "centos_7_docker",
+    "box" : "ubuntu_trusty_ppc64",
     "memory_size" : "1024",
     "product" : {
       "name": "galera",
@@ -28,7 +27,7 @@
   "maxscale" :
   {
     "hostname" : "maxscale",
-    "box" : "ubuntu_trusty_docker",
+    "box" : "ubuntu_trusty_ppc64",
     "product" : {
       "name" : "maxscale"
     },
