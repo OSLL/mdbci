@@ -7,6 +7,6 @@
   "node2" :
   {
     "hostname" : "node2",
-    "box" : "centos_6_vbox"
+    "box" : "centos_6_aws"
   }
 }
