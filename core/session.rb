@@ -223,18 +223,20 @@ EOF
       else
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == params[1] }
         box = mdbci_node[1]['box'].to_s
-        if !box.empty?
-          mdbci_params = $session.boxes.getBox(box)
-          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
-                          + mdbci_params['user'].to_s + "@"\
-                          + mdbci_params['IP'].to_s + " "\
-                          + "'" + $session.command + "'"
-          $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
-          vagrant_out = `#{cmd}`
-          exit_code = $?.exitstatus
-          possibly_failed_command = cmd
-          $out.out vagrant_out
+        if box.empty?
+            exit_code = 1
+            raise "box in " + mdbci_node[1].to_s +" is not found"
         end
+        mdbci_params = $session.boxes.getBox(box)
+        cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+                        + mdbci_params['user'].to_s + "@"\
+                        + mdbci_params['IP'].to_s + " "\
+                        + "'" + $session.command + "'"
+        $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
+        vagrant_out = `#{cmd}`
+        exit_code = $?.exitstatus
+        possibly_failed_command = cmd
+        $out.out vagrant_out
       end
     else # aws, vbox nodes
       unless Dir.exist?(params[0])
