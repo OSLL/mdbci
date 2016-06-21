@@ -1,14 +1,7 @@
 - job:
     name: run-inner-mdbci-unit-tests
     description: 'This job performs running inner mdbci unit tests.'
-    wrappers:
-        - pre-scm-buildstep:
-            - shell: |
-                #!/bin/bash
-                git reset --hard;git clean -fxd;git pull --no-edit --all
-                echo LAST_MODIFIED_BRANCH=$(git log -1 --all --decorate --pretty=oneline | awk -F'[()]' '{print $2}' | awk -F ', ' '{print $NF}') > last_modified_branch
-            - inject:
-                properties-file: $WORKSPACE/last_modified_branch
+    key_one: &SORTED_GIT_BRANCHES_FILE_PATH '/home/vagranttest/mdbci_jenkins_config/branch_list'
     parameters:
         - string:
               name: BOXES_JSON_PATH
@@ -18,9 +11,33 @@
               name: MDBCI_CONFS
               default: /home/vagranttest/conf
               description:  'Directory with mdbci configs.'
+        - string:
+              name: MDBCI_REPOSITORY
+              default: git@github.com:OSLL/mdbci.git
+              description:  'MDBCI repository.'
+        - string:
+              name: SORTED_GIT_BRANCHES_FILE_PATH
+              default: *SORTED_GIT_BRANCHES_FILE_PATH
+              description:  'Path to sorted branches (from mdbci_branches job).'
+        - extended-choice:
+              name: MDBCI_BRANCH
+              description: "MDBCI branch"
+              type: 'PT_SINGLE_SELECT'
+              property-file: *SORTED_GIT_BRANCHES_FILE_PATH
+              property-key: branch_name
+    wrappers:
+        - pre-scm-buildstep:
+            - shell: |
+                if [ -z "$MDBCI_BRANCH" ]; then
+                	echo "LAST_MODIFIED_BRANCH=$(cat $SORTED_GIT_BRANCHES_FILE_PATH | awk -F"=" '{i=index($0,"=");print substr($0,i+1)}' | awk -F"," '{print $1}')" > last_modified_branch
+                else
+                	echo "LAST_MODIFIED_BRANCH=${MDBCI_BRANCH}" > last_modified_branch
+                fi
+            - inject:
+                properties-file: $WORKSPACE/last_modified_branch
     scm:
         - git:
-            url: git@github.com:OSLL/mdbci.git
+            url: $MDBCI_REPOSITORY
             branches:
                 - $LAST_MODIFIED_BRANCH
     triggers:
@@ -28,12 +45,13 @@
             jobs: 'mdbci_branching'
             result: 'success'
     builders:
-        - shell:
-            'ln -s $MDBCI_CONFS/aws-config.yml aws-config.yml; ln -s $MDBCI_CONFS/maxscale.pem maxscale.pem'
-        - shell:
-            'cp $BOXES_JSON_PATH/* ./BOXES'
-        - shell:
-            './scripts/run_tests.sh'
+        - shell: 
+            'ruby -c `find ./ | grep ".rb"`'
+        - shell: |
+            ln -s $MDBCI_CONFS/aws-config.yml aws-config.yml; ln -s $MDBCI_CONFS/maxscale.pem maxscale.pem
+            cp $BOXES_JSON_PATH/* ./BOXES
+            ./scripts/run_unit_tests.sh
+            ./scripts/run_integration_tests.sh
     publishers:
         - email-ext:
             recipients: $DEFAULT_RECIPIENTS

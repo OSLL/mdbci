@@ -64,6 +64,12 @@ wget https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.deb
 sudo dpkg -i vagrant_1.8.1_x86_64.deb
 </pre>
 
+#### Libvirt DNS problem (when guest vm does not resolve hosts) quick fix
+Run next command on host machine
+<pre>
+sudo sh -c 'echo "nameserver 8.8.8.8" >> /etc/resolv.conf'
+</pre>
+
 #### Vagrant plugins pre-install
 
 <pre>
@@ -71,12 +77,14 @@ vagrant plugin install vagrant-vbguest
 vagrant plugin install vagrant-aws
 vagrant plugin install vagrant-libvirt
 vagrant plugin install vagrant-mutate
+vagrant plugin install vagrant-omnibus
 </pre>
 
 #### Ruby modules pre-install
 
 <pre>
 sudo gem install ipaddress
+sudo gem install json-schema
 </pre>
 
 #### Install mdbci
@@ -169,7 +177,6 @@ The file boxes.json contains definitions of available boxes. His format is comme
 * platform_version -- name of version of platform
 * user -- user which will be used to access to box
 * default_instance_type -- default instance size/type if provider is amazon
-
 
 #### repo.d files
 
@@ -406,10 +413,13 @@ mdbci [options] <show | setup | generate>
   
 -v, --product-version
   Product version for setup repo and install product commands.
+  
+-e, --template_validation_type
+  Template validation type (aws, no_aws)
 
 ### Commands:
 
-  show [boxes, boxinfo, platforms, versions, network, repos [config | config/node], keyfile [config/node] ]
+  show [boxes, boxinfo, platforms, versions, network, repos [config | config/node], keyfile [config/node], validate_template ]
   
   generate
   
@@ -426,6 +436,8 @@ mdbci [options] <show | setup | generate>
 
   **install_product --product maxscale config/node**
     Install specified product by command option **--product** on a config/node. Currently supported only **Maxscale** product.
+    
+  validate_template -e aws -template TEMPLATE
 
 ### Examples:
 

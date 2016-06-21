@@ -50,8 +50,9 @@ NOT_FOUND = 'NOT FOUND'
 
 BUILD_LOG_PARSING_RESULT = 'BUILD_LOG_PARSING_RESULT'
 
-ERROR = 'ERROR'
-CTEST_NOT_EXECUTED_ERROR = 'CTest never been executed'
+ERROR = 'Error'
+CTEST_NOT_EXECUTED_ERROR = 'CTest has never executed'
+CTEST_SUMMARY_NOTE_FOUND = 'CTest summary has not found'
 
 CTEST_ARGUMENTS_HR = 'CTest arguments'
 CTEST_ARGUMENTS_MR = 'ctest_arguments'
@@ -84,6 +85,9 @@ opts.each do |opt, arg|
     when LOG_FILE_OPTION
       begin
         $log = File.read arg
+        # Fixing encodings by encoding it to different encoding and back to utf8
+        # (because encoding to the same encoding make no effect)
+        $log = $log.encode('UTF-16be', :invalid=>:replace).encode('UTF-8')
       rescue
         raise puts "ERROR: Can not find log file: #{arg}"
       end
@@ -165,6 +169,10 @@ class CTestParser
       find_tests_info(ctest_log)
       @all_ctest_info = {TESTS_COUNT => tests_quantity}.merge(@all_ctest_info)
       @failed_ctest_info = {TESTS_COUNT => tests_quantity}.merge(@failed_ctest_info)
+    else
+      @ctest_summary = CTEST_SUMMARY_NOTE_FOUND
+      @all_ctest_info = {TESTS_COUNT => NOT_FOUND, FAILED_TESTS_COUNT => NOT_FOUND, TESTS => []}
+      @failed_ctest_info = {TESTS_COUNT => NOT_FOUND, FAILED_TESTS_COUNT => NOT_FOUND, TESTS => []}
     end
   end
 
@@ -175,12 +183,12 @@ class CTestParser
     @failed_ctest_info = Array.new
     @fail_ctest_counter = 0
     ctest_log.each do |line|
-      test_end_regex = /(\d+)\/(\d+)\s+Test\s+#(\d+):[\s]+([^\s\.]+)[\s\.\*]+(Passed|Failed)\s+([\d\.]+)/
+      test_end_regex = /(\d+)\/(\d+)\s+Test\s+#(\d+):[\s]+([^\s]+)\s+[\.\*]+([^\d]+)([\d\.]+)/
       if line =~ test_end_regex
         test_index_number = line.match(test_end_regex).captures[0]
         test_number = line.match(test_end_regex).captures[2]
         test_name = line.match(test_end_regex).captures[3]
-        test_success = line.match(test_end_regex).captures[4]
+        test_success = line.match(test_end_regex).captures[4].strip
         test_time = line.match(test_end_regex).captures[5]
         @all_ctest_indexes.push(Integer(test_number))
         @all_ctest_info.push({
@@ -190,7 +198,7 @@ class CTestParser
                                  TEST_SUCCESS => test_success,
                                  TEST_TIME => test_time
                              })
-        if test_success == FAILED
+        if test_success != PASSED
           @fail_ctest_counter += 1
           @failed_ctest_indexes.push(Integer(test_number))
           @failed_ctest_info.push({
@@ -208,8 +216,9 @@ class CTestParser
   end
 
   def generate_ctest_arguments
+    return NOT_FOUND unless @ctest_executed
     ctest_arguments = Array.new()
-    test_indexes_array = $only_failed ? @all_ctest_indexes : @failed_ctest_indexes
+    test_indexes_array = $only_failed ? @failed_ctest_indexes : @all_ctest_indexes
     sorted_test_indexes_array = test_indexes_array.sort
     return NOT_FOUND if sorted_test_indexes_array.size == 0
     sorted_test_indexes_array.each do |test_index|
@@ -257,35 +266,29 @@ class CTestParser
 
   def generate_hr_result(parsed_ctest_data)
     hr_tests = Array.new
-    if @ctest_executed
-      hr_tests.push @ctest_summary
-      hr_tests.push "#{CTEST_ARGUMENTS_HR}: #{generate_ctest_arguments}"
-      maxscale_commit = @maxscale_commit ? @maxscale_commit : NOT_FOUND
-      hr_tests.push "#{MAXSCALE_COMMIT_HR}: #{maxscale_commit}"
-      hr_tests.push "#{MAXSCALE_SYSTEM_TEST_COMMIT_HR}: #{get_test_code_commit}"
-      hr_tests = hr_tests + generate_run_test_build_parameters_hr
-      if parsed_ctest_data.has_key? TESTS
-        parsed_ctest_data[TESTS].each do |test|
-          hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} (#{test[TEST_SUCCESS]})")
-        end
-      end
-    else
-      hr_tests.push("#{ERROR}: #{CTEST_NOT_EXECUTED_ERROR}")
+    hr_tests.push @ctest_summary
+    parsed_ctest_data[TESTS].each do |test|
+      hr_tests.push("#{test[TEST_NUMBER]} - #{test[TEST_NAME]} (#{test[TEST_SUCCESS]})")
     end
+    hr_tests.push ''
+    hr_tests.push "#{CTEST_ARGUMENTS_HR}: #{generate_ctest_arguments}"
+    hr_tests.push ''
+    maxscale_commit = @maxscale_commit ? @maxscale_commit : NOT_FOUND
+    hr_tests.push "#{MAXSCALE_COMMIT_HR}: #{maxscale_commit}"
+    hr_tests.push "#{MAXSCALE_SYSTEM_TEST_COMMIT_HR}: #{get_test_code_commit}"
+    hr_tests = hr_tests + generate_run_test_build_parameters_hr
+    hr_tests.push("#{ERROR}: #{CTEST_NOT_EXECUTED_ERROR}") unless @ctest_executed
     return hr_tests
   end
 
   def generate_mr_result(parsed_ctest_data)
-    if @ctest_executed
-      parsed_ctest_data = generate_run_test_build_parameters_mr.merge(parsed_ctest_data)
-      parsed_ctest_data = {MAXSCALE_SYSTEM_TEST_COMMIT_MR => get_test_code_commit}.merge(parsed_ctest_data)
-      maxscale_commit = @maxscale_commit ? @maxscale_commit : NOT_FOUND
-      parsed_ctest_data = {MAXSCALE_COMMIT_MR => maxscale_commit}.merge(parsed_ctest_data)
-      parsed_ctest_data = {CTEST_ARGUMENTS_MR => generate_ctest_arguments}.merge(parsed_ctest_data)
-      return JSON.pretty_generate parsed_ctest_data
-    else
-      return JSON.pretty_generate({ERROR => CTEST_NOT_EXECUTED_ERROR})
-    end
+    parsed_ctest_data = generate_run_test_build_parameters_mr.merge(parsed_ctest_data)
+    parsed_ctest_data = {MAXSCALE_SYSTEM_TEST_COMMIT_MR => get_test_code_commit}.merge(parsed_ctest_data)
+    maxscale_commit = @maxscale_commit ? @maxscale_commit : NOT_FOUND
+    parsed_ctest_data = {MAXSCALE_COMMIT_MR => maxscale_commit}.merge(parsed_ctest_data)
+    parsed_ctest_data = {CTEST_ARGUMENTS_MR => generate_ctest_arguments}.merge(parsed_ctest_data)
+    parsed_ctest_data = {ERROR => CTEST_NOT_EXECUTED_ERROR}.merge(parsed_ctest_data) unless @ctest_executed
+    return JSON.pretty_generate parsed_ctest_data
   end
 
   def show_mr_result(parsed_ctest_data)

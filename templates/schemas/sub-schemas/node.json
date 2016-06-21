@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions":{
+    "node": {
+      "id": "node",
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "id": "node/hostname",
+          "type": "string"
+        },
+        "box": {
+          "id": "node/box",
+          "type": "string",
+          "pattern": ".*_.*_.*"
+        },
+        "memory_size": {
+          "id": "node/memory_size",
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "product": {
+          "$ref": "product.json#/definitions/product"
+        }
+      },
+      "required":[
+        "box"
+      ]
+    }
+  }
+}

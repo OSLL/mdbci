@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # $1 is prefix of the machines to be deleted
 
 if [ ! -z $1 ]; then
@@ -11,18 +13,22 @@ if [ ! -z $1 ]; then
         VBoxManage unregistervm $i -delete
     done
 
-    echo "Cleaning machines with virsh"
-    for i in $(virsh list --name | grep ${1}); do
+    echo "Cleaning libvirt machines"
+    for i in $(virsh list --name --all | grep ${1}); do
       virsh shutdown $i
       virsh destroy $i
       virsh undefine $i
+    done
+
+    echo "Deleting libvirt machine's volumes"
+    for i in $(virsh -q vol-list --pool default | grep $1 | awk '{print $1}'); do
+      virsh vol-delete --pool default $i
     done
 
     echo "Cleaning docker machines"
     for i in $(docker ps --all -f "name=${1}" --format "{{.Names}}"); do
       docker rm -v $i
     done
-
 
 else
     echo "You need to define machine prefix as first argument!"

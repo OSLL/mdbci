@@ -19,6 +19,8 @@ TEST_NAME = 'test_name'
 TEST_SUCCESS = 'test_success'
 FAILED = 'Failed'
 
+ERROR = 'Error'
+
 class BuildResultsWriter
   attr_accessor :client
   attr_accessor :parsed_content
@@ -70,9 +72,6 @@ class BuildResultsWriter
   end
 
   def write_build_results_to_db(results)
-    # TODO extract params from @results@
-    # Code below is a STUB. Please replace it with actual parameters aquiring from results
-    # <STUB>
     jenkins_id = results['job_build_number']
     start_time = results['timestamp']
     target = results['target']
@@ -88,21 +87,22 @@ class BuildResultsWriter
         tests.push({TEST_NAME => test[TEST_NAME], TEST_SUCCESS => test[TEST_SUCCESS]})
       end
     end
-    #</STUB>
 
-
-    # writing results to db
+    # writing testrun results to db
     id = write_test_run_table(jenkins_id, start_time, target, box, \
     product, mariadb_version, test_code_commit_id, maxscale_commit_id, job_name)
-    tests.each do |test|
-      puts "Preparing to write test=#{test} into results"
-      name = test[TEST_NAME]
-      result = 0
-      if test[TEST_SUCCESS] == FAILED
-        result = 1
+    
+    # writing tests results to db
+    unless results.has_key? ERROR
+      tests.each do |test|
+        puts "Preparing to write test=#{test} into results"
+        name = test[TEST_NAME]
+        result = 0
+        if test[TEST_SUCCESS] == FAILED
+          result = 1
+        end
+        write_results_table(id, name, result)
       end
-
-      write_results_table(id, name, result)
     end
   end
 end
