@@ -40,18 +40,11 @@
             url: $MDBCI_REPOSITORY
             branches:
                 - $LAST_MODIFIED_BRANCH
-    triggers:
-        - reverse:
-            jobs: 'mdbci_branching'
-            result: 'success'
     builders:
-        - shell: 
-            'ruby -c `find ./ | grep ".rb"`'
         - shell: |
             ln -s $MDBCI_CONFS/aws-config.yml aws-config.yml; ln -s $MDBCI_CONFS/maxscale.pem maxscale.pem
             cp $BOXES_JSON_PATH/* ./BOXES
-            ./scripts/run_unit_tests.sh
-            ./scripts/run_integration_tests.sh
+            rspec spec/full_config_test.rb
     publishers:
         - email-ext:
             recipients: $DEFAULT_RECIPIENTS
