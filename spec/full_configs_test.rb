@@ -64,44 +64,54 @@ def clean_environment
   end
 end
 
+def get_nodes_names(template_path)
+  nodes = Array.new
+  template = JSON.parse(File.read(File.read(template_path)))
+  template.each do |possible_node|
+    if possible_node[0] != TEMPLATE_AWS_CONFIG and possible_node[0] != TEMPLATE_COOKBOOK_PATH
+      nodes.push possible_node[0]
+    end
+  end
+  return nodes
+end
+
+def get_boxes_by_config(template_path)
+  boxes = Array.new
+  template.each do |possible_node|
+    if possible_node[0] != TEMPLATE_AWS_CONFIG and possible_node[0] != TEMPLATE_COOKBOOK_PATH
+      boxes.push possible_node[1]['box']
+    end
+  end
+  return boxes
+end
+
+
 describe nil do
-  CONFIGS.each do |config|
-
-    next if (!config.to_s.include? VBOX and !config.to_s.include? MDBCI)
-
+  Dir.glob("#{CONFIGS_DIRECTORY}/*.json") do |template_path|
+    config = File.basename(template_path, File.extname(template_path))
+    generated_config_name = "#{GLOBAL_PREFIX}_#{config}"
+    nodes = get_nodes_names(template_path)
+    boxes = get_boxes_by_config(template_path)
+    next if boxes.grep(/.*_#{VBOX}/).size > 0
+    next if boxes.grep(/.*_#{MDBCI}/).size > 0
     before :all do
       clean_environment
     end
-
     after :all do
       clean_environment
     end
-
-    template_path = "#{CONFIGS_DIRECTORY}/#{config}.json"
-    generated_config_name = "#{GLOBAL_PREFIX}_#{config}"
-
     it "Validating template: #{template_path}" do
       validate_template(template_path).should eql 0
     end
     it "Generating template: #{template_path} to config: #{generated_config_name}" do
       generate(template_path, generated_config_name).should eql 0
     end
-    unless config.to_s.include? MDBCI # MDBCI nodes do not need to be started
-      it "Starting config: #{generated_config_name}" do
-        up(generated_config_name).should eql 0
-      end
+    it "Starting config: #{generated_config_name}" do
+      up(generated_config_name).should eql 0
     end
-    if generated_config_name.to_s.include? 'lite'
-      NODES_LITE.each do |node_name|
-        it "Running ssh command on nodes for config: #{generated_config_name}" do
-          ssh("#{generated_config_name}/#{node_name}").should eql 0
-        end
-      end
-    else
-      NODES.each do |node_name|
-        it "Running ssh command on nodes for config: #{generated_config_name}" do
-          ssh("#{generated_config_name}/#{node_name}").should eql 0
-        end
+    nodes.each do |node_name|
+      it "Running ssh command on nodes for config: #{generated_config_name}" do
+        ssh("#{generated_config_name}/#{node_name}").should eql 0
       end
     end
   end
