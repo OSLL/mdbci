@@ -18,7 +18,7 @@ AWS = 'aws'
 DOCKER = 'docker'
 VBOX = 'vbox'
 LIBVIRT = 'libvirt'
-MDBCI = 'mdbci'
+MDBCI = %w(ppc64 ppc64be)
 
 def execute_bash(cmd)
   puts "Executing: [#{cmd}]"
@@ -93,8 +93,12 @@ describe nil do
     generated_config_name = "#{GLOBAL_PREFIX}_#{config}"
     nodes = get_nodes_names(template_path)
     boxes = get_boxes_by_config(template_path)
+
+    # Excluding VBOX and PPC configs
     next if boxes.grep(/.*_#{VBOX}/).size > 0
-    next if boxes.grep(/.*_#{MDBCI}/).size > 0
+    next if boxes.grep(/.*_#{MDBCI[0]}/).size > 0
+    next if boxes.grep(/.*_#{MDBCI[1]}/).size > 0
+
     before :all do
       clean_environment
     end
