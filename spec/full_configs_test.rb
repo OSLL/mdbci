@@ -8,11 +8,7 @@ GLOBAL_PREFIX = 'full_config_test'
 TEMPLATE_COOKBOOK_PATH = 'cookbook_path'
 TEMPLATE_AWS_CONFIG = 'aws_config'
 
-NODES = %W(node0 node1 node2 node3 galera0 galera1 galera2 galera3 maxscale)
-NODES_LITE = %W(node0 galera0 maxscale)
-
 CONFIGS_DIRECTORY = 'confs'
-CONFIGS = %W(aws aws_lite docker docker_lite libvirt libvirt_lite mdbci mdbci_lite)
 
 AWS = 'aws'
 DOCKER = 'docker'
@@ -49,18 +45,18 @@ def ssh(config_name)
   return execute_bash("./mdbci ssh --command ls #{config_name}")
 end
 
-def clean_environment
-  CONFIGS.each do |config|
-    config_directory = "#{GLOBAL_PREFIX}_#{config}"
-    if Dir.exists?(config_directory)
-      unless File.exists? "#{config_directory}/mdbci_template"
-        root_dir = Dir.pwd
-        Dir.chdir config_directory
-        execute_bash 'vagrant destroy -f'
-        Dir.chdir root_dir
-      end
-      FileUtils.rm_rf config_directory
+def clean_environment(template_path)
+  config = File.basename(template_path, File.extname(template_path))
+  config_directory = "#{GLOBAL_PREFIX}_#{config}"
+  puts "Removing config in: [#{config_directory}]"
+  if Dir.exists?(config_directory)
+    unless File.exists? "#{config_directory}/mdbci_template"
+      root_dir = Dir.pwd
+      Dir.chdir config_directory
+      execute_bash 'vagrant destroy -f'
+      Dir.chdir root_dir
     end
+    FileUtils.rm_rf config_directory
   end
 end
 
@@ -100,10 +96,10 @@ describe nil do
     next if boxes.grep(/.*_#{MDBCI_BOXES[1]}/).size > 0
 
     before :all do
-      clean_environment
+      clean_environment template_path
     end
     after :all do
-      clean_environment
+      clean_environment template_path
     end
     it "Validating template: #{template_path}" do
       validate_template(template_path).should eql 0
