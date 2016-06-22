@@ -43,7 +43,8 @@
     builders:
         - shell: |
             ln -s $MDBCI_CONFS/aws-config.yml aws-config.yml; ln -s $MDBCI_CONFS/maxscale.pem maxscale.pem
-            cp $BOXES_JSON_PATH/* ./BOXES
+            git clone git@github.com:mariadb-corporation/mdbci-boxes.git
+            cp mdbci-boxes/BOXES/* ./BOXES
             rspec spec/full_configs_test.rb
     publishers:
         - email-ext:
