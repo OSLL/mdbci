@@ -52,13 +52,15 @@ end
 def clean_environment
   CONFIGS.each do |config|
     config_directory = "#{GLOBAL_PREFIX}_#{config}"
-    if !config_directory.include?(MDBCI) and Dir.exists?(config_directory)
-      root_dir = Dir.pwd
-      Dir.chdir config_directory
-      execute_bash 'vagrant destroy -f'
-      Dir.chdir root_dir
+    if Dir.exists?(config_directory)
+      unless config_directory.include?(MDBCI)
+        root_dir = Dir.pwd
+        Dir.chdir config_directory
+        execute_bash 'vagrant destroy -f'
+        Dir.chdir root_dir
+      end
+      FileUtils.rm_rf config_directory
     end
-    FileUtils.rm_rf config_directory
   end
 end
 
