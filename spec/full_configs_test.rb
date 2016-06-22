@@ -67,7 +67,7 @@ end
 describe nil do
   CONFIGS.each do |config|
 
-    next unless config.to_s.include? LIBVIRT
+    next if (!config.to_s.include? VBOX and !config.to_s.include? MDBCI)
 
     before :all do
       clean_environment
