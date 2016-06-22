@@ -1,5 +1,5 @@
 - job:
-    name: full-config-test
+    name: full-configs-test
     description: 'This job performs testing of configs in confs directory.'
     key_one: &SORTED_GIT_BRANCHES_FILE_PATH '/home/vagranttest/mdbci_jenkins_config/branch_list'
     parameters:
@@ -44,7 +44,7 @@
         - shell: |
             ln -s $MDBCI_CONFS/aws-config.yml aws-config.yml; ln -s $MDBCI_CONFS/maxscale.pem maxscale.pem
             cp $BOXES_JSON_PATH/* ./BOXES
-            rspec spec/full_config_test.rb
+            rspec spec/full_configs_test.rb
     publishers:
         - email-ext:
             recipients: $DEFAULT_RECIPIENTS
