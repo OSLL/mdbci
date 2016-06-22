@@ -37,7 +37,7 @@
     "hostname": "maxscale",
     "box": "ubuntu_trusty_docker",
     "product": {
-      "name": "packages"
+      "name": "maxscale"
     },
     "memory_size": "512"
   }
