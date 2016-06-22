@@ -77,6 +77,7 @@ end
 
 def get_boxes_by_config(template_path)
   boxes = Array.new
+  template = JSON.parse(File.read(File.read(template_path)))
   template.each do |possible_node|
     if possible_node[0] != TEMPLATE_AWS_CONFIG and possible_node[0] != TEMPLATE_COOKBOOK_PATH
       boxes.push possible_node[1]['box']
