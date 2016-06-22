@@ -18,7 +18,7 @@ AWS = 'aws'
 DOCKER = 'docker'
 VBOX = 'vbox'
 LIBVIRT = 'libvirt'
-MDBCI = %w(ppc64 ppc64be)
+MDBCI_BOXES = %w(ppc64 ppc64be)
 
 def execute_bash(cmd)
   puts "Executing: [#{cmd}]"
@@ -53,7 +53,7 @@ def clean_environment
   CONFIGS.each do |config|
     config_directory = "#{GLOBAL_PREFIX}_#{config}"
     if Dir.exists?(config_directory)
-      unless config_directory.include?(MDBCI)
+      unless File.exists? "#{config_directory}/mdbci_template"
         root_dir = Dir.pwd
         Dir.chdir config_directory
         execute_bash 'vagrant destroy -f'
@@ -96,8 +96,8 @@ describe nil do
 
     # Excluding VBOX and PPC configs
     next if boxes.grep(/.*_#{VBOX}/).size > 0
-    next if boxes.grep(/.*_#{MDBCI[0]}/).size > 0
-    next if boxes.grep(/.*_#{MDBCI[1]}/).size > 0
+    next if boxes.grep(/.*_#{MDBCI_BOXES[0]}/).size > 0
+    next if boxes.grep(/.*_#{MDBCI_BOXES[1]}/).size > 0
 
     before :all do
       clean_environment
