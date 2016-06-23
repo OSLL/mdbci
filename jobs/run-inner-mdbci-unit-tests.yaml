@@ -57,7 +57,7 @@
             recipients: $DEFAULT_RECIPIENTS
             reply-to: $DEFAULT_REPLYTO
             content-type: default
-            subject: $DEFAULT_SUBJECT
+            subject: $DEFAULT_SUBJECT - $MDBCI_BRANCH
             body: $DEFAULT_CONTENT
             attach-build-log: false
             always: true
