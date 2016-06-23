@@ -466,6 +466,7 @@ EOF
       box = node[1]['box'].to_s
       if !box.empty?
         box_params = @boxes.getBox(box)
+        raise "Box #{box} from node #{node[0]} not found in #{$session.boxesDir}!" if box_params.nil?
         @nodesProvider = box_params["provider"].to_s
       end
     end
