@@ -62,7 +62,6 @@ class Network
 
 
   def self.showKeyFile(name)
-    #TODO refactor with show
     pwd = Dir.pwd
     raise 'Configuration name is required' if name.nil?
     args = name.split('/')
@@ -79,7 +78,7 @@ class Network
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == node_arg }
-        raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty? if mdbci_node.nil?
+        raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty? || mdbci_node.nil?
         key_path = getBoxParams(dir,mdbci_node,pwd)
         $out.out key_path
       end
