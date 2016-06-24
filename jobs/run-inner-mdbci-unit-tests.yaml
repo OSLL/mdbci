@@ -25,6 +25,7 @@
               type: 'PT_SINGLE_SELECT'
               property-file: *SORTED_GIT_BRANCHES_FILE_PATH
               property-key: branch_name
+              default-value: $GIT_BRANCH
     wrappers:
         - pre-scm-buildstep:
             - shell: |
