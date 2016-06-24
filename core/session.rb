@@ -778,11 +778,9 @@ EOF
   def publicKeys(args)
     pwd = Dir.pwd
     possibly_failed_command = ''
-    exit_code = 1
 
     if args.nil?
-      $out.error 'Configuration name is required'
-      exit_code = 1
+      raise 'Configuration name is required'
     end
 
     args = args.split('/')
@@ -792,8 +790,7 @@ EOF
       loadMdbciNodes args[0]
       if args[1].nil? # read ip for all nodes
         if $session.mdbciNodes.empty?
-          $out.error "MDBCI nodes not found in #{args[0]}"
-          exit_code = 1
+          raise "MDBCI nodes not found in #{args[0]}"
         end
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
@@ -817,8 +814,7 @@ EOF
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == args[1] }
 
         if mdbci_node.nil?
-          $out.error "No such node with name #{args[1]} in #{args[0]}"
-          exit_code = 1
+          raise "No such node with name #{args[1]} in #{args[0]}"
         end
 
         box = mdbci_node[1]['box'].to_s
@@ -834,26 +830,24 @@ EOF
           $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
           vagrant_out = `#{cmd}`
           # TODO
-          exit_code = $?.exitstatus
-          possibly_failed_command = cmd
+          if $?.exitstatus!=0
+            raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
+          end
         else
-          $out.error "Wrong box parameter in node: #{args[1]}"
-          exit_code = 1
+          raise "Wrong box parameter in node: #{args[1]}"
         end
       end
     else # aws, vbox, libvirt, docker nodes
 
       unless Dir.exists? args[0]
-        $out.error "Directory with nodes does not exists: #{args[1]}"
-        exit_code = 1
+        raise "Directory with nodes does not exists: #{args[1]}"
       end
 
       network = Network.new
       network.loadNodes args[0] # load nodes from dir
 
       if network.nodes.empty?
-        $out.error "No aws, vbox, libvirt, docker nodes found in #{args[0]}"
-        exit_code = 1
+        raise "No aws, vbox, libvirt, docker nodes found in #{args[0]}"
       end
 
       if args[1].nil? # No node argument, copy keys to all nodes
@@ -871,8 +865,7 @@ EOF
         node = network.nodes.find { |elem| elem.name == args[1] }
 
         if node.nil?
-          $out.error "No such node with name #{args[1]} in #{args[0]}"
-          exit_code = 1
+          raise "No such node with name #{args[1]} in #{args[0]}"
         end
 
         #
@@ -881,8 +874,9 @@ EOF
         cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
         $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
         vagrant_out = `#{cmd}`
-        exit_code = $?.exitstatus
-        possibly_failed_command = cmd
+        if $?.exitstatus!=0
+          raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
+        end
         $out.out vagrant_out
       end
     end
@@ -890,12 +884,10 @@ EOF
     Dir.chdir pwd
 
     if exit_code != 0
-      $out.error "command #{possibly_failed_command} exit with non-zero code: #{exit_code}"
-      exit_code = 1
+      raise "command #{possibly_failed_command} exit with non-zero code: #{exit_code}"
     end
 
-    return exit_code
-
+    return 0
   end
 
   def showProvider(name)
