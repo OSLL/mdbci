@@ -2,7 +2,7 @@
   "cookbook_path" : "../recipes/cookbooks/",
   "node0" :
   {
-    "hostname" : "node1",
+    "hostname" : "node0",
     "box" : "ubuntu_trusty_docker",
      "product" : {
       "name": "mariadb",
@@ -18,7 +18,7 @@
      "product" : {
       "name": "mariadb",
       "version": "10.0",
-      "cnf_template" : "server1.cnf",
+      "cnf_template" : "server2.cnf",
       "cnf_template_path" : "../cnf/"
     }
   },
@@ -29,7 +29,7 @@
      "product" : {
       "name": "mariadb",
       "version": "10.0",
-      "cnf_template" : "server1.cnf",
+      "cnf_template" : "server3.cnf",
       "cnf_template_path" : "../cnf/"
     }
   }
