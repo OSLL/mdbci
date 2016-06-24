@@ -195,71 +195,62 @@ EOF
     possibly_failed_command = ''
     pwd = Dir.pwd
 
-    if args.nil?
-      $out.error 'Configuration name is required'
-      exit_code = 1
-    end
-
+    raise 'Configuration name is required' if args.nil?
     params = args.split('/')
+    dir = params[0]
+    node_arg =  params[1]
+    
     # mdbci ppc64 boxes
-    if File.exist?(params[0]+'/mdbci_template')
-      loadMdbciNodes params[0]
-      if params[1].nil? # ssh for all nodes
+    if File.exist?(dir+'/mdbci_template')
+      loadMdbciNodes dir
+      if node_arg.nil? # ssh for all nodes
         @mdbciNodes.each do |node|
-          box = node[1]['box'].to_s
-          if !box.empty?
-            mdbci_box_params = $session.boxes.getBox(box)
-            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_box_params['keyfile'].to_s + " "\
-                            + mdbci_box_params['user'].to_s + "@"\
-                            + mdbci_box_params['IP'].to_s + " "\
-                            + "'" + $session.command + "'"
-            $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
-            vagrant_out = `#{cmd}`
-            exit_code = $?.exitstatus
-            possibly_failed_command = cmd
-            $out.out vagrant_out
+          begin
+            cmd = createCmd(params,node,pwd)
+            runSSH(cmd, params)
+          rescue
+              # TODO maybe need some different way to catch exception in cycle?
           end
         end
       else
-        mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == params[1] }
-        box = mdbci_node[1]['box'].to_s
-        if !box.empty?
-          mdbci_params = $session.boxes.getBox(box)
-          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
-                          + mdbci_params['user'].to_s + "@"\
-                          + mdbci_params['IP'].to_s + " "\
-                          + "'" + $session.command + "'"
-          $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
-          vagrant_out = `#{cmd}`
-          exit_code = $?.exitstatus
-          possibly_failed_command = cmd
-          $out.out vagrant_out
-        end
+        mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == node_arg }
+        cmd = createCmd(params,mdbci_node,pwd)
+        runSSH(cmd, params)
       end
     else # aws, vbox nodes
-      unless Dir.exist?(params[0])
-        $out.error 'Machine with such name does not exist'
-        exit_code = 1
-      end
-      Dir.chdir params[0]
-      cmd = 'vagrant ssh '+params[1].to_s+' -c "'+$session.command+'"'
-      $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
-      vagrant_out = `#{cmd}`
-      exit_code = $?.exitstatus
-      possibly_failed_command = cmd
-      $out.out vagrant_out
+      raise "Machine with such name: #{dir} does not exist" unless Dir.exist?(dir) 
+      Dir.chdir dir
+      cmd = 'vagrant ssh '+node_arg.to_s+' -c "'+$session.command+'"'
+      runSSH(cmd,params)      
       Dir.chdir pwd
     end
-
-    if exit_code != 0
-      $out.error "'ssh' (or 'vagrant ssh') command returned non-zero exit code: (#{$?.exitstatus})"
-      $out.error "failed ssh command: #{possibly_failed_command}"
-      exit_code = 1
-    end
-
-    return exit_code
   end
 
+  def createCmd(params, node, pwd)
+    dir = params[0]
+    node_arg =  params[1]
+    box = node[1]['box'].to_s
+    raise "Box: #{box} is empty" if box.empty?
+
+    box_params = $session.boxes.getBox(box)
+    cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+box_params['keyfile'].to_s + " "\
+                    + box_params['user'].to_s + "@"\
+                    + box_params['IP'].to_s + " "\
+                    + "'" + $session.command + "'"
+    return cmd
+  end
+
+  def runSSH(cmd,params)
+    dir = params[0]
+    node_arg =  params[1]
+    $out.info 'Running ['+cmd+'] on '+dir.to_s+'/'+node_arg.to_s
+    vagrant_out = `#{cmd}`
+    if $?.exitstatus
+     $out.out vagrant_out
+     raise "'#{cmd}' command returned non-zero exit code: (#{$?.exitstatus})"
+    end
+    $out.out vagrant_out
+  end
 
   def platformKey(box_name)
     key = $session.boxes.boxesManager.keys.select { |value| value == box_name }
@@ -466,6 +457,7 @@ EOF
       box = node[1]['box'].to_s
       if !box.empty?
         box_params = @boxes.getBox(box)
+        raise "Box #{box} from node #{node[0]} not found in #{$session.boxesDir}!" if box_params.nil?
         @nodesProvider = box_params["provider"].to_s
       end
     end
