@@ -21,46 +21,56 @@ describe 'Session.getBoxesPlatformVersions' do
 
   it '#getBoxesPlatformVersions.ubuntu' do
   	boxesList = Array.new
-    boxesList = ["precise"]
+    boxesList = ["wily", "vivid", "trusty", "precise", "utopic"]
     boxes_versions = $session.getBoxesPlatformVersions('ubuntu', $session.boxes.boxesManager)
-    boxes_versions.should eq(boxesList)
+    boxes_versions.sort.should eq(boxesList.sort)
   end
 
   it '#getBoxesPlatformVersions.centos' do
   	boxesList = Array.new
-    boxesList = []
+    boxesList = ["7", "6", "5"]
     boxes_versions = $session.getBoxesPlatformVersions('centos', $session.boxes.boxesManager)
-    boxes_versions.should eq(boxesList)
+    boxes_versions.sort.should eq(boxesList.sort)
 
   end
 
   it '#getBoxesPlatformVersions.debian' do
+  	boxesList = Array.new
+  	boxesList = ["jessie", "squeeze", "wheezy"]
     boxes_versions = $session.getBoxesPlatformVersions('debian', $session.boxes.boxesManager)
-    boxes_versions.should eq(0)
+    boxes_versions.sort.should eq(boxesList.sort)
 
   end
 
   it '#getBoxesPlatformVersions.opesuse' do
+  	boxesList = Array.new
+  	boxesList = ["13"]
     boxes_versions = $session.getBoxesPlatformVersions('opensuse', $session.boxes.boxesManager)
-    boxes_versions.should eq(0)
+    boxes_versions.should eq(boxesList)
 
   end
 
   it '#getBoxesPlatformVersions.ubuntu_trusty' do
+  	boxesList = Array.new
+  	boxesList = []
     boxes_versions = $session.getBoxesPlatformVersions('ubuntu_trusty', $session.boxes.boxesManager)
-    boxes_versions.should eq(1)
+    boxes_versions.should eq(boxesList)
 
   end
 
   it '#getBoxesPlatformVersions.debian7' do
+  	boxesList = Array.new
+  	boxesList = []
     boxes_versions = $session.getBoxesPlatformVersions('debian7', $session.boxes.boxesManager)
-    boxes_versions.should eq(1)
+    boxes_versions.should eq(boxesList)
 
   end
 
   it '#getBoxesPlatformVersions.centos6' do
+  	boxesList = Array.new
+  	boxesList = []
     boxes_versions = $session.getBoxesPlatformVersions('debian7', $session.boxes.boxesManager)
-    boxes_versions.should eq(1)
+    boxes_versions.should eq(boxesList)
 
   end
 
