@@ -19,8 +19,9 @@ describe 'Session' do
     $session.repos = RepoManager.new reposPath
   end
 
-  it '#show box should exit with zero code for aws/vbox node' do
-    $session.showBoxNameByPath(ENV['pathToConfigToVBOXNode'].to_s).should(eql(0))
+  it '#getBoxNameByPath should exit name for aws/vbox node' do
+
+    $session.boxes.getBoxNameByPath(ENV['pathToConfigToVBOXNode'].to_s).should(eql(ENV['boxName'].to_s))
   end
 
 end
