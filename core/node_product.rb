@@ -169,11 +169,17 @@ class NodeProduct
 		                   + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/'+$session.nodeProduct.to_s+'.repo && '\
 		                   + 'sudo yum clean all && sudo yum update '+$session.nodeProduct.to_s+'"'
     elsif platform[0] == 'sles' || platform[0] == 'suse' || platform[0] == 'opensuse'
-      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo dd if=/dev/null of=/etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
-		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
-		                   + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo zypper --no-gpg-check ref '+$session.nodeProduct.to_s+'"'
+      repo_path = "/etc/zypp/repos.d/#{$session.nodeProduct.to_s}.repo"
+      setup_suse_repo = "sudo dd if=/dev/null of=#{repo_path} && " +
+          "sudo echo -e \"[#{Shellwords.escape($session.nodeProduct)}]\\n\" | sudo tee -a #{repo_path} && " +
+          "sudo echo -e name = \"#{Shellwords.escape($session.nodeProduct)}\\n\" | sudo tee -a #{repo_path} && " +
+          "sudo echo -e baseurl = \"#{Shellwords.escape(repo['repo'].to_s)}\\n\" | sudo tee -a #{repo_path} && " +
+          "sudo echo -e gpgkey=\"#{Shellwords.escape(repo['repo_key'].to_s)}\\ngpgcheck=1\" | sudo tee -a #{repo_path}"
+      setup_suse_repo_full = "#{setup_suse_repo}  && " +
+          "sudo zypper --no-gpg-check ref #{$session.nodeProduct.to_s} && " +
+          "sudo rm /etc/zypp/repos.d/#{$session.nodeProduct.to_s}.repo && " +
+          "#{setup_suse_repo}"
+      cmd_install_repo = "vagrant ssh #{node_name} -c '#{setup_suse_repo_full}'"
     end
     return cmd_install_repo
   end
