@@ -19,9 +19,12 @@ describe 'Session' do
     $session.repos = RepoManager.new reposPath
   end
 
-  it '#getBoxNameByPath should exit name for aws/vbox node' do
-
+  it '#getBoxNameByPath should return name for aws/vbox node' do
     $session.boxes.getBoxNameByPath(ENV['pathToConfigToVBOXNode'].to_s).should(eql(ENV['boxName'].to_s))
+  end
+
+  it '#getBoxNameByPath should raise wrong path' do
+    lambda{$session.boxes.getBoxNameByPath('WRONG_PATH')}.should(raise_error(RuntimeError, 'Path to generated nodes configurations is wrong'))
   end
 
 end
