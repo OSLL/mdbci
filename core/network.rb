@@ -221,6 +221,7 @@ class Network
   end
   
   def self.showNodeIP(node)
+    puts "DEBUG! Check aws config: "+$session.awsConfig["private_ip_service"] #TODO: DELETE THIS LINE, JUST FOR DEBUG
     exit_code = node.getIp(node.provider, true)
     raise "Can not get IP for #{node.name} in #{dir}" if exit_code != 0
     $out.info 'Node: ' + node.name.to_s
@@ -229,7 +230,7 @@ class Network
 
   def self.showNodeParam(param,node_name,box_params)
     $out.info 'Node: ' + node_name.to_s
-    $out.info 'IP: ' + box_params[param].to_s    
+    $out.out 'IP: ' + box_params[param].to_s    
   end
 
   def self.getBoxParams(node_param)
