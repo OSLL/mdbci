@@ -28,24 +28,24 @@ describe 'Network' do
     Network.showKeyFile(ENV['pathToConfigToMDBCIFolder']).should(eql(0))
   end
 
-  it '#showKeyFile should exit with non-zero code for mdbci/ppc64 node (when no such node exists)' do
-    Network.showKeyFile(ENV['pathToConfigToMDBCIFolder']+'/NOT_EXISTS').should(eql(1))
+  it '#showKeyFile should raise exception for mdbci/ppc64 node (when no such node exists)' do
+    lambda{Network.showKeyFile(ENV['pathToConfigToMDBCIFolder']+'/NOT_EXISTS')}.should(raise_error(RuntimeError, "MDBCI nodes are not found in"+ENV['pathToConfigToMDBCIFolder']));
   end
 
-  it '#showKeyFile should exit with non-zero code for concrete mdbci/ppc64 node (bad keyfile path)' do
-    Network.showKeyFile(ENV['pathToConfigToMDBCIBadNode']).should(eql(1))
+  it '#showKeyFile should raise exception for concrete mdbci/ppc64 node (bad keyfile path)' do
+    lambda{Network.showKeyFile(ENV['pathToConfigToMDBCIBadNode'])}.should(raise_error(RuntimeError, "/Key file.* is not found for node.*/"));
   end
 
-  it '#showKeyFile should exit with zero code for aws/vbox nodes nodes' do
+  it '#showKeyFile should exit exception for aws/vbox nodes nodes' do
     Network.showKeyFile(ENV['pathToConfigToVBOXNode']).should(eql(0))
   end
 
-  it '#showKeyFile should exit with non-zero code for all nodes (when arguments are nil)' do
-    Network.showKeyFile(nil).should(eql(1))
+  it '#showKeyFile should raise exception for all nodes (when arguments are nil)' do
+    lambda{Network.showKeyFile(nil)}.should(raise_error(RuntimeError, 'Configuration name is required'))
   end
 
-  it '#showKeyFile should exit with non-zero code for aws/vbox nodes nodes (when no such node exists)' do
-    Network.showKeyFile('NOT_EXISTS').should(eql(1))
+  it '#showKeyFile should raise exception for aws/vbox nodes nodes (when no such node exists)' do
+    lambda{Network.showKeyFile('NOT_EXISTS')}.should(raise_error(RuntimeError, 'Configuration with such name does not exists'))
   end
 
 end
