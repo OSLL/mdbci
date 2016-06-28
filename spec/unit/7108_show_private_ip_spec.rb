@@ -21,7 +21,7 @@ describe 'Network' do
     reposPath = './repo.d'
     $session.repos = RepoManager.new reposPath
     $session.awsConfigFile='aws-config.yml'
-    $session.loadCollections
+
   end
 
   it 'show private IP should return IP and Node' do
