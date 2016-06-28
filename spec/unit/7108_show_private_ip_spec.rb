@@ -20,9 +20,11 @@ describe 'Network' do
     $session.boxes = BoxesManager.new boxesPath
     reposPath = './repo.d'
     $session.repos = RepoManager.new reposPath
+    $session.awsConfigFile='aws-config.yml'
+    $session.loadCollections
   end
 
-  it 'show private IP shoul return IP and Node' do
+  it 'show private IP should return IP and Node' do
     Network.private_ip(ENV['configPath']).should eq(0)
   end
 

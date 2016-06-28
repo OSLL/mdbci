@@ -177,60 +177,75 @@ class Network
 
   # TODO - move mdbci box definition to new class - MdbciNode < Node
   def self.private_ip(name)
+    private_ip = getIP(name)
+    showHash(private_ip,["Node","IP"])
+    return 0
+  end
+  
+  def self.getIP(args)
     pwd = Dir.pwd
-
-    raise 'Configuration name is required' if name.nil?
-
-    args = name.split('/')
-    dir = args[0]
-    node_arg = args[1]
+    result_ip = Array.new()
+    raise 'Configuration name is required' if args.nil?
+    params = args.split('/')
+    dir = params[0]
+    node_arg = params[1]
 
     # mdbci box
     if File.exist?(dir+'/mdbci_template')
       $session.loadMdbciNodes dir
+      raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty?
       if node_arg.nil?     # read ip for all nodes
-        raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty?
         $session.mdbciNodes.each do |node|
           box_params = getBoxParams(node[1])
-          showNodeParam('IP',node, box_params)
+          result_ip.push(getNodeParam('IP',node, box_params))
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == node_arg }
         raise "MDBCI node #{node_arg} is not found in #{dir}" if mdbci_node.nil?
         box_params = getBoxParams(node[1])
-        showNodeParam('IP',mdbci_node, box_params)
+        result_ip.push(getNodeParam('IP',mdbci_node, box_params))
       end
     else # aws, vbox nodes
       raise "Can not find directory #{dir}" unless Dir.exists? dir
       network = Network.new
       network.loadNodes pwd.to_s+'/'+dir # load nodes from dir
+      raise "Nodes are not found in #{dir}" if network.nodes.empty?
       if node_arg.nil? # No node argument, show all config
-        raise "Nodes are not found in #{dir}" if network.nodes.empty?
         network.nodes.each do |node|
-          showNodeIP(node)
+          result_ip.push(getNodeIP(node))
         end
       else
         node = network.nodes.find { |elem| elem.name == node_arg}
         raise "Node #{node_arg} is not found in #{dir}" if node.nil?
-        showNodeIP(node)
+        result_ip.push(getNodeIP(node))
       end
     end
     Dir.chdir pwd
-
-    return 0
+    return result_ip
   end
-  
-  def self.showNodeIP(node)
-    puts "DEBUG! Check aws config: "+$session.awsConfig["private_ip_service"] #TODO: DELETE THIS LINE, JUST FOR DEBUG
+
+  def self.getNodeIP(node)
+    result = Hash.new("")
     exit_code = node.getIp(node.provider, true)
     raise "Can not get IP for #{node.name} in #{dir}" if exit_code != 0
-    $out.info 'Node: ' + node.name.to_s
-    $out.out 'IP: ' + node.ip.to_s 
+    result["Node"] = node.name.to_s
+    result["IP"] = node.ip.to_s
+    return result
   end
 
-  def self.showNodeParam(param,node_name,box_params)
-    $out.info 'Node: ' + node_name.to_s
-    $out.out 'IP: ' + box_params[param].to_s    
+  def self.getNodeParam(param,node_name,box_params)
+    result = Hash.new("")
+    result["Node"] = node_name.to_s
+    result[param.to_s] = box_params[param].to_s
+    return result    
+  end
+
+  def self.showHash(array,params)
+    array.each do |hash|
+      params.each do |param|
+        $out.info(param.to_s+": "+hash[param.to_s])
+      end
+    end
   end
 
   def self.getBoxParams(node_param)
