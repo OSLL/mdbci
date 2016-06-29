@@ -62,6 +62,16 @@ class Network
 
 
   def self.showKeyFile(name)
+    result_keys = getKeyFile(name)
+    
+    result_keys.each do |hash|
+      $out.out("Keyfile: "+hash["Key"].to_s)
+    end
+    return 0
+  end
+
+  def self.getKeyFile(name)
+    result = Array.new()
     pwd = Dir.pwd
     raise 'Configuration name is required' if name.nil?
     args = name.split('/')
@@ -74,13 +84,13 @@ class Network
         raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty?
         $session.mdbciNodes.each do |node|
           key_path = getBoxParams(dir,node,pwd)
-          $out.out key_path
+          result.push(key_path)
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == node_arg }
         raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty? || mdbci_node.nil?
         key_path = getBoxParams(dir,mdbci_node,pwd)
-        $out.out key_path
+        result.push(key_path)
       end
     else
       unless Dir.exists? pwd.to_s + '/' + dir
@@ -90,25 +100,29 @@ class Network
       cmd = "vagrant ssh-config #{node_arg} | grep IdentityFile"
       vagrant_out = `#{cmd}`
       raise "Command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
-      $out.out vagrant_out.split(' ')[1]
+      tempHash = Hash.new
+      tempHash["Key"] = vagrant_out.split(' ')[1]
+      result.push(tempHash)
       Dir.chdir pwd
     end
-    return 0
+    return result
   end
 
   def getBoxParams(dir,node,pwd)
+    result_hash = Hash.new()
     node_name = node[0]
     node_params = node[1]
     box = node_params['box'].to_s
     raise "Box parameter is not found for node #{node_name} in #{dir}" if box.empty?
     box_params = $session.boxes.getBox(box)
     raise "Box #{box} is not found for node #{node_name} in #{dir}" if box_params.nil?
-    $out.info 'Node: ' + node_name.to_s
+    result_hash["Node"] = node_name.to_s # Not used in showKeyfile, maybe need delete.
     key_path = "#{pwd}/KEYS/#{box_params['keyfile']}"
     unless File.exist?(key_path)
       raise "Key file #{box_params['keyfile']} is not found for node #{node_name} in #{dir}"
     end
-    return key_path
+    result_hash["Key"] = key_path.to_s
+    return result_hash
   end
 
   def self.show(name)
