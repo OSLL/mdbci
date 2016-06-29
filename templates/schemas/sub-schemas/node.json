@@ -14,12 +14,16 @@
           "type": "string",
           "pattern": ".*_.*_.*"
         },
+        "memory_size": {
+          "id": "node/memory_size",
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
         "product": {
           "$ref": "product.json#/definitions/product"
         }
       },
       "required":[
-        "hostname",
         "box"
       ]
     }

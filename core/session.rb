@@ -266,9 +266,15 @@ EOF
 
 
   def showBoxKeys
+    values = Array.new
     $session.boxes.boxesManager.values.each do |value|
-      $out.out value['$key']
+      values.push value[$session.field] if value[$session.field]
     end
+    if values.empty?
+      raise "box key #{$session.field} is not found"
+    end
+    puts values.uniq 
+    return 0
   end
 
   def showBoxes
@@ -409,7 +415,7 @@ EOF
       when 'keyfile'
         exit_code = Network.showKeyFile(ARGV.shift)
       when 'boxkeys'
-        showBoxKeys
+        exit_code = showBoxKeys
       when 'provider'
         exit_code = showProvider(ARGV.shift)
       else
@@ -458,6 +464,7 @@ EOF
       box = node[1]['box'].to_s
       raise "box in " + node[1].to_s + " is not found" if box.empty?
       box_params = @boxes.getBox(box)
+      raise "Box #{box} from node #{node[0]} not found in #{$session.boxesDir}!" if box_params.nil?
       @nodesProvider = box_params["provider"].to_s
     end
   end
@@ -735,6 +742,27 @@ EOF
             end
             raise 'Bringing up failed (error description is above)' unless machines_with_broken_chef.empty?
           end
+
+          # Chef logging
+          $out.info "Checking Chef log for failed nodes"
+          chef_log_cmd = "vagrant ssh #{machine_name} -c \"test -e /var/chef/cache/chef-stacktrace.out && printf 'FOUND' || printf 'NOT_FOUND'\""
+          chef_log_out = `#{chef_log_cmd}`
+          if chef_log_out == "FOUND"
+            $out.info "Chef stacktrace #{chef_log_out} on #{machine_name} node, reprovision this node"
+            chef_failed_nodes.push("#{machine_name}")
+            # reprovision failed chef node
+            provision_cmd = `vagrant provision #{machine_name}`
+            $out.info "#{provision_cmd}"
+            provision_status = $?.exitstatus
+          end
+        end
+
+        if i == @attempts && !all_machines_started || provision_status != 0
+          $out.error 'Bringing up failed'
+          # chef provision status
+          $out.info "Failed Chef nodes:"
+          chef_failed_nodes.each { |node| $out.info node.to_s }
+          raise "Some machines are still down or Chef provision failed! Check failed Chef nodes!"
         end
       end
     end

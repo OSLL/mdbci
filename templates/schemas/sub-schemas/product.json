@@ -28,10 +28,7 @@
         }
       },
       "required": [
-        "name",
-        "version",
-        "cnf_template",
-        "cnf_template_path"
+        "name"
       ]
     }
   }
