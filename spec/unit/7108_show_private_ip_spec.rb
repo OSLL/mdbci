@@ -21,11 +21,18 @@ describe 'Network' do
     reposPath = './repo.d'
     $session.repos = RepoManager.new reposPath
     $session.awsConfigFile='aws-config.yml'
-
+    $session.loadCollections
   end
 
-  it 'show private IP should return IP and Node' do
+  it 'show private IP should show IP and Node' do
     Network.private_ip(ENV['configPath']).should eq(0)
   end
 
+  it 'show private IP should raise error: not set config name ' do
+    lambda{Network.private_ip(nil)}.should raise_error(RuntimeError,"Configuration name is required")
+  end
+
+  it 'show private IP should raise error: not find directory ' do
+    lambda{Network.private_ip("SOME_WRONG_PATH")}.should raise_error(RuntimeError,/Can not find directory .*/)
+  end
  end
