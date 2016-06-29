@@ -20,6 +20,7 @@ describe 'Network' do
     $session.repos = RepoManager.new reposPath
   end
 
+=begin
   it '#showKeyFile should exit with zero code for concrete mdbci/ppc64 node' do
     Network.showKeyFile(ENV['pathToConfigToMDBCINode']).should(eql(0))
   end
@@ -35,9 +36,10 @@ describe 'Network' do
   it '#showKeyFile should raise exception for concrete mdbci/ppc64 node (bad keyfile path)' do
     lambda{Network.showKeyFile(ENV['pathToConfigToMDBCIBadNode'])}.should(raise_error(RuntimeError, "/Key file.* is not found for node.*/"));
   end
+=end
 
-  it '#showKeyFile should exit exception for aws/vbox nodes nodes' do
-    Network.showKeyFile(ENV['pathToConfigToVBOXNode']).should(eql(0))
+  it '#showKeyFile should show keyfile for aws/vbox nodes' do
+    Network.showKeyFile(ENV['configPathToVBOXNode']).should(eql(0))
   end
 
   it '#showKeyFile should raise exception for all nodes (when arguments are nil)' do
