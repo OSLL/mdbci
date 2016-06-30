@@ -207,27 +207,11 @@ EOF
       if params[1].nil? # ssh for all nodes
         @mdbciNodes.each do |node|
           box = node[1]['box'].to_s
-          if !box.empty?
-            mdbci_box_params = $session.boxes.getBox(box)
-            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_box_params['keyfile'].to_s + " "\
-                            + mdbci_box_params['user'].to_s + "@"\
-                            + mdbci_box_params['IP'].to_s + " "\
-                            + "'" + $session.command + "'"
-            $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
-            vagrant_out = `#{cmd}`
-            exit_code = $?.exitstatus
-            possibly_failed_command = cmd
-            $out.out vagrant_out
-          end
-        end
-      else
-        mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == params[1] }
-        box = mdbci_node[1]['box'].to_s
-        if !box.empty?
-          mdbci_params = $session.boxes.getBox(box)
-          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
-                          + mdbci_params['user'].to_s + "@"\
-                          + mdbci_params['IP'].to_s + " "\
+          raise "box in " + node[1].to_s + " is not found" if box.empty?
+          mdbci_box_params = $session.boxes.getBox(box)
+          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_box_params['keyfile'].to_s + " "\
+                          + mdbci_box_params['user'].to_s + "@"\
+                          + mdbci_box_params['IP'].to_s + " "\
                           + "'" + $session.command + "'"
           $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
           vagrant_out = `#{cmd}`
@@ -235,6 +219,20 @@ EOF
           possibly_failed_command = cmd
           $out.out vagrant_out
         end
+      else
+        mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == params[1] }
+        box = mdbci_node[1]['box'].to_s
+        raise "box in " + mdbci_node[1].to_s + " is not found" if box.empty?
+        mdbci_params = $session.boxes.getBox(box)
+        cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+                        + mdbci_params['user'].to_s + "@"\
+                        + mdbci_params['IP'].to_s + " "\
+                        + "'" + $session.command + "'"
+        $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
+        vagrant_out = `#{cmd}`
+        exit_code = $?.exitstatus
+        possibly_failed_command = cmd
+        $out.out vagrant_out
       end
     else # aws, vbox nodes
       unless Dir.exist?(params[0])
@@ -462,13 +460,17 @@ EOF
 
   # load mdbci boxes parameters from boxes.json
   def LoadNodesProvider(configs)
-    configs.each do |node|
-      box = node[1]['box'].to_s
-      if !box.empty?
-        box_params = @boxes.getBox(box)
-        raise "Box #{box} from node #{node[0]} not found in #{$session.boxesDir}!" if box_params.nil?
-        @nodesProvider = box_params["provider"].to_s
-      end
+    nodes = {}
+    configs.keys.each do |node|
+      nodes[node] = configs[node] if node != "aws_config" and node != "cookbook_path"
+    end
+    nodes.values.each do |node|
+      puts node
+      box = node['box'].to_s
+      raise "box in " + node.to_s + " is not found" if box.empty?
+      box_params = @boxes.getBox(box)
+      raise "Box #{box} from node #{node[0]} not found in #{$session.boxesDir}!" if box_params.nil?
+      @nodesProvider = box_params["provider"].to_s
     end
   end
 
