@@ -460,15 +460,12 @@ EOF
 
   # load mdbci boxes parameters from boxes.json
   def LoadNodesProvider(configs)
-    nodes = []
-    configs.each do |node|
-      if node[0] != "aws_config" and node[0] != "cookbook_path"
-        nodes.push(node[0])
-      else
-        nodes.push(node[1])
-      end
+    nodes = {}
+    configs.keys.each do |node|
+      nodes[node] = configs[node] if node != "aws_config" and node != "cookbook_path"
     end
-    nodes.each do |node|
+    nodes.values.each do |node|
+      puts node
       box = node['box'].to_s
       raise "box in " + node.to_s + " is not found" if box.empty?
       box_params = @boxes.getBox(box)
