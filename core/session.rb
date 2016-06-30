@@ -191,6 +191,14 @@ EOF
 
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
   def ssh(args)
+    result_ssh = getSSH(args)
+    result_ssh.each do |ssh_out|
+      $out.out ssh_out
+    end
+  end
+
+  def getSSH(args)
+    result = Array.new
     exit_code = 1
     possibly_failed_command = ''
     pwd = Dir.pwd
@@ -207,7 +215,7 @@ EOF
         @mdbciNodes.each do |node|
           begin
             cmd = createCmd(params,node,pwd)
-            runSSH(cmd, params)
+            result.push(runSSH(cmd, params))
           rescue
               # TODO maybe need some different way to catch exception in cycle?
           end
@@ -215,15 +223,16 @@ EOF
       else
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == node_arg }
         cmd = createCmd(params,mdbci_node,pwd)
-        runSSH(cmd, params)
+        rusult.push(runSSH(cmd, params))
       end
     else # aws, vbox nodes
       raise "Machine with such name: #{dir} does not exist" unless Dir.exist?(dir) 
       Dir.chdir dir
       cmd = 'vagrant ssh '+node_arg.to_s+' -c "'+$session.command+'"'
-      runSSH(cmd,params)      
+      result.push(runSSH(cmd,params))      
       Dir.chdir pwd
     end
+    return result
   end
 
   def createCmd(params, node, pwd)
@@ -249,7 +258,7 @@ EOF
      $out.out vagrant_out
      raise "'#{cmd}' command returned non-zero exit code: (#{$?.exitstatus})"
     end
-    $out.out vagrant_out
+    return vagrant_out
   end
 
   def platformKey(box_name)
