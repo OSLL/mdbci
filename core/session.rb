@@ -460,9 +460,17 @@ EOF
 
   # load mdbci boxes parameters from boxes.json
   def LoadNodesProvider(configs)
+    nodes = []
     configs.each do |node|
-      box = node[1]['box'].to_s
-      raise "box in " + node[1].to_s + " is not found" if box.empty?
+      if node[0] != "aws_config" and node[0] != "cookbook_path"
+        nodes.push(node[0])
+      else
+        nodes.push(node[1])
+      end
+    end
+    nodes.each do |node|
+      box = node['box'].to_s
+      raise "box in " + node.to_s + " is not found" if box.empty?
       box_params = @boxes.getBox(box)
       raise "Box #{box} from node #{node[0]} not found in #{$session.boxesDir}!" if box_params.nil?
       @nodesProvider = box_params["provider"].to_s
