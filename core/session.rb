@@ -195,10 +195,11 @@ EOF
     result_ssh.each do |ssh_out|
       $out.out ssh_out
     end
+    return 0
   end
 
   def getSSH(args)
-    result = Array.new
+    result = Array.new()
     exit_code = 1
     possibly_failed_command = ''
     pwd = Dir.pwd
@@ -254,11 +255,11 @@ EOF
     node_arg =  params[1]
     $out.info 'Running ['+cmd+'] on '+dir.to_s+'/'+node_arg.to_s
     vagrant_out = `#{cmd}`
-    if $?.exitstatus
+    if $?.exitstatus!=0
      $out.out vagrant_out
      raise "'#{cmd}' command returned non-zero exit code: (#{$?.exitstatus})"
     end
-    return vagrant_out
+    return vagrant_out.to_s
   end
 
   def platformKey(box_name)
