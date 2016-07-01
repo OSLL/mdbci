@@ -461,13 +461,17 @@ EOF
 
   # load mdbci boxes parameters from boxes.json
   def LoadNodesProvider(configs)
-    configs.each do |node|
-      box = node[1]['box'].to_s
-      if !box.empty?
-        box_params = @boxes.getBox(box)
-        raise "Box #{box} from node #{node[0]} not found in #{$session.boxesDir}!" if box_params.nil?
-        @nodesProvider = box_params["provider"].to_s
-      end
+    nodes = {}
+    configs.keys.each do |node|
+      nodes[node] = configs[node] if node != "aws_config" and node != "cookbook_path"
+    end
+    nodes.values.each do |node|
+      puts node
+      box = node['box'].to_s
+      raise "box in " + node.to_s + " is not found" if box.empty?
+      box_params = @boxes.getBox(box)
+      raise "Box #{box} from node #{node[0]} not found in #{$session.boxesDir}!" if box_params.nil?
+      @nodesProvider = box_params["provider"].to_s
     end
   end
 
@@ -776,13 +780,8 @@ EOF
   # copy ssh keys to config/node
   def publicKeys(args)
     pwd = Dir.pwd
-    possibly_failed_command = ''
-    exit_code = 1
 
-    if args.nil?
-      $out.error 'Configuration name is required'
-      exit_code = 1
-    end
+    raise 'Configuration name is required' if args.nil?
 
     args = args.split('/')
 
@@ -791,33 +790,30 @@ EOF
       loadMdbciNodes args[0]
       if args[1].nil? # read ip for all nodes
         if $session.mdbciNodes.empty?
-          $out.error "MDBCI nodes not found in #{args[0]}"
-          exit_code = 1
+          raise "MDBCI nodes not found in #{args[0]}"
         end
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
-          if !box.empty?
-            mdbci_params = $session.boxes.getBox(box)
-            #
-            keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(pwd.to_s+'/'+@keyFile.to_s) }
-            # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
-            command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
-            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
-                            + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
-                            + "\"" + command + "\""
-            $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
-            vagrant_out = `#{cmd}`
-            # TODO
-            exit_code = $?.exitstatus
-            possibly_failed_command = cmd
+          raise "Box empty in node: #{node}" unless !box.empty?
+          mdbci_params = $session.boxes.getBox(box)
+          #
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(pwd.to_s+'/'+@keyFile.to_s) }
+          # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
+          command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
+          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+                          + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
+                          + "\"" + command + "\""
+          $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
+          $out.info `#{cmd}`
+          if $?.exitstatus!=0
+            raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
           end
         end
       else
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == args[1] }
 
         if mdbci_node.nil?
-          $out.error "No such node with name #{args[1]} in #{args[0]}"
-          exit_code = 1
+          raise "No such node with name #{args[1]} in #{args[0]}"
         end
 
         box = mdbci_node[1]['box'].to_s
@@ -831,28 +827,26 @@ EOF
                           + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
-          vagrant_out = `#{cmd}`
-          # TODO
-          exit_code = $?.exitstatus
-          possibly_failed_command = cmd
+          $out.info `#{cmd}`
+
+          if $?.exitstatus != 0
+            raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
+          end
         else
-          $out.error "Wrong box parameter in node: #{args[1]}"
-          exit_code = 1
+          raise "Wrong box parameter in node: #{args[1]}"
         end
       end
     else # aws, vbox, libvirt, docker nodes
 
       unless Dir.exists? args[0]
-        $out.error "Directory with nodes does not exists: #{args[1]}"
-        exit_code = 1
+        raise "Directory with nodes does not exists: #{args[1]}"
       end
 
       network = Network.new
       network.loadNodes args[0] # load nodes from dir
 
       if network.nodes.empty?
-        $out.error "No aws, vbox, libvirt, docker nodes found in #{args[0]}"
-        exit_code = 1
+        raise "No aws, vbox, libvirt, docker nodes found in #{args[0]}"
       end
 
       if args[1].nil? # No node argument, copy keys to all nodes
@@ -861,17 +855,16 @@ EOF
           # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
           cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
           $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
-          vagrant_out = `#{cmd}`
-          exit_code = $?.exitstatus
-          possibly_failed_command = cmd
-          $out.out vagrant_out
+          $out.info `#{cmd}`
+          if $?.exitstatus!=0
+            raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
+          end
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1] }
 
         if node.nil?
-          $out.error "No such node with name #{args[1]} in #{args[0]}"
-          exit_code = 1
+          raise "No such node with name #{args[1]} in #{args[0]}"
         end
 
         #
@@ -879,21 +872,14 @@ EOF
         # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
         cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
         $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
-        vagrant_out = `#{cmd}`
-        exit_code = $?.exitstatus
-        possibly_failed_command = cmd
-        $out.out vagrant_out
+        $out.info `#{cmd}`
+        if $?.exitstatus!=0
+          raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
+        end
       end
     end
 
     Dir.chdir pwd
-
-    if exit_code != 0
-      $out.error "command #{possibly_failed_command} exit with non-zero code: #{exit_code}"
-      exit_code = 1
-    end
-
-    return exit_code
 
   end
 
