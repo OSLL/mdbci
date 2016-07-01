@@ -200,8 +200,6 @@ EOF
 
   def getSSH(args)
     result = Array.new()
-    exit_code = 1
-    possibly_failed_command = ''
     pwd = Dir.pwd
 
     raise 'Configuration name is required' if args.nil?
