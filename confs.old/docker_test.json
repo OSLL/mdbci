@@ -2,7 +2,7 @@
   "cookbook_path" : "../recipes/cookbooks/",
   "node0" :
   {
-    "hostname" : "node1",
+    "hostname" : "node0",
     "box" : "ubuntu_trusty_docker",
      "product" : {
       "name": "mariadb",
