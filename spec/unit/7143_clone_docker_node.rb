@@ -15,6 +15,7 @@ describe nil do
     image_name = create_docker_node_clone(ENV['path_to_nodes'], ENV['node_name'], ENV['path_to_new_config_directory'])
     `docker images | grep #{image_name}`
     $?.exitstatus.should eql 0
+    `docker rmi #{image_name}`
   end
 
 end
