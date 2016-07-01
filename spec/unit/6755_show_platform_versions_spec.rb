@@ -5,7 +5,7 @@ require_relative '../../core/exception_handler'
 require_relative '../../core/boxes_manager'
 require_relative '../../core/session'
 
-describe 'Session.boxesPlatformVersions' do
+describe 'Session.getBoxesPlatformVersions' do
 
   before :all do
     $out = Out.new
@@ -19,52 +19,58 @@ describe 'Session.boxesPlatformVersions' do
     $session.repos = RepoManager.new reposPath
   end
 
-  it '#boxesPlatformVersions.ubuntu' do
-    $session.boxPlatform = 'ubuntu'
-    exit_code = $session.boxesPlatformVersions
-    exit_code.should eq(0)
+  it '#getBoxesPlatformVersions.ubuntu' do
+  	boxesList = Array.new
+    boxesList = ["wily", "vivid", "trusty", "precise", "utopic"]
+    boxes_versions = $session.getBoxesPlatformVersions('ubuntu', $session.boxes.boxesManager)
+    boxes_versions.sort.should eq(boxesList.sort)
+  end
+
+  it '#getBoxesPlatformVersions.centos' do
+  	boxesList = Array.new
+    boxesList = ["7", "6", "5"]
+    boxes_versions = $session.getBoxesPlatformVersions('centos', $session.boxes.boxesManager)
+    boxes_versions.sort.should eq(boxesList.sort)
 
   end
 
-  it '#boxesPlatformVersions.centos' do
-    $session.boxPlatform = 'centos'
-    exit_code = $session.boxesPlatformVersions
-    exit_code.should eq(0)
+  it '#getBoxesPlatformVersions.debian' do
+  	boxesList = Array.new
+  	boxesList = ["jessie", "squeeze", "wheezy"]
+    boxes_versions = $session.getBoxesPlatformVersions('debian', $session.boxes.boxesManager)
+    boxes_versions.sort.should eq(boxesList.sort)
 
   end
 
-  it '#boxesPlatformVersions.debian' do
-    $session.boxPlatform = 'debian'
-    exit_code = $session.boxesPlatformVersions
-    exit_code.should eq(0)
+  it '#getBoxesPlatformVersions.opesuse' do
+  	boxesList = Array.new
+  	boxesList = ["13"]
+    boxes_versions = $session.getBoxesPlatformVersions('opensuse', $session.boxes.boxesManager)
+    boxes_versions.should eq(boxesList)
 
   end
 
-  it '#boxesPlatformVersions.opesuse' do
-    $session.boxPlatform = 'opensuse'
-    exit_code = $session.boxesPlatformVersions
-    exit_code.should eq(0)
+  it '#getBoxesPlatformVersions.ubuntu_trusty' do
+  	boxesList = Array.new
+  	boxesList = []
+    boxes_versions = $session.getBoxesPlatformVersions('ubuntu_trusty', $session.boxes.boxesManager)
+    boxes_versions.should eq(boxesList)
 
   end
 
-  it '#boxesPlatformVersions.ubuntu_trusty' do
-    $session.boxPlatform = 'ubuntu_trusty'
-    exit_code = $session.boxesPlatformVersions
-    exit_code.should eq(1)
+  it '#getBoxesPlatformVersions.debian7' do
+  	boxesList = Array.new
+  	boxesList = []
+    boxes_versions = $session.getBoxesPlatformVersions('debian7', $session.boxes.boxesManager)
+    boxes_versions.should eq(boxesList)
 
   end
 
-  it '#boxesPlatformVersions.debian7' do
-    $session.boxPlatform = 'debian7'
-    exit_code = $session.boxesPlatformVersions
-    exit_code.should eq(1)
-
-  end
-
-  it '#boxesPlatformVersions.centos6' do
-    $session.boxPlatform = 'centos6'
-    exit_code = $session.boxesPlatformVersions
-    exit_code.should eq(1)
+  it '#getBoxesPlatformVersions.centos6' do
+  	boxesList = Array.new
+  	boxesList = []
+    boxes_versions = $session.getBoxesPlatformVersions('debian7', $session.boxes.boxesManager)
+    boxes_versions.should eq(boxesList)
 
   end
 

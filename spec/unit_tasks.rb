@@ -15,8 +15,7 @@ task :run_unit do
 
   Rake::Task[:task_generator].execute
   Rake::Task[:task_6819_show_box_info].execute
-# Commented due to https://dev.osll.ru/issues/6950
-#  Rake::Task[:task_6755_show_platform_versions].execute
+  Rake::Task[:task_6755_show_platform_versions].execute
   Rake::Task[:task_6844_ssh_pty_bug].execute
   Rake::Task[:task_6754_bug].execute
   Rake::Task[:task_6813_divide_show_boxes].execute
