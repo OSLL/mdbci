@@ -12,6 +12,7 @@ task :run_unit do
   task :task_repos_manager do |t| RakeTaskManager.new(t).run_unit end
   task :task_session do |t| RakeTaskManager.new(t).run_unit end
   task :task_6812_show_repo_manager_exceptions do |t| RakeTaskManager.new(t).run_unit end
+  task :task_7185_helper_functions do |t| RakeTaskManager.new(t).run_unit end
 
   Rake::Task[:task_generator].execute
   Rake::Task[:task_6819_show_box_info].execute
@@ -25,6 +26,7 @@ task :run_unit do
   Rake::Task[:task_session].execute
   Rake::Task[:task_6783_show_boxes].execute
   Rake::Task[:task_6812_show_repo_manager_exceptions].execute
+  Rake::Task[:task_7185_helper_functions].execute
 
   RakeTaskManager.get_failed_tests_info
 
