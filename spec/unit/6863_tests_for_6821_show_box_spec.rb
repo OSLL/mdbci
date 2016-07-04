@@ -20,7 +20,11 @@ describe 'Session' do
   end
 
   it '#getBoxNameByPath should return name for aws/vbox node' do
-    $session.boxes.getBoxNameByPath(ENV['pathToConfigToVBOXNode'].to_s).should(eql(ENV['boxName'].to_s))
+    $session.boxes.getBoxNameByPath('spec/test_machine_configurations/6821_test_conf/node0').should(eql('centos_6_vbox'))
+  end
+
+  it '#getBoxNameByPath should raise wrong node' do
+    lambda{$session.boxes.getBoxNameByPath('spec/test_machine_configurations/6821_test_conf/node123')}.should(raise_error(RuntimeError, /Node .* is not found in .*/))
   end
 
   it '#getBoxNameByPath should raise wrong path' do
