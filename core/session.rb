@@ -426,6 +426,13 @@ EOF
     return exit_code
   end
 
+
+  def clone(configuration, new_path)
+    exit_code = 1
+    return exit_code
+  end
+
+
   # all mdbci commands swith
   def commands
     exit_code = 1
@@ -453,6 +460,8 @@ EOF
       when 'snapshot'
         snapshot = Snapshot.new
         exit_code = snapshot.do(ARGV.shift)
+      when 'clone'
+        exit_code = $session.clone(ARGV[0], ARGV[1])
       else
         $out.error 'Unknown mdbci command. Please look help!'
         Help.display
