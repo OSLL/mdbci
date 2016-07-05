@@ -237,11 +237,15 @@ class Network
 
 end
 
-def printConfigurationNetworkInfoToFile(configuration)
+COMMAND_WHOAMI='whoami'
+COMMAND_HOSTNAME='hostname'
+
+def printConfigurationNetworkInfoToFile(configuration, node)
   
   open("#{configuration}_network_config", 'w') do |f|
-    configurationNetworkInfo = collectConfigurationNetworkInfo(configuration)
+    configurationNetworkInfo = collectConfigurationNetworkInfo(configuration, node)
     configurationNetworkInfo.each do |key, value|
+      # TODO Add correct array conversion 
       f.puts "#{key}=#{value}"
     end
   end
@@ -249,14 +253,16 @@ def printConfigurationNetworkInfoToFile(configuration)
 end
 
 def collectConfigurationNetworkInfo(configuration)
+
   configurationNetworkInfo = Hash.new
-  nodes = # TODO add getNodes
+  nodes = get_nodes(configuration)# TODO add getNodes
   nodes.each do |node|
-    configurationNetworkInfo["#{node}_network"] = #TODO add neccessary call
-    configurationNetworkInfo["#{node}_keyfile"] = #TODO add neccessary call
-    configurationNetworkInfo["#{node}_private_ip"] = #TODO add neccessary call
-    configurationNetworkInfo["#{node}_whoami"] = #TODO add neccessary call
-    configurationNetworkInfo["#{node}_hostname"] = #TODO add neccessary call
+    configPath = "#{configuration}/#{node}"
+    configurationNetworkInfo["#{node}_network"] = Network.getNetwork(configPath) 
+    configurationNetworkInfo["#{node}_keyfile"] = Network.getKeyFile(configPath)
+    configurationNetworkInfo["#{node}_private_ip"] = Network.getIp(configPath)
+    configurationNetworkInfo["#{node}_whoami"] = $session.getSSH(configPath, COMMAND_WHOAMI)
+    configurationNetworkInfo["#{node}_hostname"] = $session.getSSH(configPath, COMMAND_HOSTNAME)
   end
   return configurationNetworkInfo
 end
