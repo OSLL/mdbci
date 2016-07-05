@@ -427,6 +427,7 @@ EOF
 
   def clone(configuration, new_path)
     exit_code = 1
+    $out.info "Performing cloning operation for config #{configuration}. Cloned configuration name: #{new_path}"
     cloneNode(configuration, new_path)
     return exit_code
   end
