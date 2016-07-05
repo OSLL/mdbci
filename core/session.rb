@@ -987,7 +987,7 @@ EOF
   end
 
 
-  def dockerCloneNodes(old_path, new_path)
+  def libvirtCloneNodes(old_path, new_path)
   end  
 
 
