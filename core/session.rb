@@ -11,6 +11,7 @@ require_relative 'repo_manager'
 require_relative 'out'
 require_relative 'docker_manager'
 require_relative 'snapshot'
+require_relative 'helper'
 
 
 class Session
@@ -55,6 +56,8 @@ is installed and that the binary is available on the PATH.
 EOF
 
   OUTPUT_NODE_NAME_REGEX = "==>\s+(.*):{1}"
+  DOCKER = 'docker'
+  LIBVIRT = 'libvirt'
 
   def initialize
     @boxesDir = './BOXES'
@@ -428,7 +431,7 @@ EOF
   def clone(configuration, new_path)
     exit_code = 1
     $out.info "Performing cloning operation for config #{configuration}. Cloned configuration name: #{new_path}"
-    cloneNode(configuration, new_path)
+    exit_code = cloneNodes(configuration, new_path)
     return exit_code
   end
 
@@ -956,7 +959,7 @@ EOF
     box = node[1]['box'].to_s
     if $session.boxes.boxesManager.has_key?(box)
       box_params = $session.boxes.getBox(box)
-      platform = box_params["platform"].to_s+'^'+box_params['platform_version'].to_s
+      platform = box_params[PLATFORM].to_s+'^'+box_params['platform_version'].to_s
       return platform
     else
       $out.warning name.to_s+" platform does not exist! Please, check box name!"
@@ -964,7 +967,28 @@ EOF
 
   end
 
-  def cloneNode(configuration, new_path)
+
+  def cloneNodes(configuration, new_path)
+    exit_code = 1
+    copying_old_config_to_new(configuration, new_path)
+    provider = get_provider(new_path)
+    if provider == DOCKER
+      exit_code = dockerCloneNodes(configuration, new_path)
+    elsif provider == LIBVIRT
+      exit_code = libvirtCloneNodes(configuration, new_path)
+    else
+      raise "Unknown provider"
+    end
+    return exit_code
   end
+
+
+  def dockerCloneNodes(old_path, new_path)
+  end
+
+
+  def dockerCloneNodes(old_path, new_path)
+  end  
+
 
 end
