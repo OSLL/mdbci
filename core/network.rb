@@ -236,3 +236,27 @@ class Network
   end
 
 end
+
+def printConfigurationNetworkInfoToFile(configuration)
+  
+  open("#{configuration}_network_config", 'w') do |f|
+    configurationNetworkInfo = collectConfigurationNetworkInfo(configuration)
+    configurationNetworkInfo.each do |key, value|
+      f.puts "#{key}=#{value}"
+    end
+  end
+
+end
+
+def collectConfigurationNetworkInfo(configuration)
+  configurationNetworkInfo = Hash.new
+  nodes = # TODO add getNodes
+  nodes.each do |node|
+    configurationNetworkInfo["#{node}_network"] = #TODO add neccessary call
+    configurationNetworkInfo["#{node}_keyfile"] = #TODO add neccessary call
+    configurationNetworkInfo["#{node}_private_ip"] = #TODO add neccessary call
+    configurationNetworkInfo["#{node}_whoami"] = #TODO add neccessary call
+    configurationNetworkInfo["#{node}_hostname"] = #TODO add neccessary call
+  end
+  return configurationNetworkInfo
+end
