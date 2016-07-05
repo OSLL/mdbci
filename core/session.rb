@@ -424,6 +424,15 @@ EOF
     return exit_code
   end
 
+
+  def clone(configuration, new_path)
+    exit_code = 1
+    $out.info "Performing cloning operation for config #{configuration}. Cloned configuration name: #{new_path}"
+    cloneNode(configuration, new_path)
+    return exit_code
+  end
+
+
   # all mdbci commands swith
   def commands
     exit_code = 1
@@ -451,6 +460,8 @@ EOF
       when 'snapshot'
         snapshot = Snapshot.new
         exit_code = snapshot.do(ARGV.shift)
+      when 'clone'
+        exit_code = $session.clone(ARGV[0], ARGV[1])
       else
         $out.error 'Unknown mdbci command. Please look help!'
         Help.display
@@ -951,6 +962,9 @@ EOF
       $out.warning name.to_s+" platform does not exist! Please, check box name!"
     end
 
+  end
+
+  def cloneNode(configuration, new_path)
   end
 
 end
