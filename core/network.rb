@@ -65,7 +65,7 @@ class Network
     result_keys = getKeyFile(name)
     
     result_keys.each do |hash|
-      $out.out("Keyfile: "+hash["Key"].to_s)
+      $out.out(hash["key"].to_s)
     end
     return 0
   end
@@ -101,7 +101,7 @@ class Network
       vagrant_out = `#{cmd}`
       raise "Command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
       tempHash = Hash.new
-      tempHash["Key"] = vagrant_out.split(' ')[1]
+      tempHash["key"] = vagrant_out.split(' ')[1]
       result.push(tempHash)
       Dir.chdir pwd
     end
@@ -116,12 +116,11 @@ class Network
     raise "Box parameter is not found for node #{node_name} in #{dir}" if box.empty?
     box_params = $session.boxes.getBox(box)
     raise "Box #{box} is not found for node #{node_name} in #{dir}" if box_params.nil?
-    result_hash["Node"] = node_name.to_s # Not used in showKeyfile, maybe need delete.
     key_path = "#{pwd}/KEYS/#{box_params['keyfile']}"
     unless File.exist?(key_path)
       raise "Key file #{box_params['keyfile']} is not found for node #{node_name} in #{dir}"
     end
-    result_hash["Key"] = key_path.to_s
+    result_hash["key"] = key_path.to_s
     return result_hash
   end
 
