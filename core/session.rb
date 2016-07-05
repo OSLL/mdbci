@@ -429,6 +429,7 @@ EOF
 
   def clone(configuration, new_path)
     exit_code = 1
+    cloneNode(configuration, new_path)
     return exit_code
   end
 
@@ -976,6 +977,9 @@ EOF
       $out.warning name.to_s+" platform does not exist! Please, check box name!"
     end
 
+  end
+
+  def cloneNode(configuration, new_path)
   end
 
 end
