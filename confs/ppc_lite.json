@@ -1,0 +1,36 @@
+{
+  "cookbook_path" : "../recipes/cookbooks/",
+  "node0" :
+  {
+    "hostname" : "node0",
+    "box" : "rhel_6_ppc64",
+    "memory_size" : "1024",
+    "product" : {
+      "name": "mariadb",
+      "version": "10.0",
+      "cnf_template" : "server1.cnf",
+      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+    }
+  },
+  "galera0" :
+  {
+    "hostname" : "galera0",
+    "box" : "ubuntu_trusty_ppc64",
+    "memory_size" : "1024",
+    "product" : {
+      "name": "galera",
+      "version": "5.5",
+      "cnf_template" : "galera_server1.cnf",
+      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+    }
+  },
+  "maxscale" :
+  {
+    "hostname" : "maxscale",
+    "box" : "ubuntu_trusty_ppc64",
+    "product" : {
+      "name" : "maxscale"
+    },
+    "memory_size" : "1024"
+  }
+}
