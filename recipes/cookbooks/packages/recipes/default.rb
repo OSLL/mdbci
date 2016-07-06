@@ -10,7 +10,7 @@
 # TODO - move here all packages based on product (galera, maxscale)
 
 # install additional packages for all platform
-[ "net-tools", "psmisc" ].each do |pkg|
+%w(net-tools psmisc).each do |pkg|
   package pkg
 end
 
