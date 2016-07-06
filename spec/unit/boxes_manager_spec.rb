@@ -15,6 +15,6 @@ describe 'BoxesManager' do
     $exception_handler = ExceptionHandler.new
     boxesPath = './BOXES'
     $session.boxes = BoxesManager.new boxesPath
-    $session.boxes.boxesManager.size().should eq(49)
+    $session.boxes.boxesManager.size().should_not eq(0)
   end
 end

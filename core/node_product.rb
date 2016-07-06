@@ -154,26 +154,36 @@ class NodeProduct
   end
   #
   #
+
+  def NodeProduct.suseSetupProductRepoCmd(repo)
+    repo_path = "/etc/zypp/repos.d/#{$session.nodeProduct.to_s}.repo"
+    setup_suse_repo = "sudo dd if=/dev/null of=#{repo_path} && " +
+        "sudo echo -e \"[#{Shellwords.escape($session.nodeProduct)}]\\n\" | sudo tee -a #{repo_path} && " +
+        "sudo echo -e name = \"#{Shellwords.escape($session.nodeProduct)}\\n\" | sudo tee -a #{repo_path} && " +
+        "sudo echo -e baseurl = \"#{Shellwords.escape(repo['repo'].to_s)}\\n\" | sudo tee -a #{repo_path} && " +
+        "sudo echo -e gpgkey=\"#{Shellwords.escape(repo['repo_key'].to_s)}\\ngpgcheck=1\" | sudo tee -a #{repo_path}"
+    return "#{setup_suse_repo}  && " +
+        "sudo zypper --no-gpg-check ref #{$session.nodeProduct.to_s} && " +
+        "sudo rm /etc/zypp/repos.d/#{$session.nodeProduct.to_s}.repo && " +
+        "#{setup_suse_repo}"
+  end
+
   def NodeProduct.setupProductRepoCmd(full_platform, node_name, repo)
     platform = full_platform.split('^')
     $out.info 'Setup '+$session.nodeProduct.to_s+' repo on '+platform[0].to_s
     if platform[0] == 'ubuntu' || platform[0] == 'debian'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+repo['repo_key'].to_s+' && '\
                        + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\
-		                   + 'sudo echo -e \'deb '+repo['repo'].to_s+'\' | sudo tee -a /etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\
-		                   + 'sudo apt-get update"'
+                       + 'sudo echo -e \'deb '+repo['repo'].to_s+'\' | sudo tee -a /etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\
+                       + 'sudo apt-get update"'
     elsif platform[0] == 'rhel' || platform[0] == 'centos' || platform[0] == 'fedora'
       cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo dd if=/dev/null of=/etc/yum.repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
-		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
-		                   + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo yum clean all && sudo yum update '+$session.nodeProduct.to_s+'"'
+                       + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
+                       + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
+                       + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/'+$session.nodeProduct.to_s+'.repo && '\
+                       + 'sudo yum clean all && sudo yum update '+$session.nodeProduct.to_s+'"'
     elsif platform[0] == 'sles' || platform[0] == 'suse' || platform[0] == 'opensuse'
-      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo dd if=/dev/null of=/etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
-		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
-		                   + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo zypper --no-gpg-check ref '+$session.nodeProduct.to_s+'"'
+      cmd_install_repo = "vagrant ssh #{node_name} -c '#{suseSetupProductRepoCmd(repo)}'"
     end
     return cmd_install_repo
   end
@@ -185,20 +195,16 @@ class NodeProduct
     if platform[0] == 'ubuntu' || platform[0] == 'debian'
       cmd_install_repo = 'sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+repo['repo_key'].to_s+' && '\
                        + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\
-		                   + 'sudo echo -e \'deb '+repo['repo'].to_s+'\' | sudo tee -a /etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\
-		                   + 'sudo apt-get update'
+                       + 'sudo echo -e \'deb '+repo['repo'].to_s+'\' | sudo tee -a /etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\
+                       + 'sudo apt-get update'
     elsif platform[0] == 'rhel' || platform[0] == 'centos' || platform[0] == 'fedora'
       cmd_install_repo = 'sudo dd if=/dev/null of=/etc/yum.repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
-		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
+                       + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
+                       + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
                        + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo yum clean all && sudo yum update '+$session.nodeProduct.to_s+''
+                       + 'sudo yum clean all && sudo yum update '+$session.nodeProduct.to_s+''
     elsif platform[0] == 'sles' || platform[0] == 'suse' || platform[0] == 'opensuse'
-      cmd_install_repo = 'sudo dd if=/dev/null of=/etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
-		                   + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
-                       + 'gpgcheck=1\' | sudo tee -a /etc/zypp/repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-		                   + 'sudo zypper --no-gpg-check ref '+$session.nodeProduct.to_s
+      cmd_install_repo = suseSetupProductRepoCmd(repo)
     end
     return cmd_install_repo
   end

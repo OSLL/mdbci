@@ -45,14 +45,13 @@ describe 'Session' do
 
       # boxes is not empty
       awsConfig.size().should_not eq(0)
-      awsConfig.size().should eq(9)
 
     end
 
     it "Check template loading..." do
 
       session = Session.new
-      session.configFile='confs/galera-cnf-template.json'
+      session.configFile='spec/test_machine_configurations/galera-cnf-template.json'
 
       nodes = JSON.parse(IO.read(session.configFile))
       #out.out 'Found boxes: ' + boxes.size().to_s
