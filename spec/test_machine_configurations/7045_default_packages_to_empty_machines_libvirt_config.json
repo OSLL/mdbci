@@ -2,6 +2,6 @@
   "cookbook_path": "../recipes/cookbooks/",
   "node0": {
     "hostname": "node0",
-    "box": "docker_trusty_libvirt"
+    "box": "ubuntu_trusty_libvirt"
   }
 }
