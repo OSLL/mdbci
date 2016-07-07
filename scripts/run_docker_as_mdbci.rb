@@ -4,6 +4,7 @@ require 'getoptlong'
 require 'open3'
 require 'json'
 require 'fileutils'
+require_relative '../core/helper'
 
 INFORMATION_TAG = 'INFO: '
 ERROR_TAG = 'ERROR:'
@@ -56,23 +57,6 @@ def parse_options_and_args
   return template
 end
 
-def execute_bash(cmd)
-  output = ""
-  process_status = Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-    stdin.close
-    stdout.each do |line|
-      output = output + "\n" + line
-      puts "#{INFORMATION_TAG} #{line}"
-    end
-    stdout.close
-    stderr.each { |line| puts "#{ERROR_TAG} #{line}" }
-    stderr.close
-    wait_thr.value.exitstatus
-  end
-  raise "#{cmd} exited with non-zero exit code: #{process_status}" unless process_status == 0
-  return process_status, output
-end
-
 def get_nodes(template_path)
   nodes = Array.new
   template = JSON.parse(File.read("#{template_path}"))
@@ -99,10 +83,10 @@ def prepare_mdbci_environment(template_path)
   nodes_names.each do |node_name|
     box_config = BOX_CONFIG_TEMPLATE.clone
     # Getting ip of node
-    _, private_ip_output = execute_bash("./mdbci show private_ip #{config_name_docker}/#{node_name} --silent")
+    private_ip_output = execute_bash("./mdbci show private_ip #{config_name_docker}/#{node_name} --silent")
     box_config[:IP] = private_ip_output.to_s.split("\n")[-1]
     # Copying keyfile to KEYS directory and adding it to box config for current node
-    _, box_name = execute_bash("./mdbci show box #{config_name_docker}/#{node_name} --silent")
+    box_name = execute_bash("./mdbci show box #{config_name_docker}/#{node_name} --silent")
     box_name = box_name.delete!("\n")
     File.open("KEYS/#{GLOBAL_PREFIX_MDBCI_FROM_DOCKER_MACHINE}_#{box_name}", 'w') do |file|
       file.write(File.read("#{config_name_docker}/.vagrant/machines/#{node_name}/docker/private_key"))
@@ -133,6 +117,7 @@ def prepare_mdbci_environment(template_path)
   File.open("#{config_name_mdbci_from_docker}/provider", 'w') do |file|
     file.write('mdbci')
   end
+  return config_name_mdbci_from_docker
 end
 
 def remove_mdbci_environment(template_path)
