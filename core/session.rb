@@ -969,17 +969,16 @@ EOF
 
 
   def cloneNodes(configuration, new_path)
-    exit_code = 1
     copying_old_config_to_new(configuration, new_path)
     provider = get_provider(new_path)
     if provider == DOCKER
-      exit_code = dockerCloneNodes(configuration, new_path)
+      dockerCloneNodes(configuration, new_path)
     elsif provider == LIBVIRT
-      exit_code = libvirtCloneNodes(configuration, new_path)
+      libvirtCloneNodes(configuration, new_path)
     else
       raise "Unknown provider"
     end
-    return exit_code
+    return 0
   end
 
 
