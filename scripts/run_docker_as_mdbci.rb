@@ -71,6 +71,7 @@ Arguments:
     return nodes
   end
 
+  # return tuple: origin docker config name. ppc config name generated from origin docker config
   def prepare_mdbci_environment(template_path)
     config_name = File.basename("#{Dir.pwd}/#{template_path}", File.extname("#{Dir.pwd}/#{template_path}"))
     config_name_docker = "#{GLOBAL_PREFIX_DOCKER_MACHINE}_#{config_name}"
@@ -118,7 +119,7 @@ Arguments:
     File.open("#{config_name_mdbci_from_docker}/provider", 'w') do |file|
       file.write('mdbci')
     end
-    return [config_name_docker, config_name_mdbci_from_docker]
+    return config_name_docker, config_name_mdbci_from_docker
   end
 
   def remove_mdbci_environment(template_path)
