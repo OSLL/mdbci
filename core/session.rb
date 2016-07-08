@@ -429,10 +429,9 @@ EOF
 
 
   def clone(configuration, new_path)
-    exit_code = 1
     $out.info "Performing cloning operation for config #{configuration}. Cloned configuration name: #{new_path}"
-    exit_code = cloneNodes(configuration, new_path)
-    return exit_code
+    cloneNodes(configuration, new_path)
+    return 0
   end
 
 
@@ -976,9 +975,8 @@ EOF
     elsif provider == LIBVIRT
       libvirtCloneNodes(configuration, new_path)
     else
-      raise "Unknown provider"
+      raise "#{provider}: provider does not support cloning"
     end
-    return 0
   end
 
 
