@@ -1,5 +1,3 @@
-require_relative 'out'
-
 TEMPLATE_COOKBOOK_PATH = 'cookbook_path'
 TEMPLATE_AWS_CONFIG = 'aws_config'
 
@@ -10,6 +8,13 @@ NON_ZERO_BASH_EXIT_CODE_ERROR = 'command exited with non zero exit code'
 MDBCI_MACHINE_HAS_NO_ID_ERROR = 'mdbci machine does not have id'
 UNKNOWN_PROVIDER_ERROR = 'provider is unknown (file with provider definition is missing)'
 
+def out_info(content)
+  puts "  INFO: #{content}"
+end
+
+def out_error(content)
+  puts "ERROR: #{content}"
+end
 
 def get_provider(path_to_nodes)
 
@@ -49,7 +54,7 @@ def get_node_machine_id(path_to_nodes, node_name)
   end
   begin
     return File.read("#{path_to_nodes}/.vagrant/machines/#{node_name}/#{provider}/id")
-  rescue Exception=>e
+  rescue Exception => e
     raise $!, "#{path_to_nodes}/#{node_name}: #{MACHINE_NOT_CREATED_ERROR}", $!.backtrace
   end
 end
@@ -62,16 +67,16 @@ def execute_bash(cmd, silent = false)
     process_status = Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
       stdin.close
       stdout.each do |line|
-        $out.info line unless silent
+        out_info line unless silent
         output = output + line
       end
       stdout.close
-      stderr.each { |line| $out.error line }
+      stderr.each { |line| out_error line }
       stderr.close
       wait_thr.value.exitstatus
     end
-  rescue Exception=>e
-    raise $!, "#{cmd}: #{NON_ZERO_BASH_EXIT_CODE_ERROR}", $!.backtrace
+  rescue Exception => e
+    raise $!, e.message, $!.backtrace
   end
   raise "#{cmd}: #{NON_ZERO_BASH_EXIT_CODE_ERROR} - #{process_status}" unless process_status == 0
   return output

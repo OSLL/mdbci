@@ -13,12 +13,24 @@ class ParametrizedTestingEnvironmentSetup
   #PROVIDERS_SNAPSHOT_ENABLED = %W(docker vbox docker_for_ppc) ### virtualbox disabled (so far) ###
   PROVIDERS_SNAPSHOT_ENABLED = %W(docker libvirt)
   PPC = 'docker_for_ppc' ### docker_for_ppc is local analog for remote mdbci node ###
-  AWS = %W(aws)
+  AWS = 'aws'
   NODES = %W(node1 node2)
   PATH_TO_TEMPLATE = 'spec/test_machine_configurations'
 
+  GLOBAL_PREFIX_DOCKER_MACHINE = 'mdbci_testing_config_docker'
+  GLOBAL_PREFIX_MDBCI_FROM_DOCKER_MACHINE = 'mdbci_testing_config_mdbci_from_docker'
+
   def initialize
     initialize_mdbci_environment
+  end
+
+  def start_test(&block)
+    prepare_snapshot_enabled_machines
+    prepare_local_ppc_from_docker_machine
+    prepare_aws_machine
+    ret_val = block.call # calling test here
+    destroy_aws_config
+    return ret_val
   end
 
   def prepare_snapshot_enabled_machines
@@ -37,18 +49,14 @@ class ParametrizedTestingEnvironmentSetup
         end
       end
     end
-    #_, ppc_config_name = prepare_local_ppc_from_docker_machine
-    #configs_names.push ppc_config_name
     return configs_names
   end
 
   def prepare_local_ppc_from_docker_machine
     config_name = "#{CONFIG_PREFIX}_#{PPC}"
     template_path = "#{PATH_TO_TEMPLATE}/#{config_name}.json"
-    create_config(template_path, config_name) unless is_config_created config_name
-    start_config(config_name) unless is_config_running config_name
-    new_config_name = prepare_mdbci_environment template_path
-    return config_name, new_config_name
+    config_names = PpcFromDocker.new.prepare_mdbci_environment(template_path) unless is_config_created config_name
+    return config_names
   end
 
   def prepare_aws_machine
@@ -57,6 +65,14 @@ class ParametrizedTestingEnvironmentSetup
     create_config(template_path, config_name) unless is_config_created config_name
     start_config(config_name) unless is_config_running config_name
     return config_name
+  end
+
+  def destroy_aws_config
+    config_name = "#{CONFIG_PREFIX}_#{AWS}"
+    root_dir = Dir.pwd
+    Dir.chdir config_name
+    execute_bash('vagrant halt')
+    Dir.chdir root_dir
   end
 
   def initialize_mdbci_environment
@@ -104,13 +120,18 @@ class ParametrizedTestingEnvironmentSetup
     $session.up config_name
   end
 
-  # true - origin snapshot created, otherwise false
-  def is_config_node_has_snapshot(config_name, node_name, snapshot_name)
+  def get_snapshots_for_node(config_name, node_name)
     $session.path_to_nodes = config_name
     $session.node_name = node_name
     snapshots = Snapshot.new.get_snapshots node_name
     $session.path_to_nodes = nil
     $session.node_name = nil
+    return snapshots
+  end
+
+  # true - origin snapshot created, otherwise false
+  def is_config_node_has_snapshot(config_name, node_name, snapshot_name)
+    snapshots = get_snapshots_for_node(config_name, node_name)
     return snapshots.include?(snapshot_name)
   end
 
@@ -124,8 +145,19 @@ class ParametrizedTestingEnvironmentSetup
     $session.snapshot_name = nil
   end
 
+  def revert_to_origin_snapshot(config_name, node_name, snapshot_name)
+    $session.path_to_nodes = config_name
+    $session.node_name = node_name
+    $session.snapshot_name = snapshot_name
+    Snapshot.new.do('take')
+    $session.path_to_nodes = nil
+    $session.node_name = nil
+    $session.snapshot_name = nil
+  end
+
 end
 
-t = ParametrizedTestingEnvironmentSetup.new
-configs_names = Array.new
-configs_names.concat(t.prepare_snapshot_enabled_machines)
+if File.identical?(__FILE__, $0)
+  p = ParametrizedTestingEnvironmentSetup.new
+  p.start_test {return 55}
+end
