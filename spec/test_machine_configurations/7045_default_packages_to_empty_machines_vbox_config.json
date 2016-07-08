@@ -1,0 +1,7 @@
+{
+  "cookbook_path": "../recipes/cookbooks/",
+  "node0": {
+    "hostname": "node0",
+    "box": "ubuntu_trusty_vbox"
+  }
+}

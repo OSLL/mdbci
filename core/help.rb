@@ -73,6 +73,7 @@ COMMANDS:
   install_product --product <product_name> config/node
   public_keys --key keyfile.pem config/node
   snapshot --path-to-nodes T [--node-name N --snapshot-name S]
+  validate_template --template TEMPLATE_PATH
 
 
 EXAMPLES:
@@ -89,6 +90,7 @@ EXAMPLES:
   mdbci setup_repo --product mariadb --product-version 10.0 T/node0
   mdbci install_product --product maxscale T/node0
   mdbci public_keys --key keyfile.pem T/node0
+  mdbci validate_template --template TEMPLATE_PATH
   EOF
 
 end
