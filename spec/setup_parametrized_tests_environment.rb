@@ -38,7 +38,7 @@ class ParametrizedTestingEnvironmentSetup
     configs_names.push prepare_aws_machine "#{CONFIG_PREFIX}_#{AWS}"
 
     create_metadata configs_names
-    
+
     # running tests
     ret_val = block.call
 
@@ -118,7 +118,9 @@ class ParametrizedTestingEnvironmentSetup
   def is_config_node_running(config_name, node_name)
     root_dir = Dir.pwd
     Dir.chdir config_name
-    output = execute_bash("vagrant status #{node_name}", true).to_s.split("\n")[2].split(/\s+/)
+    output = execute_bash("vagrant status #{node_name}", true) rescue nil
+    return false unless output
+    output = output.to_s.split("\n")[2].split(/\s+/)
     Dir.chdir root_dir
     if output.to_a.size == 4 or output.to_a.size == 3 and output[1] != 'running'
       return false
@@ -128,7 +130,8 @@ class ParametrizedTestingEnvironmentSetup
 
   # true - all node are running, otherwise false
   def is_config_running(config_name)
-    nodes = get_nodes config_name
+    nodes = get_nodes config_name rescue nil
+    return false unless nodes
     nodes.each do |node_name|
       return false unless is_config_node_running(config_name, node_name)
     end
