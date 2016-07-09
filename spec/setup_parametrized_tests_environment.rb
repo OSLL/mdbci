@@ -84,7 +84,7 @@ class ParametrizedTestingEnvironmentSetup
   def prepare_local_ppc_from_docker_config(config_name)
     template_path = "#{PATH_TO_TEMPLATES}/#{config_name}.json"
     docker_config_name, ppc_config_name = PpcFromDocker.new.get_configs_names(template_path)
-    if is_config_created(docker_config_name) and is_config_created(ppc_config_name)
+    if !is_config_created(docker_config_name) and !is_config_created(ppc_config_name)
       destroy_config docker_config_name
       destroy_config ppc_config_name
       PpcFromDocker.new.prepare_mdbci_environment(template_path)
