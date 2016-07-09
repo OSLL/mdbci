@@ -1,3 +1,5 @@
+require 'fileutils'
+
 require_relative 'out'
 require_relative 'helper'
 
@@ -6,6 +8,8 @@ CONFIG_DIRECTORY_NOT_FOUND_ERROR = 'config directory is not found'
 NODE_NOT_FOUND_ERROR = 'node is not found'
 DOMAIN_NAME_FOR_UUID_NOT_FOUND_ERROR = 'uuid for domain is not found'
 LIBVIRT_NODE_RUNNING_ERROR = 'libvirt node is not in shutoff state (for cloning state must be shutoff)'
+
+BOX = 'box'
 
 def get_libvirt_uuid_by_domain_name(domain_name)
   list_output = execute_bash('virsh -q list --all | awk \'{print $2}\'', true).to_s.split "\n"
@@ -52,4 +56,14 @@ def create_libvirt_node_clone(path_to_nodes, node_name, path_to_new_config_direc
   new_docker_image_name = "#{path_to_new_config_directory}_#{node_name}_#{Time.now.to_i}"
   execute_bash "virt-clone -o #{full_domain_name} -n #{new_docker_image_name} --auto-clone"
   return new_docker_image_name
+end
+
+# rewrites template with changing box (on images created while making clone of node)
+# for concrete node
+def change_box_in_docker_template(template_path_of_cloned_config, node_name, new_box_name)
+  template = JSON.parse(File.read(template_path_of_cloned_config))
+  template[node_name][BOX] = new_box_name
+  File.open(template_path_of_cloned_config, 'w') do |file|
+    file.write(JSON.pretty_generate(template))
+  end
 end
