@@ -31,7 +31,7 @@ describe 'Session' do
   end
 
   it '#network should return IP for nodes' do
-    Network.show(ENV['pathToConfigToNode'].to_s).should eq(/.+\..+\..+\..+/) # Regexp 127.0.0.1
+    lambda{Network.show(ENV['pathToConfigToNode'].to_s)}.should eq(/.+\..+\..+\..+/) # Regexp 127.0.0.1
   end
 
   it '#network should raise wrong node' do
