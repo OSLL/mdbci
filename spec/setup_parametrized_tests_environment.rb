@@ -89,6 +89,7 @@ class ParametrizedTestingEnvironmentSetup
       destroy_config ppc_config_name
       PpcFromDocker.new.prepare_mdbci_environment(template_path)
     end
+    start_config(docker_config_name) unless is_config_running docker_config_name
     prepare_snapshots(docker_config_name)
     return [docker_config_name, ppc_config_name]
   end
