@@ -21,8 +21,6 @@ class ParametrizedTestingEnvironmentSetup
   PPC = 'docker_for_ppc'
   AWS = 'aws'
 
-  attr_accessor :path_to_templates
-
   def initialize
     initialize_mdbci_environment
   end
@@ -37,13 +35,13 @@ class ParametrizedTestingEnvironmentSetup
     configs_names.concat prepare_local_ppc_from_docker_config "#{CONFIG_PREFIX}_#{PPC}"
     configs_names.push prepare_aws_machine "#{CONFIG_PREFIX}_#{AWS}"
 
-    create_metadata configs_names
+    # create_metadata configs_names
 
     # running tests
     ret_val = block.call
 
     # destroying vagrant machine
-    destroy_aws_config "#{CONFIG_PREFIX}_#{AWS}"
+    # destroy_aws_config "#{CONFIG_PREFIX}_#{AWS}"
 
     # test result for jenkins
     return ret_val
@@ -171,6 +169,7 @@ class ParametrizedTestingEnvironmentSetup
 
   def create_metadata(configs_names)
     metadata = Hash.new
+    metadata[:configs] = Array.new
     configs_names.each do |config_name|
       nodes_names = get_nodes config_name rescue nil
       provider = get_provider config_name rescue nil
