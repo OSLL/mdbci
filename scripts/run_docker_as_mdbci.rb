@@ -4,6 +4,7 @@ require 'getoptlong'
 require 'open3'
 require 'json'
 require 'fileutils'
+require_relative '../core/session'
 require_relative '../core/helper'
 
 class PpcFromDocker
@@ -38,6 +39,15 @@ Arguments:
 
   $is_for_removing = false
 
+  def initialize_mdbci_environment
+    $out = Out.new
+    $session = Session.new
+    $session.mdbciDir = Dir.pwd
+    $exception_handler = ExceptionHandler.new
+    $session.boxes = BoxesManager.new './BOXES'
+    $session.repos = RepoManager.new './repo.d'
+  end
+
   def parse_options_and_args
     opts = GetoptLong.new(
         ['--help', '-h', GetoptLong::NO_ARGUMENT],
@@ -71,11 +81,16 @@ Arguments:
     return nodes
   end
 
-  # return tuple: origin docker config name. ppc config name generated from origin docker config
-  def prepare_mdbci_environment(template_path)
+  def get_configs_names(template_path)
     config_name = File.basename("#{Dir.pwd}/#{template_path}", File.extname("#{Dir.pwd}/#{template_path}"))
     config_name_docker = "#{GLOBAL_PREFIX_DOCKER_MACHINE}_#{config_name}"
     config_name_mdbci_from_docker = "#{GLOBAL_PREFIX_MDBCI_FROM_DOCKER_MACHINE}_#{config_name}"
+    return config_name_docker, config_name_mdbci_from_docker
+  end
+
+  # return tuple: origin docker config name. ppc config name generated from origin docker config
+  def prepare_mdbci_environment(template_path)
+    config_name_docker, config_name_mdbci_from_docker = get_configs_names(template_path)
     # Starting docker machines
     execute_bash("./mdbci --template #{template_path} generate #{config_name_docker}")
     execute_bash("./mdbci up #{config_name_docker}")

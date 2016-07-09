@@ -1,4 +1,5 @@
 require 'json'
+require 'fileutils'
 
 require_relative '../core/helper'
 require_relative '../core/session'
@@ -25,6 +26,28 @@ class ParametrizedTestingEnvironmentSetup
     initialize_mdbci_environment
   end
 
+  def initialize_mdbci_environment
+    unless $mdbci_environment_initialized
+      $out = Out.new
+      $session = Session.new
+      $session.mdbciDir = Dir.pwd
+      $exception_handler = ExceptionHandler.new
+      $session.boxes = BoxesManager.new './BOXES'
+      $session.repos = RepoManager.new './repo.d'
+      $mdbci_environment_initialized = true
+    end
+  end
+
+  def create_config(template_path, config_name)
+    $session.configFile = template_path
+    $session.generate config_name
+    $session.configFile = nil
+  end
+
+  def start_config(config_name)
+    $session.up config_name
+  end
+
   def start_test(&block)
     configs_names = Array.new
 
@@ -41,7 +64,7 @@ class ParametrizedTestingEnvironmentSetup
     ret_val = block.call
 
     # destroying vagrant machine
-    # destroy_aws_config "#{CONFIG_PREFIX}_#{AWS}"
+    destroy_config "#{CONFIG_PREFIX}_#{AWS}"
 
     # test result for jenkins
     return ret_val
@@ -60,7 +83,12 @@ class ParametrizedTestingEnvironmentSetup
   # return config names or nil if config already created
   def prepare_local_ppc_from_docker_config(config_name)
     template_path = "#{PATH_TO_TEMPLATES}/#{config_name}.json"
-    docker_config_name, ppc_config_name = PpcFromDocker.new.prepare_mdbci_environment(template_path)
+    docker_config_name, ppc_config_name = PpcFromDocker.new.get_configs_names(template_path)
+    if is_config_created(docker_config_name) and is_config_created(ppc_config_name)
+      destroy_config docker_config_name
+      destroy_config ppc_config_name
+      PpcFromDocker.new.prepare_mdbci_environment(template_path)
+    end
     prepare_snapshots(docker_config_name)
     return [docker_config_name, ppc_config_name]
   end
@@ -82,62 +110,6 @@ class ParametrizedTestingEnvironmentSetup
     create_config(template_path, config_name) unless is_config_created config_name
     start_config(config_name) unless is_config_running config_name
     return config_name
-  end
-
-  def destroy_aws_config(config_name)
-    root_dir = Dir.pwd
-    Dir.chdir config_name
-    execute_bash('vagrant destroy -f')
-    Dir.chdir root_dir
-  end
-
-  def initialize_mdbci_environment
-    $out = Out.new
-    $session = Session.new
-    $session.mdbciDir = Dir.pwd
-    $exception_handler = ExceptionHandler.new
-    $session.boxes = BoxesManager.new './BOXES'
-    $session.repos = RepoManager.new './repo.d'
-  end
-
-  # true - all node are running, otherwise false
-  def is_config_created(config_name)
-    return false unless Dir.exist? config_name
-    return true
-  end
-
-  def create_config(template_path, config_name)
-    $session.configFile = template_path
-    $session.generate config_name
-    $session.configFile = nil
-  end
-
-  # true - node is running, otherwise false
-  def is_config_node_running(config_name, node_name)
-    root_dir = Dir.pwd
-    Dir.chdir config_name
-    output = execute_bash("vagrant status #{node_name}", true) rescue nil
-    return false unless output
-    output = output.to_s.split("\n")[2].split(/\s+/)
-    Dir.chdir root_dir
-    if output.to_a.size == 4 or output.to_a.size == 3 and output[1] != 'running'
-      return false
-    end
-    return true
-  end
-
-  # true - all node are running, otherwise false
-  def is_config_running(config_name)
-    nodes = get_nodes config_name rescue nil
-    return false unless nodes
-    nodes.each do |node_name|
-      return false unless is_config_node_running(config_name, node_name)
-    end
-    return true
-  end
-
-  def start_config(config_name)
-    $session.up config_name
   end
 
   def get_snapshots_for_node(config_name, node_name)
