@@ -58,7 +58,7 @@ class ParametrizedTestingEnvironmentSetup
     configs_names.concat prepare_local_ppc_from_docker_config "#{CONFIG_PREFIX}_#{PPC}"
     configs_names.push prepare_aws_machine "#{CONFIG_PREFIX}_#{AWS}"
 
-    # create_metadata configs_names
+     create_metadata configs_names
 
     # running tests
     ret_val = block.call
@@ -177,5 +177,9 @@ end
 
 if File.identical?(__FILE__, $0)
   p = ParametrizedTestingEnvironmentSetup.new
-  p.start_test { puts 'WORKS'; 1 }
+  ret_val = p.start_test {
+      puts 'WORKS'
+      55 # test return value
+  } 
+  exit ret_val
 end
