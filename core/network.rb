@@ -178,7 +178,7 @@ class Network
   # TODO - move mdbci box definition to new class - MdbciNode < Node
   def self.private_ip(name)
     private_ip = getIP(name)
-    showArrayHash(private_ip,["Node","IP"])
+    showArrayHash(private_ip,["node","ip"])
     return 0
   end
   
@@ -228,14 +228,14 @@ class Network
     result = Hash.new("")
     exit_code = node.getIp(node.provider, true)
     raise "Can not get IP for #{node.name} in #{dir}" if exit_code != 0
-    result["Node"] = node.name.to_s
-    result["IP"] = node.ip.to_s
+    result["node"] = node.name.to_s
+    result["ip"] = node.ip.to_s
     return result
   end
 
   def self.getNodeParam(param,node_name,box_params)
     result = Hash.new("")
-    result["Node"] = node_name.to_s
+    result["node"] = node_name.to_s
     result[param.to_s] = box_params[param].to_s
     return result    
   end
@@ -243,7 +243,8 @@ class Network
   def self.showArrayHash(array,params)
     array.each do |hash|
       params.each do |param|
-        $out.info(param.to_s+": "+hash[param.to_s])
+        $out.info(param.to_s)
+        $out.out(hash[param.to_s])
       end
     end
   end
