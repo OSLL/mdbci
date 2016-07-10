@@ -178,7 +178,10 @@ class Network
   # TODO - move mdbci box definition to new class - MdbciNode < Node
   def self.private_ip(name)
     private_ip = getIP(name)
-    showArrayHash(private_ip,["node","ip"])
+    array.each do |hash|
+      $out.info("Node: "+hash["node"])
+      $out.out(hash["ip"])
+    end
     return 0
   end
   
@@ -238,15 +241,6 @@ class Network
     result["node"] = node_name.to_s
     result[param.to_s] = box_params[param].to_s
     return result    
-  end
-
-  def self.showArrayHash(array,params)
-    array.each do |hash|
-      params.each do |param|
-        $out.info(param.to_s)
-        $out.out(hash[param.to_s])
-      end
-    end
   end
 
   def self.getBoxParams(node_param)
