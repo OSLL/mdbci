@@ -26,12 +26,12 @@ describe 'Session' do
   # must be prepared box with IP and keyfile location that is targeting real running machine
   # that can be accessed through ssh
 
-  it '#network should raise not running nodes' do
-    lambda{Network.show(ENV['pathToStoppedConfigToNode'].to_s)}.should(raise_error(RuntimeError, /Incorrect node.*/))
+  it '#network should return IP for nodes' do
+    expect { Network.show(ENV['pathToConfigToNode']) }.to output(/.+\..+\..+\..+/).to_stdout
   end
 
-  it '#network should return IP for nodes' do
-    lambda{Network.show(ENV['pathToConfigToNode'].to_s)}.should eq(/.+\..+\..+\..+/) # Regexp 127.0.0.1
+  it '#network should raise not running nodes' do
+    lambda{Network.show(ENV['pathToStoppedConfigToNode'].to_s)}.should(raise_error('Incorrect node'))
   end
 
   it '#network should raise wrong node' do
