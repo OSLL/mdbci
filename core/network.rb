@@ -178,7 +178,7 @@ class Network
   # TODO - move mdbci box definition to new class - MdbciNode < Node
   def self.private_ip(name)
     private_ip = getIP(name)
-    array.each do |hash|
+    private_ip.each do |hash|
       $out.info("Node: "+hash["node"])
       $out.out(hash["ip"])
     end
