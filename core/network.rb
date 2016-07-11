@@ -93,15 +93,15 @@ class Network
         result.push(key_path)
       end
     else
-      unless Dir.exists? pwd.to_s + '/' + dir
+      configPath = pwd.to_s + '/' + dir
+      unless Dir.exists? configPath
         raise 'Configuration with such name does not exists'
       end
-      Dir.chdir pwd.to_s + '/' + dir
+      Dir.chdir configPath
       cmd = "vagrant ssh-config #{node_arg} | grep IdentityFile"
       vagrant_out = `#{cmd}`
       raise "Command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
-      tempHash = Hash.new
-      tempHash["key"] = vagrant_out.split(' ')[1]
+      tempHash = { 'key' => vagrant_out.split(' ')[1] }
       result.push(tempHash)
       Dir.chdir pwd
     end
