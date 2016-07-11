@@ -53,3 +53,20 @@ def create_libvirt_node_clone(path_to_nodes, node_name, path_to_new_config_direc
   execute_bash "virt-clone -o #{full_domain_name} -n #{new_docker_image_name} --auto-clone"
   return new_docker_image_name
 end
+
+
+def copy_old_config_directory_to_new(old_path, new_path)
+  if File.exist?(old_path)
+    nodes = $exception_handler.handle('Configuration file invalid') { JSON.parse(IO.read(old_path)) }
+  end
+  else raise "Old config directory #{old_path} not found"
+  begin
+    Dir.mkdir(new_path)
+  rescue Errno::EEXIST 
+    $out.error 'directory #{new_path} exists'
+  rescue SystemCallError
+    $out.error 'have not permissions'
+  end
+  file_name = old_path.split('/')[-1]
+  File.open(file_name, 'w')
+end
