@@ -62,51 +62,66 @@ class Network
 
 
   def self.showKeyFile(name)
-    #TODO refactor with show
+    result_keys = getKeyFile(name)
+    
+    result_keys.each do |hash|
+      $out.out(hash["key"].to_s)
+    end
+    return 0
+  end
+
+  def self.getKeyFile(name)
+    result = Array.new()
     pwd = Dir.pwd
     raise 'Configuration name is required' if name.nil?
     args = name.split('/')
+    dir = args[0]
+    node_arg = args[1]
     # mdbci ppc64 boxes
-    if File.exist?(args[0]+'/mdbci_template')
-      $session.loadMdbciNodes args[0]
-      if args[1].nil?
-        raise "MDBCI nodes are not found in #{args[0]}" if $session.mdbciNodes.empty?
+    if File.exist?(dir+'/mdbci_template')
+      $session.loadMdbciNodes dir
+      if node_arg.nil?
+        raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty?
         $session.mdbciNodes.each do |node|
-          box = node[1]['box'].to_s
-          raise "Box parameter is not found for node #{node[0]} in #{args[0]}" if box.empty?
-          box_params = $session.boxes.getBox(box)
-          raise "Box #{box} is not found for node #{node[0]} in #{args[0]}" if box_params.nil?
-          $out.info 'Node: ' + node[0].to_s
-          unless File.exist?("#{pwd}/KEYS/#{box_params['keyfile']}")
-            raise "Key file #{box_params['keyfile']} is not found for node #{node[0]} in #{args[0]}"
-          end
-          $out.out "#{pwd}/KEYS/#{box_params['keyfile']}"
+          key_path = getBoxParams(dir,node,pwd)
+          result.push(key_path)
         end
       else
-        mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
-        raise "MDBCI nodes are not found in #{args[0]}" if $session.mdbciNodes.empty? if mdbci_node.nil?
-        box = mdbci_node[1]['box'].to_s
-        raise "Box parameter is not found for node #{node[0]} in #{args[0]}" if box.empty?
-        mdbci_params = $session.boxes.getBox(box)
-        raise "Box #{box} is not found for node #{node[0]} in #{args[0]}" if mdbci_params.nil?
-        $out.info 'Node: ' + args[1].to_s
-        unless File.exist?("#{pwd}/KEYS/#{mdbci_params['keyfile']}")
-          raise "Key file #{mdbci_params['keyfile']} is not found for node #{node[0]} in #{args[0]}"
-        end
-        $out.out "#{pwd}/KEYS/#{mdbci_params['keyfile']}"
+        mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == node_arg }
+        raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty? || mdbci_node.nil?
+        key_path = getBoxParams(dir,mdbci_node,pwd)
+        result.push(key_path)
       end
     else
-      unless Dir.exists? pwd.to_s + '/' + args[0]
+      unless Dir.exists? pwd.to_s + '/' + dir
         raise 'Configuration with such name does not exists'
       end
-      Dir.chdir pwd.to_s + '/' + args[0]
-      cmd = "vagrant ssh-config #{args[1]} | grep IdentityFile"
+      Dir.chdir pwd.to_s + '/' + dir
+      cmd = "vagrant ssh-config #{node_arg} | grep IdentityFile"
       vagrant_out = `#{cmd}`
       raise "Command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
-      $out.out vagrant_out.split(' ')[1]
+      tempHash = Hash.new
+      tempHash["key"] = vagrant_out.split(' ')[1]
+      result.push(tempHash)
       Dir.chdir pwd
     end
-    return 0
+    return result
+  end
+
+  def getBoxParams(dir,node,pwd)
+    result_hash = Hash.new()
+    node_name = node[0]
+    node_params = node[1]
+    box = node_params['box'].to_s
+    raise "Box parameter is not found for node #{node_name} in #{dir}" if box.empty?
+    box_params = $session.boxes.getBox(box)
+    raise "Box #{box} is not found for node #{node_name} in #{dir}" if box_params.nil?
+    key_path = "#{pwd}/KEYS/#{box_params['keyfile']}"
+    unless File.exist?(key_path)
+      raise "Key file #{box_params['keyfile']} is not found for node #{node_name} in #{dir}"
+    end
+    result_hash["key"] = key_path.to_s
+    return result_hash
   end
 
   def self.show(name)
