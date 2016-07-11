@@ -53,3 +53,12 @@ def create_libvirt_node_clone(path_to_nodes, node_name, path_to_new_config_direc
   execute_bash "virt-clone -o #{full_domain_name} -n #{new_docker_image_name} --auto-clone"
   return new_docker_image_name
 end
+
+def libvirtCloneNodes(old_path, new_path)
+  nodes = get_nodes(old_path)
+  nodes.each do |node|
+    new_libvirt_image_name = create_libvirt_node_clone(old_path, node, new_path)
+    make_node_in_new_libvirt_config() # name of copied config, name of cloned machine, name of the node
+  end
+end
+
