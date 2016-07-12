@@ -1,4 +1,5 @@
 {
+  "aws_config" : "../aws-config.yml",
   "cookbook_path" : "../recipes/cookbooks/",
   "node0" :
   {

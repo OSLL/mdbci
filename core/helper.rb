@@ -1,5 +1,3 @@
-require_relative 'out'
-
 TEMPLATE_COOKBOOK_PATH = 'cookbook_path'
 TEMPLATE_AWS_CONFIG = 'aws_config'
 
@@ -10,9 +8,18 @@ NON_ZERO_BASH_EXIT_CODE_ERROR = 'command exited with non zero exit code'
 MDBCI_MACHINE_HAS_NO_ID_ERROR = 'mdbci machine does not have id'
 UNKNOWN_PROVIDER_ERROR = 'provider is unknown (file with provider definition is missing)'
 
+MDBCI = 'mdbci'
+DOCKER = 'docker'
+
+def out_info(content)
+  puts "  INFO: #{content}"
+end
+
+def out_error(content)
+  puts "ERROR: #{content}"
+end
 
 def get_provider(path_to_nodes)
-
   begin
     return File.read "#{path_to_nodes}/provider"
   rescue
@@ -75,17 +82,79 @@ def execute_bash(cmd, silent = false)
     process_status = Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
       stdin.close
       stdout.each do |line|
-        $out.info line unless silent
+        out_info line unless silent
         output = output + line
       end
       stdout.close
-      stderr.each { |line| $out.error line }
+      stderr.each { |line| out_error line }
       stderr.close
       wait_thr.value.exitstatus
     end
   rescue Exception => e
-    raise $!, "#{cmd}: #{NON_ZERO_BASH_EXIT_CODE_ERROR}", $!.backtrace
+    raise $!, e.message, $!.backtrace
   end
   raise "#{cmd}: #{NON_ZERO_BASH_EXIT_CODE_ERROR} - #{process_status}" unless process_status == 0
   return output
+end
+
+def destroy_config(config_name)
+  if Dir.exist? config_name
+    unless get_provider(config_name) == MDBCI
+      root_dir = Dir.pwd
+      Dir.chdir config_name
+      execute_bash('vagrant destroy -f')
+      Dir.chdir root_dir
+    end
+    FileUtils.rm_rf config_name
+  end
+end
+
+# true - node is running, otherwise false
+def is_config_node_running(config_name, node_name)
+  root_dir = Dir.pwd
+  Dir.chdir config_name
+  output = execute_bash("vagrant status #{node_name}", true) rescue nil
+  return false unless output
+  output = output.to_s.split("\n")[2].split(/\s+/)
+  Dir.chdir root_dir
+  if output.to_a.size == 4 or output.to_a.size == 3 and output[1] != 'running'
+    return false
+  end
+  return true
+end
+
+# true - all node are running, otherwise false
+def is_config_running(config_name)
+  nodes = get_nodes config_name rescue nil
+  return false unless nodes
+  nodes.each do |node_name|
+    return false unless is_config_node_running(config_name, node_name)
+  end
+  return true
+end
+
+# true - all node are fully created, otherwise false
+def is_config_created(config_name)
+  return false unless Dir.exist? config_name
+  provider = get_provider(config_name) rescue nil
+  return false unless provider
+  if provider != MDBCI
+    return false unless File.exist? "#{config_name}/Vagrantfile"
+    return false unless File.exist? "#{config_name}/template"
+    nodes_names = get_nodes(config_name) rescue nil
+    nodes_names.each do |node_name|
+      return false unless File.exist? "#{config_name}/#{node_name}.json"
+    end
+    if provider == DOCKER
+      return false unless nodes_names
+      nodes_names.each do |node_name|
+        return false unless Dir.exist? "#{config_name}/#{node_name}"
+        return false unless File.exist? "#{config_name}/#{node_name}/Dockerfile"
+        return false unless File.exist? "#{config_name}/#{node_name}/snapshots"
+      end
+    end
+  else
+    return false unless File.exist? "#{config_name}/mdbci_template"
+  end
+  return true
 end
