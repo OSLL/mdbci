@@ -271,10 +271,10 @@ end
 COMMAND_WHOAMI='whoami'
 COMMAND_HOSTNAME='hostname'
 
-def printConfigurationNetworkInfoToFile(configuration, node)
+def printConfigurationNetworkInfoToFile(configuration)
   
   open("#{configuration}_network_config", 'w') do |f|
-    configurationNetworkInfo = collectConfigurationNetworkInfo(configuration, node)
+    configurationNetworkInfo = collectConfigurationNetworkInfo(configuration)
     configurationNetworkInfo.each do |key, value|
       # TODO Add correct array conversion 
       f.puts "#{key}=#{value}"

@@ -766,7 +766,9 @@ EOF
     $out.info 'All nodes successfully up!'
     Dir.chdir pwd
     $out.info "Generating #{config_path}_network_settings file"
-    printConfigurationNetworkInfoToFile(config_path) 
+    if up_type == false
+      printConfigurationNetworkInfoToFile(config_path) 
+    end
     return 0
   end
 
