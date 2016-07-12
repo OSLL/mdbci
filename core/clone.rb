@@ -53,9 +53,17 @@ def create_libvirt_node_clone(path_to_nodes, node_name, path_to_new_config_direc
   puts status
   Dir.chdir root_directory
   raise "#{path_to_nodes}/#{node_name}: #{LIBVIRT_NODE_RUNNING_ERROR}" unless status.include? 'shutoff'
-  new_docker_image_name = "#{path_to_new_config_directory}_#{node_name}_#{Time.now.to_i}"
-  execute_bash "virt-clone -o #{full_domain_name} -n #{new_docker_image_name} --auto-clone"
-  return new_docker_image_name
+  new_libvirt_image_name = "#{path_to_new_config_directory}_#{node_name}_#{Time.now.to_i}"
+  execute_bash "virt-clone -o #{full_domain_name} -n #{new_libvirt_image_name} --auto-clone"
+  return new_libvirt_image_name
+end
+
+def libvirtCloneNodes(old_path, new_path)
+  nodes = get_nodes(old_path)
+  nodes.each do |node|
+    new_libvirt_image_name = create_libvirt_node_clone(old_path, node, new_path)
+    make_node_in_new_libvirt_config() # name of copied config, name of cloned machine, name of the node
+  end
 end
 
 # rewrites template with changing box (on images created while making clone of node)
