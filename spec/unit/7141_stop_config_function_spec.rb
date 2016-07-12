@@ -8,19 +8,20 @@ require_relative '../../core/helper'
 def start_config(config_name)
   root_directory = Dir.pwd
   Dir.chdir config_name
-  execute_bash("vagrant up --provider libvirt")
+  execute_bash("vagrant up --provider libvirt --no-provision")
   Dir.chdir root_directory
 end
 
 vagrantfile = <<EOF
 Vagrant.configure(2) do |config|
+  config.vm.synced_folder '.', '/vagrant', :disabled => true
 	config.vm.define "node0" do |node0|
 		node0.vm.box = "baremettle/debian-7.5"
 	end
 end
 EOF
 
-config = File.basename __FILE__
+config = File.basename(__FILE__, File.extname(__FILE__))
 template_path = "confs/#{config}.json"
 node_name = 'node0'
 provider = 'libvirt'
@@ -45,6 +46,10 @@ describe 'clone.rb' do
 
   before :each do
     start_config config
+  end
+
+  after :all do
+    destroy_config config
   end
 
   it '#stop_config_node' do
