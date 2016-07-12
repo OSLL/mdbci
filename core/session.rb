@@ -11,6 +11,7 @@ require_relative 'repo_manager'
 require_relative 'out'
 require_relative 'docker_manager'
 require_relative 'snapshot'
+require_relative 'helper'
 
 
 class Session
@@ -55,6 +56,8 @@ is installed and that the binary is available on the PATH.
 EOF
 
   OUTPUT_NODE_NAME_REGEX = "==>\s+(.*):{1}"
+  DOCKER = 'docker'
+  LIBVIRT = 'libvirt'
 
   def initialize
     @boxesDir = './BOXES'
@@ -273,7 +276,7 @@ EOF
     if values.empty?
       raise "box key #{$session.field} is not found"
     end
-    puts values.uniq 
+    puts values.uniq
     return 0
   end
 
@@ -424,6 +427,14 @@ EOF
     return exit_code
   end
 
+
+  def clone(configuration, new_path)
+    $out.info "Performing cloning operation for config #{configuration}. Cloned configuration name: #{new_path}"
+    cloneNodes(configuration, new_path)
+    return 0
+  end
+
+
   # all mdbci commands swith
   def commands
     exit_code = 1
@@ -451,6 +462,8 @@ EOF
       when 'snapshot'
         snapshot = Snapshot.new
         exit_code = snapshot.do(ARGV.shift)
+      when 'clone'
+        exit_code = $session.clone(ARGV[0], ARGV[1])
       else
         $out.error 'Unknown mdbci command. Please look help!'
         Help.display
@@ -664,7 +677,7 @@ EOF
         $out.warning 'Checking for dead machines and checking Chef runs on machines'
         nodes.each do |machine_name|
           status = `vagrant status #{machine_name}`.split("\n")[2]
-          $out.info "#{machine_name} status == #{status}"
+          $out.info status
           unless status.include? 'running'
             dead_machines.push(machine_name)
             next
@@ -747,27 +760,6 @@ EOF
             end
             raise 'Bringing up failed (error description is above)' unless machines_with_broken_chef.empty?
           end
-
-          # Chef logging
-          $out.info "Checking Chef log for failed nodes"
-          chef_log_cmd = "vagrant ssh #{machine_name} -c \"test -e /var/chef/cache/chef-stacktrace.out && printf 'FOUND' || printf 'NOT_FOUND'\""
-          chef_log_out = `#{chef_log_cmd}`
-          if chef_log_out == "FOUND"
-            $out.info "Chef stacktrace #{chef_log_out} on #{machine_name} node, reprovision this node"
-            chef_failed_nodes.push("#{machine_name}")
-            # reprovision failed chef node
-            provision_cmd = `vagrant provision #{machine_name}`
-            $out.info "#{provision_cmd}"
-            provision_status = $?.exitstatus
-          end
-        end
-
-        if i == @attempts && !all_machines_started || provision_status != 0
-          $out.error 'Bringing up failed'
-          # chef provision status
-          $out.info "Failed Chef nodes:"
-          chef_failed_nodes.each { |node| $out.info node.to_s }
-          raise "Some machines are still down or Chef provision failed! Check failed Chef nodes!"
         end
       end
     end
@@ -947,12 +939,29 @@ EOF
     box = node[1]['box'].to_s
     if $session.boxes.boxesManager.has_key?(box)
       box_params = $session.boxes.getBox(box)
-      platform = box_params["platform"].to_s+'^'+box_params['platform_version'].to_s
+      platform = box_params[PLATFORM].to_s+'^'+box_params['platform_version'].to_s
       return platform
     else
       $out.warning name.to_s+" platform does not exist! Please, check box name!"
     end
 
+  end
+
+
+  def cloneNodes(configuration, new_path)
+    copying_old_config_to_new(configuration, new_path)
+    provider = get_provider(new_path)
+    if provider == DOCKER
+      dockerCloneNodes(configuration, new_path)
+    elsif provider == LIBVIRT
+      libvirtCloneNodes(configuration, new_path)
+    else
+      raise "#{provider}: provider does not support cloning"
+    end
+  end
+
+
+  def dockerCloneNodes(old_path, new_path)
   end
 
 end

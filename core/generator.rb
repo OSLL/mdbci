@@ -103,6 +103,15 @@ config.omnibus.chef_version = '12.9.38'
     return ssh_pty_option
   end
 
+  def Generator.getDefaultRecipe(name, cookbook_path)
+    return <<EOF
+\t#{name}.vm.provision "chef_solo" do |chef|
+\t\tchef.cookbooks_path = "#{cookbook_path}"
+\t\tchef.add_recipe "packages"
+\tend
+EOF
+  end
+
   # Vagrantfile for Vbox provider
   def Generator.getVmDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
 
@@ -126,7 +135,10 @@ config.omnibus.chef_version = '12.9.38'
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
             + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
+    else
+      vmdef += "\n\n#{getDefaultRecipe(name, cookbook_path)}"
     end
+
 
     if vm_mem
       vmdef += "\n\t"+'config.vm.provider :virtualbox do |vbox|' + "\n" \
@@ -165,6 +177,8 @@ config.omnibus.chef_version = '12.9.38'
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
             + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
+    else
+      qemudef += "\n\n#{getDefaultRecipe(name, cookbook_path)}"
     end
     qemudef += "\nend #  <-- End of Qemu definition for machine: " + name +"\n\n"
 
@@ -207,6 +221,8 @@ config.omnibus.chef_version = '12.9.38'
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
             + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
+    else
+      dockerdef += "\n\n#{getDefaultRecipe(name, cookbook_path)}"
     end
     dockerdef += "\nend #  <-- End of Docker definition for machine: " + name +"\n\n"
 
@@ -276,6 +292,8 @@ config.omnibus.chef_version = '12.9.38'
            + "\t\tchef.roles_path = "+ quote('.') + "\n" \
            + "\t\tchef.add_role "+ quote(name) + "\n" \
            + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend #<-- end of chef binding\n"
+    else
+      awsdef += "\n\n#{getDefaultRecipe(name, cookbook_path)}"
     end
     awsdef +="\nend #  <-- End AWS definition for machine: " + name +"\n\n"
 
