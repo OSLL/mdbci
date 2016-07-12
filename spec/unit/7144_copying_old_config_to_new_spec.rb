@@ -5,22 +5,15 @@ require_relative '../../core/exception_handler'
 require_relative '../../core/clone'
 
 
+PATH_TO_OLD_NOT_EXISTING_CONFIG = '/pathToOldNotExistingConfig'
+PATH_TO_VALIDD_NEW_CONFIG = '/pathToValidNewConfig'
+
+
+
 describe 'Clone' do
 
   it '#clone should exit with non-zero code if path to old config is not existing' do
-    $clone.copyOldConfigDirectoryToNew(ENV['pathToOldNotExistingConfig'].to_s, ENV['pathToValidNewConfig']).should(eql(1))
-  end
-
-  it '#clone should exit with non-zero code if nodes in the old config are not valid' do
-    $clone.copyOldConfigDirectoryToNew(ENV['pathToOldValidConfigWithoutValidNode'].to_s, ENV['pathToValidNewConfig']).should(eql(1))
-  end
-
-  it '#clone should exit with non-zero code if new path exists' do
-    $clone.copyOldConfigDirectoryToNew(ENV['pathToOldValidConfig'], ENV['pathToNotValidNewConfig']).should(eql(1))
-  end
-
-  it '#clone should exit with zero code if path to old config is valid, nodes in it are valid and new config path is not exists' do
-    $clone.copyOldConfigDirectoryToNew(ENV['pathToOldValidConfig'], ENV['pathToValidNewConfig']).should(eql(1))
+    copyOldConfigDirectoryToNew('/pathToOldNotExistingConfig', 'pathToValidNewConfig').should(eql(1))
   end
 
 end
