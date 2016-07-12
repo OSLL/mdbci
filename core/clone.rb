@@ -54,8 +54,7 @@ def create_libvirt_node_clone(path_to_nodes, node_name, path_to_new_config_direc
   return new_docker_image_name
 end
 
-
-def copy_old_config_directory_to_new(old_path, new_path)
+def copyOldConfigDirectoryToNew(old_path, new_path)
   if File.exist?(old_path)
     nodes = $exception_handler.handle('Configuration file invalid') { JSON.parse(IO.read(old_path)) }
   end
@@ -69,4 +68,13 @@ def copy_old_config_directory_to_new(old_path, new_path)
   end
   file_name = old_path.split('/')[-1]
   File.open(file_name, 'w')
+end
+
+
+def libvirtCloneNodes(old_path, new_path)
+  nodes = get_nodes(old_path)
+  nodes.each do |node|
+    new_libvirt_image_name = create_libvirt_node_clone(old_path, node, new_path)
+    make_node_in_new_libvirt_config() # name of copied config, name of cloned machine, name of the node
+  end
 end
