@@ -96,6 +96,20 @@ def destroy_config(config_name)
   end
 end
 
+def stop_config_node(config_name, node_name)
+  root_directory = Dir.pwd
+  Dir.chdir config_name
+  execute_bash("vagrant halt #{node_name}")
+  Dir.chdir root_directory
+end
+
+def stop_config(config_name)
+  root_directory = Dir.pwd
+  Dir.chdir config_name
+  execute_bash("vagrant halt")
+  Dir.chdir root_directory
+end
+
 # true - node is running, otherwise false
 def is_config_node_running(config_name, node_name)
   root_dir = Dir.pwd
