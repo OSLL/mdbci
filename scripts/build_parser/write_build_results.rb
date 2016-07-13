@@ -9,9 +9,8 @@ INPUT_FILE_OPTION = '--file'
 HELP_OPTION = '--help'
 
 # Db parameters
+DEFAULT_FILE = '/home/vagrant/build_parser_db_password'
 HOST = 'localhost'
-LOGIN = 'test_bot'
-PASSWORD = 'pass'
 DB_NAME = 'test_results_db'
 
 # parse_ctest_log.rb keys definition
@@ -32,7 +31,7 @@ class BuildResultsWriter
 
   def write_results_from_input_file(input_file_path)
     parse_input_file(input_file_path)
-    connect_mdb(HOST, LOGIN, PASSWORD, DB_NAME)
+    connect_mdb(DEFAULT_FILE, HOST, DB_NAME)
 
     write_build_results_to_db(@parsed_content)
   end
@@ -42,9 +41,9 @@ class BuildResultsWriter
     @parsed_content = JSON.parse(unparsed_content)
   end
 
-  def connect_mdb(host, login, password, db_name)
-    @client = Mysql2::Client.new(:host => "#{host}", :username => "#{login}", \
-      :password => "#{password}", :database => "#{db_name}")
+  def connect_mdb(default_file, host, db_name)
+    @client = Mysql2::Client.new(:default_file: "#{default_file}", \ 
+      :host => "#{host}", :database => "#{db_name}")
     puts "Connection to db (:host => #{host}, :username => #{login}, "\
          ":password => #{password}, :database => #{db_name}) established successfuly"
   end
