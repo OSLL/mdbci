@@ -31,7 +31,7 @@ describe 'Network' do
   end
 
   it '#network should raise wrong node' do
-    lambda{Network.show(ENV['pathToStoppedConfigToNode'].to_s+"/WRONG_NODE")}.should(raise_error(RuntimeError, /Configuration not found: .*/))
+    lambda{Network.show(ENV['pathToStoppedConfigToNode'].to_s+"/WRONG_NODE")}.should(raise_error('Incorrect node'))
   end
 
   it '#network should raise not running nodes' do
