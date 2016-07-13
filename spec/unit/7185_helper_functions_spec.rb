@@ -38,7 +38,7 @@ describe nil do
   end
 
   it 'execute bash command without output' do
-    expect { execute_bash('echo test') }.to output(/INFO:  test\n/).to_stdout
+    expect { execute_bash('echo test') }.to output("  INFO: test\n").to_stdout
   end
 
   it 'execute bash command without output' do
@@ -46,7 +46,7 @@ describe nil do
   end
 
   it 'execute bash command that not exists (popen raise)' do
-    lambda { execute_bash('hello_world') }.should raise_error 'hello_world: command exited with non zero exit code'
+    lambda { execute_bash('hello_world') }.should raise_error 'No such file or directory - hello_world'
   end
 
   it 'execute bash command that not exists (non zero exit code)' do
