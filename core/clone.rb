@@ -72,6 +72,14 @@ def clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
   end
 end
 
+def clone_docker_nodes(path_to_nodes, new_path_to_nodes)
+  nodes = get_nodes(path_to_nodes)
+  nodes.each do |node_name|
+    new_docker_image_name = create_docker_node_clone(path_to_nodes, node_name, new_path_to_nodes)
+    make_node_in_new_docker_config() # name of copied config, name of cloned machine, name of the node
+  end
+end
+
 # rewrites template with changing box (on images created while making clone of node)
 # for concrete node
 def change_box_in_docker_template(template_path_of_cloned_config, node_name, new_box_name)
