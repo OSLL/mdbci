@@ -48,7 +48,7 @@ def get_nodes(path_to_nodes)
   return nodes
 end
 
-# method gets ids of machines
+# method gets id of machine node
 def get_node_machine_id(path_to_nodes, node_name)
   provider = get_provider path_to_nodes
   if provider == 'mdbci'
@@ -59,6 +59,19 @@ def get_node_machine_id(path_to_nodes, node_name)
   rescue Exception => e
     raise $!, "#{path_to_nodes}/#{node_name}: #{MACHINE_NOT_CREATED_ERROR}", $!.backtrace
   end
+end
+
+# method sets id for machine node
+def set_node_machine_id(path_to_nodes, node_name, id)
+  provider = get_provider path_to_nodes
+  if provider == 'mdbci'
+    raise "#{path_to_nodes}/#{node_name}: #{MDBCI_MACHINE_HAS_NO_ID_ERROR}"
+  end
+  path_to_id = "#{path_to_nodes}/.vagrant/machines/#{node_name}/#{provider}/id"
+  unless File.exist? path_to_id
+    raise "#{path_to_nodes}/#{node_name}: #{MACHINE_NOT_CREATED_ERROR}"
+  end
+  File.open(path_to_id, 'w') { |file| file.write id }
 end
 
 # method returns bash command exit code
