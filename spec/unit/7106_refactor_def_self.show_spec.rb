@@ -6,7 +6,7 @@ require_relative '../../core/boxes_manager'
 require_relative '../../core/session'
 require_relative '../../core/network'
 
-describe 'Session' do
+describe 'Network' do
 
   before :all do
     $out = Out.new
@@ -27,7 +27,7 @@ describe 'Session' do
   # that can be accessed through ssh
 
   it '#network should return IP for nodes' do
-    expect { Network.show(ENV['pathToConfigToNode']) }.to output(/.+\..+\..+\..+/).to_stdout
+    Network.show(ENV['pathToConfigToNode']).should(eql(0))
   end
 
   it '#network should raise not running nodes' do
