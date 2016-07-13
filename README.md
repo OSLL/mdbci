@@ -489,7 +489,7 @@ More information about vagrant features could be found in [vagrant documentation
 
 ## Build parsing
 
-This repository also contain a solution developed for parsing jenkins build logs. See https://github.com/OSLL/mdbci/tree/master/scripts/build_parser/README.md for more details.
+This repository also contain a solution developed for parsing jenkins build logs. See https://github.com/OSLL/mdbci/tree/integration/scripts/build_parser/README.md for more details.
 
 ## Team
 
