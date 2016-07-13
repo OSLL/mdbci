@@ -26,16 +26,12 @@ describe 'Network' do
   # must be prepared box with IP and keyfile location that is targeting real running machine
   # that can be accessed through ssh
 
-  it '#network should return IP for nodes' do
-    Network.show(ENV['pathToConfigToNode']).should(eql(0))
+  it '#network should raise wrong node' do
+    lambda{Network.show(ENV['pathToConfigToNode'].to_s+'\WRONG_NODE')}.should(raise_error(RuntimeError, /Configuration not found: .*/))
   end
 
   it '#network should raise not running nodes' do
     lambda{Network.show(ENV['pathToStoppedConfigToNode'].to_s)}.should(raise_error('Incorrect node'))
-  end
-
-  it '#network should raise wrong node' do
-    lambda{Network.show(ENV['pathToConfigToNode'].to_s+'\WRONG_NODE')}.should(raise_error(RuntimeError, /Configuration not found: .*/))
   end
 
   it '#network should raise wrong path' do
@@ -44,6 +40,10 @@ describe 'Network' do
 
   it '#network should raise nil argument' do
     lambda{Network.show(nil)}.should(raise_error(RuntimeError, 'Configuration name is required'))
+  end
+
+  it '#network should return IP for nodes' do
+    Network.show(ENV['pathToConfigToNode']).should(eql(0))
   end
 
 end
