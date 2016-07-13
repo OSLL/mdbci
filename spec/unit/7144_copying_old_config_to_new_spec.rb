@@ -13,7 +13,7 @@ PATH_TO_VALIDD_NEW_CONFIG = '/pathToValidNewConfig'
 describe 'Clone' do
 
   it '#clone should exit with non-zero code if path to old config is not existing' do
-    copyOldConfigDirectoryToNew('/pathToOldNotExistingConfig', 'pathToValidNewConfig').should(eql(1))
+    copyOldConfigDirectoryToNew(PATH_TO_OLD_NOT_EXISTING_CONFIG, PATH_TO_VALIDD_NEW_CONFIG).should raise_error(RuntimeError, "Old config directory /pathToOldNotExistingConfig not found")
   end
 
 end
