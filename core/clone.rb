@@ -58,11 +58,17 @@ def create_libvirt_node_clone(path_to_nodes, node_name, path_to_new_config_direc
   return new_libvirt_image_name
 end
 
-def libvirtCloneNodes(old_path, new_path)
-  nodes = get_nodes(old_path)
-  nodes.each do |node|
-    new_libvirt_image_name = create_libvirt_node_clone(old_path, node, new_path)
-    make_node_in_new_libvirt_config() # name of copied config, name of cloned machine, name of the node
+
+def replace_libvirt_node_id(path_to_nodes, node_name, id)
+  set_node_machine_id(path_to_nodes, node_name, id)
+end
+
+def clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
+  nodes = get_nodes(path_to_nodes)
+  nodes.each do |node_name|
+    new_libvirt_image_name = create_libvirt_node_clone(path_to_nodes, node_name, new_path_to_nodes)
+    new_uuid = get_libvirt_uuid_by_domain_name(new_libvirt_image_name)
+    replace_libvirt_node_id(new_path_to_nodes, node_name, new_uuid)
   end
 end
 
