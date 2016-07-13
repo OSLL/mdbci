@@ -62,6 +62,8 @@ def copyOldConfigDirectoryToNew(old_path, new_path)
   if File.exist?(old_path)
     nodes = $exception_handler.handle('Configuration file invalid') { JSON.parse(IO.read(old_path)) }
   end
+  else
+    raise "In old config directory #{old_path} nodes are not found"
   begin
     Dir.mkdir(new_path)
   rescue Errno::EEXIST
