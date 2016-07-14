@@ -22,6 +22,8 @@ class ParametrizedTestingEnvironmentSetup
   PPC = 'docker_for_ppc'
   AWS = 'aws'
 
+ attr_accessor :current_metadata
+
   def initialize
     initialize_mdbci_environment
   end
@@ -44,8 +46,15 @@ class ParametrizedTestingEnvironmentSetup
     $session.configFile = nil
   end
 
-  def start_config(config_name)
+  def restart_config(config_name)
     $session.up config_name
+  end
+
+  def resume_config(config_name)
+    root_directory = Dir.pwd
+    Dir.chdir config_name
+    execute_bash("vagrant up #{config_name}")
+    Dir.chdir root_directory
   end
 
   def start_test(&block)
@@ -54,29 +63,46 @@ class ParametrizedTestingEnvironmentSetup
     # generating and starting all configs
     configs_names.push prepare_config "#{CONFIG_PREFIX}_#{DOCKER}"
     configs_names.push prepare_config "#{CONFIG_PREFIX}_#{LIBVIRT}"
-    # prepare_config "#{CONFIG_PREFIX}_#{VIRTUALBOX}"
     configs_names.concat prepare_local_ppc_from_docker_config "#{CONFIG_PREFIX}_#{PPC}"
-    configs_names.push prepare_aws_machine "#{CONFIG_PREFIX}_#{AWS}"
 
-     create_metadata configs_names
+    # Next configs are disabled: aws, virtualbox
+    # prepare_config "#{CONFIG_PREFIX}_#{VIRTUALBOX}"
+    # configs_names.push prepare_aws_machine "#{CONFIG_PREFIX}_#{AWS}"
+
+    @current_metadata = create_metadata configs_names
 
     # running tests
     ret_val = block.call
 
     # destroying vagrant machine
-    destroy_config "#{CONFIG_PREFIX}_#{AWS}"
+    # destroy_config "#{CONFIG_PREFIX}_#{AWS}"
 
     # test result for jenkins
     return ret_val
+  end
+
+  def pause_environment
+    @current_metadata[:configs].each do |metadata_element|
+      unless metadata_element[:provider] == MDBCI
+        stop_config metadata_element[:config_name]
+      end
+    end
   end
 
   # method for providers: docker, libvirt, virtualbox
   def prepare_config(config_name)
     template_path = "#{PATH_TO_TEMPLATES}/#{config_name}.json"
     create_config(template_path, config_name) unless is_config_created config_name
+    resume_config(config_name) unless is_config_stopped config_name
     start_config(config_name) unless is_config_running config_name
     prepare_snapshots(config_name)
     return config_name
+  end
+
+  def recreate_local_ppc_from_docker_config(docker_config_name, ppc_config_name)
+    destroy_config docker_config_name
+    destroy_config ppc_config_name
+    PpcFromDocker.new.prepare_mdbci_environment(template_path)
   end
 
   # method for provider: mdbci (docker_for_ppc)
@@ -85,13 +111,22 @@ class ParametrizedTestingEnvironmentSetup
     template_path = "#{PATH_TO_TEMPLATES}/#{config_name}.json"
     docker_config_name, ppc_config_name = PpcFromDocker.new.get_configs_names(template_path)
     if !is_config_created(docker_config_name) and !is_config_created(ppc_config_name)
-      destroy_config docker_config_name
-      destroy_config ppc_config_name
-      PpcFromDocker.new.prepare_mdbci_environment(template_path)
+      recreate_local_ppc_from_docker_config(docker_config_name, ppc_config_name)
     end
-    start_config(docker_config_name) unless is_config_running docker_config_name
+    resume_config(docker_config_name) unless is_config_stopped docker_config_name
+    unless is_config_running docker_config_name
+      recreate_local_ppc_from_docker_config(docker_config_name, ppc_config_name)
+    end
     prepare_snapshots(docker_config_name)
     return [docker_config_name, ppc_config_name]
+  end
+
+  def prepare_aws_machine(config_name)
+    template_path = "#{PATH_TO_TEMPLATES}/#{config_name}.json"
+    create_config(template_path, config_name) unless is_config_created config_name
+    resume_config(config_name) unless is_config_stopped config_name
+    start_config(config_name) unless is_config_running config_name
+    return config_name
   end
 
   def prepare_snapshots(config_name)
@@ -104,13 +139,6 @@ class ParametrizedTestingEnvironmentSetup
         revert_to_origin_snapshot(config_name, node_name, NODE_ORIGIN_SNAPSHOT_INFIX)
       end
     end
-  end
-
-  def prepare_aws_machine(config_name)
-    template_path = "#{PATH_TO_TEMPLATES}/#{config_name}.json"
-    create_config(template_path, config_name) unless is_config_created config_name
-    start_config(config_name) unless is_config_running config_name
-    return config_name
   end
 
   def get_snapshots_for_node(config_name, node_name)
@@ -180,6 +208,7 @@ if File.identical?(__FILE__, $0)
   ret_val = p.start_test {
       puts 'WORKS'
       55 # test return value
-  } 
+  }
+  p.pause_environment
   exit ret_val
 end
