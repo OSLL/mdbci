@@ -2,7 +2,6 @@
 
 require 'getoptlong'
 require 'json'
-require 'mysql2'
 
 # Command line options
 INPUT_FILE_OPTION = '--file'
@@ -45,7 +44,7 @@ class BuildResultsWriter
   end
 
   def connect_mdb(default_file, host, db_name)
-    @client = Mysql2::Client.new(:default_file => "#{default_file}", \
+    @client = Mysql2::Client.new(:default_file => "#{default_file}",  \
       :host => "#{host}", :database => "#{db_name}")
     puts "Connection to db (:default_file => #{default_file}, "\
          ":host => #{host}, :database => #{db_name} established successfuly"
@@ -142,13 +141,14 @@ def main
   input_file_path, env_file = parse_options
 
   begin 
+    require 'mysql2'
     writer = BuildResultsWriter.new
     writer.write_results_from_input_file(input_file_path)
   rescue Exception => e
     puts e.message
     puts e.backtrace
     unless env_file.nil?
-      open('env_file', 'a') do |f|
+      open(env_file, 'a') do |f|
         f.puts "#{DB_WRITE_ERROR} #{e.message}"
       end
     end
