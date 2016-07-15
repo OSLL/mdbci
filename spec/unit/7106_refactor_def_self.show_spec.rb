@@ -17,7 +17,11 @@ describe 'Network' do
     boxesPath = './BOXES'
     $session.boxes = BoxesManager.new boxesPath
     reposPath = './repo.d'
+    $session.configFile='instance.json'
+    $session.awsConfigFile='aws-config.yml'
     $session.repos = RepoManager.new reposPath
+    $session.checkConfig
+    $session.loadCollections
   end
 
   # Before all tests must be generated configurations

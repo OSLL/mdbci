@@ -25,7 +25,6 @@ class Network
 
     vagrant_out = `vagrant status`
     list = vagrant_out.split("\n")
-    puts "loadNodes vagrant status: #{vagrant_out}"
 =begin
   Vagrant prints node info in next format:
   >Current machine states:
@@ -126,9 +125,6 @@ class Network
 
     args = name.split('/')
     directory = args[0]
-    puts directory
-    puts "HHHHHHHHHHHHH"
-    puts "getNetwork pwd=#{pwd}"
     node_arg = args[1]   
     # mdbci ppc64 boxes
     if File.exist?(directory+'/mdbci_template')
@@ -149,26 +145,18 @@ class Network
       end
     else # aws, vbox nodes
       unless Dir.exist? directory
-        puts '\n'
-        puts "#{directory}"
-        puts "PWD=#{pwd}"
-        puts "Dir.pwd=#{Dir.pwd}" 
         raise "Configuration not found: #{directory}"
       end
       network = Network.new
       network.loadNodes pwd.to_s+'/'+directory # load nodes from dir
       if node_arg.nil? # No node argument, show all config
         network.nodes.each do |node|
-          puts node.provider.to_s
           temp_var = getIpWrapper(node,pwd)
-          puts temp_var.to_s
           results.push(getIpWrapper(node,pwd))
         end
       else
         node = network.nodes.find { |elem| elem.name == node_arg}
-        puts "getNetwokr preWarpper pwd=#{pwd}, dirPwd=#{Dir.pwd}"
         results.push(getIpWrapper(node,pwd))
-        puts "getNetwokr postWarpper pwd=#{pwd}, dirPwd=#{Dir.pwd}"
       end
     end
     Dir.chdir pwd
@@ -176,15 +164,13 @@ class Network
   end
 
   def self.getIpWrapper(node, pwd)
-    hash = Hash.new()
     begin
       node.getIp(node.provider, false)
     rescue
-      puts "getIPWrapper error  pwd=#{pwd}, dirPwd=#{Dir.pwd}"
       Dir.chdir pwd
       raise "Incorrect node"
     end
-    hash["ip"]=node.ip.to_s
+    hash={ 'ip' => node.ip.to_s }
     return hash
   end
 
