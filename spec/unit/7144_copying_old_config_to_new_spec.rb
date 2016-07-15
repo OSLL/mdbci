@@ -22,7 +22,9 @@ describe 'Clone' do
   end
 
   it '#clone should exit with non-zero code if new folder is existing' do
+    FileUtils.mkdir(EMPTY_FOLDER)
     lambda{ copyOldConfigDirectoryToNew(VALID_OLD_PATH, EXISTING_NEW_PATH) }.should raise_error(RuntimeError, "New config directory spec/unit/test_empty_folder is existing")
+    FileUtils.rm_rf(EMPTY_FOLDER)
   end
 
   it '#clone should copying all directories and subdirectories' do
