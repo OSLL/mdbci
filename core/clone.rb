@@ -1,5 +1,6 @@
 require_relative 'out'
 require_relative 'helper'
+require 'fileutils'
 
 UUID_FOR_DOMAIN_NOT_FOUND_ERROR = 'uuid for domain is not found'
 CONFIG_DIRECTORY_NOT_FOUND_ERROR = 'config directory is not found'
@@ -59,20 +60,18 @@ def copyOldConfigDirectoryToNew(old_path, new_path)
   unless Dir.exists?(old_path)
     raise "Old config directory #{old_path} not found"
   end
-  if File.exist?(old_path)
-    nodes = $exception_handler.handle('Configuration file invalid') { JSON.parse(IO.read(old_path)) }
-  end
-  else
+  files = Dir.entries(old_path)
+  if files.length == 2
     raise "In old config directory #{old_path} nodes are not found"
+  end
   begin
     Dir.mkdir(new_path)
   rescue Errno::EEXIST
-    $out.error 'directory #{new_path} exists'
+    raise "New config directory #{new_path} is existing"
   rescue SystemCallError
-    $out.error 'have not permissions'
+    raise "Have not permissions in #{new_path}"
   end
-  file_name = old_path.split('/')[-1]
-  File.open(file_name, 'w')
+  FileUtils.cp_r(old_path, new_path)
 end
 
 
