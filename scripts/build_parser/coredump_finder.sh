@@ -5,7 +5,7 @@
 
 if [ $# -ne 2 ];
 then 
-	echo "Script require two arguments: run_test build name and output format (url or files)"
+	echo "Script require two arguments:  <build_name>_<build_number> and output format (url or files)"
 	exit 1
 fi
 
