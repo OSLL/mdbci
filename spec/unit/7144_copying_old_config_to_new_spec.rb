@@ -16,7 +16,9 @@ describe 'Clone' do
   end
 
   it '#clone should exit with non-zero code if nodes in old config are not existing' do
+    FileUtils.mkdir(EMPTY_FOLDER)
     lambda{ copyOldConfigDirectoryToNew(EMPTY_FOLDER, VALID_NEW_PATH) }.should raise_error(RuntimeError, "In old config directory spec/unit/test_empty_folder nodes are not found")
+    FileUtils.rm_rf(EMPTY_FOLDER)
   end
 
   it '#clone should exit with non-zero code if new folder is existing' do
