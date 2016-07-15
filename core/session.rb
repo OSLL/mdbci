@@ -212,12 +212,8 @@ EOF
       loadMdbciNodes dir
       if node_arg.nil? # ssh for all nodes
         @mdbciNodes.each do |node|
-          begin
             cmd = createCmd(params,node,pwd)
             result.push(runSSH(cmd, params))
-          rescue
-              # TODO maybe need some different way to catch exception in cycle?
-          end
         end
       else
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == node_arg }
