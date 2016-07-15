@@ -19,7 +19,7 @@ showFileList=${2}
 if [[ $buildId == *"matrix"* ]]
 then
 	buildNumber=`echo $buildId | grep -o '[0-9]*$'`
-        buildName=`echo $buildId | sed -e 's/-[0-9]*$//'`
+	buildName=`echo $buildId | sed -e 's/-[0-9]*$//'`
 	buildId="$buildName/*-$buildNumber"
 fi
 
