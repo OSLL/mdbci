@@ -12,7 +12,7 @@ require_relative 'out'
 require_relative 'docker_manager'
 require_relative 'snapshot'
 require_relative 'helper'
-
+require_relative 'clone'
 
 class Session
 
@@ -944,11 +944,12 @@ EOF
 
 
   def cloneNodes(configuration, new_path)
-    provider = get_provider(new_path)
+    provider = get_provider(configuration)
     if provider == DOCKER
-      dockerCloneNodes(configuration, new_path)
+      copyOldConfigDirectoryToNew(configuration, new_path)
+      clone_docker_nodes(configuration, new_path)
     elsif provider == LIBVIRT
-      copying_old_config_to_new(configuration, new_path)
+      copyOldConfigDirectoryToNew(configuration, new_path)
       clone_libvirt_nodes(configuration, new_path)
     else
       raise "#{provider}: provider does not support cloning"
@@ -956,7 +957,5 @@ EOF
   end
 
 
-  def dockerCloneNodes(old_path, new_path)
-  end
 
 end
