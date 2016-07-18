@@ -69,7 +69,7 @@ def copyOldConfigDirectoryToNew(old_path, new_path)
   rescue Errno::EEXIST
     raise "New config directory #{new_path} is existing"
   rescue SystemCallError
-    raise "Have not permissions in #{new_path}"
+    raise "Not enough permissions in #{new_path}"
   end
   FileUtils.cp_r(old_path, new_path)
 end
