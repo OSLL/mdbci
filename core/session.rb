@@ -636,12 +636,12 @@ EOF
           stdin.close
           stdout.each_line do |line|
             $out.info line
-            chef_not_found_node = line if @nodesProvider == 'aws'
+            chef_not_found_node = line
           end
           stdout.close
           error = stderr.read
           stderr.close
-          if @nodesProvider == 'aws' and error.to_s.include? CHEF_NOT_FOUND_ERROR
+          if error.to_s.include? CHEF_NOT_FOUND_ERROR
             chef_not_found_node = chef_not_found_node.to_s.match(OUTPUT_NODE_NAME_REGEX).captures[0]
           else
             error.each_line { |line| $out.error line }
