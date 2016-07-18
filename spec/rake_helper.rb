@@ -44,6 +44,11 @@ class RakeTaskManager
   # executing rspec test, with cutting stderr application output
   def run
     @rspec_test_name = PATH_TO_RSPEC_SPEC_FOLDER + @rspec_test_name
+    unless File.exists?("#{@rspec_test_name}")
+      @@failed_tests.push("Test not exists: #{@rspec_test_name}")
+      @@failed_tests_counter +=1
+      return 1    
+    end
     @cmd = `rspec #{@rspec_test_name}`
     describe_test(@rspec_test_name, @cmd, $?.exitstatus)
     generate_and_expand_output
