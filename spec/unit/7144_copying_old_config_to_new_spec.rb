@@ -5,7 +5,7 @@ require 'fileutils'
 OLD_NOT_EXISTING_PATH = "pathToOldNotExistingConfig"
 VALID_NEW_PATH = "spec/pathToValidNewConfig"
 EMPTY_FOLDER = "spec/unit/test_empty_folder"
-VALID_OLD_PATH = "spec/test_machine"
+VALID_OLD_PATH = "spec/test_machine_configurations/7144_test_machine"
 EXISTING_NEW_PATH = "spec/unit/test_empty_folder"
 
 
