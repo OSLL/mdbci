@@ -1,11 +1,16 @@
+require 'fileutils'
+
 require_relative 'out'
 require_relative 'helper'
+require 'fileutils'
 
 UUID_FOR_DOMAIN_NOT_FOUND_ERROR = 'uuid for domain is not found'
 CONFIG_DIRECTORY_NOT_FOUND_ERROR = 'config directory is not found'
 NODE_NOT_FOUND_ERROR = 'node is not found'
 DOMAIN_NAME_FOR_UUID_NOT_FOUND_ERROR = 'uuid for domain is not found'
 LIBVIRT_NODE_RUNNING_ERROR = 'libvirt node is not in shutoff state (for cloning state must be shutoff)'
+
+BOX = 'box'
 
 def get_libvirt_uuid_by_domain_name(domain_name)
   list_output = execute_bash('virsh -q list --all | awk \'{print $2}\'', true).to_s.split "\n"
@@ -54,11 +59,53 @@ def create_libvirt_node_clone(path_to_nodes, node_name, path_to_new_config_direc
   return new_libvirt_image_name
 end
 
-def libvirtCloneNodes(old_path, new_path)
-  nodes = get_nodes(old_path)
-  nodes.each do |node|
-    new_libvirt_image_name = create_libvirt_node_clone(old_path, node, new_path)
-    make_node_in_new_libvirt_config() # name of copied config, name of cloned machine, name of the node
+
+def replace_libvirt_node_id(path_to_nodes, node_name, id)
+  set_node_machine_id(path_to_nodes, node_name, id)
+end
+
+def clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
+  nodes = get_nodes(path_to_nodes)
+  nodes.each do |node_name|
+    new_libvirt_image_name = create_libvirt_node_clone(path_to_nodes, node_name, new_path_to_nodes)
+    new_uuid = get_libvirt_uuid_by_domain_name(new_libvirt_image_name)
+    replace_libvirt_node_id(new_path_to_nodes, node_name, new_uuid)
   end
 end
 
+def copyOldConfigDirectoryToNew(old_path, new_path)
+  unless Dir.exists?(old_path)
+    raise "Old config directory #{old_path} not found"
+  end
+  files = Dir.entries(old_path)
+  if files.length == 2
+    raise "In old config directory #{old_path} nodes are not found"
+  end
+  begin
+    Dir.mkdir(new_path)
+  rescue Errno::EEXIST
+    raise "New config directory #{new_path} is existing"
+  rescue SystemCallError
+    raise "Not enough permissions in #{new_path}"
+  end
+  FileUtils.cp_r(old_path, new_path)
+end
+
+
+def clone_docker_nodes(path_to_nodes, new_path_to_nodes)
+  nodes = get_nodes(path_to_nodes)
+  nodes.each do |node_name|
+    new_docker_image_name = create_docker_node_clone(path_to_nodes, node_name, new_path_to_nodes)
+    make_node_in_new_docker_config() # name of copied config, name of cloned machine, name of the node
+  end
+end
+
+# rewrites template with changing box (on images created while making clone of node)
+# for concrete node
+def change_box_in_docker_template(template_path_of_cloned_config, node_name, new_box_name)
+  template = JSON.parse(File.read(template_path_of_cloned_config))
+  template[node_name][BOX] = new_box_name
+  File.open(template_path_of_cloned_config, 'w') do |file|
+    file.write(JSON.pretty_generate(template))
+  end
+end
