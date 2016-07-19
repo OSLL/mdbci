@@ -121,9 +121,12 @@ def clone_docker_nodes(path_to_nodes, new_path_to_nodes, path_to_new_template, f
 end
 
 def generate_docker_machines(path_to_template, new_path_to_nodes)
+  boxes = $session.boxes
+  $session.boxes = BoxesManager.new 'BOXES'
   $session.configFile = path_to_template
   $session.generate new_path_to_nodes
   $session.configFile = nil
+  $session.boxes = boxes
 end
 
 def create_fake_docker_boxes_file
