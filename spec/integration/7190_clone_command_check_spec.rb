@@ -9,6 +9,7 @@ NEW_PATH_LIBVIRT = "7190_new_test_libvirt_machine"
 
 
 describe 'test_spec' do
+
   before :all do
     puts Dir.pwd
     puts Dir.entries('spec/configs/template')
