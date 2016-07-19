@@ -2,6 +2,7 @@ require 'fileutils'
 
 require_relative 'out'
 require_relative 'helper'
+require 'fileutils'
 
 UUID_FOR_DOMAIN_NOT_FOUND_ERROR = 'uuid for domain is not found'
 CONFIG_DIRECTORY_NOT_FOUND_ERROR = 'config directory is not found'
@@ -71,6 +72,25 @@ def clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
     replace_libvirt_node_id(new_path_to_nodes, node_name, new_uuid)
   end
 end
+
+def copyOldConfigDirectoryToNew(old_path, new_path)
+  unless Dir.exists?(old_path)
+    raise "Old config directory #{old_path} not found"
+  end
+  files = Dir.entries(old_path)
+  if files.length == 2
+    raise "In old config directory #{old_path} nodes are not found"
+  end
+  begin
+    Dir.mkdir(new_path)
+  rescue Errno::EEXIST
+    raise "New config directory #{new_path} is existing"
+  rescue SystemCallError
+    raise "Not enough permissions in #{new_path}"
+  end
+  FileUtils.cp_r(old_path, new_path)
+end
+
 
 def clone_docker_nodes(path_to_nodes, new_path_to_nodes)
   nodes = get_nodes(path_to_nodes)
