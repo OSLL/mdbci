@@ -67,7 +67,6 @@ def replace_libvirt_node_id(path_to_nodes, node_name, id)
 end
 
 def clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
-  path_to_new_template = copy_old_template_to_new(path_to_nodes, new_path_to_nodes)
   nodes = get_nodes(path_to_nodes)
   nodes.each do |node_name|
     new_libvirt_image_name = create_libvirt_node_clone(path_to_nodes, node_name, new_path_to_nodes)
@@ -133,8 +132,8 @@ def create_fake_docker_boxes_file
 end
 
 def add_to_fake_docker_boxes(path_to_fake_docker_boxes, box_name)
-  boxes = File.read(path_to_fake_docker_boxes)
-  boxes.merge ({box_name=>{}})
+  boxes = JSON.parse(File.read(path_to_fake_docker_boxes))
+  boxes.merge({box_name => {}})
   $out.info "adding new docker box: #{box_name} to fake docker boxes file: #{path_to_fake_docker_boxes}"
   File.open(file_name, 'w') { |file| file.write boxes.to_json }
 end
