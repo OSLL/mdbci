@@ -12,6 +12,7 @@ require_relative 'out'
 require_relative 'docker_manager'
 require_relative 'snapshot'
 require_relative 'helper'
+require_relative 'clone'
 
 
 class Session
