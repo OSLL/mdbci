@@ -37,19 +37,23 @@ end
 
 
 def setUp(template, name_machine)
-  system("./mdbci --template #{template} generate #{name_machine}")
-  system("./mdbci up #{name_machine}")
-  system("cd #{name_machine}")
-  puts "shut down the running machine #{name_machine}"
-  system("vagrant halt")
-  system("cd -")
+  executeShellCommandsAndTestExitCode([
+    {'shell_command'=>"./mdbci --template #{template} generate #{name_machine}", 'expectation'=>0},
+    {'shell_command'=>"./mdbci up #{name_machine}", 'expectation'=>0},
+    {'shell_command'=>"cd #{name_machine}", 'expectation'=>0},
+#  puts "shut down the running machine #{name_machine}"
+    {'shell_command'=>"vagrant halt", 'expectation'=>0},
+    {'shell_command'=>"cd -", 'expectation'=>0}
+  ])
 end
 
 
 def tearDown(name_machine)
-  system("cd #{name_machine}")
-  system("vagrant destroy -f")
-  puts "destroy the machine #{name_machine}"
-  system("cd -")
-  system("rm -r #{name_machine}")
+  executeShellCommandsAndTestExitCode([
+    {'shell_command'=>"cd #{name_machine}", 'expectation'=>0},
+    {'shell_command'=>"vagrant destroy -f", 'expectation'=>0},
+#  puts "destroy the machine #{name_machine}"
+    {'shell_command'=>"cd -", 'expectation'=>0},
+    {'shell_command'=>"rm -r #{name_machine}", 'expectation'=>0}
+  ])
 end
