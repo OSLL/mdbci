@@ -112,7 +112,9 @@ def clone_docker_nodes(path_to_nodes, new_path_to_nodes, path_to_new_template, f
   nodes.each do |node_name|
     $out.info "making clone of node: #{path_to_nodes}/#{node_name}"
     new_docker_image_name = create_docker_node_clone(path_to_nodes, node_name, new_path_to_nodes)
-    add_to_fake_docker_boxes(fake_boxes_file, new_docker_image_name)
+    old_box_name = get_box_name_from_node(path_to_nodes, node_name)
+    old_box_definition = $session.boxes.getBox(old_box_name)
+    add_to_fake_docker_boxes(fake_boxes_file, new_docker_image_name, old_box_definition)
     $out.info "cloning is done, new docker image name: #{new_docker_image_name}"
     change_box_in_docker_template(path_to_new_template, node_name, new_docker_image_name)
   end
@@ -131,9 +133,9 @@ def create_fake_docker_boxes_file
   return file_name
 end
 
-def add_to_fake_docker_boxes(path_to_fake_docker_boxes, box_name)
+def add_to_fake_docker_boxes(path_to_fake_docker_boxes, box_name, box_definition)
   boxes = JSON.parse(File.read(path_to_fake_docker_boxes))
-  boxes.merge({box_name => {}})
+  boxes[box_name] = box_definition
   $out.info "adding new docker box: #{box_name} to fake docker boxes file: #{path_to_fake_docker_boxes}"
   File.open(path_to_fake_docker_boxes, 'w') { |file| file.write boxes.to_json }
 end

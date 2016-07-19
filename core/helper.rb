@@ -1,3 +1,5 @@
+require_relative 'boxes_manager'
+
 TEMPLATE_COOKBOOK_PATH = 'cookbook_path'
 TEMPLATE_AWS_CONFIG = 'aws_config'
 
@@ -194,4 +196,9 @@ def get_template_directory(path_to_nodes)
   path = paths[0..-2].join('/')
   return Dir.pwd if path.empty?
   return path
+end
+
+def get_box_name_from_node(path_to_nodes, node_name)
+  template = JSON.parse(File.read (get_template_path path_to_nodes))
+  return template[node_name][BOX]
 end
