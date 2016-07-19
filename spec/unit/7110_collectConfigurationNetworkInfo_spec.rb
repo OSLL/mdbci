@@ -33,29 +33,29 @@ describe 'Network' do
   
   file_network_config = "#{ENV['configPath']}_network_config"
   it 'collectConfigurationNetworkInfo should return Hash' do
-    result = Network.collectConfigurationNetworkInfo(ENV['configPath']).should eql(nil)
+    result = collectConfigurationNetworkInfo(ENV['configPath']).should eql(nil)
   end
 
   it 'collectConfigurationNetworkInfo should return Hash' do
-    result = Network.collectConfigurationNetworkInfo(ENV['configPath'])
+    result = collectConfigurationNetworkInfo(ENV['configPath'])
     puts result
     result should ne(nil)
   end
 
   it 'printConfigurationNetworkInfoToFile should raise error: error_name' do
-    lambda{Network.printConfigurationNetworkInfoToFile(nil)}.should raise_error(RuntimeError,"error_name")
+    lambda{printConfigurationNetworkInfoToFile(nil)}.should raise_error(RuntimeError,"error_name")
   end
 
   it 'printConfigurationNetworkInfoToFile should raise error: error_name' do
-    lambda{Network.printConfigurationNetworkInfoToFile("SOME_WRONG_PATH")}.should raise_error(RuntimeError,/error_nsme .*/)
+    lambda{printConfigurationNetworkInfoToFile("SOME_WRONG_PATH")}.should raise_error(RuntimeError,/error_nsme .*/)
   end
   
   it 'printConfigurationNetworkInfoToFile should have zero exit code' do
-    Network.printConfigurationNetworkInfoToFile(ENV['configPath']).should eq(0)
+    printConfigurationNetworkInfoToFile(ENV['configPath']).should eq(0)
   end
   
   it 'printConfigurationNetworkInfoToFile should create file in repo dir' do
-    Network.printConfigurationNetworkInfoToFile(ENV['configPath'])
+    printConfigurationNetworkInfoToFile(ENV['configPath'])
     expect(File).to exist(file_network_config)
   end
 
