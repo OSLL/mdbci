@@ -108,31 +108,32 @@ def change_box_in_docker_template(template_path_of_cloned_config, node_name, new
   end
 end
 
-def clone_docker_nodes(path_to_nodes, new_path_to_nodes, path_to_new_template)
+def clone_docker_nodes(path_to_nodes, new_path_to_nodes, path_to_new_template, fake_boxes_file)
   nodes = get_nodes(path_to_nodes)
   nodes.each do |node_name|
     $out.info "making clone of node: #{path_to_nodes}/#{node_name}"
     new_docker_image_name = create_docker_node_clone(path_to_nodes, node_name, new_path_to_nodes)
+    add_to_fake_docker_boxes(fake_boxes_file, new_docker_image_name)
     $out.info "cloning is done, new docker image name: #{new_docker_image_name}"
     change_box_in_docker_template(path_to_new_template, node_name, new_docker_image_name)
   end
 end
 
-def fake_docker_box_environment
-  File.open("BOXES/fake_docker_box_#{Time.now.to_i}.json")
-  old_boxes = $session.boxes
-  $session.boxes = BoxesManager.new 'BOXES'
-  yield
-  $session.boxes = old_boxes
-  FileUtils.rm_rf
+def generate_docker_machines(path_to_template, new_path_to_nodes)
+  $session.configFile = path_to_template
+  $session.generate new_path_to_nodes
+  $session.configFile = nil
 end
 
-def generate_docker_machines(path_to_template, new_path_to_nodes)
-  fake_docker_box_environment{
-    $session.configFile = path_to_template
-    $session.generate new_path_to_nodes
-    $session.configFile = nil
-  }
+def create_fake_docker_boxes_file
+  file_name = "BOXES/fake_docker_boxes_#{Time.now.to_i}.json"
+  File.open(file_name, 'w') { |file| file.write '{}' }
+  return file_name
+end
+
+def add_to_fake_docker_boxes(path_to_fake_docker_boxes, box_name)
+  boxes = File.read(file_name)
+  boxes.merge ({box_name=>{}})
 end
 
 def start_docker_machines(path_to_nodes)
@@ -153,12 +154,13 @@ def clone_nodes(path_to_nodes, new_path_to_nodes)
   provider = get_provider(path_to_nodes)
   if provider == DOCKER
     $out.info "cloning docker machines from #{path_to_nodes} to #{new_path_to_nodes}"
-    clone_docker_nodes(path_to_nodes, new_path_to_nodes, path_to_new_template)
+    fake_boxes_file = create_fake_docker_boxes_file
+    clone_docker_nodes(path_to_nodes, new_path_to_nodes, path_to_new_template, fake_boxes_file)
     generate_docker_machines(path_to_new_template, new_path_to_nodes)
     start_docker_machines(new_path_to_nodes)
   elsif provider == LIBVIRT
-    copy_old_config_to_new(path_to_nodes, new_path_to_nodes)
     $out.info "cloning libvirt machines from #{path_to_nodes} to #{new_path_to_nodes}"
+    copy_old_config_to_new(path_to_nodes, new_path_to_nodes)
     clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
     replace_libvirt_template_path(new_path_to_nodes, path_to_new_template)
   else
