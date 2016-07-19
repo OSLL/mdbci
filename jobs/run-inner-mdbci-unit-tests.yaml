@@ -25,6 +25,8 @@
               type: 'PT_SINGLE_SELECT'
               property-file: *SORTED_GIT_BRANCHES_FILE_PATH
               property-key: branch_name
+              default-property-file: $WORKSPACE/last_modified_branch
+              default-property-key: LAST_MODIFIED_BRANCH
     wrappers:
         - pre-scm-buildstep:
             - shell: |
@@ -57,7 +59,7 @@
             recipients: $DEFAULT_RECIPIENTS
             reply-to: $DEFAULT_REPLYTO
             content-type: default
-            subject: $DEFAULT_SUBJECT
+            subject: $DEFAULT_SUBJECT - $LAST_MODIFIED_BRANCH
             body: $DEFAULT_CONTENT
             attach-build-log: false
             always: true

@@ -11,6 +11,7 @@ require_relative 'repo_manager'
 require_relative 'out'
 require_relative 'docker_manager'
 require_relative 'snapshot'
+require_relative 'helper'
 
 
 class Session
@@ -55,6 +56,8 @@ is installed and that the binary is available on the PATH.
 EOF
 
   OUTPUT_NODE_NAME_REGEX = "==>\s+(.*):{1}"
+  DOCKER = 'docker'
+  LIBVIRT = 'libvirt'
 
   def initialize
     @boxesDir = './BOXES'
@@ -191,75 +194,70 @@ EOF
 
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
   def ssh(args)
-    exit_code = 1
-    possibly_failed_command = ''
-    pwd = Dir.pwd
-
-    if args.nil?
-      $out.error 'Configuration name is required'
-      exit_code = 1
+    result_ssh = getSSH(args)
+    result_ssh.each do |ssh_out|
+      $out.out ssh_out
     end
-
-    params = args.split('/')
-    # mdbci ppc64 boxes
-    if File.exist?(params[0]+'/mdbci_template')
-      loadMdbciNodes params[0]
-      if params[1].nil? # ssh for all nodes
-        @mdbciNodes.each do |node|
-          box = node[1]['box'].to_s
-          if !box.empty?
-            mdbci_box_params = $session.boxes.getBox(box)
-            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_box_params['keyfile'].to_s + " "\
-                            + mdbci_box_params['user'].to_s + "@"\
-                            + mdbci_box_params['IP'].to_s + " "\
-                            + "'" + $session.command + "'"
-            $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
-            vagrant_out = `#{cmd}`
-            exit_code = $?.exitstatus
-            possibly_failed_command = cmd
-            $out.out vagrant_out
-          end
-        end
-      else
-        mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == params[1] }
-        box = mdbci_node[1]['box'].to_s
-        if !box.empty?
-          mdbci_params = $session.boxes.getBox(box)
-          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
-                          + mdbci_params['user'].to_s + "@"\
-                          + mdbci_params['IP'].to_s + " "\
-                          + "'" + $session.command + "'"
-          $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
-          vagrant_out = `#{cmd}`
-          exit_code = $?.exitstatus
-          possibly_failed_command = cmd
-          $out.out vagrant_out
-        end
-      end
-    else # aws, vbox nodes
-      unless Dir.exist?(params[0])
-        $out.error 'Machine with such name does not exist'
-        exit_code = 1
-      end
-      Dir.chdir params[0]
-      cmd = 'vagrant ssh '+params[1].to_s+' -c "'+$session.command+'"'
-      $out.info 'Running ['+cmd+'] on '+params[0].to_s+'/'+params[1].to_s
-      vagrant_out = `#{cmd}`
-      exit_code = $?.exitstatus
-      possibly_failed_command = cmd
-      $out.out vagrant_out
-      Dir.chdir pwd
-    end
-
-    if exit_code != 0
-      $out.error "'ssh' (or 'vagrant ssh') command returned non-zero exit code: (#{$?.exitstatus})"
-      $out.error "failed ssh command: #{possibly_failed_command}"
-      exit_code = 1
-    end
-
-    return exit_code
+    return 0
   end
 
+  def getSSH(args)
+    result = Array.new()
+    pwd = Dir.pwd
+
+    raise 'Configuration name is required' if args.nil?
+    params = args.split('/')
+    dir = params[0]
+    node_arg =  params[1]
+    
+    # mdbci ppc64 boxes
+    if File.exist?(dir+'/mdbci_template')
+      loadMdbciNodes dir
+      if node_arg.nil? # ssh for all nodes
+        @mdbciNodes.each do |node|
+            cmd = createCmd(params,node,pwd)
+            result.push(runSSH(cmd, params))
+        end
+      else
+        mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == node_arg }
+        cmd = createCmd(params,mdbci_node,pwd)
+        rusult.push(runSSH(cmd, params))
+      end
+    else # aws, vbox nodes
+      raise "Machine with such name: #{dir} does not exist" unless Dir.exist?(dir) 
+      Dir.chdir dir
+      cmd = 'vagrant ssh '+node_arg.to_s+' -c "'+$session.command+'"'
+      result.push(runSSH(cmd,params))      
+      Dir.chdir pwd
+    end
+    return result
+  end
+
+  def createCmd(params, node, pwd)
+    dir = params[0]
+    node_arg =  params[1]
+    box = node[1]['box'].to_s
+    raise "Box: #{box} is empty" if box.empty?
+
+    box_params = $session.boxes.getBox(box)
+    cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+box_params['keyfile'].to_s + " "\
+                    + box_params['user'].to_s + "@"\
+                    + box_params['IP'].to_s + " "\
+                    + "'" + $session.command + "'"
+    return cmd
+  end
+
+  def runSSH(cmd,params)
+    dir = params[0]
+    node_arg =  params[1]
+    $out.info 'Running ['+cmd+'] on '+dir.to_s+'/'+node_arg.to_s
+    vagrant_out = `#{cmd}`
+    if $?.exitstatus!=0
+     $out.out vagrant_out
+     raise "'#{cmd}' command returned non-zero exit code: (#{$?.exitstatus})"
+    end
+    return vagrant_out.to_s
+  end
 
   def platformKey(box_name)
     key = $session.boxes.boxesManager.keys.select { |value| value == box_name }
@@ -275,7 +273,7 @@ EOF
     if values.empty?
       raise "box key #{$session.field} is not found"
     end
-    puts values.uniq 
+    puts values.uniq
     return 0
   end
 
@@ -426,6 +424,14 @@ EOF
     return exit_code
   end
 
+
+  def clone(configuration, new_path)
+    $out.info "Performing cloning operation for config #{configuration}. Cloned configuration name: #{new_path}"
+    cloneNodes(configuration, new_path)
+    return 0
+  end
+
+
   # all mdbci commands swith
   def commands
     exit_code = 1
@@ -453,6 +459,8 @@ EOF
       when 'snapshot'
         snapshot = Snapshot.new
         exit_code = snapshot.do(ARGV.shift)
+      when 'clone'
+        exit_code = $session.clone(ARGV[0], ARGV[1])
       else
         $out.error 'Unknown mdbci command. Please look help!'
         Help.display
@@ -462,12 +470,17 @@ EOF
 
   # load mdbci boxes parameters from boxes.json
   def LoadNodesProvider(configs)
-    configs.each do |node|
-      box = node[1]['box'].to_s
-      if !box.empty?
-        box_params = @boxes.getBox(box)
-        @nodesProvider = box_params["provider"].to_s
-      end
+    nodes = {}
+    configs.keys.each do |node|
+      nodes[node] = configs[node] if node != "aws_config" and node != "cookbook_path"
+    end
+    nodes.values.each do |node|
+      puts node
+      box = node['box'].to_s
+      raise "box in " + node.to_s + " is not found" if box.empty?
+      box_params = @boxes.getBox(box)
+      raise "Box #{box} from node #{node[0]} not found in #{$session.boxesDir}!" if box_params.nil?
+      @nodesProvider = box_params["provider"].to_s
     end
   end
 
@@ -661,7 +674,7 @@ EOF
         $out.warning 'Checking for dead machines and checking Chef runs on machines'
         nodes.each do |machine_name|
           status = `vagrant status #{machine_name}`.split("\n")[2]
-          $out.info "#{machine_name} status == #{status}"
+          $out.info status
           unless status.include? 'running'
             dead_machines.push(machine_name)
             next
@@ -744,27 +757,6 @@ EOF
             end
             raise 'Bringing up failed (error description is above)' unless machines_with_broken_chef.empty?
           end
-
-          # Chef logging
-          $out.info "Checking Chef log for failed nodes"
-          chef_log_cmd = "vagrant ssh #{machine_name} -c \"test -e /var/chef/cache/chef-stacktrace.out && printf 'FOUND' || printf 'NOT_FOUND'\""
-          chef_log_out = `#{chef_log_cmd}`
-          if chef_log_out == "FOUND"
-            $out.info "Chef stacktrace #{chef_log_out} on #{machine_name} node, reprovision this node"
-            chef_failed_nodes.push("#{machine_name}")
-            # reprovision failed chef node
-            provision_cmd = `vagrant provision #{machine_name}`
-            $out.info "#{provision_cmd}"
-            provision_status = $?.exitstatus
-          end
-        end
-
-        if i == @attempts && !all_machines_started || provision_status != 0
-          $out.error 'Bringing up failed'
-          # chef provision status
-          $out.info "Failed Chef nodes:"
-          chef_failed_nodes.each { |node| $out.info node.to_s }
-          raise "Some machines are still down or Chef provision failed! Check failed Chef nodes!"
         end
       end
     end
@@ -776,13 +768,8 @@ EOF
   # copy ssh keys to config/node
   def publicKeys(args)
     pwd = Dir.pwd
-    possibly_failed_command = ''
-    exit_code = 1
 
-    if args.nil?
-      $out.error 'Configuration name is required'
-      exit_code = 1
-    end
+    raise 'Configuration name is required' if args.nil?
 
     args = args.split('/')
 
@@ -791,33 +778,30 @@ EOF
       loadMdbciNodes args[0]
       if args[1].nil? # read ip for all nodes
         if $session.mdbciNodes.empty?
-          $out.error "MDBCI nodes not found in #{args[0]}"
-          exit_code = 1
+          raise "MDBCI nodes not found in #{args[0]}"
         end
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
-          if !box.empty?
-            mdbci_params = $session.boxes.getBox(box)
-            #
-            keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(pwd.to_s+'/'+@keyFile.to_s) }
-            # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
-            command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
-            cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
-                            + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
-                            + "\"" + command + "\""
-            $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
-            vagrant_out = `#{cmd}`
-            # TODO
-            exit_code = $?.exitstatus
-            possibly_failed_command = cmd
+          raise "Box empty in node: #{node}" unless !box.empty?
+          mdbci_params = $session.boxes.getBox(box)
+          #
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(pwd.to_s+'/'+@keyFile.to_s) }
+          # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
+          command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
+          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+                          + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
+                          + "\"" + command + "\""
+          $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
+          $out.info `#{cmd}`
+          if $?.exitstatus!=0
+            raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
           end
         end
       else
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == args[1] }
 
         if mdbci_node.nil?
-          $out.error "No such node with name #{args[1]} in #{args[0]}"
-          exit_code = 1
+          raise "No such node with name #{args[1]} in #{args[0]}"
         end
 
         box = mdbci_node[1]['box'].to_s
@@ -831,28 +815,26 @@ EOF
                           + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
-          vagrant_out = `#{cmd}`
-          # TODO
-          exit_code = $?.exitstatus
-          possibly_failed_command = cmd
+          $out.info `#{cmd}`
+
+          if $?.exitstatus != 0
+            raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
+          end
         else
-          $out.error "Wrong box parameter in node: #{args[1]}"
-          exit_code = 1
+          raise "Wrong box parameter in node: #{args[1]}"
         end
       end
     else # aws, vbox, libvirt, docker nodes
 
       unless Dir.exists? args[0]
-        $out.error "Directory with nodes does not exists: #{args[1]}"
-        exit_code = 1
+        raise "Directory with nodes does not exists: #{args[1]}"
       end
 
       network = Network.new
       network.loadNodes args[0] # load nodes from dir
 
       if network.nodes.empty?
-        $out.error "No aws, vbox, libvirt, docker nodes found in #{args[0]}"
-        exit_code = 1
+        raise "No aws, vbox, libvirt, docker nodes found in #{args[0]}"
       end
 
       if args[1].nil? # No node argument, copy keys to all nodes
@@ -861,17 +843,16 @@ EOF
           # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
           cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
           $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
-          vagrant_out = `#{cmd}`
-          exit_code = $?.exitstatus
-          possibly_failed_command = cmd
-          $out.out vagrant_out
+          $out.info `#{cmd}`
+          if $?.exitstatus!=0
+            raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
+          end
         end
       else
         node = network.nodes.find { |elem| elem.name == args[1] }
 
         if node.nil?
-          $out.error "No such node with name #{args[1]} in #{args[0]}"
-          exit_code = 1
+          raise "No such node with name #{args[1]} in #{args[0]}"
         end
 
         #
@@ -879,21 +860,14 @@ EOF
         # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
         cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
         $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
-        vagrant_out = `#{cmd}`
-        exit_code = $?.exitstatus
-        possibly_failed_command = cmd
-        $out.out vagrant_out
+        $out.info `#{cmd}`
+        if $?.exitstatus!=0
+          raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
+        end
       end
     end
 
     Dir.chdir pwd
-
-    if exit_code != 0
-      $out.error "command #{possibly_failed_command} exit with non-zero code: #{exit_code}"
-      exit_code = 1
-    end
-
-    return exit_code
 
   end
 
@@ -960,12 +934,29 @@ EOF
     box = node[1]['box'].to_s
     if $session.boxes.boxesManager.has_key?(box)
       box_params = $session.boxes.getBox(box)
-      platform = box_params["platform"].to_s+'^'+box_params['platform_version'].to_s
+      platform = box_params[PLATFORM].to_s+'^'+box_params['platform_version'].to_s
       return platform
     else
       $out.warning name.to_s+" platform does not exist! Please, check box name!"
     end
 
+  end
+
+
+  def cloneNodes(configuration, new_path)
+    provider = get_provider(new_path)
+    if provider == DOCKER
+      dockerCloneNodes(configuration, new_path)
+    elsif provider == LIBVIRT
+      copying_old_config_to_new(configuration, new_path)
+      clone_libvirt_nodes(configuration, new_path)
+    else
+      raise "#{provider}: provider does not support cloning"
+    end
+  end
+
+
+  def dockerCloneNodes(old_path, new_path)
   end
 
 end

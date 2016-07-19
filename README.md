@@ -449,7 +449,7 @@ Run command inside of VM
   ./mdbci setup_repo --product maxscale T/node0
   ./mdbci setup_repo --product mariadb --product-version 10.0 T/node0
   ./mdbci install_product --product 'maxscale' T/node0
-  
+  ./mdbci validate_template --template TEMPLATE_PATH
 ```
   
 Show repos with using alternative repo.d repository
@@ -487,6 +487,10 @@ Since stand is generated it can be managed with vagrant command. In the future r
 
 More information about vagrant features could be found in [vagrant documentation](https://docs.vagrantup.com/v2/). 
 
+## Build parsing
+
+This repository also contain a solution developed for parsing jenkins build logs. See https://github.com/OSLL/mdbci/tree/integration/scripts/build_parser/README.md for more details.
+
 ## Team
 
 * Project leader: Sergey Balandin
@@ -495,10 +499,3 @@ More information about vagrant features could be found in [vagrant documentation
   * Kirill Krinkin
   * Kirill Yudenok
   * Mark Zaslavskiy
-   
-   
-
-
-
-  
-
