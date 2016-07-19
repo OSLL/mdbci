@@ -302,12 +302,11 @@ def collectConfigurationNetworkInfo(configuration)
   nodes = get_nodes(configuration)# TODO add getNodes
   nodes.each do |node|
     configPath = "#{configuration}/#{node}"
-    puts "@@@@@@@@@@@@ conf/node=#{configPath}"
-    configurationNetworkInfo["#{node}_network"] = Network.getNetwork(configPath)
-    configurationNetworkInfo["#{node}_keyfile"] = Network.getKeyFile(configPath)   
-    configurationNetworkInfo["#{node}_private_ip"] = Network.getIP(configPath)
-    configurationNetworkInfo["#{node}_whoami"] = $session.getSSH(configPath, COMMAND_WHOAMI)
-    configurationNetworkInfo["#{node}_hostname"] = $session.getSSH(configPath, COMMAND_HOSTNAME)
+    configurationNetworkInfo["#{node}_network"] = Network.getNetwork(configPath)[0]["ip"].to_s
+    configurationNetworkInfo["#{node}_keyfile"] = Network.getKeyFile(configPath)[0]["key"].to_s
+    configurationNetworkInfo["#{node}_private_ip"] = Network.getIP(configPath)[0]["ip"].to_s
+    configurationNetworkInfo["#{node}_whoami"] = $session.getSSH(configPath, COMMAND_WHOAMI)[0].chomp
+    configurationNetworkInfo["#{node}_hostname"] = $session.getSSH(configPath, COMMAND_HOSTNAME)[0].chomp
   end
   return configurationNetworkInfo
 end

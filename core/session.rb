@@ -584,7 +584,7 @@ EOF
       config_path = paths[0, paths.length].join('/')
     end
 puts "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ = #{config_path}"
-puts "paths=#{paths}"
+
     # Checking if vagrant instance derictory exists
     if Dir.exist?(config[0].to_s) # to_s in case of 'nil'
       up_type = true # node specified
