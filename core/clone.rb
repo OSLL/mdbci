@@ -128,12 +128,15 @@ end
 def create_fake_docker_boxes_file
   file_name = "BOXES/fake_docker_boxes_#{Time.now.to_i}.json"
   File.open(file_name, 'w') { |file| file.write '{}' }
+  $out.info "created fake docker boxes file #{file_name}"
   return file_name
 end
 
 def add_to_fake_docker_boxes(path_to_fake_docker_boxes, box_name)
   boxes = File.read(file_name)
   boxes.merge ({box_name=>{}})
+  $out.info "adding new docker box: #{box_name} to fake docker boxes file: #{path_to_fake_docker_boxes}"
+  File.open(file_name, 'w') { |file| file.write boxes.to_json }
 end
 
 def start_docker_machines(path_to_nodes)
