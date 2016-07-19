@@ -7,6 +7,8 @@ TEMPLATE_NOT_FOUND_ERROR = 'template not found'
 NON_ZERO_BASH_EXIT_CODE_ERROR = 'command exited with non zero exit code'
 MDBCI_MACHINE_HAS_NO_ID_ERROR = 'mdbci machine does not have id'
 UNKNOWN_PROVIDER_ERROR = 'provider is unknown (file with provider definition is missing)'
+TEMPLATE_FILE_NOT_FOUND = 'template (or mdbci_template) file not found'
+TEMPLATE_PATH_EMPTY = 'template (or mdbci_template) path is empty'
 
 MDBCI = 'mdbci'
 DOCKER = 'docker'
@@ -171,4 +173,25 @@ def is_config_created(config_name)
     return false unless File.exist? "#{config_name}/mdbci_template"
   end
   return true
+end
+
+def get_template_path(path_to_nodes)
+  provider = get_provider(path_to_nodes)
+  template_path = nil
+  begin
+    template_path = File.read "#{path_to_nodes}/mdbci_template" if provider == MDBCI
+    template_path = File.read "#{path_to_nodes}/template"
+  rescue Exception => e
+    raise "#{path_to_nodes}: #{TEMPLATE_FILE_NOT_FOUND} (#{e.message})"
+  end
+  raise "#{path_to_nodes}: #{TEMPLATE_PATH_EMPTY}" if template_path.empty?
+  return template_path
+end
+
+def get_template_directory(path_to_nodes)
+  template_path = get_template_path path_to_nodes
+  paths = template_path.split('/')
+  path = paths[0..-2].join('/')
+  return Dir.pwd if path.empty?
+  return path
 end

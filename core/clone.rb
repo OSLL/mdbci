@@ -65,6 +65,7 @@ def replace_libvirt_node_id(path_to_nodes, node_name, id)
 end
 
 def clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
+  path_to_new_template = copy_old_template_to_new(path_to_nodes, new_path_to_nodes)
   nodes = get_nodes(path_to_nodes)
   nodes.each do |node_name|
     new_libvirt_image_name = create_libvirt_node_clone(path_to_nodes, node_name, new_path_to_nodes)
@@ -73,7 +74,7 @@ def clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
   end
 end
 
-def copyOldConfigDirectoryToNew(old_path, new_path)
+def copying_old_config_to_new(old_path, new_path)
   unless Dir.exists?(old_path)
     raise "Old config directory #{old_path} not found"
   end
@@ -91,13 +92,13 @@ def copyOldConfigDirectoryToNew(old_path, new_path)
   FileUtils.cp_r(old_path, new_path)
 end
 
-
-def clone_docker_nodes(path_to_nodes, new_path_to_nodes)
-  nodes = get_nodes(path_to_nodes)
-  nodes.each do |node_name|
-    new_docker_image_name = create_docker_node_clone(path_to_nodes, node_name, new_path_to_nodes)
-    make_node_in_new_docker_config() # name of copied config, name of cloned machine, name of the node
-  end
+def copy_old_template_to_new(path_to_nodes, new_path_to_nodes)
+  template_path = get_template_path path_to_nodes
+  template_directory = get_template_directory path_to_nodes
+  new_template_name = "#{new_path_to_nodes}.json"
+  path_to_new_template = "#{template_directory}/#{new_template_name}"
+  FileUtils.cp(template_path, path_to_new_template)
+  return path_to_new_template
 end
 
 # rewrites template with changing box (on images created while making clone of node)
@@ -107,5 +108,46 @@ def change_box_in_docker_template(template_path_of_cloned_config, node_name, new
   template[node_name][BOX] = new_box_name
   File.open(template_path_of_cloned_config, 'w') do |file|
     file.write(JSON.pretty_generate(template))
+  end
+end
+
+def clone_docker_nodes(path_to_nodes, new_path_to_nodes, path_to_new_template)
+  nodes = get_nodes(path_to_nodes)
+  nodes.each do |node_name|
+    new_docker_image_name = create_docker_node_clone(path_to_nodes, node_name, new_path_to_nodes)
+    change_box_in_docker_template(path_to_new_template, node_name, new_docker_image_name)
+  end
+end
+
+def generate_docker_machines(path_to_template, new_path_to_nodes)
+  $session.configFile path_to_template
+  $session.generate new_path_to_nodes
+  $session.configFile = nil
+end
+
+def start_docker_machines(path_to_nodes)
+  root_directory = Dir.pwd
+  Dir.chdir path_to_nodes
+  execute_bash('vagrant up --provider docker --no-provision')
+  Dir.chdir root_directory
+end
+
+def replace_libvirt_template_path(path_to_nodes, new_template_path)
+  template_path = get_template_path(path_to_nodes)
+  File.open(template_path, 'w') { |file| file.write new_template_path }
+end
+
+def clone_nodes(path_to_nodes, new_path_to_nodes)
+  path_to_new_template = copying_old_config_to_new(path_to_nodes, new_path_to_nodes)
+  provider = get_provider(path_to_nodes)
+  if provider == DOCKER
+    clone_docker_nodes(path_to_nodes, new_path_to_nodes, path_to_new_template)
+    generate_docker_machines(path_to_new_template, new_path_to_nodes)
+    start_docker_machines(new_path_to_nodes)
+  elsif provider == LIBVIRT
+    clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
+    replace_libvirt_template_path(new_path_to_nodes, path_to_new_template)
+  else
+    raise "#{provider}: provider does not support cloning"
   end
 end
