@@ -76,7 +76,7 @@ def clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
   end
 end
 
-def copying_old_config_to_new(path_to_nodes, new_path_to_nodes)
+def copy_old_config_to_new(path_to_nodes, new_path_to_nodes)
   begin
     is_config_created(path_to_nodes)
   rescue Exception => e
@@ -138,7 +138,8 @@ def replace_libvirt_template_path(path_to_nodes, new_template_path)
 end
 
 def clone_nodes(path_to_nodes, new_path_to_nodes)
-  path_to_new_template = copying_old_config_to_new(path_to_nodes, new_path_to_nodes)
+  copy_old_config_to_new(path_to_nodes, new_path_to_nodes)
+  path_to_new_template = copy_old_template_to_new(path_to_nodes, new_path_to_nodes)
   provider = get_provider(path_to_nodes)
   if provider == DOCKER
     $out.info "cloning docker machines from #{path_to_nodes} to #{new_path_to_nodes}"
