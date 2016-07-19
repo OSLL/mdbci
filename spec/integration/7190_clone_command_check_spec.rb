@@ -51,5 +51,5 @@ def tearDown(name_machine)
   system("vagrant destroy -f")
   puts "destroy the machine #{name_machine}"
   system("cd -")
-#  system("rm -r #{name_machine}")
+  system("rm -r #{name_machine}")
 end
