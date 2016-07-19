@@ -66,6 +66,7 @@ end
 
 
 def replace_libvirt_node_id(path_to_nodes, node_name, id)
+  $out.info "replacing machine id with cloned machine id for: #{path_to_nodes}/#{node_name} to id: #{id}"
   set_node_machine_id(path_to_nodes, node_name, id)
 end
 
@@ -167,6 +168,7 @@ def clone_nodes(path_to_nodes, new_path_to_nodes)
     copy_old_config_to_new(path_to_nodes, new_path_to_nodes)
     clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
     replace_libvirt_template_path(new_path_to_nodes, path_to_new_template)
+    start_config(new_path_to_nodes, LIBVIRT)
   else
     raise "#{provider}: provider does not support cloning"
   end
