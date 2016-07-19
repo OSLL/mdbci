@@ -30,4 +30,4 @@ then
 fi
 cd $LOGS_PATH/${buildId}
 find ./ | grep core 
-cd -
+cd - 2>&1 1>/dev/null
