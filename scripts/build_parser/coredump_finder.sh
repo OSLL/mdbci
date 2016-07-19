@@ -16,12 +16,12 @@ buildId=${1}
 showFileList=${2}
 
 # HACK for *matrix* jobs
-if [[ $buildId == *"matrix"* ]]
-then
-	buildNumber=`echo $buildId | grep -o '[0-9]*$'`
-	buildName=`echo $buildId | sed -e 's/-[0-9]*$//'`
-	buildId="$buildName/*-$buildNumber"
-fi
+#if [[ $buildId == *"matrix"* ]]
+#then
+#	buildNumber=`echo $buildId | grep -o '[0-9]*$'`
+#	buildName=`echo $buildId | sed -e 's/-[0-9]*$//'`
+#	buildId="$buildName/*-$buildNumber"
+#fi
 
 if [[ "$showFileList" == "url" ]]
 then
