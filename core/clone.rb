@@ -1,8 +1,8 @@
 require 'fileutils'
+require 'json'
 
 require_relative 'out'
 require_relative 'helper'
-require 'fileutils'
 
 UUID_FOR_DOMAIN_NOT_FOUND_ERROR = 'uuid for domain is not found'
 CONFIG_DIRECTORY_NOT_FOUND_ERROR = 'config directory is not found'
@@ -133,7 +133,7 @@ def create_fake_docker_boxes_file
 end
 
 def add_to_fake_docker_boxes(path_to_fake_docker_boxes, box_name)
-  boxes = File.read(file_name)
+  boxes = File.read(path_to_fake_docker_boxes)
   boxes.merge ({box_name=>{}})
   $out.info "adding new docker box: #{box_name} to fake docker boxes file: #{path_to_fake_docker_boxes}"
   File.open(file_name, 'w') { |file| file.write boxes.to_json }
