@@ -134,7 +134,7 @@ def start_config_node(config_name, node_name, provider, no_provision = true)
   raise "#{MDBCI_NOT_SUPPORT}" if provider == MDBCI
   root_directory = Dir.pwd
   Dir.chdir config_name
-  if no_provision
+  unless no_provision
     execute_bash("vagrant up #{node_name} --provider #{provider}")
   else
     execute_bash("vagrant up #{node_name} --provider #{provider} --no-provision")
@@ -146,7 +146,7 @@ def start_config(config_name, provider, no_provision = true)
   raise "#{MDBCI_NOT_SUPPORT}" if provider == MDBCI
   root_directory = Dir.pwd
   Dir.chdir config_name
-  if no_provision
+  unless no_provision
     execute_bash("vagrant up --provider #{provider}")
   else
     execute_bash("vagrant up --provider #{provider} --no-provision")
