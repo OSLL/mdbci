@@ -135,7 +135,7 @@ def add_to_fake_docker_boxes(path_to_fake_docker_boxes, box_name)
   boxes = JSON.parse(File.read(path_to_fake_docker_boxes))
   boxes.merge({box_name => {}})
   $out.info "adding new docker box: #{box_name} to fake docker boxes file: #{path_to_fake_docker_boxes}"
-  File.open(file_name, 'w') { |file| file.write boxes.to_json }
+  File.open(path_to_fake_docker_boxes, 'w') { |file| file.write boxes.to_json }
 end
 
 def start_docker_machines(path_to_nodes)
