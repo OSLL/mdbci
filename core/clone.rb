@@ -14,6 +14,9 @@ NEW_CONFIG_DIRECTORY_EXISTS = 'new config directory already exists (remove it an
 
 BOX = 'box'
 
+DOCKER = 'docker'
+LIBVIRT = 'libvirt'
+
 def get_libvirt_uuid_by_domain_name(domain_name)
   list_output = execute_bash('virsh -q list --all | awk \'{print $2}\'', true).to_s.split "\n"
   list_uuid_output = execute_bash('virsh -q list --uuid --all', true).to_s.split "\n"
