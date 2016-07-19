@@ -118,10 +118,21 @@ def clone_docker_nodes(path_to_nodes, new_path_to_nodes, path_to_new_template)
   end
 end
 
+def fake_docker_box_environment
+  File.open("BOXES/fake_docker_box_#{Time.now.to_i}.json")
+  old_boxes = $session.boxes
+  $session.boxes = BoxesManager.new 'BOXES'
+  yield
+  $session.boxes = old_boxes
+  FileUtils.rm_rf
+end
+
 def generate_docker_machines(path_to_template, new_path_to_nodes)
-  $session.configFile = path_to_template
-  $session.generate new_path_to_nodes
-  $session.configFile = nil
+  fake_docker_box_environment{
+    $session.configFile = path_to_template
+    $session.generate new_path_to_nodes
+    $session.configFile = nil
+  }
 end
 
 def start_docker_machines(path_to_nodes)
