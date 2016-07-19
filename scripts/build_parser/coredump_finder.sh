@@ -28,4 +28,6 @@ then
 	find $LOGS_PATH/${buildId} | grep core | sed -e "s|${BASE_DIR}|http://max-tst-01.mariadb.com/|"
 	exit 0
 fi
-find $LOGS_PATH/${buildId} | grep core 
+cd $LOGS_PATH/${buildId}
+find ./ | grep core 
+cd -
