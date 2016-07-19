@@ -650,9 +650,9 @@ EOF
           wthr.value
         end
         if chef_not_found_node
-          $out.warning "Chef not is found on aws node: #{chef_not_found_node}, applying quick fix..."
+          $out.warning "Chef not is found on node: #{chef_not_found_node}, applying quick fix..."
           cmd_provision = "vagrant provision #{chef_not_found_node}"
-          status = Open3.popen3(cmd_provision) do |stdin, stdout, stderr, wthr|
+          Open3.popen3(cmd_provision) do |stdin, stdout, stderr, wthr|
             stdin.close
             stdout.each_line { |line| $out.info line }
             stdout.close
