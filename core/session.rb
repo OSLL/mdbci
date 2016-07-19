@@ -626,7 +626,7 @@ EOF
       exec_cmd_destr = `#{cmd_destr}`
       $out.info exec_cmd_destr
 
-      cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{(up_type ? config[1] : '')}"
+      cmd_up = "vagrant up #{no_parallel_flag} --provision --provider=#{@nodesProvider} #{(up_type ? config[1] : '')}"
       $out.info "Actual command: #{cmd_up}"
       chef_not_found_node = nil
       status = nil
