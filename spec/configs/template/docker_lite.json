@@ -1,5 +1,6 @@
 {
   "cookbook_path" : "../recipes/cookbooks/",
+  "aws_config" : "../aws-config.yml",
   "node0" :
   {
     "hostname" : "node0",
@@ -11,5 +12,27 @@
       "cnf_template" : "server1.cnf",
       "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
     }
+
+  },
+  "galera0" :
+  {
+    "hostname" : "galera0",
+    "box" : "centos_7_docker",
+    "memory_size" : "1024",
+    "product" : {
+      "name": "galera",
+      "version": "5.5",
+      "cnf_template" : "galera_server1.cnf",
+      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+    }
+  },
+  "maxscale" :
+  {
+    "hostname" : "maxscale",
+    "box" : "ubuntu_trusty_docker",
+    "product" : {
+      "name" : "maxscale"
+    },
+    "memory_size" : "1024"
   }
 }
