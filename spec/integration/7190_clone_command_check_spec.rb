@@ -18,7 +18,9 @@ describe 'test_spec' do
 
   executeShellCommandsAndTestExitCode ([
     {'shell_command'=>"./mdbci clone #{MACHINE_LIBVIRT} #{NEW_PATH_LIBVIRT}", 'expectation'=>0}, 
-    {'shell_command'=>"./mdbci clone #{MACHINE_DOCKER} #{NEW_PATH_DOCKER}", 'expectation'=>0}
+    {'shell_command'=>"./mdbci clone #{MACHINE_DOCKER} #{NEW_PATH_DOCKER}", 'expectation'=>0},
+    {'shell_command'=>"./mdbci clone #{MACHINE_LIBVIRT} ", 'expectation'=>1},
+    {'shell_command'=>"./mdbci clone #{MACHINE_LIBVIRT} #{MACHINE_DOCKER}", 'expectation'=>1}
   ])
 
   after :all do
@@ -26,6 +28,14 @@ describe 'test_spec' do
     tearDown(MACHINE_DOCKER)    
   end
 
+end
+
+
+def executeCloneCommandWithoutProviderFile
+  system("rm #{MACHINE_LIBVIRT}/provider")
+  executeShellCommandsAndTestExitCode ([
+    {'shell_command'=>"./mdbci clone #{MACHINE_LIBVIRT} #{NEW_PATH_LIBVIRT}", 'expectation'=>1},
+  ])
 end
 
 
