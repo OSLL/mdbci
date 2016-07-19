@@ -25,7 +25,7 @@ describe 'test_spec' do
 
   after :all do
     tearDown(MACHINE_LIBVIRT)
-    tearDown(MACHINE_DOCKER)    
+    tearDown(MACHINE_DOCKER)
   end
 
 end
