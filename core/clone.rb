@@ -72,9 +72,11 @@ end
 def clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
   nodes = get_nodes(path_to_nodes)
   nodes.each do |node_name|
+    stop_config_node(path_to_nodes, node_name)
     new_libvirt_image_name = create_libvirt_node_clone(path_to_nodes, node_name, new_path_to_nodes)
     new_uuid = get_libvirt_uuid_by_domain_name(new_libvirt_image_name)
     replace_libvirt_node_id(new_path_to_nodes, node_name, new_uuid)
+    start_config_node(path_to_nodes, node_name, LIBVIRT)
   end
 end
 
@@ -146,14 +148,6 @@ def add_to_fake_docker_boxes(path_to_fake_docker_boxes, box_name, box_definition
   File.open(path_to_fake_docker_boxes, 'w') { |file| file.write boxes.to_json }
 end
 
-def start_docker_machines(path_to_nodes)
-  $out.info "starting machines for config: #{path_to_nodes}"
-  root_directory = Dir.pwd
-  Dir.chdir path_to_nodes
-  execute_bash('vagrant up --provider docker --no-provision')
-  Dir.chdir root_directory
-end
-
 def replace_libvirt_template_path(path_to_nodes, new_template_path)
   $out.info "replacing path to template to new copied template path (#{new_template_path}) in #{path_to_nodes}/template"
   File.open("#{path_to_nodes}/template", 'w') { |file| file.write new_template_path }
@@ -167,7 +161,7 @@ def clone_nodes(path_to_nodes, new_path_to_nodes)
     fake_boxes_file = create_fake_docker_boxes_file
     clone_docker_nodes(path_to_nodes, new_path_to_nodes, path_to_new_template, fake_boxes_file)
     generate_docker_machines(path_to_new_template, new_path_to_nodes)
-    start_docker_machines(new_path_to_nodes)
+    start_config(new_path_to_nodes, DOCKER)
   elsif provider == LIBVIRT
     $out.info "cloning libvirt machines from #{path_to_nodes} to #{new_path_to_nodes}"
     copy_old_config_to_new(path_to_nodes, new_path_to_nodes)

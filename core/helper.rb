@@ -8,6 +8,7 @@ NODES_NOT_FOUND_ERROR = 'machines not found'
 TEMPLATE_NOT_FOUND_ERROR = 'template not found'
 NON_ZERO_BASH_EXIT_CODE_ERROR = 'command exited with non zero exit code'
 MDBCI_MACHINE_HAS_NO_ID_ERROR = 'mdbci machine does not have id'
+MDBCI_NOT_SUPPORT = 'mdbci provider does not support this action'
 UNKNOWN_PROVIDER_ERROR = 'provider is unknown (file with provider definition is missing)'
 TEMPLATE_FILE_NOT_FOUND = 'template (or mdbci_template) file not found'
 TEMPLATE_PATH_EMPTY = 'template (or mdbci_template) path is empty'
@@ -114,6 +115,7 @@ def destroy_config(config_name)
 end
 
 def stop_config_node(config_name, node_name)
+  raise "#{MDBCI_NOT_SUPPORT}" if get_provider(config_name)== MDBCI
   root_directory = Dir.pwd
   Dir.chdir config_name
   execute_bash("vagrant halt #{node_name}")
@@ -121,9 +123,26 @@ def stop_config_node(config_name, node_name)
 end
 
 def stop_config(config_name)
+  raise "#{MDBCI_NOT_SUPPORT}" if get_provider(config_name) == MDBCI
   root_directory = Dir.pwd
   Dir.chdir config_name
-  execute_bash("vagrant halt")
+  execute_bash('vagrant halt')
+  Dir.chdir root_directory
+end
+
+def start_config_node(config_name, node_name, provider)
+  raise "#{MDBCI_NOT_SUPPORT}" if provider == MDBCI
+  root_directory = Dir.pwd
+  Dir.chdir config_name
+  execute_bash("vagrant up #{node_name} --provider #{provider}")
+  Dir.chdir root_directory
+end
+
+def start_config(config_name, provider)
+  raise "#{MDBCI_NOT_SUPPORT}" if provider == MDBCI
+  root_directory = Dir.pwd
+  Dir.chdir config_name
+  execute_bash("vagrant up --provider #{provider}")
   Dir.chdir root_directory
 end
 
@@ -202,3 +221,4 @@ def get_box_name_from_node(path_to_nodes, node_name)
   template = JSON.parse(File.read (get_template_path path_to_nodes))
   return template[node_name][BOX]
 end
+
