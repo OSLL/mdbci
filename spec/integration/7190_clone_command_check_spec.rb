@@ -23,19 +23,16 @@ describe 'test_spec' do
     {'shell_command'=>"./mdbci clone #{MACHINE_LIBVIRT} #{MACHINE_DOCKER}", 'expectation'=>1}
   ])
 
+  system("rm #{MACHINE_LIBVIRT}/provider")
+  executeShellCommandsAndTestExitCode ([
+    {'shell_command'=>"./mdbci clone #{MACHINE_LIBVIRT} #{NEW_PATH_LIBVIRT}", 'expectation'=>1},
+  ])
+
   after :all do
     tearDown(MACHINE_LIBVIRT)
     tearDown(MACHINE_DOCKER)
   end
 
-end
-
-
-def executeCloneCommandWithoutProviderFile
-  system("rm #{MACHINE_LIBVIRT}/provider")
-  executeShellCommandsAndTestExitCode ([
-    {'shell_command'=>"./mdbci clone #{MACHINE_LIBVIRT} #{NEW_PATH_LIBVIRT}", 'expectation'=>1},
-  ])
 end
 
 
@@ -54,5 +51,5 @@ def tearDown(name_machine)
   system("vagrant destroy -f")
   puts "destroy the machine #{name_machine}"
   system("cd -")
-  system("rm -r #{name_machine}")
+#  system("rm -r #{name_machine}")
 end
