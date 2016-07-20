@@ -36,12 +36,11 @@ describe 'Network' do
   wrong_file_network_config = "WRONG_PATH_network_config"
   
   it 'collectConfigurationNetworkInfo should raise error: wrong path' do
-    lambda{collectConfigurationNetworkInfo('WRONG_PATH')}.should raise_error("some error")
+    lambda{collectConfigurationNetworkInfo(ENV['stoppedConfigPath'])}.should raise_error("some error")
   end
 
   it 'collectConfigurationNetworkInfo should return correct Hash' do
     result = collectConfigurationNetworkInfo(ENV['configPath'])
-    puts result
     result.each do |key,value|
       case key
       when /.*_network/
