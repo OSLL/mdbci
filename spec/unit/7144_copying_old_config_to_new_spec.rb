@@ -13,7 +13,6 @@ describe 'Clone' do
 
   before :all do
     $out = Out.new
-    $session = Session.new
   end
 
   it '#clone should exit with non-zero code if path to old config is not existing' do
