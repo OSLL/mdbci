@@ -39,7 +39,11 @@ describe 'Network' do
   it 'collectConfigurationNetworkInfo should return Hash' do
     result = collectConfigurationNetworkInfo(ENV['configPath'])
     puts result
-    result should_not eq(nil)
+    result[/.*_network/].should eql(/.+\..+\..+\..+/)
+    result[/.*_keyfile/].should eql(/\/.+/)
+    result[/.*_private_ip/].should eql(/.+\..+\..+\..+/)
+    result[/.*_whoami/].should eql(/.+/)
+    result[/.*_hostname/].should eql(/.+/)
   end
 
   it 'printConfigurationNetworkInfoToFile should raise error: error_name' do
