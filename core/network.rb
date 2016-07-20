@@ -280,3 +280,33 @@ class Network
   end
 
 end
+
+COMMAND_WHOAMI='whoami'
+COMMAND_HOSTNAME='hostname'
+
+def printConfigurationNetworkInfoToFile(configuration)
+  
+  open("#{configuration}_network_config", 'w') do |f|
+    configurationNetworkInfo = collectConfigurationNetworkInfo(configuration)
+    configurationNetworkInfo.each do |key, value|
+      # TODO Add correct array conversion 
+      f.puts "#{key}=#{value}"
+    end
+  end
+
+end
+
+def collectConfigurationNetworkInfo(configuration)
+
+  configurationNetworkInfo = Hash.new
+  nodes = get_nodes(configuration)# TODO add getNodes
+  nodes.each do |node|
+    configPath = "#{configuration}/#{node}"
+    configurationNetworkInfo["#{node}_network"] = Network.getNetwork(configPath)[0]["ip"].to_s
+    configurationNetworkInfo["#{node}_keyfile"] = Network.getKeyFile(configPath)[0]["key"].to_s
+    configurationNetworkInfo["#{node}_private_ip"] = Network.getIP(configPath)[0]["ip"].to_s
+    configurationNetworkInfo["#{node}_whoami"] = $session.getSSH(configPath, COMMAND_WHOAMI)[0].chomp
+    configurationNetworkInfo["#{node}_hostname"] = $session.getSSH(configPath, COMMAND_HOSTNAME)[0].chomp
+  end
+  return configurationNetworkInfo
+end
