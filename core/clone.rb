@@ -82,12 +82,10 @@ def clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
 end
 
 def copy_old_config_to_new(path_to_nodes, new_path_to_nodes)
-  begin
-    is_config_created(path_to_nodes)
-  rescue Exception => e
-    raise "#{path_to_nodes}: #{OLD_CONFIG_NOT_FULLY_CREATED} (#{e.message})"
+  unless is_config_created(path_to_nodes)
+    raise "#{path_to_nodes}: #{OLD_CONFIG_NOT_FULLY_CREATED}"
   end
-  raise NEW_CONFIG_DIRECTORY_EXISTS if Dir.exist? new_path_to_nodes
+  raise "#{new_path_to_nodes}: #{NEW_CONFIG_DIRECTORY_EXISTS}" if Dir.exist? new_path_to_nodes
   $out.info "making copy of old config (#{path_to_nodes}) to new config (#{new_path_to_nodes})"
   FileUtils.cp_r(path_to_nodes, new_path_to_nodes)
 end
