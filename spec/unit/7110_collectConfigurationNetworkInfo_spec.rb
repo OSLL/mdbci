@@ -42,25 +42,25 @@ describe 'Network' do
     result.each do |key,value|
       case key
       when /.*_network/
-        value.should eql(/.+\..+\..+\..+/)
+        value.should match(/.+\..+\..+\..+/)
       when /.*_keyfile/
-        value.should eql(/\/.+/)
+        value.should match(/\/.+/)
       when /.*_private_ip/
-        value.should eql(/.+\..+\..+\..+/)
+        value.should match(/.+\..+\..+\..+/)
       when /.*_whoami/
-        value.should eql(/.+/)
+        value.should match(/.+/)
       when /.*_hostname/
-        value.should eql(/.+/)
+        value.should match(/.+/)
       end
     end
   end
 
   it 'printConfigurationNetworkInfoToFile should raise error: error_name' do
-    lambda{printConfigurationNetworkInfoToFile(nil)}.should raise_error(RuntimeError,"error_name")
+    lambda{printConfigurationNetworkInfoToFile(nil)}.should raise_error(/.* template not found/)
   end
 
   it 'printConfigurationNetworkInfoToFile should raise error: error_name' do
-    lambda{printConfigurationNetworkInfoToFile("SOME_WRONG_PATH")}.should raise_error(RuntimeError,/error_nsme .*/)
+    lambda{printConfigurationNetworkInfoToFile("SOME_WRONG_PATH")}.should raise_error(/.* template not found/)
   end
   
   it 'printConfigurationNetworkInfoToFile should have zero exit code' do
