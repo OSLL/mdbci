@@ -32,11 +32,14 @@ describe 'Network' do
   # that can be accessed through ssh
   
   file_network_config = "#{ENV['configPath']}_network_config"
-  it 'collectConfigurationNetworkInfo should return Hash' do
-   #result = collectConfigurationNetworkInfo(ENV['configPath']).should eql(nil)
+  nil_file_network_config = "_network_config"
+  wrong_file_network_config = "WRONG_PATH_network_config"
+  
+  it 'collectConfigurationNetworkInfo should raise error: wrong path' do
+    lambda{collectConfigurationNetworkInfo('WRONG_PATH')}.should raise_error("some error")
   end
 
-  it 'collectConfigurationNetworkInfo should return Hash' do
+  it 'collectConfigurationNetworkInfo should return correct Hash' do
     result = collectConfigurationNetworkInfo(ENV['configPath'])
     puts result
     result.each do |key,value|
@@ -60,13 +63,9 @@ describe 'Network' do
   end
 
   it 'printConfigurationNetworkInfoToFile should raise error: error_name' do
-    lambda{printConfigurationNetworkInfoToFile("SOME_WRONG_PATH")}.should raise_error(/.* template not found/)
+    lambda{printConfigurationNetworkInfoToFile("WRONG_PATH")}.should raise_error(/.* template not found/)
   end
-  
-  it 'printConfigurationNetworkInfoToFile should have zero exit code' do
-   # printConfigurationNetworkInfoToFile(ENV['configPath']).should eq(0)
-  end
-  
+
   it 'printConfigurationNetworkInfoToFile should create file in repo dir' do
     printConfigurationNetworkInfoToFile(ENV['configPath'])
     expect(File).to exist(file_network_config)
@@ -74,5 +73,7 @@ describe 'Network' do
 
   after :all do
     FileUtils.rm_rf file_network_config
+    FileUtils.rm_rf nil_file_network_config
+    FileUtils.rm_rf wrong_file_network_config
   end
  end
