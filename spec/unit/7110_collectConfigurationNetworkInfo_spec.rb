@@ -36,7 +36,7 @@ describe 'Network' do
   wrong_file_network_config = "WRONG_PATH_network_config"
   
   it 'collectConfigurationNetworkInfo should raise error: wrong path' do
-    lambda{collectConfigurationNetworkInfo(ENV['stoppedConfigPath'])}.should raise_error("some error")
+    lambda{collectConfigurationNetworkInfo(ENV['stoppedConfigPath'])}.should raise_error("Incorrect node")
   end
 
   it 'collectConfigurationNetworkInfo should return correct Hash' do
