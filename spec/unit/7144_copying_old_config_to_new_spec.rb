@@ -11,6 +11,11 @@ EXISTING_NEW_PATH = "spec/unit/test_empty_folder"
 
 describe 'Clone' do
 
+  before :all do
+    $out = Out.new
+    $session = Session.new
+  end
+
   it '#clone should exit with non-zero code if path to old config is not existing' do
     lambda{ copy_old_config_to_new(OLD_NOT_EXISTING_PATH, VALID_NEW_PATH) }.should  raise_error(RuntimeError, "Old config directory pathToOldNotExistingConfig not found")
   end
