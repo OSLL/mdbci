@@ -1,5 +1,6 @@
 require 'rspec'
 require_relative '../spec_helper'
+require_relative '../../core/helper'
 
 TEMPLATE_LIBVIRT = "spec/configs/template/libvirt_lite.json"
 MACHINE_LIBVIRT = "7190_test_libvirt_machine"
@@ -23,10 +24,10 @@ describe 'test_spec' do
     {'shell_command'=>"./mdbci clone #{MACHINE_LIBVIRT} #{MACHINE_DOCKER}", 'expectation'=>1}
   ])
 
-  system("rm #{MACHINE_LIBVIRT}/provider")
-  executeShellCommandsAndTestExitCode ([
-    {'shell_command'=>"./mdbci clone #{MACHINE_LIBVIRT} #{NEW_PATH_LIBVIRT}", 'expectation'=>1},
-  ])
+#  system("rm #{MACHINE_LIBVIRT}/provider")
+#  executeShellCommandsAndTestExitCode ([
+#    {'shell_command'=>"./mdbci clone #{MACHINE_LIBVIRT} #{NEW_PATH_LIBVIRT}", 'expectation'=>1},
+#  ])
 
   after :all do
     tearDown(MACHINE_LIBVIRT)
@@ -37,23 +38,19 @@ end
 
 
 def setUp(template, name_machine)
-  executeShellCommandsAndTestExitCode([
-    {'shell_command'=>"./mdbci --template #{template} generate #{name_machine}", 'expectation'=>0},
-    {'shell_command'=>"./mdbci up #{name_machine}", 'expectation'=>0},
-    {'shell_command'=>"cd #{name_machine}", 'expectation'=>0},
+  execute_bash("./mdbci --template #{template} generate #{name_machine}")
+  execute_bash("./mdbci up #{name_machine}")
+  execute_bash("cd #{name_machine}")
 #  puts "shut down the running machine #{name_machine}"
-    {'shell_command'=>"vagrant halt", 'expectation'=>0},
-    {'shell_command'=>"cd -", 'expectation'=>0}
-  ])
+  execute_bash("vagrant halt")
+  execute_bash("cd -")
 end
 
 
 def tearDown(name_machine)
-  executeShellCommandsAndTestExitCode([
-    {'shell_command'=>"cd #{name_machine}", 'expectation'=>0},
-    {'shell_command'=>"vagrant destroy -f", 'expectation'=>0},
+  execute_bash("cd #{name_machine}")
+  execute_bash("vagrant destroy -f")
 #  puts "destroy the machine #{name_machine}"
-    {'shell_command'=>"cd -", 'expectation'=>0},
-    {'shell_command'=>"rm -r #{name_machine}", 'expectation'=>0}
-  ])
+  execute_bash("cd -")
+  execute_bash("rm -r #{name_machine}")
 end
