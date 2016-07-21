@@ -36,7 +36,7 @@ def get_nodes(path_to_nodes)
     begin
       template = JSON.parse(File.read(File.read("#{path_to_nodes}/mdbci_template")))
     rescue
-      raise $!, "#{path_to_nodes}/template or #{path_to_nodes}/mdbci_template #{TEMPLATE_NOT_FOUND_ERROR}", $1.backtrace
+      raise $!, "#{path_to_nodes}/template or #{path_to_nodes}/mdbci_template #{TEMPLATE_NOT_FOUND_ERROR}", $!.backtrace
     end
   end
   template.each do |possible_node|
