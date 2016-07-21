@@ -195,17 +195,17 @@ EOF
 
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
   def ssh(args)
-    result_ssh = getSSH(args)
+    result_ssh = getSSH(args,"")
     result_ssh.each do |ssh_out|
       $out.out ssh_out
     end
     return 0
   end
 
-  def getSSH(args)
+  def getSSH(args,command)
     result = Array.new()
     pwd = Dir.pwd
-
+    $session.command = command unless command.empty?
     raise 'Configuration name is required' if args.nil?
     params = args.split('/')
     dir = params[0]
@@ -581,6 +581,8 @@ EOF
       config[0] = config_path
       config[1] = node
       up_type = true # Node specified
+    else
+      config_path = paths[0, paths.length].join('/')
     end
 
     # Checking if vagrant instance derictory exists
@@ -762,7 +764,13 @@ EOF
       end
     end
     $out.info 'All nodes successfully up!'
+    puts "DIR_PWD=#{pwd}"
+    puts "CONF_PATH=#{config_path}"
     Dir.chdir pwd
+    $out.info "Generating #{config_path}_network_settings file"
+    if up_type == false
+      printConfigurationNetworkInfoToFile(config_path) 
+    end
     return 0
   end
 
