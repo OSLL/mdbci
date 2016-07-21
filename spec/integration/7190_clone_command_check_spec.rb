@@ -24,11 +24,6 @@ describe 'test_spec' do
     {'shell_command'=>"./mdbci clone #{MACHINE_LIBVIRT} #{MACHINE_DOCKER}", 'expectation'=>1}
   ])
 
-#  system("rm #{MACHINE_LIBVIRT}/provider")
-#  executeShellCommandsAndTestExitCode ([
-#    {'shell_command'=>"./mdbci clone #{MACHINE_LIBVIRT} #{NEW_PATH_LIBVIRT}", 'expectation'=>1},
-#  ])
-
   after :all do
     tearDown(MACHINE_LIBVIRT)
     tearDown(MACHINE_DOCKER)
@@ -38,19 +33,23 @@ end
 
 
 def setUp(template, name_machine)
+  puts "generate #{name_machine}"
   execute_bash("./mdbci --template #{template} generate #{name_machine}")
-  execute_bash("./mdbci up #{name_machine}")
+  puts "up #{name_machine}"
+  out = execute_bash("./mdbci up #{name_machine} ")
+  puts "cd #{name_machine}"
   execute_bash("cd #{name_machine}")
-#  puts "shut down the running machine #{name_machine}"
   execute_bash("vagrant halt")
   execute_bash("cd -")
+  puts "shut down the running machine #{name_machine}"
 end
 
 
 def tearDown(name_machine)
+  puts Dir.pwd
   execute_bash("cd #{name_machine}")
   execute_bash("vagrant destroy -f")
-#  puts "destroy the machine #{name_machine}"
   execute_bash("cd -")
   execute_bash("rm -r #{name_machine}")
+  puts "destroy the machine #{name_machine}"
 end
