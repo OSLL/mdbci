@@ -27,7 +27,7 @@ if [ ! -z $1 ]; then
 
     echo "Cleaning docker machines"
     for i in $(docker ps --all -f "name=${1}" --format "{{.Names}}"); do
-      docker rm -v $i
+      docker rm -fv $i
     done
 
 else
