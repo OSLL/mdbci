@@ -28,6 +28,8 @@
               default-property-file: $WORKSPACE/last_modified_branch
               default-property-key: LAST_MODIFIED_BRANCH
     wrappers:
+        - workspace-cleanup:
+              dirmatch: true
         - pre-scm-buildstep:
             - shell: |
                 if [ -z "$MDBCI_BRANCH" ]; then
