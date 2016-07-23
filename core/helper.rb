@@ -1,3 +1,5 @@
+require_relative 'boxes_manager'
+
 TEMPLATE_COOKBOOK_PATH = 'cookbook_path'
 TEMPLATE_AWS_CONFIG = 'aws_config'
 
@@ -6,7 +8,10 @@ NODES_NOT_FOUND_ERROR = 'machines not found'
 TEMPLATE_NOT_FOUND_ERROR = 'template not found'
 NON_ZERO_BASH_EXIT_CODE_ERROR = 'command exited with non zero exit code'
 MDBCI_MACHINE_HAS_NO_ID_ERROR = 'mdbci machine does not have id'
+MDBCI_NOT_SUPPORT = 'mdbci provider does not support this action'
 UNKNOWN_PROVIDER_ERROR = 'provider is unknown (file with provider definition is missing)'
+TEMPLATE_FILE_NOT_FOUND = 'template (or mdbci_template) file not found'
+TEMPLATE_PATH_EMPTY = 'template (or mdbci_template) path is empty'
 
 MDBCI = 'mdbci'
 DOCKER = 'docker'
@@ -110,9 +115,34 @@ def destroy_config(config_name)
 end
 
 def stop_config(config_name, node_name='')
+  raise "#{MDBCI_NOT_SUPPORT}" if get_provider(config_name)== MDBCI
   root_directory = Dir.pwd
   Dir.chdir config_name
   execute_bash("vagrant halt #{node_name}")
+  Dir.chdir root_directory
+end
+
+def start_config_node(config_name, node_name, provider, no_provision = true)
+  raise "#{MDBCI_NOT_SUPPORT}" if provider == MDBCI
+  root_directory = Dir.pwd
+  Dir.chdir config_name
+  unless no_provision
+    execute_bash("vagrant up #{node_name} --provider #{provider}")
+  else
+    execute_bash("vagrant up #{node_name} --provider #{provider} --no-provision")
+  end
+  Dir.chdir root_directory
+end
+
+def start_config(config_name, provider, no_provision = true)
+  raise "#{MDBCI_NOT_SUPPORT}" if provider == MDBCI
+  root_directory = Dir.pwd
+  Dir.chdir config_name
+  unless no_provision
+    execute_bash("vagrant up --provider #{provider}")
+  else
+    execute_bash("vagrant up --provider #{provider} --no-provision")
+  end
   Dir.chdir root_directory
 end
 
@@ -165,3 +195,30 @@ def is_config_created(config_name)
   end
   return true
 end
+
+def get_template_path(path_to_nodes)
+  provider = get_provider(path_to_nodes)
+  template_path = nil
+  begin
+    template_path = File.read "#{path_to_nodes}/mdbci_template" if provider == MDBCI
+    template_path = File.read "#{path_to_nodes}/template"
+  rescue Exception => e
+    raise "#{path_to_nodes}: #{TEMPLATE_FILE_NOT_FOUND} (#{e.message})"
+  end
+  raise "#{path_to_nodes}: #{TEMPLATE_PATH_EMPTY}" if template_path.empty?
+  return template_path
+end
+
+def get_template_directory(path_to_nodes)
+  template_path = get_template_path path_to_nodes
+  paths = template_path.split('/')
+  path = paths[0..-2].join('/')
+  return Dir.pwd if path.empty?
+  return path
+end
+
+def get_box_name_from_node(path_to_nodes, node_name)
+  template = JSON.parse(File.read (get_template_path path_to_nodes))
+  return template[node_name][BOX]
+end
+

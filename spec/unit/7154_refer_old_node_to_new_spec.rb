@@ -46,6 +46,8 @@ EOF
 describe 'clone.rb' do
 
   before :all do
+    $out = Out.new
+    $session = Session.new
     FileUtils.cp PATH_TO_TEMPLATE, PATH_TO_COPIED_TEMPLATE
   end
 
