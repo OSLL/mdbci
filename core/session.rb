@@ -469,6 +469,13 @@ EOF
   def LoadNodesProvider(configs)
     nodes = {}
     configs.keys.each do |node|
+      puts('-----------------')
+      puts(node)
+      if node == "aws_config"
+      configs[node].slice! "../"  
+      @awsConfigFile = configs[node]
+        puts(@awsConfigFile)
+      end    
       nodes[node] = configs[node] if node != "aws_config" and node != "cookbook_path"
     end
     nodes.values.each do |node|
@@ -504,8 +511,10 @@ EOF
     raise 'Template configuration file is empty!' if @configs.nil?
     LoadNodesProvider(configs)
     if $session.nodesProvider == 'aws'
+      raise 'The path of configuration aws file is not specified' if @awsConfigFile == nil
       $out.info 'Load AWS config from ' + @awsConfigFile
       @awsConfig = $exception_handler.handle('AWS configuration file not found') { YAML.load_file(@awsConfigFile)['aws'] }
+
       aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
       @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     end
