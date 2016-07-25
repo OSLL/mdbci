@@ -73,8 +73,8 @@ describe "Generator" do
     end
 
     it "Check AWS VM definition" do
-      aws_def = Generator.getAWSVmDef('../recipes/cookbooks/', 'node1', 'centos7', 'ec2-user', 'true', 't1.micro', './cnf', true)
-      aws_def = Generator.getAWSVmDef('../recipes/cookbooks/', 'node1', 'centos7', 'ec2-user', 'true', 't1.micro', './cnf', true).should eq(aws_def)
+      aws_def = Generator.getAWSVmDef('../recipes/cookbooks/', 'node1', 'centos7', 'ec2-user', 'true', 't1.micro', './cnf', true, 'test')
+      aws_def = Generator.getAWSVmDef('../recipes/cookbooks/', 'node1', 'centos7', 'ec2-user', 'true', 't1.micro', './cnf', true, 'test').should eq(aws_def)
     end
 
   end
