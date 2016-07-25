@@ -232,7 +232,7 @@ EOF
   # generate snapshot versioning
   def Generator.createDockerSnapshotsVersions(path, name, box)
     File.open("#{path}/#{name}/snapshots", 'w') do |f|
-      f.puts({name => {'id'=>SecureRandom.uuid.to_s.downcase, 'snapshots'=>[box], 'current_snapshot'=>box, 'initial_snapshot'=>box}}.to_json)
+      f.puts({name => {'id' => SecureRandom.uuid.to_s.downcase, 'snapshots' => [box], 'current_snapshot' => box, 'initial_snapshot' => box}}.to_json)
     end
   end
 
@@ -265,8 +265,15 @@ EOF
     `sed -i 's/###PLATFORM_VERSION###/#{platform_version}/g' #{node_path}/Dockerfile`
   end
 
+  def Generator.generateAwsTag(hash)
+    hashes_array = Array.new
+    hash.each { |key, value| hashes_array.push ("#{quote(key)} => #{quote(value)}") }
+    vagrantfile_tags = hashes_array.join(', ')
+    return "{ #{vagrantfile_tags} }"
+  end
+
   #  Vagrantfile for AWS provider
-  def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, ssh_pty, instance_type, template_path, provisioned)
+  def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, ssh_pty, instance_type, template_path, provisioned, tags)
 
     if template_path
       mountdef = "\t" + name + ".vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync")
@@ -281,6 +288,7 @@ EOF
            + ssh_pty_option + "\n" \
            + "\t" + name + ".vm.provider :aws do |aws,override|\n" \
            + "\t\taws.ami = " + quote(boxurl) + "\n"\
+           + "\t\taws.tags = #{tags}\n"\
            + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
            + "\t\toverride.ssh.username = " + quote(user) + "\n" \
            + "\tend\n" \
@@ -478,7 +486,12 @@ EOF
         when 'virtualbox'
           machine = getVmDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'aws'
-          machine = getAWSVmDef(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned)
+          tags = generateAwsTag({
+                                    'hostname' => Socket.gethostname,
+                                    'username' => Etc.getlogin,
+                                    'full_config_path' => File.expand_path(path)
+                                })
+          machine = getAWSVmDef(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned, tags)
         when 'libvirt'
           machine = getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'docker'

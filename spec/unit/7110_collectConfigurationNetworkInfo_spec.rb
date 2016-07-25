@@ -53,6 +53,8 @@ describe 'Network' do
         value.should match(/.+/)
       when /.*_hostname/
         value.should match(/.+/)
+      else
+        key.should eql(nil)
       end
     end
   end
