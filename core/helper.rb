@@ -114,19 +114,11 @@ def destroy_config(config_name)
   end
 end
 
-def stop_config_node(config_name, node_name)
+def stop_config(config_name, node_name='')
   raise "#{MDBCI_NOT_SUPPORT}" if get_provider(config_name)== MDBCI
   root_directory = Dir.pwd
   Dir.chdir config_name
   execute_bash("vagrant halt #{node_name}")
-  Dir.chdir root_directory
-end
-
-def stop_config(config_name)
-  raise "#{MDBCI_NOT_SUPPORT}" if get_provider(config_name) == MDBCI
-  root_directory = Dir.pwd
-  Dir.chdir config_name
-  execute_bash('vagrant halt')
   Dir.chdir root_directory
 end
 
