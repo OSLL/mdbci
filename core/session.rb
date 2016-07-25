@@ -771,7 +771,7 @@ EOF
     if up_type == false
       printConfigurationNetworkInfoToFile(config_path) 
     else
-      $out.warning "network_setting generation is disabled for case of node mode"
+      $out.warning "network_setting generation is currently disabled for performing only one node up."
     end
     return 0
   end
