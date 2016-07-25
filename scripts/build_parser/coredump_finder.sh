@@ -15,19 +15,20 @@ LOGS_PATH="${BASE_DIR}LOGS"
 buildId=${1}
 showFileList=${2}
 
-# HACK for *matrix* jobs
-#if [[ $buildId == *"matrix"* ]]
-#then
-#	buildNumber=`echo $buildId | grep -o '[0-9]*$'`
-#	buildName=`echo $buildId | sed -e 's/-[0-9]*$//'`
-#	buildId="$buildName/*-$buildNumber"
-#fi
+buildPath=$LOGS_PATH/${buildId}
+
+# Checking that build exists
+if [ ! -d "$buildPath" ]
+then
+	echo "Directory $buildPath does not exist, exiting."
+	exit 1
+fi
 
 if [[ "$showFileList" == "url" ]]
 then
-	find $LOGS_PATH/${buildId} | grep core | sed -e "s|${BASE_DIR}|http://max-tst-01.mariadb.com/|"
+	find $buildPath | grep core | sed -e "s|${BASE_DIR}|http://max-tst-01.mariadb.com/|"
 	exit 0
 fi
-cd $LOGS_PATH/${buildId}
-find ./ | grep core 
+cd $buildPath
+find ./ | grep core | sed -e 's|/[^/]*$|/*|g' 
 cd - 2>&1 1>/dev/null
