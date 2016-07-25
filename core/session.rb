@@ -764,12 +764,14 @@ EOF
       end
     end
     $out.info 'All nodes successfully up!'
-    puts "DIR_PWD=#{pwd}"
-    puts "CONF_PATH=#{config_path}"
+    $out.info "DIR_PWD=#{pwd}"
+    $out.info "CONF_PATH=#{config_path}"
     Dir.chdir pwd
     $out.info "Generating #{config_path}_network_settings file"
     if up_type == false
       printConfigurationNetworkInfoToFile(config_path) 
+    else
+      $out.warning "network_setting generation is currently disabled for performing only one node up."
     end
     return 0
   end
