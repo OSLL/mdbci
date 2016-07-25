@@ -526,7 +526,8 @@ EOF
 
     unless ($session.awsConfigOption.to_s.empty?)
       # Generate AWS Configuration
-      vagrant.puts Generator.awsProviderConfigImport($session.awsConfigOption)
+      vagrant_aws_path = "../" + $session.awsConfigOption.to_s
+      vagrant.puts Generator.awsProviderConfigImport(vagrant_aws_path)
       vagrant.puts Generator.vagrantConfigHeader
 
       vagrant.puts Generator.awsProviderConfig
