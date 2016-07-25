@@ -483,13 +483,6 @@ EOF
   end
 
   def generate(name)
-    LoadNodesProvider(configs)
-    if $session.nodesProvider == 'aws'
-      $out.info 'Load AWS config from ' + @awsConfigFile
-      @awsConfig = $exception_handler.handle('AWS configuration file not found') { YAML.load_file(@awsConfigFile)['aws'] }
-      aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
-      @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s      
-    end
     path = Dir.pwd
 
     if name.nil?
@@ -510,7 +503,13 @@ EOF
     end
     @configs = $exception_handler.handle('INSTANCE configuration file invalid') { JSON.parse(instanceConfigFile) }
     raise 'Template configuration file is empty!' if @configs.nil?
-
+    LoadNodesProvider(configs)
+    if $session.nodesProvider == 'aws'
+      $out.info 'Load AWS config from ' + @awsConfigFile
+      @awsConfig = $exception_handler.handle('AWS configuration file not found') { YAML.load_file(@awsConfigFile)['aws'] }
+      aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
+      @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
+    end
     if @nodesProvider != 'mdbci'
       Generator.generate(path, configs, boxes, isOverride, nodesProvider)
       $out.info 'Generating config in ' + path
