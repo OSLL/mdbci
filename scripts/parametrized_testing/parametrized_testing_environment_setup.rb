@@ -101,11 +101,20 @@ class ParametrizedTestingEnvironmentSetup
       $out.warning "Checking files for #{config_name}"
       config_files_ok = false unless is_config_created(config_name)
       if !config_files_ok
-        $out.warning "Some files missing in #{config_name}, trying backup"
+        $out.warning "Some files are missing in #{config_name}, trying backup"
         if backup_exists(config_name)
-          $out.warning "Backup with all files exists for #{config_name}"
+          $out.warning "Backup with all files exists for config #{config_name}"
           restore_backup(config_name)
           remove_backup(config_name)
+          $out.warning "Backup restored and removed for config #{config_name}"
+          if is_config_created(config_name)
+            $out.info "Backup helped, config directory #{config_name} is fine"
+            config_files_ok = true
+          else
+            $out.warning "Backup did not help, config #{config_name} is broken"
+            config_files_ok = false
+          end
+          break
         else
           $out.warning "Backup does not exists for #{config_name}"
           config_files_ok = false
@@ -125,6 +134,7 @@ class ParametrizedTestingEnvironmentSetup
     # checking machine activity
     $out.warning "Checking that config #{config_name} is running"
     unless is_config_running(config_name)
+
       $out.warning "Config #{config_name} is not running"
       begin
         $out.warning "Trying to start config #{config_name}"
@@ -160,6 +170,7 @@ class ParametrizedTestingEnvironmentSetup
       end
     end
     $out.info "Config #{config_name} is running"
+    create_backup(config_name)
   end
 
   def create_ppc_from_docker_config(docker_config_name)
