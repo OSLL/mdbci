@@ -148,15 +148,16 @@ class ParametrizedTestingEnvironmentSetup
     config_state_ok = false
     if Dir.exist?(config_name)
       # checking for missing files
-      config_files_ok = are_config_files_valid(config_files_ok)
+      config_files_ok = are_config_files_valid(config_name)
       config_state_ok = is_config_state_valid(config_name) if config_files_ok
     end
     if !config_files_ok or !config_state_ok
       $out.warning "Config #{config_name} is not operable. Restarting config completely"
       complete_restart_origin_config(template_path, config_name)
-      unless is_config_running(config_name)
-        raise "Failed to start config #{config_name}. Check config manually."
+      unless !is_config_running(config_name)
+        raise "failed to start config #{config_name}, check config manually"
       end
+      $out.info "Config #{config_name} is is running"
     end
   end
 
