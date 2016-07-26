@@ -98,12 +98,14 @@ EOF
       private_ip_output = execute_bash("./mdbci show private_ip #{config_name_docker}/#{node_name} --silent")
       box_config[:IP] = private_ip_output.to_s.split("\n")[-1]
       # Copying keyfile to KEYS directory and adding it to box config for current node)
-      path_to_keyfile = "KEYS/#{node_name}_#{config_name_mdbci_from_docker}"
+      keyfile_name = "#{node_name}_#{config_name_mdbci_from_docker}"
+      path_to_keyfile = "KEYS/#{keyfile_name}"
       paths_to_keyfiles.push(path_to_keyfile)
       File.open(path_to_keyfile, 'w') do |file|
         file.write(File.read("#{config_name_docker}/.vagrant/machines/#{node_name}/docker/private_key"))
       end
-      box_config[:keyfile] = config_name_mdbci_from_docker
+      File.chmod(0600, path_to_keyfile)
+      box_config[:keyfile] = keyfile_name
       # Getting platform and platform version
       box_name = execute_bash("./mdbci show box #{config_name_docker}/#{node_name} --silent")
       box_name = box_name.delete!("\n")
@@ -139,7 +141,7 @@ EOF
   # file is not configured
   # it appears after ppc config being generated
   def remove_generated_ppc_environment(config_name_ppc_from_docker)
-    require_relative "../#{config_name_ppc_from_docker}/remove_config_completely"
+    load("#{File.realpath(config_name_ppc_from_docker)}/remove_config_completely.rb")
     remove_config
   end
 

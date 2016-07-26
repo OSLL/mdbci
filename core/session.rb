@@ -222,7 +222,7 @@ EOF
       else
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == node_arg }
         cmd = createCmd(params,mdbci_node,pwd)
-        rusult.push(runSSH(cmd, params))
+        result.push(runSSH(cmd, params))
       end
     else # aws, vbox nodes
       raise "Machine with such name: #{dir} does not exist" unless Dir.exist?(dir) 
