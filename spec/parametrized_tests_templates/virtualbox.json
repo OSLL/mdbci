@@ -22,7 +22,7 @@
   },
   "node3": {
     "hostname": "node3",
-    "box": "suse_13_vbox",
+    "box": "centos_6_vbox",
     "product" : {
       "name": "mariadb",
       "version": "10.0",
