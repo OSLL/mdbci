@@ -128,6 +128,7 @@ class ParametrizedTestingEnvironmentSetup
       $out.warning "Config #{config_name} is not running"
       begin
         $out.warning "Trying to start config #{config_name}"
+        provider = get_provider(config_name)
         start_config(config_name, provider)
         unless is_config_running(config_name)
           $out.warning "Config #{config_name} is not running"
@@ -215,7 +216,7 @@ class ParametrizedTestingEnvironmentSetup
     prepare_origin_config("#{PATH_TO_TEMPLATES}/#{DOCKER}.json", "#{CONFIG_PREFIX}_#{DOCKER}")
     #prepare_origin_config("#{PATH_TO_TEMPLATES}/#{LIBVIRT}.json", "#{CONFIG_PREFIX}_#{LIBVIRT}")
     # preparing ppc config
-    config_ppc_from_docker = "#{CONFIG_PREFIX}_#{PPC}"
+    #config_ppc_from_docker = "#{CONFIG_PREFIX}_#{PPC}"
     #prepare_origin_config("#{PATH_TO_TEMPLATES}/#{PPC}.json", config_ppc_from_docker)
     #create_ppc_from_docker_config(config_ppc_from_docker)
   end
