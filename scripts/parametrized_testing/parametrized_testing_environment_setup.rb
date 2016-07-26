@@ -218,11 +218,11 @@ class ParametrizedTestingEnvironmentSetup
   def prepare_mdbci_environment
     # preparing docker and libvirt configs
     prepare_origin_config("#{PATH_TO_TEMPLATES}/#{DOCKER}.json", "#{CONFIG_PREFIX}_#{DOCKER}")
-    #prepare_origin_config("#{PATH_TO_TEMPLATES}/#{LIBVIRT}.json", "#{CONFIG_PREFIX}_#{LIBVIRT}")
+    prepare_origin_config("#{PATH_TO_TEMPLATES}/#{LIBVIRT}.json", "#{CONFIG_PREFIX}_#{LIBVIRT}")
     # preparing ppc config
-    #config_ppc_from_docker = "#{CONFIG_PREFIX}_#{PPC}"
-    #prepare_origin_config("#{PATH_TO_TEMPLATES}/#{PPC}.json", config_ppc_from_docker)
-    #create_ppc_from_docker_config(config_ppc_from_docker)
+    config_ppc_from_docker = "#{CONFIG_PREFIX}_#{PPC}"
+    prepare_origin_config("#{PATH_TO_TEMPLATES}/#{PPC}.json", config_ppc_from_docker)
+    create_ppc_from_docker_config(config_ppc_from_docker)
   end
 
 end
