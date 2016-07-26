@@ -26,8 +26,8 @@ describe 'clone.rb' do
     start_config ENV['path_to_nodes_docker']
   end
 
-  it '#stop_config_node' do
-    stop_config_node(ENV['path_to_nodes_docker'], ENV['node_name'])
+  it '#stop_config' do
+    stop_config(ENV['path_to_nodes_docker'], ENV['node_name'])
     is_config_running(ENV['path_to_nodes_docker']).should eql false
   end
 

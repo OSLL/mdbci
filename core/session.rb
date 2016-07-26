@@ -12,6 +12,7 @@ require_relative 'out'
 require_relative 'docker_manager'
 require_relative 'snapshot'
 require_relative 'helper'
+require_relative 'clone'
 
 
 class Session
@@ -422,9 +423,9 @@ EOF
   end
 
 
-  def clone(configuration, new_path)
-    $out.info "Performing cloning operation for config #{configuration}. Cloned configuration name: #{new_path}"
-    cloneNodes(configuration, new_path)
+  def clone(path_to_nodes, new_path_to_nodes)
+    $out.info "Performing cloning operation for config #{path_to_nodes}. Cloned configuration name: #{new_path_to_nodes}"
+    clone_nodes(path_to_nodes, new_path_to_nodes)
     return 0
   end
 
@@ -770,12 +771,14 @@ EOF
       end
     end
     $out.info 'All nodes successfully up!'
-    puts "DIR_PWD=#{pwd}"
-    puts "CONF_PATH=#{config_path}"
+    $out.info "DIR_PWD=#{pwd}"
+    $out.info "CONF_PATH=#{config_path}"
     Dir.chdir pwd
     $out.info "Generating #{config_path}_network_settings file"
     if up_type == false
       printConfigurationNetworkInfoToFile(config_path) 
+    else
+      $out.warning "network_setting generation is currently disabled for performing only one node up."
     end
     return 0
   end
@@ -955,23 +958,6 @@ EOF
       $out.warning name.to_s+" platform does not exist! Please, check box name!"
     end
 
-  end
-
-
-  def cloneNodes(configuration, new_path)
-    provider = get_provider(new_path)
-    if provider == DOCKER
-      dockerCloneNodes(configuration, new_path)
-    elsif provider == LIBVIRT
-      copying_old_config_to_new(configuration, new_path)
-      clone_libvirt_nodes(configuration, new_path)
-    else
-      raise "#{provider}: provider does not support cloning"
-    end
-  end
-
-
-  def dockerCloneNodes(old_path, new_path)
   end
 
 end
