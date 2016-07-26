@@ -470,8 +470,6 @@ EOF
   def LoadNodesProvider(configs)
     nodes = {}
     configs.keys.each do |node|
-      puts('-----------------')
-      puts(node)
       if node == "aws_config"
       configs[node].slice! "../"  
       @awsConfigFile = configs[node]
