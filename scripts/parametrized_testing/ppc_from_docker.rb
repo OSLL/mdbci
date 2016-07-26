@@ -4,22 +4,20 @@ require 'getoptlong'
 require 'open3'
 require 'json'
 require 'fileutils'
-require_relative '../core/session'
-require_relative '../core/helper'
+require_relative '../../core/session'
+require_relative '../../core/helper'
 
 class PpcFromDocker
 
-  INFORMATION_TAG = 'INFO: '
-  ERROR_TAG = 'ERROR:'
-
-  TEMPLATE_ARGUMENT_REQUIRED_ERROR = 'You must provide config name'
+  CONFIG_ARGUMENT_REQUIRED_ERROR = 'you must provide config name'
+  PARSE_OPTIONS_AND_ARGS_ERROR = 'wrong option'
 
   HELP_MESSAGE = <<-EOF
 Script creates test mdbci boxes, that are made from docker running instances or removes them
 Usage:
 1) Generate mdbci(ppc) config from docker
     ./scripts/mdbci_from_docker.rb ORIGIN_DOCKER_CONFIG_NAME
-1) Remove generated mdbci(ppc) config
+2) Remove generated mdbci(ppc) config
     ./scripts/mdbci_from_docker.rb -r GENERATED_(MDBCI)PPC_CONFIG_NAME
 Options:
     -r          remove generated mdbci config (and all leftovers)
@@ -27,13 +25,10 @@ Arguments:
     CONFIG_NAME    path to docker or (mdbci)ppc config
   EOF
 
-  TEMPLATE_COOKBOOK_PATH = 'cookbook_path'
-  TEMPLATE_AWS_CONFIG = 'aws_config'
-
   BOX_CONFIG_TEMPLATE = {
-      :provider => "mdbci",
+      :provider => 'mdbci',
       :IP => nil,
-      :user => "vagrant",
+      :user => 'vagrant',
       :keyfile => nil,
       :platform => nil,
       :platform_version => nil
@@ -53,18 +48,20 @@ Arguments:
         ['--remove', '-r', GetoptLong::NO_ARGUMENT]
     )
     begin
-      opts.each do |opt, arg|
+      opts.each do |opt, _|
         case opt
           when '--help'
             puts HELP_MESSAGE
             exit
           when '--remove'
             $is_for_removing = true
+          else
+            raise PARSE_OPTIONS_AND_ARGS_ERROR
         end
       end
     end
     template = ARGV.shift
-    raise TEMPLATE_ARGUMENT_REQUIRED_ERROR if template.to_s.empty?
+    raise CONFIG_ARGUMENT_REQUIRED_ERROR if template.to_s.empty?
     return template
   end
 
@@ -88,7 +85,7 @@ EOF
   end
 
   # return tuple: origin docker config name. ppc config name generated from origin docker config
-  def prepare_mdbci_environment(config_name_docker)
+  def generate_ppc_environment(config_name_docker)
     config_name_mdbci_from_docker = "#{config_name_docker}_#{@timestamp}"
     paths_to_keyfiles = Array.new
     boxes_config = Hash.new
@@ -139,22 +136,21 @@ EOF
     return config_name_mdbci_from_docker
   end
 
-  def remove_mdbci_environment(config_name_ppc_from_docker)
+  # file is not configured
+  # it appears after ppc config being generated
+  def remove_generated_ppc_environment(config_name_ppc_from_docker)
     require_relative "../#{config_name_ppc_from_docker}/remove_config_completely"
     remove_config
-  end
-
-  def start
-    config_name = parse_options_and_args
-    unless $is_for_removing
-      prepare_mdbci_environment config_name
-    else
-      remove_mdbci_environment config_name
-    end
   end
 
 end
 
 if File.identical?(__FILE__, $0)
-  PpcFromDocker.new.start
+  ppc_from_docker = PpcFromDocker.new
+  config_name = ppc_from_docker.parse_options_and_args
+  if !$is_for_removing
+    ppc_from_docker.generate_ppc_environment config_name
+  else
+    ppc_from_docker.remove_generated_ppc_environment config_name
+  end
 end
