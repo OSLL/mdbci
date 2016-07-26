@@ -174,8 +174,7 @@ def get_config_node_status(config_name, node_name)
   end
   root_dir = Dir.pwd
   Dir.chdir config_name
-  output = execute_bash("vagrant status #{node_name}", true) rescue nil
-  return false unless output
+  output = execute_bash("vagrant status #{node_name}", true)
   output = output.to_s.split("\n")[2].split(/\s+/)
   Dir.chdir root_dir
   if output.size == 4
@@ -205,7 +204,6 @@ end
 # true - all node are running, otherwise false
 def is_config_running(config_name)
   nodes = get_nodes config_name
-  return false unless nodes
   nodes.each do |node_name|
     return false unless is_config_node_running(config_name, node_name)
   end
