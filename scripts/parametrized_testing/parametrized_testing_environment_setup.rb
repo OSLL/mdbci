@@ -154,11 +154,11 @@ class ParametrizedTestingEnvironmentSetup
     if !config_files_ok or !config_state_ok
       $out.warning "Config #{config_name} is not operable. Restarting config completely"
       complete_restart_origin_config(template_path, config_name)
-      unless !is_config_running(config_name)
+      unless is_config_running(config_name)
         raise "failed to start config #{config_name}, check config manually"
       end
-      $out.info "Config #{config_name} is is running"
     end
+    $out.info "Config #{config_name} is running"
   end
 
   def create_ppc_from_docker_config(docker_config_name)
@@ -213,11 +213,11 @@ class ParametrizedTestingEnvironmentSetup
   def prepare_mdbci_environment
     # preparing docker and libvirt configs
     prepare_origin_config("#{PATH_TO_TEMPLATES}/#{DOCKER}.json", "#{CONFIG_PREFIX}_#{DOCKER}")
-    prepare_origin_config("#{PATH_TO_TEMPLATES}/#{LIBVIRT}.json", "#{CONFIG_PREFIX}_#{LIBVIRT}")
+    #prepare_origin_config("#{PATH_TO_TEMPLATES}/#{LIBVIRT}.json", "#{CONFIG_PREFIX}_#{LIBVIRT}")
     # preparing ppc config
     config_ppc_from_docker = "#{CONFIG_PREFIX}_#{PPC}"
-    prepare_origin_config("#{PATH_TO_TEMPLATES}/#{PPC}.json", config_ppc_from_docker)
-    create_ppc_from_docker_config(config_ppc_from_docker)
+    #prepare_origin_config("#{PATH_TO_TEMPLATES}/#{PPC}.json", config_ppc_from_docker)
+    #create_ppc_from_docker_config(config_ppc_from_docker)
   end
 
 end
