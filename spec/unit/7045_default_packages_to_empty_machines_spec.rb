@@ -32,7 +32,7 @@ describe 'Generator' do
   end
 
   it '#getAwsDef returns config default recipe for machine without product' do
-    Generator.getAWSVmDef('test', 'test', 'test', 'test', 'test', 'test', 'test', false).should include getDefaultRecipeTemplate
+    Generator.getAWSVmDef('test', 'test', 'test', 'test', 'test', 'test', 'test', false, 'test').should include getDefaultRecipeTemplate
   end
 
   it '#getVmDef returns config default recipe for machine without product' do
@@ -48,6 +48,6 @@ describe 'Generator' do
   end
 
   it '#getAwsDef returns config default recipe for machine without product' do
-    Generator.getAWSVmDef('test', 'test', 'test', 'test', 'test', 'test', 'test', true).should_not include getDefaultRecipeTemplate
+    Generator.getAWSVmDef('test', 'test', 'test', 'test', 'test', 'test', 'test', true, 'test').should_not include getDefaultRecipeTemplate
   end
 end
