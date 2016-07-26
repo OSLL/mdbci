@@ -22,7 +22,7 @@
   },
   "node3": {
     "hostname": "node3",
-    "box": "centos_6_docker",
+    "box": "centos_6.7_docker",
     "product" : {
       "name": "mariadb",
       "version": "10.0",
