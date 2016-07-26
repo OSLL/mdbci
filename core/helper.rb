@@ -19,6 +19,7 @@ DOCKER = 'docker'
 RUNNING = 'running'
 SHUTOFF = 'shutoff' # when call 'vagrant halt'
 STOPPED = 'stopped' # when call 'vagrant halt' on docker machine
+NOT_CREATED = 'not created' # when machine has never been started
 
 def out_info(content)
   puts "  INFO: #{content}"
@@ -32,7 +33,7 @@ def get_provider(path_to_nodes)
   begin
     return File.read "#{path_to_nodes}/provider"
   rescue
-    raise "#{path_to_nodes} #{UNKNOWN_PROVIDER_ERROR}"
+    raise "#{path_to_nodes}: #{UNKNOWN_PROVIDER_ERROR}"
   end
 end
 
@@ -140,36 +141,33 @@ def stop_config(config_name)
   Dir.chdir root_directory
 end
 
-def start_config_node(config_name, node_name, provider, no_provision = true)
-  if get_provider(config_name) == MDBCI
+def start_config_node(config_name, node_name, no_provision = true)
+  provider = get_provider(config_name)
+  if provider == MDBCI
     raise "starting machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
   end
   root_directory = Dir.pwd
   Dir.chdir config_name
-  unless no_provision
-    execute_bash("vagrant up #{node_name} --provider #{provider}")
-  else
-    execute_bash("vagrant up #{node_name} --provider #{provider} --no-provision")
-  end
+  no_provision_cmd = no_provision ? '--no-provision' : String.new
+  execute_bash("vagrant up --provider #{provider} #{no_provision_cmd}")
   Dir.chdir root_directory
 end
 
-def start_config(config_name, provider, no_provision = true)
-  if get_provider(config_name) == MDBCI
+def start_config(config_name, no_provision = false, no_parallel = false)
+  provider = get_provider(config_name)
+  if provider == MDBCI
     raise "starting config #{config_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
   end
   root_directory = Dir.pwd
   Dir.chdir config_name
-  unless no_provision
-    execute_bash("vagrant up --provider #{provider}")
-  else
-    execute_bash("vagrant up --provider #{provider} --no-provision")
-  end
+  no_provision_cmd = no_provision ? '--no-provision' : String.new
+  no_parallel_cmd = no_parallel ? '--no-parallel' : String.new
+  execute_bash("vagrant up --provider #{provider} #{no_provision_cmd} #{no_parallel_cmd}")
   Dir.chdir root_directory
 end
 
 def get_config_node_status(config_name, node_name)
-  if get_provider config_name == MDBCI
+  if get_provider(config_name) == MDBCI
     raise "getting status for #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
   end
   root_dir = Dir.pwd
@@ -192,6 +190,14 @@ def is_config_node_running(config_name, node_name)
   return false
 end
 
+# true - node is running, otherwise false
+def is_config_node_ever_started(config_name, node_name)
+  if get_config_node_status(config_name, node_name) == NOT_CREATED
+    return true
+  end
+  return false
+end
+
 # true - node is was shutted down, otherwise false
 def is_config_node_stopped(config_name, node_name)
   status = get_config_node_status(config_name, node_name)
@@ -206,6 +212,15 @@ def is_config_running(config_name)
   nodes = get_nodes config_name
   nodes.each do |node_name|
     return false unless is_config_node_running(config_name, node_name)
+  end
+  return true
+end
+
+# true - all node are running, otherwise false
+def is_config_ever_started(config_name)
+  nodes = get_nodes config_name
+  nodes.each do |node_name|
+    return false unless is_config_node_ever_started(config_name, node_name)
   end
   return true
 end

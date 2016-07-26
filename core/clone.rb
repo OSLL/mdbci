@@ -77,7 +77,7 @@ def clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
     new_libvirt_image_name = create_libvirt_node_clone(path_to_nodes, node_name, new_path_to_nodes)
     new_uuid = get_libvirt_uuid_by_domain_name(new_libvirt_image_name)
     replace_libvirt_node_id(new_path_to_nodes, node_name, new_uuid)
-    start_config_node(path_to_nodes, node_name, LIBVIRT)
+    start_config_node(path_to_nodes, node_name, true)
   end
 end
 
@@ -160,13 +160,13 @@ def clone_nodes(path_to_nodes, new_path_to_nodes)
     fake_boxes_file = create_fake_docker_boxes_file
     clone_docker_nodes(path_to_nodes, new_path_to_nodes, path_to_new_template, fake_boxes_file)
     generate_docker_machines(path_to_new_template, new_path_to_nodes)
-    start_config(new_path_to_nodes, DOCKER)
+    start_config(new_path_to_nodes, true, true)
   elsif provider == LIBVIRT
     $out.info "cloning libvirt machines from #{path_to_nodes} to #{new_path_to_nodes}"
     copy_old_config_to_new(path_to_nodes, new_path_to_nodes)
     clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
     replace_libvirt_template_path(new_path_to_nodes, path_to_new_template)
-    start_config(new_path_to_nodes, LIBVIRT)
+    start_config(new_path_to_nodes, true, false)
   else
     raise "#{provider}: provider does not support cloning"
   end
