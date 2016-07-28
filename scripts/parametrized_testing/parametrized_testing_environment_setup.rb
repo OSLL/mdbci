@@ -10,25 +10,38 @@ require_relative 'ppc_from_docker'
 
 class ParametrizedTestingEnvironmentSetup
 
+  PARSE_OPTIONS_AND_ARGS_ERROR = 'wrong option'
+
   PATH_TO_TEMPLATES = 'spec/parametrized_tests_templates'
-  PATH_TO_METADATA = 'parametrized_tests_metadata'
-  CONFIG_PREFIX = 'mdbci_parametrized_test'
+  CONFIG_PREFIX = 'mdbci_param_test'
   BACKUP_CONFIG_POSTFIX = 'backup'
 
   # configs
   DOCKER = 'docker'
   LIBVIRT = 'libvirt'
   VIRTUALBOX = 'virtualbox'
-  PPC = 'docker_for_ppc'
+  DOCKER_FOR_PPC = 'docker_for_ppc'
   AWS = 'aws'
 
-  attr_accessor :current_metadata
+  HELP_MESSAGE = <<-EOF
+Script creates, resumes or stops mdbci parametrized testing environment
+Usage:
+    ./scripts/parametrized_testing_environment.rb  [-p PATH_TO_TEMPLATES]
+Options:
+    -r          remove generated mdbci config (and all leftovers)
+    -n          new config name
+Arguments:
+    CONFIG_NAME    path to docker or (mdbci)ppc config
+  EOF
+
+  attr_accessor :is_for_removing
+  attr_accessor :is_for_stopping
 
   def initialize
-    initialize_mdbci_environment
+    initialize_mdbci_environment_variables
   end
 
-  def initialize_mdbci_environment
+  def initialize_mdbci_environment_variables
     unless $mdbci_environment_initialized
       $out = Out.new
       $session = Session.new
@@ -37,18 +50,6 @@ class ParametrizedTestingEnvironmentSetup
       $session.boxes = BoxesManager.new './BOXES'
       $session.repos = RepoManager.new './repo.d'
       $mdbci_environment_initialized = true
-    end
-  end
-
-  def remove_mdbci_environment
-    if $mdbci_environment_initialized
-      $out = nil
-      $session.mdbciDir = nil
-      $exception_handler = nil
-      $session.boxes = nil
-      $session.repos = nil
-      $session = nil
-      $mdbci_environment_initialized = false
     end
   end
 
@@ -166,67 +167,52 @@ class ParametrizedTestingEnvironmentSetup
     create_backup(config_name)
   end
 
-  def create_ppc_from_docker_config(docker_config_name)
-    return PpcFromDocker.new.generate_ppc_environment(docker_config_name)
-  end
-
-  def prepare_aws_machine(config_name)
-    template_path = "#{PATH_TO_TEMPLATES}/#{config_name}.json"
-    generate_config(template_path, config_name) unless is_config_created config_name
-    start_config(config_name, AWS) unless is_config_stopped config_name
-    return config_name
-  end
-
-  def get_snapshots_for_node(config_name, node_name)
-    $session.path_to_nodes = config_name
-    $session.node_name = node_name
-    snapshots = Snapshot.new.get_snapshots node_name
-    $session.path_to_nodes = nil
-    $session.node_name = nil
-    return snapshots
-  end
-
-  def create_metadata(configs_names)
-    metadata = Hash.new
-    metadata[:configs] = Array.new
-    configs_names.each do |config_name|
-      nodes_names = get_nodes config_name rescue nil
-      provider = get_provider config_name rescue nil
-      metadata_nodes = Array.new
-      nodes_names.each do |node_name|
-        node_id = nil
-        unless provider == 'mdbci'
-          node_id = get_node_machine_id(config_name, node_name) rescue nil
-        end
-        snapshots = get_snapshots_for_node(config_name, node_name) rescue nil
-        metadata_nodes.push({
-                                :node_name => node_name,
-                                :node_id => node_id,
-                                :node_snapshots => snapshots
-                            })
-      end
-      metadata[:configs] << {
-          :config_name => config_name,
-          :config_provider => provider,
-          :config_nodes => metadata_nodes
-      }
-      metadata[:creation_timestamp] = Time.now.to_i
-    end
-    return metadata
-  end
-
   def prepare_mdbci_environment
-    # preparing docker and libvirt configs
     prepare_origin_config("#{PATH_TO_TEMPLATES}/#{DOCKER}.json", "#{CONFIG_PREFIX}_#{DOCKER}")
     prepare_origin_config("#{PATH_TO_TEMPLATES}/#{LIBVIRT}.json", "#{CONFIG_PREFIX}_#{LIBVIRT}")
-    # preparing ppc config
-    config_ppc_from_docker = "#{CONFIG_PREFIX}_#{PPC}"
-    prepare_origin_config("#{PATH_TO_TEMPLATES}/#{PPC}.json", config_ppc_from_docker)
-    create_ppc_from_docker_config(config_ppc_from_docker)
+    prepare_origin_config("#{PATH_TO_TEMPLATES}/#{DOCKER_FOR_PPC}.json", "#{CONFIG_PREFIX}_#{DOCKER_FOR_PPC}")
+  end
+
+  def stop_mdbci_environment
+    stop_config("#{CONFIG_PREFIX}_#{DOCKER}")
+    stop_config("#{CONFIG_PREFIX}_#{LIBVIRT}")
+    stop_config("#{CONFIG_PREFIX}_#{DOCKER_FOR_PPC}")
+  end
+
+  def remove_mdbci_environment
+    destroy_config("#{CONFIG_PREFIX}_#{DOCKER}")
+    destroy_config("#{CONFIG_PREFIX}_#{LIBVIRT}")
+    destroy_config("#{CONFIG_PREFIX}_#{DOCKER_FOR_PPC}")
+  end
+
+  def parse_options_and_args
+    opts = GetoptLong.new(
+        ['--help', '-h', GetoptLong::NO_ARGUMENT],
+        ['--start', '-s', GetoptLong::NO_ARGUMENT],
+        ['--halt', '-h', GetoptLong::NO_ARGUMENT],
+        ['--remove', '-r', GetoptLong::NO_ARGUMENT]
+    )
+    begin
+      opts.each do |opt, _|
+        case opt
+          when '--help'
+            puts HELP_MESSAGE
+            exit
+          when '--remove'
+            remove_mdbci_environment
+          when '--halt'
+            stop_mdbci_environment
+          when '--start'
+            prepare_mdbci_environment
+          else
+            raise PARSE_OPTIONS_AND_ARGS_ERROR
+        end
+      end
+    end
   end
 
 end
 
 if File.identical?(__FILE__, $0)
-  ParametrizedTestingEnvironmentSetup.new.prepare_mdbci_environment
+  ParametrizedTestingEnvironmentSetup.new.parse_options_and_args
 end

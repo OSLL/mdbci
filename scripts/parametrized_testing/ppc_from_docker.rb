@@ -13,14 +13,15 @@ class PpcFromDocker
   PARSE_OPTIONS_AND_ARGS_ERROR = 'wrong option'
 
   HELP_MESSAGE = <<-EOF
-Script creates test mdbci boxes, that are made from docker running instances or removes them
+Script creates test mdbci boxes/keys/config, that are made from docker running instances or removes them
 Usage:
 1) Generate mdbci(ppc) config from docker
-    ./scripts/mdbci_from_docker.rb ORIGIN_DOCKER_CONFIG_NAME
+    ./scripts/mdbci_from_docker.rb ORIGIN_DOCKER_CONFIG_NAME [-n NEW_CONFIG_NAME]
 2) Remove generated mdbci(ppc) config
     ./scripts/mdbci_from_docker.rb -r GENERATED_(MDBCI)PPC_CONFIG_NAME
 Options:
     -r          remove generated mdbci config (and all leftovers)
+    -n          new config name
 Arguments:
     CONFIG_NAME    path to docker or (mdbci)ppc config
   EOF
@@ -34,35 +35,14 @@ Arguments:
       :platform_version => nil
   }
 
-  $is_for_removing = false
-
   attr_accessor :timestamp
+  attr_accessor :is_for_removing
+  attr_accessor :new_config_name
 
   def initialize
     @timestamp = Time.now.strftime('%Y_%m_%d_%H_%M_%S')
-  end
-
-  def parse_options_and_args
-    opts = GetoptLong.new(
-        ['--help', '-h', GetoptLong::NO_ARGUMENT],
-        ['--remove', '-r', GetoptLong::NO_ARGUMENT]
-    )
-    begin
-      opts.each do |opt, _|
-        case opt
-          when '--help'
-            puts HELP_MESSAGE
-            exit
-          when '--remove'
-            $is_for_removing = true
-          else
-            raise PARSE_OPTIONS_AND_ARGS_ERROR
-        end
-      end
-    end
-    template = ARGV.shift
-    raise CONFIG_ARGUMENT_REQUIRED_ERROR if template.to_s.empty?
-    return template
+    @is_for_removing = false
+    @new_config_name = nil
   end
 
   def generate_removing_script(config_name_ppc_from_docker, path_to_boxes_file, paths_to_keyfiles)
@@ -85,8 +65,7 @@ EOF
   end
 
   # return tuple: origin docker config name. ppc config name generated from origin docker config
-  def generate_ppc_environment(config_name_docker)
-    config_name_mdbci_from_docker = "#{config_name_docker}_#{@timestamp}"
+  def generate_ppc_environment(config_name_docker, config_name_mdbci_from_docker = "#{config_name_docker}_#{@timestamp}")
     paths_to_keyfiles = Array.new
     boxes_config = Hash.new
     template_path = get_template_path(config_name_docker)
@@ -145,13 +124,43 @@ EOF
     remove_config
   end
 
+  def parse_options_and_args
+    opts = GetoptLong.new(
+        ['--help', '-h', GetoptLong::NO_ARGUMENT],
+        ['--remove', '-r', GetoptLong::NO_ARGUMENT],
+        ['--new-config-name', '-n', GetoptLong::REQUIRED_ARGUMENT]
+    )
+    begin
+      opts.each do |opt, arg|
+        case opt
+          when '--help'
+            puts HELP_MESSAGE
+            exit
+          when '--remove'
+            @is_for_removing = true
+          when '--new-config-name'
+            @new_config_name = arg
+          else
+            raise PARSE_OPTIONS_AND_ARGS_ERROR
+        end
+      end
+    end
+    template = ARGV.shift
+    raise CONFIG_ARGUMENT_REQUIRED_ERROR if template.to_s.empty?
+    return template
+  end
+
 end
 
 if File.identical?(__FILE__, $0)
   ppc_from_docker = PpcFromDocker.new
   config_name = ppc_from_docker.parse_options_and_args
-  if !$is_for_removing
-    ppc_from_docker.generate_ppc_environment config_name
+  if !ppc_from_docker.is_for_removing
+    if !ppc_from_docker.new_config_name == nil
+      ppc_from_docker.generate_ppc_environment(config_name, ppc_from_docker.new_config_name)
+    else
+      ppc_from_docker.generate_ppc_environment(config_name)
+    end
   else
     ppc_from_docker.remove_generated_ppc_environment config_name
   end

@@ -1,3 +1,5 @@
+require_relative '../scripts/parametrized_testing/parametrized_test_wrapper'
+
 PATH_TO_RSPEC_SPEC_FOLDER = 'spec/'
 PATH_TO_INTEGRATION_TESTS_FOLDER = 'integration/'
 PATH_TO_UNIT_TESTS_FOLDER = 'unit/'
@@ -86,13 +88,18 @@ class RakeTaskManager
   def run_parametrized(arguments)
     # Strange, but arguments variable is not Hash
     # so it needs to be converted...
+    ptw = ParametrizedTestWrapper.new
+    ptw.prepare_clones
+    arguments.each { |key, value| ENV[key.to_s] = value }
+    run
+    arguments.each { |key, _| ENV.delete(key.to_s) }
+    ptw.remove_clones
+=begin
     if !Hash.try_convert(arguments).empty?
-      arguments.each { |key, value| ENV[key.to_s] = value }
-      run
-      arguments.each { |key, _| ENV.delete(key.to_s) }
     else
       raise "No arguments provided for #{@rspec_test_name}, fix and try again."
     end
+=end
   end
 
   def run_unit
