@@ -189,7 +189,7 @@ Arguments:
     opts = GetoptLong.new(
         ['--help', '-h', GetoptLong::NO_ARGUMENT],
         ['--start', '-s', GetoptLong::NO_ARGUMENT],
-        ['--halt', '-h', GetoptLong::NO_ARGUMENT],
+        ['--pause', '-p', GetoptLong::NO_ARGUMENT],
         ['--remove', '-r', GetoptLong::NO_ARGUMENT]
     )
     begin
