@@ -62,7 +62,7 @@ def get_node_machine_id(path_to_nodes, node_name)
   begin
     return File.read("#{path_to_nodes}/.vagrant/machines/#{node_name}/#{provider}/id")
   rescue Exception => e
-    raise $!, "#{path_to_nodes}/#{node_name}: #{MACHINE_NOT_CREATED_ERROR}", $!.backtrace
+    raise $!, "#{path_to_nodes}/#{node_name}: #{MACHINE_NOT_CREATED_ERROR}, #{e.message}", $!.backtrace
   end
 end
 
@@ -114,7 +114,7 @@ def destroy_config(config_name)
   end
 end
 
-def stop_config(config_name, node_name='')
+def stop_config_node(config_name, node_name)
   raise "#{MDBCI_NOT_SUPPORT}" if get_provider(config_name)== MDBCI
   root_directory = Dir.pwd
   Dir.chdir config_name
@@ -122,15 +122,20 @@ def stop_config(config_name, node_name='')
   Dir.chdir root_directory
 end
 
+def stop_config(config_name)
+  raise "#{MDBCI_NOT_SUPPORT}" if get_provider(config_name)== MDBCI
+  root_directory = Dir.pwd
+  Dir.chdir config_name
+  execute_bash('vagrant halt')
+  Dir.chdir root_directory
+end
+
 def start_config_node(config_name, node_name, provider, no_provision = true)
   raise "#{MDBCI_NOT_SUPPORT}" if provider == MDBCI
   root_directory = Dir.pwd
   Dir.chdir config_name
-  unless no_provision
-    execute_bash("vagrant up #{node_name} --provider #{provider}")
-  else
-    execute_bash("vagrant up #{node_name} --provider #{provider} --no-provision")
-  end
+  no_provision_cmd = '--no-provision' if no_provision
+  execute_bash("vagrant up #{node_name} --provider #{provider} #{no_provision_cmd}")
   Dir.chdir root_directory
 end
 
@@ -138,11 +143,8 @@ def start_config(config_name, provider, no_provision = true)
   raise "#{MDBCI_NOT_SUPPORT}" if provider == MDBCI
   root_directory = Dir.pwd
   Dir.chdir config_name
-  unless no_provision
-    execute_bash("vagrant up --provider #{provider}")
-  else
-    execute_bash("vagrant up --provider #{provider} --no-provision")
-  end
+  no_provision_cmd = '--no-provision' if no_provision
+  execute_bash("vagrant up #{node_name} --provider #{provider} #{no_provision_cmd}")
   Dir.chdir root_directory
 end
 
@@ -173,15 +175,11 @@ end
 # true - all node are fully created, otherwise false
 def is_config_created(config_name)
   return false unless Dir.exist? config_name
-  provider = get_provider(config_name) rescue nil
-  return false unless provider
+  provider = get_provider(config_name)
   if provider != MDBCI
     return false unless File.exist? "#{config_name}/Vagrantfile"
     return false unless File.exist? "#{config_name}/template"
-    nodes_names = get_nodes(config_name) rescue nil
-    nodes_names.each do |node_name|
-      return false unless File.exist? "#{config_name}/#{node_name}.json"
-    end
+    nodes_names = get_nodes(config_name)
     if provider == DOCKER
       return false unless nodes_names
       nodes_names.each do |node_name|

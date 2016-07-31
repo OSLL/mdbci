@@ -428,7 +428,7 @@ EOF
 
   def clone(path_to_nodes, new_path_to_nodes)
     $out.info "Performing cloning operation for config #{path_to_nodes}. Cloned configuration name: #{new_path_to_nodes}"
-    clone_nodes(path_to_nodes, new_path_to_nodes)
+    Clone.new.clone_nodes(path_to_nodes, new_path_to_nodes)
     return 0
   end
 
