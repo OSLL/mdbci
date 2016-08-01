@@ -2,32 +2,14 @@
   "cookbook_path": "../recipes/cookbooks/",
   "node1": {
     "hostname": "node1",
-    "box": "ubuntu_trusty_libvirt",
-    "product" : {
-      "name": "mariadb",
-      "version": "10.0",
-      "cnf_template" : "server1.cnf",
-      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
-    }
+    "box": "ubuntu_trusty_libvirt"
   },
   "node2": {
     "hostname": "node2",
-    "box": "centos_7_libvirt",
-    "product" : {
-      "name": "mariadb",
-      "version": "10.0",
-      "cnf_template" : "server2.cnf",
-      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
-    }
+    "box": "centos_7_libvirt"
   },
   "node3": {
     "hostname": "node3",
-    "box": "centos_6_libvirt",
-    "product" : {
-      "name": "mariadb",
-      "version": "10.0",
-      "cnf_template" : "server3.cnf",
-      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
-    }
+    "box": "debian_jessie_libvirt"
   }
 }
