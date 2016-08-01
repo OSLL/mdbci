@@ -181,8 +181,10 @@ class Network
   def self.getIpWrapper(node, pwd)
     begin
       node.getIp(node.provider, false)
-    rescue
+    rescue => e
       Dir.chdir pwd
+      $out.error(e.message)
+      puts(e.backtrace)
       raise "Incorrect node"
     end
     hash={ 'ip' => node.ip.to_s }
