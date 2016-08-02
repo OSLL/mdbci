@@ -294,6 +294,7 @@ def printConfigurationNetworkInfoToFile(configuration)
     end
   end
   puts "Full path of #{configuration}_network_config: " + File.expand_path("#{configuration}_network_config")
+  return 0
 
 end
 
