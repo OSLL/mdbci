@@ -1,5 +1,6 @@
 require 'fileutils'
 require 'json'
+require 'timeout'
 
 require_relative 'out'
 require_relative 'helper'
@@ -18,6 +19,8 @@ class Clone
 
   DOCKER = 'docker'
   LIBVIRT = 'libvirt'
+
+  CLONE_REUP_COUNT = 2
 
   def get_libvirt_uuid_by_domain_name(domain_name)
     list_output = execute_bash('virsh -q list --all | awk \'{print $2}\'', true).to_s.split "\n"
@@ -83,7 +86,20 @@ class Clone
       $out.info "starting origin machine: #{path_to_nodes}/#{node_name}"
       start_config(path_to_nodes, LIBVIRT, node_name)
       $out.info "starting cloned machine: #{new_path_to_nodes}/#{node_name}"
-      start_config(new_path_to_nodes, LIBVIRT, node_name)
+      for i in 1..CLONE_REUP_COUNT
+        $out.info "Up attempt #{i}/#{CLONE_REUP_COUNT}"
+        begin
+          Timeout::timeout(120) do
+            start_config(new_path_to_nodes, LIBVIRT, node_name)
+          end
+        rescue Exception => e
+          $out.error "#{node_name} failed during up"
+          $out.error e.message
+          next
+        end
+        $out.info "#{node_name} successfuly up!"
+        break
+      end
     end
   end
 
