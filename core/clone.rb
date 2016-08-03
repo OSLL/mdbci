@@ -81,9 +81,9 @@ class Clone
       new_uuid = get_libvirt_uuid_by_domain_name(new_libvirt_image_name)
       replace_libvirt_node_id(new_path_to_nodes, node_name, new_uuid)
       $out.info "starting origin machine: #{path_to_nodes}/#{node_name}"
-      start_config_node(path_to_nodes, node_name, LIBVIRT)
+      start_config(path_to_nodes, LIBVIRT, node_name)
       $out.info "starting cloned machine: #{new_path_to_nodes}/#{node_name}"
-      start_config_node(new_path_to_nodes, node_name, LIBVIRT)
+      start_config(new_path_to_nodes, LIBVIRT, node_name)
     end
   end
 
