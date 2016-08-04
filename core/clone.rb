@@ -20,7 +20,8 @@ class Clone
   DOCKER = 'docker'
   LIBVIRT = 'libvirt'
 
-  CLONE_REUP_COUNT = 2
+  CLONE_REUP_COUNT = 3
+  CLONED_NODE_UP_TIMEOUT = 2*60
 
   def get_libvirt_uuid_by_domain_name(domain_name)
     list_output = execute_bash('virsh -q list --all | awk \'{print $2}\'', true).to_s.split "\n"
@@ -89,12 +90,16 @@ class Clone
       for i in 1..CLONE_REUP_COUNT
         $out.info "Up attempt #{i}/#{CLONE_REUP_COUNT}"
         begin
-          Timeout::timeout(120) do
+          Timeout::timeout(CLONED_NODE_UP_TIMEOUT) do
             start_config(new_path_to_nodes, LIBVIRT, node_name)
           end
-        rescue Exception => e
-          $out.error "#{node_name} failed during up"
+        rescue Exception => e 
+          $out.error "#{node_name} failed during up (error below)" 
           $out.error e.message
+          if i == CLONE_REUP_COUNT
+            raise "Unable to up cloned node #{node_name} after #{CLONE_REUP_COUNT} attempts! exiting."
+          end
+          Dir.chdir '../'
           next
         end
         $out.info "#{node_name} successfuly up!"
