@@ -284,10 +284,10 @@ end
 COMMAND_WHOAMI='whoami'
 COMMAND_HOSTNAME='hostname'
 
-def printConfigurationNetworkInfoToFile(configuration)
+def printConfigurationNetworkInfoToFile(configuration,node='')
   
   open("#{configuration}_network_config", 'w') do |f|
-    configurationNetworkInfo = collectConfigurationNetworkInfo(configuration)
+    configurationNetworkInfo = collectConfigurationNetworkInfo(configuration,node)
     configurationNetworkInfo.each do |key, value|
       # TODO Add correct array conversion 
       f.puts "#{key}=#{value}"
@@ -296,10 +296,14 @@ def printConfigurationNetworkInfoToFile(configuration)
 
 end
 
-def collectConfigurationNetworkInfo(configuration)
+def collectConfigurationNetworkInfo(configuration,node_one)
 
   configurationNetworkInfo = Hash.new
-  nodes = get_nodes(configuration)# TODO add getNodes
+  if node_one.empty?
+    nodes = get_nodes(configuration)# TODO add getNodes
+  else
+    nodes = [node_one]
+  end
   nodes.each do |node|
     configPath = "#{configuration}/#{node}"
     configurationNetworkInfo["#{node}_network"] = Network.getNetwork(configPath)[0]["ip"].to_s
