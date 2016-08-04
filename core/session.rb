@@ -419,6 +419,8 @@ EOF
         exit_code = showBoxKeys
       when 'provider'
         exit_code = showProvider(ARGV.shift)
+      when 'network_config'
+        exit_code = printConfigurationNetworkInfoToFile(ARGV.shift)
       else
         $out.error 'Unknown show command collection: '+collection
     end
