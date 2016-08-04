@@ -148,7 +148,7 @@ def start_config_node(config_name, node_name, no_provision = true)
   end
   root_directory = Dir.pwd
   Dir.chdir config_name
-  no_provision_cmd = no_provision ? '--no-provision' : String.new
+  no_provision_cmd = no_provision ? '--no-provision' : ''
   execute_bash("vagrant up --provider #{provider} #{no_provision_cmd}")
   Dir.chdir root_directory
 end
@@ -160,8 +160,8 @@ def start_config(config_name, no_provision = false, no_parallel = false)
   end
   root_directory = Dir.pwd
   Dir.chdir config_name
-  no_provision_cmd = no_provision ? '--no-provision' : String.new
-  no_parallel_cmd = no_parallel ? '--no-parallel' : String.new
+  no_provision_cmd = no_provision ? '--no-provision' : ''
+  no_parallel_cmd = no_parallel ? '--no-parallel' : ''
   execute_bash("vagrant up --provider #{provider} #{no_provision_cmd} #{no_parallel_cmd}")
   Dir.chdir root_directory
 end

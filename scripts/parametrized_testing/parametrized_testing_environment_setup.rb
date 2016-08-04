@@ -128,11 +128,16 @@ Arguments:
   def is_config_state_valid(config_name)
     config_state_ok = true
     # checking machine activity
+    $out.warning "Checking that config #{config_name} has ever started"
+    unless is_config_ever_started(config_name)
+      $out.warning "Config #{config_name} has never been started (machine state is equivalent for vagrant 'not created' state)"
+      return false
+    end
     $out.warning "Checking that config #{config_name} is running"
     unless is_config_running(config_name)
       $out.warning "Config #{config_name} is not running"
       begin
-        $out.warning "Trying to start config #{config_name}"
+        $out.warning "Trying to start config #{config_name} in no-parallel mode"
         start_config(config_name, false, true)
         unless is_config_running(config_name)
           $out.warning "Config #{config_name} is not running"
@@ -204,7 +209,7 @@ Arguments:
             exit
           when '--remove'
             remove_mdbci_environment
-          when '--halt'
+           when '--pause'
             stop_mdbci_environment
           when '--start'
             prepare_mdbci_environment
