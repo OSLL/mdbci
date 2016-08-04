@@ -244,9 +244,7 @@ def is_config_created(config_name)
     return false unless File.exist? "#{config_name}/Vagrantfile"
     return false unless File.exist? "#{config_name}/template"
     nodes_names = get_nodes(config_name) rescue nil
-    nodes_names.each do |node_name|
-      return false unless File.exist? "#{config_name}/#{node_name}.json"
-    end
+    return false unless nodes_names
     if provider == DOCKER
       return false unless nodes_names
       nodes_names.each do |node_name|

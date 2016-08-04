@@ -180,8 +180,12 @@ Arguments:
   end
 
   def remove_mdbci_environment
+    Dir.glob('*_network_config').each { |nc| FileUtils.rm_rf(nc) }
+    remove_backup(("#{CONFIG_PREFIX}_#{DOCKER}")) if backup_exists(("#{CONFIG_PREFIX}_#{DOCKER}"))
     destroy_config("#{CONFIG_PREFIX}_#{DOCKER}")
+    remove_backup(("#{CONFIG_PREFIX}_#{LIBVIRT}")) if backup_exists(("#{CONFIG_PREFIX}_#{LIBVIRT}"))
     destroy_config("#{CONFIG_PREFIX}_#{LIBVIRT}")
+    remove_backup(("#{CONFIG_PREFIX}_#{DOCKER_FOR_PPC}")) if backup_exists(("#{CONFIG_PREFIX}_#{DOCKER_FOR_PPC}"))
     destroy_config("#{CONFIG_PREFIX}_#{DOCKER_FOR_PPC}")
   end
 

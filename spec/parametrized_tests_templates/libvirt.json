@@ -10,6 +10,6 @@
   },
   "node3": {
     "hostname": "node3",
-    "box": "debian_jessie_libvirt"
+    "box": "debian_wheezy_libvirt"
   }
 }
