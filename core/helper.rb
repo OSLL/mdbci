@@ -15,6 +15,7 @@ TEMPLATE_PATH_EMPTY = 'template (or mdbci_template) path is empty'
 
 MDBCI = 'mdbci'
 DOCKER = 'docker'
+BOX= 'box'
 
 def out_info(content)
   puts "  INFO: #{content}"
