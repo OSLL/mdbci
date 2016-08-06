@@ -14,7 +14,6 @@ NEW_CONFIG_DIRECTORY_EXISTS = 'new config directory already exists (remove it an
 
 BOX = 'box'
 
-DOCKER = 'docker'
 LIBVIRT = 'libvirt'
 
 def get_libvirt_uuid_by_domain_name(domain_name)
