@@ -18,6 +18,7 @@ DOCKER = 'docker'
 
 RUNNING = 'running'
 SHUTOFF = 'shutoff' # when call 'vagrant halt'
+SHUTTING_DOWN = 'shutting down' # sometimes libvirt gets in this state before shutoff state
 STOPPED = 'stopped' # when call 'vagrant halt' on docker machine
 NOT_CREATED = 'not created' # when machine has never been started
 
@@ -143,9 +144,11 @@ def stop_config_node(config_name, node_name)
   root_directory = Dir.pwd
   Dir.chdir config_name
   execute_bash("vagrant halt #{node_name}")
-  system("vagrant status #{node_name}")
   Dir.chdir root_directory
-  puts get_config_node_status(config_name, node_name)
+  begin
+    out_info 'waiting machine to be shutted down (2 seconds)'
+    sleep 2
+  end while get_config_node_status(config_name, node_name) == SHUTTING_DOWN
 end
 
 def stop_config(config_name)

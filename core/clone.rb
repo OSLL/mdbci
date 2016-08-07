@@ -58,7 +58,6 @@ class Clone
     Dir.chdir path_to_nodes
     node_status = execute_bash("vagrant status #{node_name}", true).split("\n")[2]
     status = node_status.split(/\s+/)[1]
-    puts status
     Dir.chdir root_directory
     raise "#{path_to_nodes}/#{node_name}: #{LIBVIRT_NODE_RUNNING_ERROR}" unless status.include? 'shutoff'
     new_libvirt_image_name = "#{path_to_new_config_directory}_#{node_name}_#{Time.now.to_i}"
