@@ -29,7 +29,9 @@ Usage:
     ./scripts/parametrized_testing_environment.rb  [-p PATH_TO_TEMPLATES]
 Options:
     -r          remove generated mdbci config (and all leftovers)
-    -n          new config name
+    -p          pause
+    -s          start/resume
+    -h          this help message
 Arguments:
     CONFIG_NAME    path to docker or (mdbci)ppc config
   EOF

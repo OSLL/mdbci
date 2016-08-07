@@ -1,5 +1,3 @@
-#!/usr/bin/ruby
-
 require 'getoptlong'
 require 'open3'
 require 'json'
@@ -16,14 +14,17 @@ class PpcFromDocker
 Script creates test mdbci boxes/keys/config, that are made from docker running instances or removes them
 Usage:
 1) Generate mdbci(ppc) config from docker
-    ./scripts/mdbci_from_docker.rb ORIGIN_DOCKER_CONFIG_NAME [-n NEW_CONFIG_NAME]
-2) Remove generated mdbci(ppc) config
+    ./scripts/mdbci_from_docker.rb ORIGIN_DOCKER_CONFIG_NAME -c
+2) Generate mdbci(ppc) config from docker with given name
+    ./scripts/mdbci_from_docker.rb ORIGIN_DOCKER_CONFIG_NAME -a NEW_CONFIG_NAME
+3) Remove generated mdbci(ppc) config
     ./scripts/mdbci_from_docker.rb -r GENERATED_(MDBCI)PPC_CONFIG_NAME
 Options:
     -r          remove generated mdbci config (and all leftovers)
-    -n          new config name
+    -c          creates new config
+    -a          creates new config with given name
 Arguments:
-    CONFIG_NAME    path to docker or (mdbci)ppc config
+    CONFIG_NAME    path to docker or (mdbci)ppc configfig
   EOF
 
   BOX_CONFIG_TEMPLATE = {
@@ -58,6 +59,9 @@ def remove_config
   FileUtils.rm_rf('#{path_to_boxes_file}')
   FileUtils.rm_rf('#{config_name_ppc_from_docker}')
 end
+if File.identical?(__FILE__, $0)
+  remove_config
+end
 EOF
     File.open("#{config_name_ppc_from_docker}/remove_config_completely.rb", 'w') do |file|
       file.write removing_script
@@ -65,7 +69,11 @@ EOF
   end
 
   # return tuple: origin docker config name. ppc config name generated from origin docker config
-  def generate_ppc_environment(config_name_docker, config_name_mdbci_from_docker = "#{config_name_docker}_#{@timestamp}")
+  def generate_ppc_environment(config_name_docker, config_name_mdbci_from_docker)
+    config_name_docker = config_name_docker.gsub(/\/+/, '')
+    if config_name_mdbci_from_docker == nil
+      config_name_mdbci_from_docker = "#{config_name_docker}_#{@timestamp}"
+    end
     paths_to_keyfiles = Array.new
     boxes_config = Hash.new
     template_path = get_template_path(config_name_docker)
@@ -88,7 +96,9 @@ EOF
       # Getting platform and platform version
       box_name = execute_bash("./mdbci show box #{config_name_docker}/#{node_name} --silent")
       box_name = box_name.delete!("\n")
-      boxes_hash = JSON.parse(File.read('BOXES/boxes_docker.json'))
+      boxes_hash = Hash.new
+      # Getting all boxes (also boxes for cloned docker machines)
+      Dir.glob('BOXES/*').each { |boxes| boxes_hash = boxes_hash.merge(JSON.parse(File.read(boxes))) }
       box_config[:platform] = boxes_hash[box_name]['platform']
       box_config[:platform_version] = boxes_hash[box_name]['platform_version']
       # Adding combining boxes configs
@@ -128,7 +138,8 @@ EOF
     opts = GetoptLong.new(
         ['--help', '-h', GetoptLong::NO_ARGUMENT],
         ['--remove', '-r', GetoptLong::NO_ARGUMENT],
-        ['--new-config-name', '-n', GetoptLong::REQUIRED_ARGUMENT]
+        ['--create', '-c', GetoptLong::NO_ARGUMENT],
+        ['--create-as', '-a', GetoptLong::REQUIRED_ARGUMENT],
     )
     begin
       opts.each do |opt, arg|
@@ -136,32 +147,24 @@ EOF
           when '--help'
             puts HELP_MESSAGE
             exit
+          when '--create'
+            generate_ppc_environment(ARGV.shift, nil)
+            exit
+          when '--create-as'
+            generate_ppc_environment(ARGV.shift, arg)
+            exit
           when '--remove'
-            @is_for_removing = true
-          when '--new-config-name'
-            @new_config_name = arg
+            remove_generated_ppc_environment(ARGV.shift)
+            exit
           else
             raise PARSE_OPTIONS_AND_ARGS_ERROR
         end
       end
     end
-    template = ARGV.shift
-    raise CONFIG_ARGUMENT_REQUIRED_ERROR if template.to_s.empty?
-    return template
   end
 
 end
 
 if File.identical?(__FILE__, $0)
-  ppc_from_docker = PpcFromDocker.new
-  config_name = ppc_from_docker.parse_options_and_args
-  if !ppc_from_docker.is_for_removing
-    if !ppc_from_docker.new_config_name == nil
-      ppc_from_docker.generate_ppc_environment(config_name, ppc_from_docker.new_config_name)
-    else
-      ppc_from_docker.generate_ppc_environment(config_name)
-    end
-  else
-    ppc_from_docker.remove_generated_ppc_environment config_name
-  end
+  PpcFromDocker.new.parse_options_and_args
 end

@@ -21,8 +21,10 @@ SHUTOFF = 'shutoff' # when call 'vagrant halt'
 STOPPED = 'stopped' # when call 'vagrant halt' on docker machine
 NOT_CREATED = 'not created' # when machine has never been started
 
+BOX = 'box'
+
 def out_info(content)
-  puts "  INFO: #{content}"
+  puts " INFO: #{content}"
 end
 
 def out_error(content)
@@ -31,24 +33,39 @@ end
 
 def get_provider(path_to_nodes)
   begin
-    return File.read "#{path_to_nodes}/provider"
-  rescue
-    raise "#{path_to_nodes}: #{UNKNOWN_PROVIDER_ERROR}"
+    return File.read "./#{path_to_nodes}/provider"
+  rescue Exception => e
+    raise "#{path_to_nodes}: #{UNKNOWN_PROVIDER_ERROR}, #{e.message}"
   end
+end
+
+def get_template_path(path_to_nodes)
+  provider = get_provider(path_to_nodes)
+  template_path = nil
+  begin
+    if provider == MDBCI
+      template_path = File.read "#{path_to_nodes}/mdbci_template" 
+    else
+      template_path = File.read "#{path_to_nodes}/template"
+    end
+  rescue Exception => e
+    raise "#{path_to_nodes}: #{TEMPLATE_FILE_NOT_FOUND} (#{e.message})"
+  end
+  raise "#{path_to_nodes}: #{TEMPLATE_PATH_EMPTY}" if template_path.empty?
+  return template_path
+end
+
+def get_template_directory(path_to_nodes)
+  template_path = get_template_path path_to_nodes
+  paths = template_path.split('/')
+  path = paths[0..-2].join('/')
+  return Dir.pwd if path.empty?
+  return path
 end
 
 def get_nodes(path_to_nodes)
   nodes = Array.new
-  template = nil
-  begin
-    template = JSON.parse(File.read(File.read("#{path_to_nodes}/template")))
-  rescue
-    begin
-      template = JSON.parse(File.read(File.read("#{path_to_nodes}/mdbci_template")))
-    rescue
-      raise $!, "#{path_to_nodes}/template or #{path_to_nodes}/mdbci_template #{TEMPLATE_NOT_FOUND_ERROR}", $!.backtrace
-    end
-  end
+  template = JSON.parse(File.read(get_template_path(path_to_nodes)))
   template.each do |possible_node|
     if possible_node[0] != TEMPLATE_AWS_CONFIG and possible_node[0] != TEMPLATE_COOKBOOK_PATH
       nodes.push possible_node[0]
@@ -126,7 +143,9 @@ def stop_config_node(config_name, node_name)
   root_directory = Dir.pwd
   Dir.chdir config_name
   execute_bash("vagrant halt #{node_name}")
+  system("vagrant status #{node_name}")
   Dir.chdir root_directory
+  puts get_config_node_status(config_name, node_name)
 end
 
 def stop_config(config_name)
@@ -192,7 +211,7 @@ end
 
 # true - node is running, otherwise false
 def is_config_node_ever_started(config_name, node_name)
-  if get_config_node_status(config_name, node_name) == NOT_CREATED
+  unless get_config_node_status(config_name, node_name) == NOT_CREATED
     return true
   end
   return false
@@ -259,29 +278,7 @@ def is_config_created(config_name)
   return true
 end
 
-def get_template_path(path_to_nodes)
-  provider = get_provider(path_to_nodes)
-  template_path = nil
-  begin
-    template_path = File.read "#{path_to_nodes}/mdbci_template" if provider == MDBCI
-    template_path = File.read "#{path_to_nodes}/template"
-  rescue Exception => e
-    raise "#{path_to_nodes}: #{TEMPLATE_FILE_NOT_FOUND} (#{e.message})"
-  end
-  raise "#{path_to_nodes}: #{TEMPLATE_PATH_EMPTY}" if template_path.empty?
-  return template_path
-end
-
-def get_template_directory(path_to_nodes)
-  template_path = get_template_path path_to_nodes
-  paths = template_path.split('/')
-  path = paths[0..-2].join('/')
-  return Dir.pwd if path.empty?
-  return path
-end
-
 def get_box_name_from_node(path_to_nodes, node_name)
   template = JSON.parse(File.read (get_template_path path_to_nodes))
   return template[node_name][BOX]
 end
-
