@@ -38,7 +38,7 @@ describe nil do
   end
 
   it 'execute bash command without output' do
-    expect { execute_bash('echo test') }.to output("  INFO: test\n").to_stdout
+    expect { execute_bash('echo test') }.to output(" INFO: test\n").to_stdout
   end
 
   it 'execute bash command without output' do
