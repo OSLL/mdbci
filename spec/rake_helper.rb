@@ -81,25 +81,12 @@ class RakeTaskManager
       puts output.split("\n")[0..lines_counter-1]
     end
   end
-  # creating parameters for rspec test
-  # run tests
-  # generating output of failed tests
-  # removing parameters, test is over
+
   def run_parametrized(arguments)
-    # Strange, but arguments variable is not Hash
-    # so it needs to be converted...
     ptw = ParametrizedTestWrapper.new
-    ptw.prepare_clones
-    arguments.each { |key, value| ENV[key.to_s] = value }
+    ptw.prepare_clones(arguments)
     run
-    arguments.each { |key, _| ENV.delete(key.to_s) }
-    ptw.remove_clones
-=begin
-    if !Hash.try_convert(arguments).empty?
-    else
-      raise "No arguments provided for #{@rspec_test_name}, fix and try again."
-    end
-=end
+    ptw.remove_clones(arguments)
   end
 
   def run_unit

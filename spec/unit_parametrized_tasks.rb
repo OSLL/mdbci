@@ -27,8 +27,17 @@ task :run_unit_parametrized do
   Rake::Task[:task_7110_collectConfigurationNetworkInfo].execute({ :configPath=>'TEST', :stoppedConfigPath=>'TEST_STOPPED' })
 =end
 
-  task :task_7222_testing_environment_check do |t, args| RakeTaskManager.new(t).run_unit_parametrized(args) end
+  task :task_7222_testing_environment_check do |t| RakeTaskManager.new(t).run_unit_parametrized([DOCKER, LIBVIRT, PPC]) end
   Rake::Task[:task_7222_testing_environment_check].execute
+
+  task :task_7364_devite_param_test_by_config_docker do |t| RakeTaskManager.new(t).run_unit_parametrized([DOCKER]) end
+  Rake::Task[:task_7364_devite_param_test_by_config_docker].execute
+
+  task :task_7364_devite_param_test_by_config_libvirt do |t| RakeTaskManager.new(t).run_unit_parametrized([LIBVIRT]) end
+  Rake::Task[:task_7364_devite_param_test_by_config_libvirt].execute
+
+  task :task_7364_devite_param_test_by_config_ppc do |t| RakeTaskManager.new(t).run_unit_parametrized([PPC]) end
+  Rake::Task[:task_7364_devite_param_test_by_config_ppc].execute
 
   RakeTaskManager.get_failed_tests_info
 end

@@ -23,6 +23,18 @@ class ParametrizedTestingEnvironmentSetup
   DOCKER_FOR_PPC = 'docker_for_ppc'
   AWS = 'aws'
 
+  CONFIG_DOCKER = "#{CONFIG_PREFIX}_#{DOCKER}"
+  CONFIG_LIBVIRT = "#{CONFIG_PREFIX}_#{LIBVIRT}"
+  CONFIG_VIRTUALBOX = "#{CONFIG_PREFIX}_#{VIRTUALBOX}"
+  CONFIG_DOCKER_FOR_PPC = "#{CONFIG_PREFIX}_#{DOCKER_FOR_PPC}"
+  CONFIG_AWS = "#{CONFIG_PREFIX}_#{AWS}"
+
+  TEMPLATE_DOCKER = "#{PATH_TO_TEMPLATES}/#{DOCKER}.json"
+  TEMPLATE_LIBVIRT = "#{PATH_TO_TEMPLATES}/#{LIBVIRT}.json"
+  TEMPLATE_VIRTUALBOX = "#{PATH_TO_TEMPLATES}/#{VIRTUALBOX}.json"
+  TEMPLATE_DOCKER_FOR_PPC = "#{PATH_TO_TEMPLATES}/#{DOCKER_FOR_PPC}.json"
+  TEMPLATE_AWS = "#{PATH_TO_TEMPLATES}/#{AWS}.json"
+
   HELP_MESSAGE = <<-EOF
 Script creates, resumes or stops mdbci parametrized testing environment
 Usage:
@@ -175,25 +187,25 @@ Arguments:
   end
 
   def prepare_mdbci_environment
-    prepare_origin_config("#{PATH_TO_TEMPLATES}/#{DOCKER}.json", "#{CONFIG_PREFIX}_#{DOCKER}")
-    prepare_origin_config("#{PATH_TO_TEMPLATES}/#{LIBVIRT}.json", "#{CONFIG_PREFIX}_#{LIBVIRT}")
-    prepare_origin_config("#{PATH_TO_TEMPLATES}/#{DOCKER_FOR_PPC}.json", "#{CONFIG_PREFIX}_#{DOCKER_FOR_PPC}")
+    prepare_origin_config(TEMPLATE_DOCKER, CONFIG_DOCKER)
+    prepare_origin_config(TEMPLATE_LIBVIRT, CONFIG_LIBVIRT)
+    prepare_origin_config(TEMPLATE_DOCKER_FOR_PPC, CONFIG_DOCKER_FOR_PPC)
   end
 
   def stop_mdbci_environment
-    stop_config("#{CONFIG_PREFIX}_#{DOCKER}")
-    stop_config("#{CONFIG_PREFIX}_#{LIBVIRT}")
-    stop_config("#{CONFIG_PREFIX}_#{DOCKER_FOR_PPC}")
+    stop_config(CONFIG_DOCKER)
+    stop_config(CONFIG_LIBVIRT)
+    stop_config(CONFIG_DOCKER_FOR_PPC)
   end
 
   def remove_mdbci_environment
     Dir.glob('*_network_config').each { |nc| FileUtils.rm_rf(nc) }
-    remove_backup(("#{CONFIG_PREFIX}_#{DOCKER}")) if backup_exists(("#{CONFIG_PREFIX}_#{DOCKER}"))
-    destroy_config("#{CONFIG_PREFIX}_#{DOCKER}")
-    remove_backup(("#{CONFIG_PREFIX}_#{LIBVIRT}")) if backup_exists(("#{CONFIG_PREFIX}_#{LIBVIRT}"))
-    destroy_config("#{CONFIG_PREFIX}_#{LIBVIRT}")
-    remove_backup(("#{CONFIG_PREFIX}_#{DOCKER_FOR_PPC}")) if backup_exists(("#{CONFIG_PREFIX}_#{DOCKER_FOR_PPC}"))
-    destroy_config("#{CONFIG_PREFIX}_#{DOCKER_FOR_PPC}")
+    remove_backup(CONFIG_DOCKER) if backup_exists(CONFIG_DOCKER)
+    destroy_config(CONFIG_DOCKER)
+    remove_backup(CONFIG_LIBVIRT) if backup_exists(CONFIG_LIBVIRT)
+    destroy_config(CONFIG_LIBVIRT)
+    remove_backup(CONFIG_DOCKER_FOR_PPC) if backup_exists(CONFIG_DOCKER_FOR_PPC)
+    destroy_config(CONFIG_DOCKER_FOR_PPC)
   end
 
   def parse_options_and_args
