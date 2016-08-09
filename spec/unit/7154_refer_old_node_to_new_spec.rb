@@ -56,13 +56,13 @@ describe 'clone.rb' do
   end
 
   it '#change_box_in_docker_template will change box in copied config' do
-    change_box_in_docker_template(PATH_TO_COPIED_TEMPLATE, NODE0, NEW_BOX0)
+    Clone.new.change_box_in_docker_template(PATH_TO_COPIED_TEMPLATE, NODE0, NEW_BOX0)
     copied_template = JSON.parse(File.read(PATH_TO_COPIED_TEMPLATE))
     copied_template.should eql RES1
   end
 
   it '#change_box_in_docker_template will change box in copied config' do
-    change_box_in_docker_template(PATH_TO_COPIED_TEMPLATE, NODE1, NEW_BOX1)
+    Clone.new.change_box_in_docker_template(PATH_TO_COPIED_TEMPLATE, NODE1, NEW_BOX1)
     copied_template = JSON.parse(File.read(PATH_TO_COPIED_TEMPLATE))
     copied_template.should eql RES2
   end

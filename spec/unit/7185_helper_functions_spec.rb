@@ -38,7 +38,7 @@ describe nil do
   end
 
   it 'execute bash command without output' do
-    expect { execute_bash('echo test') }.to output("  INFO: test\n").to_stdout
+    expect { execute_bash('echo test') }.to output(" INFO: test\n").to_stdout
   end
 
   it 'execute bash command without output' do
@@ -86,7 +86,7 @@ describe nil do
       end
     else
       it "get node machine id for node: node0, for provider: #{provider} thows error (mdbci has no id)" do
-        lambda { get_node_machine_id(config, 'node0') }.should raise_error "#{config}/node0: mdbci machine does not have id"
+        lambda { get_node_machine_id(config, 'node0') }.should raise_error "getting id for #{config}/node0: action is not supported for machines with 'mdbci(ppc)' provider"
       end
     end
   end
