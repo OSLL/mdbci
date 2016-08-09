@@ -21,6 +21,7 @@ SHUTOFF = 'shutoff' # when call 'vagrant halt'
 SHUTTING_DOWN = 'shutting down' # sometimes libvirt gets in this state before shutoff state
 STOPPED = 'stopped' # when call 'vagrant halt' on docker machine
 NOT_CREATED = 'not created' # when machine has never been started
+PAUSED = 'paused' # when machine is suspended
 
 BOX = 'box'
 
@@ -151,6 +152,26 @@ def stop_config_node(config_name, node_name)
   end while get_config_node_status(config_name, node_name) == SHUTTING_DOWN
 end
 
+def suspend_config_node(config_name, node_name)
+  if get_provider(config_name) == MDBCI
+    raise "stopping machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
+  end
+  root_directory = Dir.pwd
+  Dir.chdir config_name
+  execute_bash("vagrant suspend #{node_name}")
+  Dir.chdir root_directory
+end
+
+def resume_config_node(config_name, node_name)
+  if get_provider(config_name) == MDBCI
+    raise "stopping machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
+  end
+  root_directory = Dir.pwd
+  Dir.chdir config_name
+  execute_bash("vagrant resume #{node_name}")
+  Dir.chdir root_directory
+end
+
 def stop_config(config_name)
   if get_provider(config_name) == MDBCI
     raise "stopping config #{config_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
@@ -213,6 +234,14 @@ def is_config_node_running(config_name, node_name)
 end
 
 # true - node is running, otherwise false
+def is_config_node_paused(config_name, node_name)
+  if get_config_node_status(config_name, node_name) == PAUSED
+    return true
+  end
+  return false
+end
+
+# true - node is running, otherwise false
 def is_config_node_ever_started(config_name, node_name)
   unless get_config_node_status(config_name, node_name) == NOT_CREATED
     return true
@@ -234,6 +263,15 @@ def is_config_running(config_name)
   nodes = get_nodes config_name
   nodes.each do |node_name|
     return false unless is_config_node_running(config_name, node_name)
+  end
+  return true
+end
+
+# true - all node are running, otherwise false
+def is_config_paused(config_name)
+  nodes = get_nodes config_name
+  nodes.each do |node_name|
+    return false unless is_config_node_paused(config_name, node_name)
   end
   return true
 end

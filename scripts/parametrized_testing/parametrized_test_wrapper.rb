@@ -17,8 +17,22 @@ class ParametrizedTestWrapper
   LIBVIRT = 'libvirt'
   VIRTUALBOX = 'virtualbox'
   AWS = 'aws'
+  PPC = 'ppc'
   DOCKER_FOR_PPC = 'docker_for_ppc'
   PPC_FROM_DOCKER = 'ppc_from_docker'
+
+  CONFIG_DOCKER = "#{CONFIG_PREFIX}_#{DOCKER}"
+  CONFIG_LIBVIRT = "#{CONFIG_PREFIX}_#{LIBVIRT}"
+  CONFIG_DOCKER_FOR_PPC = "#{CONFIG_PREFIX}_#{DOCKER_FOR_PPC}"
+  CONFIG_PPC_FROM_DOCKER = "#{CONFIG_PREFIX}_#{PPC_FROM_DOCKER}"
+  CONFIG_AWS = "#{CONFIG_PREFIX}_#{AWS}"
+  CONFIG_VIRTUAL_BOX = "#{CONFIG_PREFIX}_#{VIRTUALBOX}"
+
+  CLONE_CONFIG_DOCKER = "#{CONFIG_PREFIX}_#{CLONED_CONFIG_INFIX}_#{DOCKER}"
+  CLONE_CONFIG_LIBVIRT = "#{CONFIG_PREFIX}_#{CLONED_CONFIG_INFIX}_#{LIBVIRT}"
+  CLONE_CONFIG_DOCKER_FOR_PPC = "#{CONFIG_PREFIX}_#{CLONED_CONFIG_INFIX}_#{DOCKER_FOR_PPC}"
+  CLONE_CONFIG_PPC_FROM_DOCKER = "#{CONFIG_PREFIX}_#{CLONED_CONFIG_INFIX}_#{PPC_FROM_DOCKER}"
+  CLONE_CONFIG_VIRTUAL_BOX = "#{CONFIG_PREFIX}_#{CLONED_CONFIG_INFIX}_#{VIRTUALBOX}"
 
   attr_accessor :old_session
 
@@ -82,11 +96,8 @@ class ParametrizedTestWrapper
   end
 
   def prepare_ppc_clone
-    config_docker_for_ppc = "#{CONFIG_PREFIX}_#{DOCKER_FOR_PPC}"
-    cloned_config_docker_for_ppc = "#{CONFIG_PREFIX}_#{CLONED_CONFIG_INFIX}_#{DOCKER_FOR_PPC}"
-    create_clone(config_docker_for_ppc, cloned_config_docker_for_ppc)
-    cloned_config_ppc_from_docker = "#{CONFIG_PREFIX}_#{CLONED_CONFIG_INFIX}_#{PPC_FROM_DOCKER}"
-    create_ppc_from_docker_config(cloned_config_docker_for_ppc, cloned_config_ppc_from_docker)
+    create_clone(CONFIG_DOCKER_FOR_PPC, CLONE_CONFIG_DOCKER_FOR_PPC)
+    create_ppc_from_docker_config(CLONE_CONFIG_DOCKER_FOR_PPC, CLONE_CONFIG_PPC_FROM_DOCKER)
   end
 
   def destroy_docker_config(config_name)
@@ -99,32 +110,33 @@ class ParametrizedTestWrapper
   end
 
   def remove_ppc_clone
-    cloned_config_ppc_from_docker = "#{CONFIG_PREFIX}_#{CLONED_CONFIG_INFIX}_#{PPC_FROM_DOCKER}"
-    remove_ppc_from_docker_config(cloned_config_ppc_from_docker)
-    cloned_config_docker_for_ppc = "#{CONFIG_PREFIX}_#{CLONED_CONFIG_INFIX}_#{DOCKER_FOR_PPC}"
-    template_docker = get_template_path(cloned_config_docker_for_ppc)
-    destroy_docker_config(cloned_config_docker_for_ppc)
+    remove_ppc_from_docker_config(CLONE_CONFIG_PPC_FROM_DOCKER)
+    template_docker = get_template_path(CLONE_CONFIG_DOCKER_FOR_PPC)
+    destroy_docker_config(CLONE_CONFIG_DOCKER_FOR_PPC)
     FileUtils.rm_rf(template_docker)
-    # removing clone leftovers
     Dir.glob('BOXES/fake_docker_boxes_*').each do |fake_box|
       FileUtils.rm_rf(fake_box)
     end
   end
 
-  def prepare_clones
-    create_clone("#{CONFIG_PREFIX}_#{DOCKER}", "#{CONFIG_PREFIX}_#{CLONED_CONFIG_INFIX}_#{DOCKER}")
-    create_clone("#{CONFIG_PREFIX}_#{LIBVIRT}", "#{CONFIG_PREFIX}_#{CLONED_CONFIG_INFIX}_#{LIBVIRT}")
-    prepare_ppc_clone
+  def prepare_clones(configs_providers)
+    create_clone(CONFIG_DOCKER, CLONE_CONFIG_DOCKER) if configs_providers.include? DOCKER
+    create_clone(CONFIG_LIBVIRT, CLONE_CONFIG_LIBVIRT) if configs_providers.include? LIBVIRT
+    prepare_ppc_clone if configs_providers.include? PPC
   end
 
-  def remove_clones
-    template_docker = get_template_path("#{CONFIG_PREFIX}_#{CLONED_CONFIG_INFIX}_#{DOCKER}")
-    destroy_docker_config("#{CONFIG_PREFIX}_#{CLONED_CONFIG_INFIX}_#{DOCKER}")
-    template_libvirt = get_template_path("#{CONFIG_PREFIX}_#{CLONED_CONFIG_INFIX}_#{LIBVIRT}")
-    destroy_config("#{CONFIG_PREFIX}_#{CLONED_CONFIG_INFIX}_#{LIBVIRT}")
-    FileUtils.rm_rf(template_docker)
-    FileUtils.rm_rf(template_libvirt)
-    remove_ppc_clone
+  def remove_clones(configs_providers)
+    if configs_providers.include? DOCKER
+      template_docker = get_template_path(CLONE_CONFIG_DOCKER)
+      destroy_docker_config(CLONE_CONFIG_DOCKER)
+      FileUtils.rm_rf(template_docker)
+    end
+    if configs_providers.include? LIBVIRT
+      template_libvirt = get_template_path(CLONE_CONFIG_LIBVIRT)
+      destroy_config(CLONE_CONFIG_LIBVIRT)
+      FileUtils.rm_rf(template_libvirt)
+    end
+    remove_ppc_clone if configs_providers.include? PPC
   end
 
 end

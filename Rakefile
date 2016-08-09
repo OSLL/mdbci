@@ -1,6 +1,12 @@
 require 'rake'
 require_relative 'spec/rake_helper'
 
+DOCKER = 'docker'
+LIBVIRT = 'libvirt'
+AWS = 'aws'
+PPC = 'ppc'
+VIRTUALBOX = 'virtualbox'
+
 # Bunch of tasks described as do...end block:
 # 1) Tasks description:
 #       task :task_generator do |t| RakeTaskManager.new(t).run_unit end

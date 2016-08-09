@@ -54,12 +54,7 @@ class Clone
     raise "#{path_to_nodes}/#{node_name} #{NODE_NOT_FOUND_ERROR}" unless get_nodes(path_to_nodes).include? node_name
     domain_uuid = get_node_machine_id(path_to_nodes, node_name)
     full_domain_name = get_libvirt_domain_name_by_uuid(domain_uuid)
-    root_directory = Dir.pwd
-    Dir.chdir path_to_nodes
-    node_status = execute_bash("vagrant status #{node_name}", true).split("\n")[2]
-    status = node_status.split(/\s+/)[1]
-    Dir.chdir root_directory
-    raise "#{path_to_nodes}/#{node_name}: #{LIBVIRT_NODE_RUNNING_ERROR}" unless status.include? 'shutoff'
+    raise "#{path_to_nodes}/#{node_name}: #{LIBVIRT_NODE_RUNNING_ERROR}" unless is_config_node_paused(path_to_nodes, node_name)
     new_libvirt_image_name = "#{path_to_new_config_directory}_#{node_name}_#{Time.now.to_i}"
     execute_bash "virt-clone -o #{full_domain_name} -n #{new_libvirt_image_name} --auto-clone"
     return new_libvirt_image_name
@@ -74,11 +69,11 @@ class Clone
   def clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
     nodes = get_nodes(path_to_nodes)
     nodes.each do |node_name|
-      stop_config_node(path_to_nodes, node_name)
+      suspend_config_node(path_to_nodes, node_name)
       new_libvirt_image_name = create_libvirt_node_clone(path_to_nodes, node_name, new_path_to_nodes)
       new_uuid = get_libvirt_uuid_by_domain_name(new_libvirt_image_name)
       replace_libvirt_node_id(new_path_to_nodes, node_name, new_uuid)
-      start_config_node(path_to_nodes, node_name, true)
+      resume_config_node(path_to_nodes, node_name)
     end
   end
 
