@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 import sys
 
 PROJECTS_URL = '{0}/projects.json'
-ISSUES_URL = '{0}/issues.json?project_id={1}&limit=1000000&{2}'
+ISSUES_URL = '{0}/issues.json?project_id={1}&limit=100&offset={2}&{3}'
 JOURNAL_URL = '{0}/issues/{1}.json?include=journals'
 
 NAME = 'name'
@@ -17,6 +17,9 @@ PROJECTS = 'projects'
 ISSUES = 'issues'
 JOURNALS = 'journals'
 ISSUE = 'issue'
+LIMIT_MAX = 100
+LIMIT = 'limit'
+TOTAL_COUNT = 'total_count'
 
 def getProjectId(hostName, projectName):
     url = PROJECTS_URL.format(hostName)
@@ -27,8 +30,18 @@ def getProjectId(hostName, projectName):
     raise ValueError("Project {0} not found!".format(projectName))
 
 def getIssuesList(hostName, projectId, issuefilter):
-    url = ISSUES_URL.format(hostName, projectId, issuefilter)
-    return get(url, verify=False).json()[ISSUES]
+    issues = []
+    offset = 0
+    while True: 
+      url = ISSUES_URL.format(hostName, projectId, offset, issuefilter)
+      print "Requesting issues by url: {0}".format(url)
+      result = get(url, verify=False).json()
+      issues += result[ISSUES]
+      if offset > result[TOTAL_COUNT]:
+          break
+      offset += LIMIT_MAX
+      
+    return issues
 
 def getIssueJournal(hostName, issueId):
     url = JOURNAL_URL.format(hostName, issueId)
@@ -60,10 +73,12 @@ def getIssuesStatistics(hostName, issues):
 
 def printIssueStatistics(issuesStatistics):
     for user, statistic in issuesStatistics.iteritems():
-        readableStatistic = ""
+        readableIssueList = ""
+        taskCount = 0
         for issueId, contributorCount in statistic.iteritems():
-            readableStatistic += "{0}({1}), ".format(issueId, contributorCount)
-        print "{0}:\t{1}".format(user, readableStatistic)
+            readableIssueList += "{0}({1}), ".format(issueId, contributorCount)
+            taskCount += 1.0/float(contributorCount)
+        print "{0}({1}):\t{2}".format(user, taskCount, readableIssueList)
 
 #def aggregateIssuesStatistics(issuesStatistics)
 
@@ -92,9 +107,12 @@ def parseArguments():
 
 if __name__ == '__main__':
     arguments = parseArguments()
+    print "Getting project id"
     projectId = getProjectId(arguments.hostName, arguments.projectName)
+    print "Project id = {0}".format(projectId)
+    print "Recieving issue list using project_id and filter"
     issuesList = getIssuesList(arguments.hostName, projectId, arguments.issueFilter)
+    print "Recieved {0} issues".format(len(issuesList))
+    print "Calculating task statistics for users"
     issuesStatistics = getIssuesStatistics(arguments.hostName, issuesList)
     printIssueStatistics(issuesStatistics) 
-#    aggregatedIssuesStatistics = aggregateIssuesStatistics(issuesStatistics)
-#    printAggregatedIssuesStatistics(aggregatedIssuesStatistics)
