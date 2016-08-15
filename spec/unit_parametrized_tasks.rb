@@ -41,7 +41,6 @@ task :run_unit_parametrized do
   task :task_6640_sudo_exit_code do |t| RakeTaskManager.new(t).run_unit_parametrized([DOCKER, LIBVIRT]) end
   Rake::Task[:task_6640_sudo_exit_code].execute
 
-=begin
   task :task_7222_testing_environment_check do |t| RakeTaskManager.new(t).run_unit_parametrized([DOCKER, LIBVIRT, PPC]) end
   Rake::Task[:task_7222_testing_environment_check].execute
 
@@ -53,6 +52,6 @@ task :run_unit_parametrized do
 
   task :task_7364_devide_param_test_by_config_ppc do |t| RakeTaskManager.new(t).run_unit_parametrized([PPC]) end
   Rake::Task[:task_7364_devide_param_test_by_config_ppc].execute
-=end
+
   RakeTaskManager.get_failed_tests_info
 end
