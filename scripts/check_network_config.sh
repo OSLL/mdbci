@@ -17,15 +17,15 @@ if [ -d $PATH_TO_CONFIG/ ]; then
       fi     
     done
     if [ $IS_RELEVANCE -eq 1 ]; then
-      echo Relevance network config
+      echo $NETWORK_CONFIG_FILE is relevant
       exit 0
     else
-      echo NOT relevance network config
+      echo $NETWORK_CONFIG_FILE is NOT relevant
     fi
   else
-    echo NOT relevance network config: all nodes destroyed
+    echo $NETWORK_CONFIG_FILE is NOT relevant: all nodes destroyed
   fi
 else
-  echo File not found!
+  echo $NETWORK_CONFIG_FILE not found!
 fi
 exit 1
