@@ -10,7 +10,6 @@ describe 'Session' do
   before :all do
     $out = Out.new
     $session = Session.new
-    $session.isSilent = true
     $session.mdbciDir = Dir.pwd
     $exception_handler = ExceptionHandler.new
     boxesPath = './BOXES'
@@ -20,12 +19,16 @@ describe 'Session' do
     $session.command = 'ls'
   end
 
-  it '#sudo should exit with zero code for aws/vbox nodes nodes' do
-    $session.ssh(ENV['pathToConfigToVBOXNode'].to_s).should(eql(0))
+  it '#sudo should exit with zero code for libvirt nodes nodes' do
+    $session.sudo("#{ENV['mdbci_param_conf_libvirt']}/node1").should(eql(0))
+  end
+
+  it '#sudo should exit with zero code for docker nodes nodes' do
+    $session.sudo("#{ENV['mdbci_param_conf_docker']}/node1").should(eql(0))
   end
 
   it '#sudo should exit with non-zero code for aws/vbox nodes nodes (no such machine exists)' do
-    $session.sudo('TEST_MACHINE').should(eql(1))
+    lambda{$session.sudo('TEST_MACHINE')}.should raise_error
   end
 
 end
