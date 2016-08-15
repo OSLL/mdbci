@@ -15,18 +15,20 @@ configuration=$1
 #   if mdbci snapshot list $? == 0 then exit 1
 
 # Get list of nodes
-cd ${configuration}
-nodes=`for i in $(ls -d */); do echo ${i%%/}; done`
-cd ..
+nodes=`ls ${configuration}/ | grep '.json' | sed -e 's/\.json//g'`
+#cd ${configuration}
+#nodes=`for i in $(ls -d */); do echo ${i%%/}; done`
+#cd ..
 
 # Iterating list of nodes
 for node in $nodes
 do
 	# Checking individual node snapshots
 	node_snapshots=`./mdbci snapshot list --path-to-nodes ${configuration} --node-name ${node} --silent | wc -l`
-	if [[ "$?" == "0" &&  $node_snapshots != "1"  ]]
+	if [[ "$?" == "0" &&  $node_snapshots -gt "1"  ]]
 	then
 		echo "Snapshot exists for ${configuration}/${node}"
 		exit 1
 	fi
 done 
+echo "No snapshots found for ${configuration}"
