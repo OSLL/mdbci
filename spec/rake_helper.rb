@@ -1,10 +1,20 @@
 require_relative '../scripts/parametrized_testing/parametrized_test_wrapper'
 
-PATH_TO_RSPEC_SPEC_FOLDER = 'spec/'
-PATH_TO_INTEGRATION_TESTS_FOLDER = 'integration/'
-PATH_TO_UNIT_TESTS_FOLDER = 'unit/'
-
 class RakeTaskManager
+
+  PATH_TO_RSPEC_SPEC_FOLDER = 'spec/'
+  PATH_TO_INTEGRATION_TESTS_FOLDER = 'integration/'
+  PATH_TO_UNIT_TESTS_FOLDER = 'unit/'
+
+  PARAMETTRIZED_CONFIG_ENV_VAR_PREFIX = 'mdbci_param_conf'
+  PARAMETTRIZED_CONFIG_PREFIX = 'mdbci_param_test_clone'
+  PARAMETTRIZED_CONFIGS = {
+    "#{PARAMETTRIZED_CONFIG_ENV_VAR_PREFIX}_#{DOCKER}" => "#{PARAMETTRIZED_CONFIG_PREFIX}_#{DOCKER}",
+    "#{PARAMETTRIZED_CONFIG_ENV_VAR_PREFIX}_#{LIBVIRT}" => "#{PARAMETTRIZED_CONFIG_PREFIX}_#{LIBVIRT}",
+    "#{PARAMETTRIZED_CONFIG_ENV_VAR_PREFIX}_#{PPC}" => "#{PARAMETTRIZED_CONFIG_PREFIX}_#{PPC_FROM_DOCKER}",
+    "#{PARAMETTRIZED_CONFIG_ENV_VAR_PREFIX}_#{VIRTUALBOX}" => "#{PARAMETTRIZED_CONFIG_PREFIX}_#{VIRTUALBOX}",
+    "#{PARAMETTRIZED_CONFIG_ENV_VAR_PREFIX}_#{AWS}" => "#{PARAMETTRIZED_CONFIG_PREFIX}_#{AWS}"
+  }
 
   attr_accessor :rspec_test_name
   attr_accessor :failed_tests
@@ -82,11 +92,21 @@ class RakeTaskManager
     end
   end
 
+  def with_environment_variables(variables)
+    variables.each { |key, value| ENV[key.to_s] = value }
+    yield
+    variables.each { |key, _| ENV.delete(key.to_s) }
+  end
+
   def run_parametrized(arguments)
-    ptw = ParametrizedTestWrapper.new
-    ptw.prepare_clones(arguments)
-    run
-    ptw.remove_clones(arguments)
+    with_environment_variables(PARAMETTRIZED_CONFIGS){
+      puts PARAMETTRIZED_CONFIGS
+      puts ENV['MDBCI_PARAM_CONFIG_DOCKER']
+      ptw = ParametrizedTestWrapper.new
+      ptw.prepare_clones(arguments)
+      run
+      ptw.remove_clones(arguments)
+    }
   end
 
   def run_unit
