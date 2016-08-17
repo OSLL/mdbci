@@ -132,37 +132,23 @@ EOF
   end
 
   def sudo(args)
-    exit_code = 1
-    possibly_failed_command = ''
-    pwd = Dir.pwd
-
-    if args.nil?
-      $out.error 'Configuration name is required'
-      exit_code = 1
-    end
-
+    raise 'config name is required' if args.nil?
+    puts `ls`
     config = args.split('/')
-    unless Dir.exists?(config[0])
-      $out.error 'Machine with such name does not exists'
-      exit_code = 1
-    end
-
+    raise 'config does not exists' unless Dir.exist?(config[0])
+    raise 'node name is required' if config[1].to_s.empty?
+    pwd = Dir.pwd
     Dir.chdir config[0]
     cmd = 'vagrant ssh '+config[1]+' -c "/usr/bin/sudo '+$session.command+'"'
     $out.info 'Running ['+cmd+'] on '+config[0]+'/'+config[1]
     vagrant_out = `#{cmd}`
     exit_code = $?.exitstatus
-    possibly_failed_command = cmd
     $out.out vagrant_out
-
     Dir.chdir pwd
-
     if exit_code != 0
-      $out.error "command '#{possibly_failed_command}' exit with non-zero code: #{exit_code}"
-      exit_code = 1
+      raise "command '#{cmd}' exit with non-zero code: #{exit_code}"
     end
-
-    return exit_code
+    return 0
   end
 
   # load template nodes
