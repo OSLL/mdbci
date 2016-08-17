@@ -73,7 +73,7 @@ end
 def clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
   nodes = get_nodes(path_to_nodes)
   nodes.each do |node_name|
-    stop_config_node(path_to_nodes, node_name)
+    stop_config(path_to_nodes, node_name)
     new_libvirt_image_name = create_libvirt_node_clone(path_to_nodes, node_name, new_path_to_nodes)
     new_uuid = get_libvirt_uuid_by_domain_name(new_libvirt_image_name)
     replace_libvirt_node_id(new_path_to_nodes, node_name, new_uuid)
