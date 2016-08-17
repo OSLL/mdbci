@@ -826,7 +826,7 @@ EOF
     else # aws, vbox, libvirt, docker nodes
 
       unless Dir.exists? args[0]
-        raise "Directory with nodes does not exists: #{args[1]}"
+        raise "Directory with nodes does not exists: #{args[0]}"
       end
 
       network = Network.new

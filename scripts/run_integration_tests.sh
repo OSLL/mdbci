@@ -13,4 +13,4 @@ if [[ $silent != "true" ]] && [[ $silent != "false" ]]; then
 	silent=true
 fi
 
-SILENT=$silent rake run_integration
+SILENT=$silent rake run_integration_all
