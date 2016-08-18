@@ -13,7 +13,11 @@ if [[ $PATH_LENGHT -lt 1 ]]; then
 fi
 
 PATH_TO_CONFIG=${NETWORK_CONFIG_FILE:0:PATH_LENGHT}/.vagrant/machines # Cut path from filename.
-NETWORK_CONFIG_TIME=$(stat --format=%Y $NETWORK_CONFIG_FILE) # Time of modify network config file.
+
+ACCESS_TIME=$(stat --format=%X $NETWORK_CONFIG_FILE)
+MODIFY_TIME=$(stat --format=%Y $NETWORK_CONFIG_FILE)
+NETWORK_CONFIG_TIME=$([[ $ACCESS_TIME > $MODIFY_TIME ]] && echo "$ACCESS_TIME" || echo "$MODIFY_TIME")
+
 IS_RELEVANCE=1
 
 if ! [ -d $PATH_TO_CONFIG/ ]; then
@@ -21,12 +25,13 @@ if ! [ -d $PATH_TO_CONFIG/ ]; then
   exit 1  
 fi
 
-if [[ ! $(find  $PATH_TO_CONFIG/*/*/id) ]]; then
+if [[ ! $(find  $PATH_TO_CONFIG/*/*/synced_folders) ]]; then
   echo $NETWORK_CONFIG_FILE is NOT relevant: all nodes destroyed
   exit 1
 fi
 
-MODIFIED=( $(stat --format=%Y $PATH_TO_CONFIG/*/*/id) )
+MODIFIED=( $(stat --format=%Y $PATH_TO_CONFIG/*/*/synced_folders) )
+ACCESSED=( $(stat --format=%X $PATH_TO_CONFIG/*/*/synced_folders) )
 
 for TIME in ${MODIFIED[@]}; do
   if [[ $TIME -gt $NETWORK_CONFIG_TIME ]]; then
@@ -35,6 +40,13 @@ for TIME in ${MODIFIED[@]}; do
   fi     
 done
  
+for TIME in ${ACCESSED[@]}; do
+  if [[ $TIME -gt $NETWORK_CONFIG_TIME ]]; then
+    IS_RELEVANCE=0
+    break
+  fi
+done
+
 if [ $IS_RELEVANCE -ne 1 ]; then
   echo $NETWORK_CONFIG_FILE is NOT relevant
   exit 1
