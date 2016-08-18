@@ -62,7 +62,7 @@ mdbci [option] <show | setup | generate>
   name of the snapshot
 
 COMMANDS:
-  show [platforms, providers, versions, network, repos, snapshot [config | config/node], keyfile config/node ]
+  show [platforms, providers, versions, network, repos, keyfile config/node, network_config config/node ]
   generate
   setup [boxes]
   show boxes --platform 'box platform' --platform-version 'box platform version'
@@ -72,7 +72,8 @@ COMMANDS:
   setup_repo --product <product_name> config/node
   install_product --product <product_name> config/node
   public_keys --key keyfile.pem config/node
-  snapshot --path-to-nodes T [--node-name N --snapshot-name S]
+  snapshot list --path-to-nodes T --node-name N
+  snapshot [take, revert, delete] --path-to-nodes T [ --node-name N ] --snapshot-name S
   validate_template --template TEMPLATE_PATH
 
 
