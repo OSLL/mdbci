@@ -1,12 +1,5 @@
 namespace :run_unit_parametrized do
 
-# TESTS NOT NEED TO BRING UP MACHINES
-=begin 
-  task :task_6641_setup_exit_code, [:pathToTestBoxes, :testBoxName] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
-  task :task_6818_search_box_name_by_config, [:configPath, :nodeName] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end
-=end
-
-
 # TESTS THAT NOT FOUND OR NOT IMPORTANT AT THE MOMENT
 =begin
   task :task_6803_showKeyFile_exceptions, [:pathToVboxFolder] do |t, args| RakeTaskManager.new(t).run_parametrized(args) end

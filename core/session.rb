@@ -107,8 +107,8 @@ EOF
             puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
             shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
           else
-            puts 'vagrant box add --provider virtualbox '+value['box'].to_s
-            shell = 'vagrant box add --provider virtualbox '+value['box'].to_s
+            puts "vagrant box add --provider #{value['provider']} "+value['box'].to_s
+            shell = "vagrant box add --provider #{value['provider']} "+value['box'].to_s
           end
           shellCommand = `#{shell} 2>&1` # THERE CAN BE DONE CUSTOM EXCEPTION
 
