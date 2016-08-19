@@ -13,4 +13,4 @@ if [[ $silent != "true" ]] && [[ $silent != "false" ]]; then
 	silent=true
 fi
 
-SILENT=$silent rake run_unit
+SILENT=$silent rake run_unit_all

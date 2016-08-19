@@ -3,6 +3,7 @@ require 'find'
 require_relative 'node'
 require_relative 'out'
 #require_relative 'session'
+require_relative 'helper'
 
 class Network
 
@@ -233,7 +234,7 @@ class Network
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == node_arg }
         raise "MDBCI node #{node_arg} is not found in #{dir}" if mdbci_node.nil?
-        box_params = getBoxParams(node[1])
+        box_params = getBoxParams(mdbci_node[1])
         result_ip.push(getNodeParam('IP',mdbci_node, box_params))
       end
     else # aws, vbox nodes
@@ -298,11 +299,13 @@ def printConfigurationNetworkInfoToFile(configuration,node='')
 
 end
 
-def collectConfigurationNetworkInfo(configuration,node_one)
+def collectConfigurationNetworkInfo(configuration,node_one='')
+
+  raise 'configuration name is required' if configuration.nil?
 
   configurationNetworkInfo = Hash.new
   if node_one.empty?
-    nodes = get_nodes(configuration)# TODO add getNodes
+    nodes = get_nodes(configuration)
   else
     nodes = [node_one]
   end
