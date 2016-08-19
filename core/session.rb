@@ -450,6 +450,8 @@ EOF
         exit_code = snapshot.do(ARGV.shift)
       when 'clone'
         exit_code = $session.clone(ARGV[0], ARGV[1])
+      when 'check_relevance'
+        exit_code = $session.checkRelevanceNetworkConfig(ARGV.shift)
       else
         $out.error 'Unknown mdbci command. Please look help!'
         Help.display
@@ -940,5 +942,9 @@ EOF
     end
 
   end
+  
+  def checkRelevanceNetworkConfig(filename)
+    system 'scripts/check_network_config.sh ' + filename
+  end  
 
 end
