@@ -20,26 +20,20 @@ describe 'Network' do
     $session.repos = RepoManager.new reposPath
   end
 
-=begin
   it '#showKeyFile should exit with zero code for concrete mdbci/ppc64 node' do
-    Network.showKeyFile(ENV['pathToConfigToMDBCINode']).should(eql(0))
+    Network.showKeyFile("#{ENV['mdbci_param_conf_ppc']}/node1").should(eql(0))
   end
 
   it '#showKeyFile should exit with zero code for mdbci/ppc64 nodes' do
-    Network.showKeyFile(ENV['pathToConfigToMDBCIFolder']).should(eql(0))
+    Network.showKeyFile(ENV['mdbci_param_conf_ppc']).should(eql(0))
   end
 
   it '#showKeyFile should raise exception for mdbci/ppc64 node (when no such node exists)' do
-    lambda{Network.showKeyFile(ENV['pathToConfigToMDBCIFolder']+'/NOT_EXISTS')}.should(raise_error(RuntimeError, "MDBCI nodes are not found in"+ENV['pathToConfigToMDBCIFolder']));
+    lambda{Network.showKeyFile("#{ENV['mdbci_param_conf_ppc']}/NOT_EXIST")}.should raise_error /MDBCI node is not found in .*/
   end
 
-  it '#showKeyFile should raise exception for concrete mdbci/ppc64 node (bad keyfile path)' do
-    lambda{Network.showKeyFile(ENV['pathToConfigToMDBCIBadNode'])}.should(raise_error(RuntimeError, "/Key file.* is not found for node.*/"));
-  end
-=end
-
-  it '#showKeyFile should show keyfile for aws/vbox nodes' do
-    Network.showKeyFile(ENV['configPathToVBOXNode']).should(eql(0))
+  it '#showKeyFile should show keyfile for docker nodes' do
+    Network.showKeyFile(ENV['mdbci_param_conf_libvirt']).should(eql(0))
   end
 
   it '#showKeyFile should raise exception for all nodes (when arguments are nil)' do

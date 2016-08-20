@@ -132,12 +132,10 @@ class BoxesManager
     template_path = pathParse['template_path']
     if node_name.empty?
       boxes = Array.new
-      Dir.glob(nodes_directory + '/*.json', File::FNM_DOTMATCH) do |f|
-        boxes.push(getBoxByConfig(template_path, f.split('/')[-1].chomp('.json')))
+      get_nodes(nodes_directory).each do |node_name|
+        boxes.push(getBoxByConfig(template_path, node_name))
       end
-
       raise "Boxes are not found for generated nodes configurations #{nodes_directory}" if boxes.empty?
-
       return boxes.uniq
     else
       return getBoxByConfig(template_path, node_name)
