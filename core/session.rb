@@ -182,7 +182,6 @@ EOF
   # ./mdbci ssh command for AWS, VBox and PPC64 machines
   def ssh(args)
     result_ssh = getSSH(args,"")
-    puts result_ssh
     result_ssh.each do |ssh_out|
       $out.out ssh_out
     end
@@ -219,12 +218,12 @@ EOF
         Dir.chdir dir
         if node_arg.nil? # ssh for all nodes
           nodes.each do |node|
-            cmd = "vagrant ssh #{node} -c '#{$session.command}'"
+            cmd = "vagrant ssh #{node} -c \"#{$session.command}\""
             result.push(runSSH(cmd,params))
           end
         else
           raise "node with such name does not exist in #{dir}: #{node_arg}" unless nodes.include? node_arg
-          cmd = "vagrant ssh #{node_arg} -c '#{$session.command}'"
+          cmd = "vagrant ssh #{node_arg} -c \"#{$session.command}\""
           result.push(runSSH(cmd,params))
         end
       ensure
