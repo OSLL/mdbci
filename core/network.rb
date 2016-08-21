@@ -59,6 +59,26 @@ class Network
     end
   end
 
+  def self.getBoxParameters(node_param)
+    box = node_param['box'].to_s
+    raise "Can not find box parameter for node #{node_name}" if box.empty?
+    box_params = $session.boxes.getBox(box)
+    raise "Can not find box #{box} node #{node_param} in #{dir}" if box_params.empty?
+    return box_params
+  end
+
+  def self.getBoxParameterKeyPath(dir,node,pwd)
+    result_hash = Hash.new()
+    node_name = node[0]
+    node_params = node[1]
+    box_params = getBoxParameters(node_params)
+    key_path = "#{pwd}/KEYS/#{box_params['keyfile']}"
+    unless File.exist?(key_path)
+      raise "Key file #{box_params['keyfile']} is not found for node #{node_name} in #{dir}"
+    end
+    result_hash["key"] = key_path.to_s
+    return result_hash
+  end
 
   def self.showKeyFile(name)
     result_keys = getKeyFile(name)
@@ -79,16 +99,16 @@ class Network
     # mdbci ppc64 boxes
     if File.exist?(dir+'/mdbci_template')
       $session.loadMdbciNodes dir
+      raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty?
       if node_arg.nil?
-        raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty?
         $session.mdbciNodes.each do |node|
-          key_path = getBoxParams(dir,node,pwd)
+          key_path = getBoxParameterKeyPath(dir,node,pwd)
           result.push(key_path)
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == node_arg }
-        raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty? || mdbci_node.nil?
-        key_path = getBoxParams(dir,mdbci_node,pwd)
+        raise "MDBCI node is not found in #{dir}" if mdbci_node.nil?
+        key_path = getBoxParameterKeyPath(dir,mdbci_node,pwd)
         result.push(key_path)
       end
     else
@@ -105,22 +125,6 @@ class Network
       Dir.chdir pwd
     end
     return result
-  end
-
-  def getBoxParams(dir,node,pwd)
-    result_hash = Hash.new()
-    node_name = node[0]
-    node_params = node[1]
-    box = node_params['box'].to_s
-    raise "Box parameter is not found for node #{node_name} in #{dir}" if box.empty?
-    box_params = $session.boxes.getBox(box)
-    raise "Box #{box} is not found for node #{node_name} in #{dir}" if box_params.nil?
-    key_path = "#{pwd}/KEYS/#{box_params['keyfile']}"
-    unless File.exist?(key_path)
-      raise "Key file #{box_params['keyfile']} is not found for node #{node_name} in #{dir}"
-    end
-    result_hash["key"] = key_path.to_s
-    return result_hash
   end
 
   def self.show(name)
@@ -150,14 +154,14 @@ class Network
           raise "MDBCI nodes not found in #{directory}"
         end
         $session.mdbciNodes.each do |node|
-          results.push(getBoxParametr(node,'IP'))
+          results.push(getBoxParameter(node, 'IP'))
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == node_arg }
         if mdbci_node.nil?
           raise "mdbci node #{mdbci_node[1].to_s} not found!"
         end
-        results.push(getBoxParametr(mdbci_node,'IP'))
+        results.push(getBoxParameter(mdbci_node, 'IP'))
       end
     else # aws, vbox nodes
       unless Dir.exist? directory
@@ -190,7 +194,7 @@ class Network
     return hash
   end
 
-  def self.getBoxParametr(node,param)
+  def self.getBoxParameter(node,param)
     result = Hash.new()
     box = node[1]['box'].to_s
     if box.empty?
@@ -228,14 +232,14 @@ class Network
       raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty?
       if node_arg.nil?     # read ip for all nodes
         $session.mdbciNodes.each do |node|
-          box_params = getBoxParams(node[1])
-          result_ip.push(getNodeParam('IP',node, box_params))
+          box_params = getBoxParameters(node[1])
+          result_ip.push({'node' =>node[0], 'ip' =>getNodeParam('IP', node[0], box_params)['IP']})
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == node_arg }
         raise "MDBCI node #{node_arg} is not found in #{dir}" if mdbci_node.nil?
-        box_params = getBoxParams(mdbci_node[1])
-        result_ip.push(getNodeParam('IP',mdbci_node, box_params))
+        box_params = getBoxParameters(mdbci_node[1])
+        result_ip.push({'node' =>mdbci_node[0], 'ip' =>getNodeParam('IP', mdbci_node[0], box_params)['IP']})
       end
     else # aws, vbox nodes
       raise "Can not find directory #{dir}" unless Dir.exists? dir
@@ -266,18 +270,10 @@ class Network
   end
 
   def self.getNodeParam(param,node_name,box_params)
-    result = Hash.new("")
+    result = Hash.new
     result["node"] = node_name.to_s
     result[param.to_s] = box_params[param].to_s
-    return result    
-  end
-
-  def self.getBoxParams(node_param)
-    box = node_param['box'].to_s
-    raise "Can not find box parameter for node #{node_name}" if box.empty?
-    box_params = $session.boxes.getBox(box)
-    raise "Can not find box #{box} node #{node_param} in #{dir}" if box_params.empty?
-    return box_params
+    return result
   end
 
 end
@@ -302,6 +298,7 @@ end
 def collectConfigurationNetworkInfo(configuration,node_one='')
 
   raise 'configuration name is required' if configuration.nil?
+  raise 'configuration does not exist' unless Dir.exist? configuration
 
   configurationNetworkInfo = Hash.new
   if node_one.empty?
