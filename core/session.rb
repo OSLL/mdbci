@@ -513,7 +513,7 @@ EOF
       raise 'The path of configuration aws file is not specified' if @awsConfigFile == nil
       $out.info 'Load AWS config from ' + @awsConfigFile
       @awsConfig = $exception_handler.handle('AWS configuration file not found') { YAML.load_file(@awsConfigFile)['aws'] }
-
+      aws_config_path_file = path+'/aws_config_path'
       aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
       @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
     end
@@ -542,6 +542,11 @@ EOF
       else
         raise 'Configuration \'template\' file don\'t exist'
       end
+      if @nodesProvider == 'aws'
+        if !File.exist?(aws_config_path_file)
+          File.open(path+'/aws_config_path', 'w') { |f| f.write(@awsConfigFile.to_s) }
+        end
+      end
     end
 
     return 0
@@ -559,7 +564,6 @@ EOF
   # Deploy configurations
   def up(args)
     std_q_attampts = 5
-
     # No arguments provided
     raise "Command 'up' needs one argument, found zero" if args.nil?
 
@@ -616,6 +620,14 @@ EOF
       $out.warning 'You are using mdbci nodes template. ./mdbci up command doesn\'t supported for this boxes!'
       return 1
     else
+      if @nodesProvider == 'aws'
+        begin
+          $session.awsConfig = File.read('aws_config_path')
+        rescue
+          raise 'File with path to aws config not found'
+        end
+        puts($session.awsConfig)
+      end
       # Generating docker images (so it will not be loaded for similar nodes repeatedly)
       generateDockerImages(template, '.') if @nodesProvider == 'docker'
 
