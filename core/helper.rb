@@ -9,6 +9,7 @@ TEMPLATE_NOT_FOUND_ERROR = 'template not found'
 NON_ZERO_BASH_EXIT_CODE_ERROR = 'command exited with non zero exit code'
 MDBCI_MACHINE_HAS_NO_ID_ERROR = 'mdbci machine does not have id'
 ACTION_NOT_SUPPORTED_FOR_PPC = 'action is not supported for machines with \'mdbci(ppc)\' provider'
+ACTION_NOT_SUPPORTED_FOR_DOCKER = 'action is not supported for machines with \'docker\' provider'
 UNKNOWN_PROVIDER_ERROR = 'provider is unknown (file with provider definition is missing)'
 TEMPLATE_FILE_NOT_FOUND = 'template (or mdbci_template) file not found'
 TEMPLATE_PATH_EMPTY = 'template (or mdbci_template) path is empty'
@@ -46,7 +47,7 @@ def get_template_path(path_to_nodes)
   template_path = nil
   begin
     if provider == MDBCI
-      template_path = File.read "#{path_to_nodes}/mdbci_template" 
+      template_path = File.read "#{path_to_nodes}/mdbci_template"
     else
       template_path = File.read "#{path_to_nodes}/template"
     end
@@ -130,9 +131,12 @@ def destroy_config(config_name)
   if Dir.exist? config_name
     unless get_provider(config_name) == MDBCI
       root_dir = Dir.pwd
-      Dir.chdir config_name
-      execute_bash('vagrant destroy -f')
-      Dir.chdir root_dir
+      begin
+        Dir.chdir config_name
+        execute_bash('vagrant destroy -f')
+      ensure
+        Dir.chdir root_dir
+      end
     end
     FileUtils.rm_rf config_name
   end
@@ -143,9 +147,12 @@ def stop_config_node(config_name, node_name)
     raise "stopping machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
   end
   root_directory = Dir.pwd
-  Dir.chdir config_name
-  execute_bash("vagrant halt #{node_name}")
-  Dir.chdir root_directory
+  begin
+    Dir.chdir config_name
+    execute_bash("vagrant halt #{node_name}")
+  ensure
+    Dir.chdir root_directory
+  end
   begin
     out_info 'waiting machine to be shutted down (2 seconds)'
     sleep 2
@@ -154,22 +161,34 @@ end
 
 def suspend_config_node(config_name, node_name)
   if get_provider(config_name) == MDBCI
-    raise "stopping machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
+    raise "suspending machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
+  end
+  if get_provider(config_name) == DOCKER
+    raise "suspending machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_DOCKER}"
   end
   root_directory = Dir.pwd
-  Dir.chdir config_name
-  execute_bash("vagrant suspend #{node_name}")
-  Dir.chdir root_directory
+  begin
+    Dir.chdir config_name
+    execute_bash("vagrant suspend #{node_name}")
+  ensure
+    Dir.chdir root_directory
+  end
 end
 
 def resume_config_node(config_name, node_name)
   if get_provider(config_name) == MDBCI
-    raise "stopping machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
+    raise "resuming machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
+  end
+  if get_provider(config_name) == DOCKER
+    raise "resuming machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_DOCKER}"
   end
   root_directory = Dir.pwd
-  Dir.chdir config_name
-  execute_bash("vagrant resume #{node_name}")
-  Dir.chdir root_directory
+  begin
+    Dir.chdir config_name
+    execute_bash("vagrant resume #{node_name}")
+  ensure
+    Dir.chdir root_directory
+  end
 end
 
 def stop_config(config_name)
@@ -179,9 +198,12 @@ def stop_config(config_name)
   nodes = get_nodes(config_name)
   nodes.each { |node_name| stop_config_node(config_name, node_name) }
   root_directory = Dir.pwd
-  Dir.chdir config_name
-  execute_bash('vagrant halt')
-  Dir.chdir root_directory
+  begin
+    Dir.chdir config_name
+    execute_bash('vagrant halt')
+  ensure
+    Dir.chdir root_directory
+  end
 end
 
 def start_config_node(config_name, node_name, no_provision = true)
@@ -190,10 +212,13 @@ def start_config_node(config_name, node_name, no_provision = true)
     raise "starting machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
   end
   root_directory = Dir.pwd
-  Dir.chdir config_name
-  no_provision_cmd = no_provision ? '--no-provision' : ''
-  execute_bash("vagrant up --provider #{provider} #{no_provision_cmd}")
-  Dir.chdir root_directory
+  begin
+    Dir.chdir config_name
+    no_provision_cmd = no_provision ? '--no-provision' : ''
+    execute_bash("vagrant up --provider #{provider} #{no_provision_cmd}")
+  ensure
+    Dir.chdir root_directory
+  end
 end
 
 def start_config(config_name, no_provision = false, no_parallel = false)
@@ -202,11 +227,14 @@ def start_config(config_name, no_provision = false, no_parallel = false)
     raise "starting config #{config_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
   end
   root_directory = Dir.pwd
-  Dir.chdir config_name
-  no_provision_cmd = no_provision ? '--no-provision' : ''
-  no_parallel_cmd = no_parallel ? '--no-parallel' : ''
-  execute_bash("vagrant up --provider #{provider} #{no_provision_cmd} #{no_parallel_cmd}")
-  Dir.chdir root_directory
+  begin
+    Dir.chdir config_name
+    no_provision_cmd = no_provision ? '--no-provision' : ''
+    no_parallel_cmd = no_parallel ? '--no-parallel' : ''
+    execute_bash("vagrant up --provider #{provider} #{no_provision_cmd} #{no_parallel_cmd}")
+  ensure
+    Dir.chdir root_directory
+  end
 end
 
 def get_config_node_status(config_name, node_name)
@@ -214,10 +242,13 @@ def get_config_node_status(config_name, node_name)
     raise "getting status for #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
   end
   root_dir = Dir.pwd
-  Dir.chdir config_name
-  output = execute_bash("vagrant status #{node_name}", true)
-  output = output.to_s.split("\n")[2].split(/\s+/)
-  Dir.chdir root_dir
+  begin
+    Dir.chdir config_name
+    output = execute_bash("vagrant status #{node_name}", true)
+    output = output.to_s.split("\n")[2].split(/\s+/)
+  ensure
+    Dir.chdir root_dir
+  end
   if output.size == 4
     return "#{output[1]} #{output[2]}"
   elsif  output.size == 3

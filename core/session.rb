@@ -207,15 +207,28 @@ EOF
         end
       else
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == node_arg }
+        raise "mdbci node with such name does not exist in #{dir}: #{node_arg}" if mdbci_node.nil?
         cmd = createCmd(params,mdbci_node,pwd)
         result.push(runSSH(cmd, params))
       end
     else # aws, vbox nodes
-      raise "Machine with such name: #{dir} does not exist" unless Dir.exist?(dir) 
-      Dir.chdir dir
-      cmd = 'vagrant ssh '+node_arg.to_s+' -c "'+$session.command+'"'
-      result.push(runSSH(cmd,params))      
-      Dir.chdir pwd
+      raise "Machine with such name: #{dir} does not exist" unless Dir.exist?(dir)
+      begin
+        nodes = get_nodes(dir)
+        Dir.chdir dir
+        if node_arg.nil? # ssh for all nodes
+          nodes.each do |node|
+            cmd = "vagrant ssh #{node} -c \"#{$session.command}\""
+            result.push(runSSH(cmd,params))
+          end
+        else
+          raise "node with such name does not exist in #{dir}: #{node_arg}" unless nodes.include? node_arg
+          cmd = "vagrant ssh #{node_arg} -c \"#{$session.command}\""
+          result.push(runSSH(cmd,params))
+        end
+      ensure
+        Dir.chdir pwd
+      end
     end
     return result
   end
@@ -227,7 +240,7 @@ EOF
     raise "Box: #{box} is empty" if box.empty?
 
     box_params = $session.boxes.getBox(box)
-    cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+box_params['keyfile'].to_s + " "\
+    cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + pwd.to_s+'/KEYS/'+box_params['keyfile'].to_s + " "\
                     + box_params['user'].to_s + "@"\
                     + box_params['IP'].to_s + " "\
                     + "'" + $session.command + "'"
@@ -789,7 +802,7 @@ EOF
           keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(pwd.to_s+'/'+@keyFile.to_s) }
           # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
           command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
-          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+          cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                           + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
@@ -812,7 +825,7 @@ EOF
           keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(pwd.to_s+'/'+@keyFile.to_s) }
           # add to the end of the authorized_keys file in ~/.ssh directory
           command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
-          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+          cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                           + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s

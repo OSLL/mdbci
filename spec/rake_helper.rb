@@ -6,14 +6,14 @@ class RakeTaskManager
   PATH_TO_INTEGRATION_TESTS_FOLDER = 'integration/'
   PATH_TO_UNIT_TESTS_FOLDER = 'unit/'
 
-  PARAMETTRIZED_CONFIG_ENV_VAR_PREFIX = 'mdbci_param_conf'
-  PARAMETTRIZED_CONFIG_PREFIX = 'mdbci_param_test_clone'
-  PARAMETTRIZED_CONFIGS = {
-    "#{PARAMETTRIZED_CONFIG_ENV_VAR_PREFIX}_#{DOCKER}" => "#{PARAMETTRIZED_CONFIG_PREFIX}_#{DOCKER}",
-    "#{PARAMETTRIZED_CONFIG_ENV_VAR_PREFIX}_#{LIBVIRT}" => "#{PARAMETTRIZED_CONFIG_PREFIX}_#{LIBVIRT}",
-    "#{PARAMETTRIZED_CONFIG_ENV_VAR_PREFIX}_#{PPC}" => "#{PARAMETTRIZED_CONFIG_PREFIX}_#{PPC_FROM_DOCKER}",
-    "#{PARAMETTRIZED_CONFIG_ENV_VAR_PREFIX}_#{VIRTUALBOX}" => "#{PARAMETTRIZED_CONFIG_PREFIX}_#{VIRTUALBOX}",
-    "#{PARAMETTRIZED_CONFIG_ENV_VAR_PREFIX}_#{AWS}" => "#{PARAMETTRIZED_CONFIG_PREFIX}_#{AWS}"
+  PARAMETRIZED_CONFIG_ENV_VAR_PREFIX = 'mdbci_param_conf'
+  PARAMETRIZED_CONFIG_PREFIX = 'mdbci_param_test_clone'
+  PARAMETRIZED_CONFIGS = {
+    "#{PARAMETRIZED_CONFIG_ENV_VAR_PREFIX}_#{DOCKER}" => "#{PARAMETRIZED_CONFIG_PREFIX}_#{DOCKER}",
+    "#{PARAMETRIZED_CONFIG_ENV_VAR_PREFIX}_#{LIBVIRT}" => "#{PARAMETRIZED_CONFIG_PREFIX}_#{LIBVIRT}",
+    "#{PARAMETRIZED_CONFIG_ENV_VAR_PREFIX}_#{PPC}" => "#{PARAMETRIZED_CONFIG_PREFIX}_#{PPC_FROM_DOCKER}",
+    "#{PARAMETRIZED_CONFIG_ENV_VAR_PREFIX}_#{VIRTUALBOX}" => "#{PARAMETRIZED_CONFIG_PREFIX}_#{VIRTUALBOX}",
+    "#{PARAMETRIZED_CONFIG_ENV_VAR_PREFIX}_#{AWS}" => "#{PARAMETRIZED_CONFIG_PREFIX}_#{AWS}"
   }
 
   attr_accessor :rspec_test_name
@@ -33,7 +33,6 @@ class RakeTaskManager
     elsif @silent == 'false'
       @silent = false
     end
-    #@rspec_test_name = task_name.to_s.split('_', 2)[1] + '_spec.rb'
     @rspec_test_name = task_name.to_s.split(':')[1].split('_', 2)[1] + '_spec.rb'
     puts @rspec_test_name
     @@tests_counter += 1
@@ -101,13 +100,14 @@ class RakeTaskManager
   end
 
   def run_parametrized(arguments)
-    with_environment_variables(PARAMETTRIZED_CONFIGS){
-      puts PARAMETTRIZED_CONFIGS
-      puts ENV['MDBCI_PARAM_CONFIG_DOCKER']
-      ptw = ParametrizedTestWrapper.new
-      ptw.prepare_clones(arguments)
-      run
-      ptw.remove_clones(arguments)
+    with_environment_variables(PARAMETRIZED_CONFIGS){
+      begin
+        ptw = ParametrizedTestWrapper.new
+        ptw.prepare_clones(arguments)
+        run
+      ensure
+        ptw.remove_clones(arguments)
+      end
     }
   end
 
