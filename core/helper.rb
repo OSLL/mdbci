@@ -11,11 +11,23 @@ MDBCI_MACHINE_HAS_NO_ID_ERROR = 'mdbci machine does not have id'
 ACTION_NOT_SUPPORTED_FOR_PPC = 'action is not supported for machines with \'mdbci(ppc)\' provider'
 ACTION_NOT_SUPPORTED_FOR_DOCKER = 'action is not supported for machines with \'docker\' provider'
 UNKNOWN_PROVIDER_ERROR = 'provider is unknown (file with provider definition is missing)'
+STOP_CONFIG_ERROR = 'can not stop config'
+STOP_NODE_ERROR = 'can not stop node'
+START_CONFIG_ERROR = 'can not start config'
+START_NODE_ERROR = 'can not start node'
+SUSPEND_CONFIG_ERROR = 'can not suspend config'
+SUSPEND_NODE_ERROR = 'can not suspend node'
+RESUME_CONFIG_ERROR = 'can not resume config'
+RESUME_NODE_ERROR = 'can not resume node'
+DESTROY_CONFIG_ERROR = 'can not destroy config'
+DESTROY_NODE_ERROR = 'can not destroy node'
+GET_NODE_STATUS_ERROR = 'can not get config status'
 TEMPLATE_FILE_NOT_FOUND = 'template (or mdbci_template) file not found'
 TEMPLATE_PATH_EMPTY = 'template (or mdbci_template) path is empty'
 
 MDBCI = 'mdbci'
 DOCKER = 'docker'
+LIBVIRT = 'libvirt'
 
 RUNNING = 'running'
 SHUTOFF = 'shutoff' # when call 'vagrant halt'
@@ -127,36 +139,49 @@ def execute_bash(cmd, silent = false)
   return output
 end
 
+def within_directory_content(directory, error_message = '')
+  ret_val = nil
+  current_directory = Dir.pwd
+  begin
+    Dir.chdir directory
+    ret_val = yield
+  rescue Exception => e
+    if error_message.empty?
+      raise
+    else
+      raise "#{error_message}, #{e.message}"
+    end
+  ensure
+    Dir.chdir current_directory
+  end
+  return ret_val
+end
+
 def destroy_config(config_name)
   if Dir.exist? config_name
     unless get_provider(config_name) == MDBCI
-      root_dir = Dir.pwd
-      begin
-        Dir.chdir config_name
+      within_directory_content(config_name, "#{DESTROY_CONFIG_ERROR}: #{config_name}") {
         execute_bash('vagrant destroy -f')
-      ensure
-        Dir.chdir root_dir
-      end
+      }
     end
     FileUtils.rm_rf config_name
   end
 end
 
 def stop_config_node(config_name, node_name)
-  if get_provider(config_name) == MDBCI
+  provider = get_provider(config_name)
+  if provider == MDBCI
     raise "stopping machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
   end
-  root_directory = Dir.pwd
-  begin
-    Dir.chdir config_name
+  within_directory_content(config_name, "#{START_NODE_ERROR}: #{config_name}/#{node_name}") {
     execute_bash("vagrant halt #{node_name}")
-  ensure
-    Dir.chdir root_directory
+  }
+  if provider == LIBVIRT
+    begin
+      out_info 'waiting machine to be in shut down state (1 second)'
+      sleep 1
+    end while get_config_node_status(config_name, node_name) == SHUTTING_DOWN
   end
-  begin
-    out_info 'waiting machine to be shutted down (2 seconds)'
-    sleep 2
-  end while get_config_node_status(config_name, node_name) == SHUTTING_DOWN
 end
 
 def suspend_config_node(config_name, node_name)
@@ -166,13 +191,9 @@ def suspend_config_node(config_name, node_name)
   if get_provider(config_name) == DOCKER
     raise "suspending machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_DOCKER}"
   end
-  root_directory = Dir.pwd
-  begin
-    Dir.chdir config_name
+  within_directory_content(config_name, "#{SUSPEND_NODE_ERROR}: #{config_name}/#{node_name}") {
     execute_bash("vagrant suspend #{node_name}")
-  ensure
-    Dir.chdir root_directory
-  end
+  }
 end
 
 def resume_config_node(config_name, node_name)
@@ -182,28 +203,18 @@ def resume_config_node(config_name, node_name)
   if get_provider(config_name) == DOCKER
     raise "resuming machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_DOCKER}"
   end
-  root_directory = Dir.pwd
-  begin
-    Dir.chdir config_name
+  within_directory_content(config_name, "#{RESUME_NODE_ERROR}: #{config_name}/#{node_name}") {
     execute_bash("vagrant resume #{node_name}")
-  ensure
-    Dir.chdir root_directory
-  end
+  }
 end
 
 def stop_config(config_name)
   if get_provider(config_name) == MDBCI
     raise "stopping config #{config_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
   end
-  nodes = get_nodes(config_name)
-  nodes.each { |node_name| stop_config_node(config_name, node_name) }
-  root_directory = Dir.pwd
-  begin
-    Dir.chdir config_name
+  within_directory_content(config_name, "#{STOP_CONFIG_ERROR}: #{config_name}") {
     execute_bash('vagrant halt')
-  ensure
-    Dir.chdir root_directory
-  end
+  }
 end
 
 def start_config_node(config_name, node_name, no_provision = true)
@@ -211,14 +222,10 @@ def start_config_node(config_name, node_name, no_provision = true)
   if provider == MDBCI
     raise "starting machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
   end
-  root_directory = Dir.pwd
-  begin
-    Dir.chdir config_name
-    no_provision_cmd = no_provision ? '--no-provision' : ''
-    execute_bash("vagrant up --provider #{provider} #{no_provision_cmd}")
-  ensure
-    Dir.chdir root_directory
-  end
+  no_provision_cmd = no_provision ? '--no-provision' : ''
+  within_directory_content(config_name, "#{START_NODE_ERROR}: #{config_name}/#{node_name}") {
+    execute_bash("vagrant up #{node_name} --provider #{provider} #{no_provision_cmd}")
+  }
 end
 
 def start_config(config_name, no_provision = false, no_parallel = false)
@@ -226,32 +233,24 @@ def start_config(config_name, no_provision = false, no_parallel = false)
   if provider == MDBCI
     raise "starting config #{config_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
   end
-  root_directory = Dir.pwd
-  begin
-    Dir.chdir config_name
-    no_provision_cmd = no_provision ? '--no-provision' : ''
-    no_parallel_cmd = no_parallel ? '--no-parallel' : ''
+  no_provision_cmd = no_provision ? '--no-provision' : ''
+  no_parallel_cmd = no_parallel ? '--no-parallel' : ''
+  within_directory_content(config_name, "#{START_CONFIG_ERROR}: #{config_name}") {
     execute_bash("vagrant up --provider #{provider} #{no_provision_cmd} #{no_parallel_cmd}")
-  ensure
-    Dir.chdir root_directory
-  end
+  }
 end
 
 def get_config_node_status(config_name, node_name)
   if get_provider(config_name) == MDBCI
     raise "getting status for #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
   end
-  root_dir = Dir.pwd
-  begin
-    Dir.chdir config_name
-    output = execute_bash("vagrant status #{node_name}", true)
-    output = output.to_s.split("\n")[2].split(/\s+/)
-  ensure
-    Dir.chdir root_dir
-  end
+  output = within_directory_content(config_name, "#{GET_NODE_STATUS_ERROR}: #{config_name}/#{node_name}") {
+    execute_bash("vagrant status #{node_name}", true)
+  }
+  output = output.to_s.split("\n")[2].split(/\s+/)
   if output.size == 4
     return "#{output[1]} #{output[2]}"
-  elsif  output.size == 3
+  elsif output.size == 3
     return "#{output[1]}"
   end
 end
