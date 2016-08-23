@@ -36,10 +36,6 @@ class ParametrizedTestWrapper
 
   attr_accessor :old_session
 
-  def initialize
-    at_exit{remove_clones([DOCKER, LIBVIRT, PPC])}
-  end
-
   def initialize_mdbci_environment_variables
     $old_session = $session
     $out = Out.new
