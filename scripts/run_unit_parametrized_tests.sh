@@ -12,11 +12,11 @@ while getopts ":s:n:" opt; do
 done
 
 if [[ ${silent} != "true" ]] && [[ ${silent} != "false" ]]; then
-	silent=true
+  silent=true
 fi
 
 if [[ -z "$test_name" ]]; then
-    SILENT=$silent rake run_unit_parametrized_all
+  SILENT=$silent rake run_unit_parametrized_all
 else
-    SILENT=$silent rake "run_unit_parametrized:task_$test_name"
+  SILENT=$silent rake "run_unit_parametrized:task_$test_name"
 fi
