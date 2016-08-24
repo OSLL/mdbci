@@ -1,7 +1,7 @@
 require 'rspec'
 require_relative '../../core/helper'
 
-LIBVIRT_CONFIG = ENV['param_test_conf_libvirt']
+LIBVIRT_CONFIG = ENV['mdbci_param_conf_libvirt']
 NODE = 'node1'
 
 MACHINE_STATUSES = <<EOF
