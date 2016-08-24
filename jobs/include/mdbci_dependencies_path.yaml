@@ -1,0 +1,4 @@
+string:
+  name: $MDBCI_DEPENDENCIES
+  default: $HOME/conf/
+  description: 'Path to folder with files for working with AWS and PPC machines'

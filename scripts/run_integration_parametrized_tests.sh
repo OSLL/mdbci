@@ -16,7 +16,7 @@ if [[ ${silent} != "true" ]] && [[ ${silent} != "false" ]]; then
 fi
 
 if [[ -z "$test_name" ]]; then
-    rake run_integration_parametrized_all
+    SILENT=$silent rake run_integration_parametrized_all
 else
-    rake "run_integration_parametrized:task_$test_name"
+    SILENT=$silent rake "run_integration_parametrized:task_$test_name"
 fi
