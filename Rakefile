@@ -2,11 +2,9 @@ require 'rake'
 
 DOCKER = 'docker'
 LIBVIRT = 'libvirt'
-AWS = 'aws'
 PPC = 'ppc'
 DOCKER_FOR_PPC = 'docker_for_ppc'
 PPC_FROM_DOCKER = 'ppc_from_docker'
-VIRTUALBOX = 'virtualbox'
 
 require_relative 'spec/rake_helper'
 

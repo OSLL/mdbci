@@ -9,10 +9,4 @@ namespace :run_integration do
 
 end
 
-task :run_integration_all do
-  Rake.application.in_namespace(:run_integration) do |x|
-    x.tasks.each do |t|
-      t.invoke
-    end
-  end
-end
+RakeTaskManager.rake_finalize(:run_integration)

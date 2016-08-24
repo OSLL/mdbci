@@ -1,0 +1,3 @@
+string:
+  name: TEST_NAME
+  description:  'Test name (all tests will be executed if this is field empty)'
