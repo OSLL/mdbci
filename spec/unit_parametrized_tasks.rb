@@ -18,10 +18,4 @@ namespace :run_unit_parametrized do
 
 end
 
-task :run_unit_parametrized_all do
-  Rake.application.in_namespace(:run_unit_parametrized) do |x|
-    x.tasks.each do |t|
-      t.invoke
-    end
-  end
-end
+RakeTaskManager.rake_finalize(:run_unit_parametrized)

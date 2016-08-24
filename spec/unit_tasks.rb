@@ -1,7 +1,5 @@
 namespace :run_unit do
 
-  desc 'Unit tests'
-
   task :task_generator do |t| puts t; RakeTaskManager.new(t).run_unit end
   task :task_6819_show_box_info do |t| RakeTaskManager.new(t).run_unit end
   task :task_6755_show_platform_versions do |t| RakeTaskManager.new(t).run_unit end
@@ -26,10 +24,4 @@ namespace :run_unit do
 
 end
 
-task :run_unit_all do
-  Rake.application.in_namespace(:run_unit) do |x|
-    x.tasks.each do |t|
-      t.invoke
-    end
-  end
-end
+RakeTaskManager.rake_finalize(:run_unit)

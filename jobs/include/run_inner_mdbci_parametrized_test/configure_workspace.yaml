@@ -1,0 +1,21 @@
+shell: |
+  timestamp=$(date +"%s")
+  prefix="mdbci_param_test"
+  temp_dir=$HOME/"${prefix}_temp_${timestamp}"
+  origin_configs_presented=false
+  if [[ -n "$(ls | grep $prefix)" ]]; then
+      origin_configs_presented=true
+      mkdir -p "$temp_dir"
+      cp -r "$prefix"* "$temp_dir"
+  fi
+  git clean -fdx
+  git reset --hard HEAD
+  ln -s $MDBCI_DEPENDENCIES/aws-config.yml aws-config.yml
+  ln -s $MDBCI_DEPENDENCIES/maxscale.pem maxscale.pem
+  cp $BOXES_JSON_PATH/* ./BOXES
+  mkdir -p ./KEYS
+  cp $KEYS_JSON_PATH/* ./KEYS
+  if [ "$origin_configs_presented" == true ]; then
+      cp -r "$temp_dir"/* .
+      rm -r "$temp_dir"
+  fi
