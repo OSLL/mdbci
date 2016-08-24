@@ -6,3 +6,4 @@ extended-choice:
   property-key: branch_name
   default-property-file: $WORKSPACE/last_modified_branch
   default-property-key: LAST_MODIFIED_BRANCH
+
