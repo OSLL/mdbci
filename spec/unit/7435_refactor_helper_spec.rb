@@ -20,15 +20,15 @@ describe 'helper.rb' do
   end
 
   it '#within_directory_content with invalid commands, with exceptions' do
-    expect(within_directory_content(LIBVIRT_CONFIG){
+    expect(lambda{within_directory_content(LIBVIRT_CONFIG){
       raise 'ERROR'
-    }).to raise_error 'ERROR'
+    }}).to raise_error 'ERROR'
   end
 
   it '#within_directory_content with invalid commands, with custom exceptions' do
-    expect(within_directory_content(LIBVIRT_CONFIG, 'CUSTOM ERROR'){
+    expect(lambda{within_directory_content(LIBVIRT_CONFIG, 'CUSTOM ERROR'){
       raise 'ERROR'
-    }).to raise_error 'CUSTOM ERROR, ERROR'
+    }}).to raise_error 'CUSTOM ERROR, ERROR'
   end
 
   it '#stop_config_node' do
@@ -62,7 +62,7 @@ describe 'helper.rb' do
   end
 
   it '#get_status' do
-    expect(get_config_node_status(LIBVIRT_CONFIG, NODE)).to(be('RUNNING'))
+    expect(get_config_node_status(LIBVIRT_CONFIG, NODE)).to(be('running'))
   end
 
 end
