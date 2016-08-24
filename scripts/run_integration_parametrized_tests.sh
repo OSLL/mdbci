@@ -1,22 +1,24 @@
 #! /bin/bash
 
-while getopts ":s:n:" opt; do
+while getopts ":s:t:" opt; do
   case ${opt} in
     s) silent="$OPTARG"
     ;;
-    n) test_name="$OPTARG"
+    t) test_set="$OPTARG"
     ;;
     \?) silent="true" 
     ;;
   esac
 done
 
-if [[ ${silent} != "true" ]] && [[ ${silent} != "false" ]]; then
+if [[ "$silent" != "true" ]] && [[ "$silent" != "false" ]]; then
   silent=true
 fi
 
-if [[ -z "$test_name" ]]; then
-  SILENT=$silent rake run_integration_parametrized_all
+if [[ -z "$test_set" ]]; then
+  SILENT="$silent" rake run_integration_parametrized_all
 else
-  SILENT=$silent rake "run_integration_parametrized:task_$test_name"
+  tests=''
+  for i in $(echo "$test_set" | sed "s/,/ /g"); do tests="$tests run_integration_parametrized:task_$i"; done
+  SILENT=${silent} rake "$tests"
 fi
