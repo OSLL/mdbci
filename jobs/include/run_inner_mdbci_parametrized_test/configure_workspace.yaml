@@ -10,8 +10,8 @@ shell: |
   fi
   git clean -fdx
   git reset --hard HEAD
-  ln -s $MDBCI_CONFS/aws-config.yml aws-config.yml
-  ln -s $MDBCI_CONFS/maxscale.pem maxscale.pem
+  ln -s $MDBCI_DEPENDENCIES/aws-config.yml aws-config.yml
+  ln -s $MDBCI_DEPENDENCIES/maxscale.pem maxscale.pem
   cp $BOXES_JSON_PATH/* ./BOXES
   mkdir -p ./KEYS
   cp $KEYS_JSON_PATH/* ./KEYS
