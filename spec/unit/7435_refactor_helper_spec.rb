@@ -62,7 +62,7 @@ describe 'helper.rb' do
   end
 
   it '#get_status' do
-    expect(get_config_node_status(LIBVIRT_CONFIG, NODE)).to(be('running'))
+    expect(get_config_node_status(LIBVIRT_CONFIG, NODE)).to(eq('running'))
   end
 
 end
