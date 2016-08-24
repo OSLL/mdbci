@@ -1,112 +1,20 @@
 - job:
     name: run-inner-mdbci-parametrized-tests
     description: 'This job performs running parametrized tests.'
-    key_one: &SORTED_GIT_BRANCHES_FILE_PATH '/home/vagranttest/mdbci_jenkins_config/branch_list'
     parameters:
-        - string:
-              name: BOXES_JSON_PATH
-              default: /home/vagranttest/mdbci-boxes/BOXES
-              description:  'Directory for boxes descriptions.'
-        - string:
-              name: KEYS_JSON_PATH
-              default: /home/vagranttest/mdbci-boxes/KEYS
-              description:  'Directory for keys descriptions.'
-        - string:
-              name: MDBCI_CONFS
-              default: /home/vagranttest/conf
-              description:  'Directory with mdbci configs.'
-        - string:
-              name: MDBCI_REPOSITORY
-              default: git@github.com:OSLL/mdbci.git
-              description:  'MDBCI repository.'
-        - string:
-              name: SORTED_GIT_BRANCHES_FILE_PATH
-              default: *SORTED_GIT_BRANCHES_FILE_PATH
-              description:  'Path to sorted branches (from mdbci_branches job).'
-        - extended-choice:
-              name: MDBCI_BRANCH
-              description: "MDBCI branch"
-              type: 'PT_SINGLE_SELECT'
-              property-file: *SORTED_GIT_BRANCHES_FILE_PATH
-              property-key: branch_name
-              default-property-file: $WORKSPACE/last_modified_branch
-              default-property-key: LAST_MODIFIED_BRANCH
-              parameters:
-        - choice:
-              name: TEST_TYPE
-              choices:
-                  - unit
-                  - integration
-              description: 'Parametrized test type: integration or unit'
-        - string:
-              name: TEST_NAME
-              description:  'Test name (all tests will be executed if this is field empty)'
+        - !include './jobs/include/boxes_json_path.yaml'
+        - !include './jobs/include/keys_json_path.yaml'
+        - !include './jobs/include/mdbci_repository.yaml'
+        - !include './jobs/include/last-modified-branch-detection/sorted_git_branches_path.yaml'
+        - !include './jobs/include/last-modified-branch-detection/mdbci_branch.yaml'
+        - !include './jobs/include/test_type.yaml'
+        - !include './jobs/include/test_name.yaml'
     wrappers:
-        - pre-scm-buildstep:
-            - shell: |
-                if [ -z "$MDBCI_BRANCH" ]; then
-                	echo "LAST_MODIFIED_BRANCH=$(cat $SORTED_GIT_BRANCHES_FILE_PATH | awk -F"=" '{i=index($0,"=");print substr($0,i+1)}' | awk -F"," '{print $1}')" > last_modified_branch
-                else
-                	echo "LAST_MODIFIED_BRANCH=${MDBCI_BRANCH}" > last_modified_branch
-                fi
-            - inject:
-                properties-file: $WORKSPACE/last_modified_branch
+        - !include './jobs/include/last-modified-branch-detection/pre_scm.yaml'
     scm:
-        - git:
-            url: $MDBCI_REPOSITORY
-            branches:
-                - $LAST_MODIFIED_BRANCH
-            wipe-workspace: false
-    triggers:
-        - reverse:
-            jobs: 'mdbci_branching'
-            result: 'success'
+        - !include './jobs/include/last-modified-branch-detection/scm.yaml'
     builders:
-        - shell: 
-            'ruby -c `find ./ | grep ".rb"`'
-        - shell: |
-            timestamp=$(date +"%s")
-            prefix="mdbci_param_test"
-            temp_dir=$HOME/"${prefix}_temp_${timestamp}"
-            origin_configs_presented=false
-            if [[ -n "$(ls | grep $prefix)" ]]; then
-                origin_configs_presented=true
-                mkdir -p "$temp_dir"
-                cp -r "$prefix"* "$temp_dir"
-            fi
-            git clean -fdx
-            git reset --hard HEAD
-            ln -s $MDBCI_CONFS/aws-config.yml aws-config.yml
-            ln -s $MDBCI_CONFS/maxscale.pem maxscale.pem
-            cp $BOXES_JSON_PATH/* ./BOXES
-            mkdir -p ./KEYS
-            cp $KEYS_JSON_PATH/* ./KEYS
-            if [ "$origin_configs_presented" == true ]; then
-                cp -r "$temp_dir"/* .
-                rm -r "$temp_dir"
-            fi
-            ruby scripts/parametrized_testing/parametrized_testing_environment_setup.rb --start
-            if [ "$TEST_TYPE" == "unit" ]; then
-                ./scripts/run_unit_parametrized_tests.sh -n $TEST_NAME
-            fi
-            if [ "$TEST_TYPE" == "integration" ]; then
-                ./scripts/run_integration_parametrized_tests.sh -n $TEST_NAME
-            fi
-            ruby scripts/parametrized_testing/parametrized_testing_environment_setup.rb --pause
+        - !include './jobs/include/ruby_syntax_check.yaml'
+        - !include './jobs/include/run-inner-mdbci-parametrized-test/run_test.yaml'
     publishers:
-        - email-ext:
-            recipients: $DEFAULT_RECIPIENTS
-            reply-to: $DEFAULT_REPLYTO
-            content-type: default
-            subject: $DEFAULT_SUBJECT - $LAST_MODIFIED_BRANCH
-            body: $DEFAULT_CONTENT
-            attach-build-log: false
-            always: true
-            aborted: true
-            failure: true
-            still-failing: true
-            success: true
-            fixed: true
-            send-to:
-               - recipients
-               - developers
+        - !include './jobs/include/last-modified-branch-detection/publishers.yaml'

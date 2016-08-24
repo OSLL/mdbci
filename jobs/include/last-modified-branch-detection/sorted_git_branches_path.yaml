@@ -1,0 +1,4 @@
+string:
+  name: SORTED_GIT_BRANCHES_FILE_PATH
+  default: $HOME/mdbci_jenkins_config/branch_list
+  description:  'Path to sorted branches (from mdbci_branches job).'
