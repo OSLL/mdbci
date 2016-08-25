@@ -19,6 +19,7 @@ if [[ -z "$test_set" ]]; then
   SILENT=${silent} rake run_unit_parametrized_all
 else
   tests=''
-  for i in $(echo "$test_set" | sed "s/,/ /g"); do tests="$tests run_unit_parametrized:task_$i"; done
-  SILENT=${silent} rake "$tests"
+  for i in $(echo "$test_set" | sed "s/,/ /g"); do tests="run_unit_parametrized:task_$i $tests"; done
+  tests=$(echo "$tests" | sed 's/ *$//g')
+  SILENT=${silent} rake ${tests}
 fi
