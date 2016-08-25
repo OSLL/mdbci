@@ -16,6 +16,7 @@ TEMPLATE_PATH_EMPTY = 'template (or mdbci_template) path is empty'
 
 MDBCI = 'mdbci'
 DOCKER = 'docker'
+LIBVIRT = 'libvirt'
 
 RUNNING = 'running'
 SHUTOFF = 'shutoff' # when call 'vagrant halt'
