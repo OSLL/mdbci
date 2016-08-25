@@ -19,5 +19,4 @@
       - !include './jobs/include/run_inner_mdbci_parametrized_test/configure_workspace.yaml'
       - !include './jobs/include/run_inner_mdbci_parametrized_test/start_test.yaml'
     publishers:
-      - !include './jobs/include/run_inner_mdbci_parametrized_test/workspace_cleanup.yaml'
       - !include './jobs/include/last_modified_branch_detection/publishers.yaml'
