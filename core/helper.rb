@@ -143,7 +143,8 @@ def destroy_config(config_name)
 end
 
 def stop_config_node(config_name, node_name)
-  if get_provider(config_name) == MDBCI
+  provider = get_provider(config_name)
+  if provider == MDBCI
     raise "stopping machine #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
   end
   root_directory = Dir.pwd
@@ -153,10 +154,12 @@ def stop_config_node(config_name, node_name)
   ensure
     Dir.chdir root_directory
   end
-  begin
-    out_info 'waiting machine to be shutted down (2 seconds)'
-    sleep 2
-  end while get_config_node_status(config_name, node_name) == SHUTTING_DOWN
+  if provider == LIBVIRT
+    begin
+      out_info 'waiting machine to be shutted down (1 seconds)'
+      sleep 1
+    end while get_config_node_status(config_name, node_name) == SHUTTING_DOWN
+  end
 end
 
 def suspend_config_node(config_name, node_name)
@@ -251,7 +254,7 @@ def get_config_node_status(config_name, node_name)
   end
   if output.size == 4
     return "#{output[1]} #{output[2]}"
-  elsif  output.size == 3
+  elsif output.size == 3
     return "#{output[1]}"
   end
 end
