@@ -28,31 +28,27 @@ describe 'Session' do
   # that can be accessed through ssh
 
   it '#ssh should exit with zero code for concrete mdbci/ppc64 node' do
-    Network.private_ip(ENV['pathToConfigToMDBCINode'].to_s).should(eql(0))
+    Network.private_ip("#{ENV['mdbci_param_conf_ppc']}/node1").should(eql(0))
   end
 
   it '#ssh should exit with zero code for all mdbci/ppc64 nodes' do
-    Network.private_ip(ENV['pathToConfigToMDBCIFolder'].to_s).should(eql(0))
+    Network.private_ip(ENV['mdbci_param_conf_ppc'].to_s).should(eql(0))
   end
 
   it '#ssh should exit with zero code for all mdbci/ppc64 nodes (when mdbci node is wrong)' do
-    Network.private_ip(ENV['pathToConfigToMDBCIFolder'].to_s + '/NOT_EXISTS').should(eql(1))
+    lambda{Network.private_ip("#{ENV['mdbci_param_conf_ppc']}/NOT_EXISTS")}.should raise_error(/MDBCI node .* is not found in .*/)
   end
 
-  it '#ssh should exit with zero code for all aws/vbox nodes' do
-    Network.private_ip(ENV['pathToConfigToVBOXNode'].to_s).should(eql(0))
-  end
-
-  it '#ssh should exit with non-zero code for mdbci/ppc64 nodes (when box parameter does npt exists)' do
-    Network.private_ip(ENV['pathToConfigToMDBCIBadNode'].to_s).should(eql(1))
+  it '#ssh should exit with zero code for all libvirt nodes' do
+    Network.private_ip(ENV['mdbci_param_conf_libvirt'].to_s).should(eql(0))
   end
 
   it '#ssh should exit with non-zero code (when argument is nil)' do
-    Network.private_ip(nil).should(eql(1))
+    lambda{Network.private_ip(nil)}.should raise_error
   end
 
   it '#ssh should exit with non-zero code (when no such machine exists)' do
-    Network.private_ip('NOT_EXISTS').should(eql(1))
+    lambda{Network.private_ip('NOT_EXISTS')}.should raise_error
   end
 
 end

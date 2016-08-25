@@ -27,31 +27,27 @@ describe 'Session' do
   # that can be accessed through ssh
 
   it '#publicKeys should exit with zero code for concrete mdbci/ppc64 node' do
-    $session.publicKeys(ENV['pathToConfigToMDBCINode'].to_s).should(eql(0))
+    $session.publicKeys("#{ENV['mdbci_param_conf_ppc']}/node1").should(eql(0))
   end
 
   it '#publicKeys should exit with zero code for all mdbci/ppc64 nodes' do
-    $session.publicKeys(ENV['pathToConfigToMDBCIFolder'].to_s).should(eql(0))
+    $session.publicKeys(ENV['mdbci_param_conf_ppc']).should(eql(0))
   end
 
   it '#publicKeys should exit with zero code for all mdbci/ppc64 nodes (when mdbci node is wrong)' do
-    $session.publicKeys(ENV['pathToConfigToMDBCIFolder'].to_s + '/NOT_EXISTS').should(eql(1))
+    lambda{$session.publicKeys("#{ENV['mdbci_param_conf_ppc']}/NOT_EXISTS")}.should raise_error(/No such node with name .* in .*/)
   end
 
-  it '#publicKeys should exit with zero code for all aws/vbox nodes' do
-    $session.publicKeys(ENV['pathToConfigToVBOXNode'].to_s).should(eql(0))
-  end
-
-  it '#publicKeys should exit with non-zero code for mdbci/ppc64 nodes (when box parameter does npt exists)' do
-    $session.publicKeys(ENV['pathToConfigToMDBCIBadNode'].to_s).should(eql(1))
+  it '#publicKeys should exit with zero code for all libvirt nodes' do
+    $session.publicKeys(ENV['mdbci_param_conf_libvirt']).should(eql(0))
   end
 
   it '#publicKeys should exit with non-zero code (when argument is nil)' do
-    $session.publicKeys(nil).should(eql(1))
+    lambda{$session.publicKeys(nil)}.should raise_error('Configuration name is required')
   end
 
   it '#publicKeys should exit with non-zero code (when no such machine exists)' do
-    $session.publicKeys('NOT_EXISTS').should(eql(1))
+    lambda{$session.publicKeys('NOT_EXISTS')}.should raise_error
   end
 
 end

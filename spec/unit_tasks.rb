@@ -1,6 +1,6 @@
-task :run_unit do
+namespace :run_unit do
 
-  task :task_generator do |t| RakeTaskManager.new(t).run_unit end
+  task :task_generator do |t| puts t; RakeTaskManager.new(t).run_unit end
   task :task_6819_show_box_info do |t| RakeTaskManager.new(t).run_unit end
   task :task_6755_show_platform_versions do |t| RakeTaskManager.new(t).run_unit end
   task :task_6844_ssh_pty_bug do |t| RakeTaskManager.new(t).run_unit end
@@ -12,21 +12,16 @@ task :run_unit do
   task :task_repos_manager do |t| RakeTaskManager.new(t).run_unit end
   task :task_session do |t| RakeTaskManager.new(t).run_unit end
   task :task_6812_show_repo_manager_exceptions do |t| RakeTaskManager.new(t).run_unit end
-
-  Rake::Task[:task_generator].execute
-  Rake::Task[:task_6819_show_box_info].execute
-# Commented due to https://dev.osll.ru/issues/6950
-#  Rake::Task[:task_6755_show_platform_versions].execute
-  Rake::Task[:task_6844_ssh_pty_bug].execute
-  Rake::Task[:task_6754_bug].execute
-  Rake::Task[:task_6813_divide_show_boxes].execute
-  Rake::Task[:task_node_product].execute
-  Rake::Task[:task_boxes_manager].execute
-  Rake::Task[:task_repos_manager].execute
-  Rake::Task[:task_session].execute
-  Rake::Task[:task_6783_show_boxes].execute
-  Rake::Task[:task_6812_show_repo_manager_exceptions].execute
-
-  RakeTaskManager.get_failed_tests_info
+  task :task_6863_tests_for_6821_show_box do |t| RakeTaskManager.new(t).run_unit end
+  task :task_7185_helper_functions do |t| RakeTaskManager.new(t).run_unit end
+  task :task_7045_default_packages_to_empty_machines do |t| RakeTaskManager.new(t).run_unit end
+  task :task_7144_copying_old_config_to_new do |t| RakeTaskManager.new(t).run_unit end
+  task :task_7154_refer_old_node_to_new do |t| RakeTaskManager.new(t).run_unit end
+  task :task_7209_add_aws_tag do |t| RakeTaskManager.new(t).run_unit end
+  task :task_6641_setup_exit_code do |t| RakeTaskManager.new(t).run_unit end
+  task :task_6818_search_box_name_by_config do |t| RakeTaskManager.new(t).run_unit end
+  task :task_show_tests_info do RakeTaskManager.get_failed_tests_info end
 
 end
+
+RakeTaskManager.rake_finalize(:run_unit)

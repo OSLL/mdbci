@@ -10,7 +10,7 @@ while getopts ":s:" opt; do
 done
 
 if [[ $silent != "true" ]] && [[ $silent != "false" ]]; then
-	silent=true
+  silent=true
 fi
 
-SILENT=$silent rake run_integration
+SILENT=$silent rake run_integration_all

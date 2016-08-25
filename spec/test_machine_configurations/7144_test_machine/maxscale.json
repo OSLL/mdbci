@@ -1,0 +1,18 @@
+{
+  "name": "maxscale",
+  "default_attributes": {
+  },
+  "override_attributes": {
+    "maxscale": {
+      "version": "default",
+      "repo": "http://maxscale-jenkins.mariadb.com/ci-repository/develop/mariadb-maxscale//ubuntu trusty main",
+      "repo_key": "70E4618A8167EE24"
+    }
+  },
+  "json_class": "Chef::Role",
+  "description": "MariaDb instance install and run",
+  "chef_type": "role",
+  "run_list": [
+    "recipe[mscale]"
+  ]
+}
