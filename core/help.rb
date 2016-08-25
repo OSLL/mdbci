@@ -7,8 +7,8 @@ class Help
 
   def Help.display
     
-    $out.out 
-
+    $out.out `cat #{DOCS_HELP_PATH}`
+ 
   end
 
 end
