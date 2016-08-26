@@ -156,10 +156,12 @@ def stop_config_node(config_name, node_name)
     Dir.chdir root_directory
   end
   if provider == LIBVIRT
-    begin
-      out_info 'waiting machine to be shutted down (1 seconds)'
-      sleep 1
-    end while get_config_node_status(config_name, node_name) == SHUTTING_DOWN
+    Timeout.timeout(3){
+      while get_config_node_status(config_name, node_name) == SHUTTING_DOWN
+        out_info 'waiting machine to be in shut down (1 seconds)'
+        sleep 1
+      end
+    }
   end
 end
 
