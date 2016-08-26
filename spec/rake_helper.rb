@@ -37,7 +37,6 @@ class RakeTaskManager
       @silent = false
     end
     @rspec_test_name = task_name.to_s.split(':')[1].split('_', 2)[1] + '_spec.rb'
-    puts @rspec_test_name
     @@tests_counter += 1
   end
 
