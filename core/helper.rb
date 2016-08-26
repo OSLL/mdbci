@@ -106,6 +106,7 @@ end
 
 # method returns bash command exit code
 def execute_bash(cmd, silent = false)
+  out_info "executing [#{cmd}]"
   output = String.new
   process_status = nil
   begin
@@ -235,6 +236,36 @@ def start_config(config_name, no_provision = false, no_parallel = false)
   ensure
     Dir.chdir root_directory
   end
+end
+
+def stop_config_node_libvirt_native(config, node)
+  execute_bash("virsh destroy #{get_node_machine_id(config, node)}")
+end
+
+def start_config_node_libvirt_native(config, node)
+  execute_bash("virsh start #{get_node_machine_id(config, node)}")
+end
+
+def stop_config_libvirt_native(config)
+  threads = Array.new
+  get_nodes(config).each do |node|
+    thread = Thread.new do
+      stop_config_node_libvirt_native(config, node)
+    end
+    threads.push thread
+  end
+  threads.each { |thread| thread.join }
+end
+
+def start_config_libvirt_native(config)
+  threads = Array.new
+  get_nodes(config).each do |node|
+    thread = Thread.new do
+      start_config_node_libvirt_native(config, node)
+    end
+    threads.push thread
+  end
+  threads.each { |thread| thread.join }
 end
 
 def get_config_node_status(config_name, node_name)

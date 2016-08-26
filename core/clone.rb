@@ -5,7 +5,7 @@ require_relative 'out'
 require_relative 'helper'
 
 class Clone
-  
+
   UUID_FOR_DOMAIN_NOT_FOUND_ERROR = 'uuid for domain is not found'
   CONFIG_DIRECTORY_NOT_FOUND_ERROR = 'config directory is not found'
   NODE_NOT_FOUND_ERROR = 'node is not found'
@@ -54,7 +54,7 @@ class Clone
     raise "#{path_to_nodes}/#{node_name} #{NODE_NOT_FOUND_ERROR}" unless get_nodes(path_to_nodes).include? node_name
     domain_uuid = get_node_machine_id(path_to_nodes, node_name)
     full_domain_name = get_libvirt_domain_name_by_uuid(domain_uuid)
-    raise "#{path_to_nodes}/#{node_name}: #{LIBVIRT_NODE_RUNNING_ERROR}" unless is_config_node_paused(path_to_nodes, node_name)
+    raise "#{path_to_nodes}/#{node_name}: #{LIBVIRT_NODE_RUNNING_ERROR}" unless is_config_node_stopped(path_to_nodes, node_name)
     new_libvirt_image_name = "#{path_to_new_config_directory}_#{node_name}_#{Time.now.to_i}"
     execute_bash "virt-clone -o #{full_domain_name} -n #{new_libvirt_image_name} --auto-clone"
     return new_libvirt_image_name
@@ -69,11 +69,9 @@ class Clone
   def clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
     nodes = get_nodes(path_to_nodes)
     nodes.each do |node_name|
-      suspend_config_node(path_to_nodes, node_name)
       new_libvirt_image_name = create_libvirt_node_clone(path_to_nodes, node_name, new_path_to_nodes)
       new_uuid = get_libvirt_uuid_by_domain_name(new_libvirt_image_name)
       replace_libvirt_node_id(new_path_to_nodes, node_name, new_uuid)
-      resume_config_node(path_to_nodes, node_name)
     end
   end
 
@@ -148,6 +146,20 @@ class Clone
     File.open("#{path_to_nodes}/template", 'w') { |file| file.write new_template_path }
   end
 
+  def wait_libvirt_to_get_ip(path_to_nodes)
+    success = nil
+    old_directory = Dir.pwd
+    begin
+      Dir.chdir path_to_nodes
+      begin
+        out_info("waiting nodes in #{path_to_nodes} to get an IPs (ignore error messages)")
+        success = execute_bash('vagrant ssh-config', true) rescue nil
+      end while success.nil?
+    ensure
+      Dir.chdir old_directory
+    end
+  end
+
   # libvirt_no_parallel is set to true in testing
   # variable is used in parametrized testing to avoid deadlocks
   def clone_nodes(path_to_nodes, new_path_to_nodes, libvirt_no_parallel = false)
@@ -162,9 +174,13 @@ class Clone
     elsif provider == LIBVIRT
       $out.info "cloning libvirt machines from #{path_to_nodes} to #{new_path_to_nodes}"
       copy_old_config_to_new(path_to_nodes, new_path_to_nodes)
+      stop_config_libvirt_native(path_to_nodes)
       clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
+      start_config_libvirt_native(path_to_nodes)
       replace_libvirt_template_path(new_path_to_nodes, path_to_new_template)
-      start_config(new_path_to_nodes, true, libvirt_no_parallel)
+      start_config_libvirt_native(new_path_to_nodes)
+      wait_libvirt_to_get_ip(new_path_to_nodes)
+      $out.info "successfully cloned libvirt machines from #{path_to_nodes} to #{new_path_to_nodes}"
     else
       raise "#{provider}: provider does not support cloning"
     end
