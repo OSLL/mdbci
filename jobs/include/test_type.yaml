@@ -1,0 +1,6 @@
+choice:
+  name: TEST_TYPE
+  choices:
+      - unit
+      - integration
+  description: 'Parametrized test type: integration or unit'
