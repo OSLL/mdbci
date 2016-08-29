@@ -107,8 +107,8 @@ EOF
             puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
             shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
           else
-            puts 'vagrant box add --provider virtualbox '+value['box'].to_s
-            shell = 'vagrant box add --provider virtualbox '+value['box'].to_s
+            puts "vagrant box add --provider #{value['provider']} "+value['box'].to_s
+            shell = "vagrant box add --provider #{value['provider']} "+value['box'].to_s
           end
           shellCommand = `#{shell} 2>&1` # THERE CAN BE DONE CUSTOM EXCEPTION
 
@@ -132,37 +132,23 @@ EOF
   end
 
   def sudo(args)
-    exit_code = 1
-    possibly_failed_command = ''
-    pwd = Dir.pwd
-
-    if args.nil?
-      $out.error 'Configuration name is required'
-      exit_code = 1
-    end
-
+    raise 'config name is required' if args.nil?
+    puts `ls`
     config = args.split('/')
-    unless Dir.exists?(config[0])
-      $out.error 'Machine with such name does not exists'
-      exit_code = 1
-    end
-
+    raise 'config does not exists' unless Dir.exist?(config[0])
+    raise 'node name is required' if config[1].to_s.empty?
+    pwd = Dir.pwd
     Dir.chdir config[0]
     cmd = 'vagrant ssh '+config[1]+' -c "/usr/bin/sudo '+$session.command+'"'
     $out.info 'Running ['+cmd+'] on '+config[0]+'/'+config[1]
     vagrant_out = `#{cmd}`
     exit_code = $?.exitstatus
-    possibly_failed_command = cmd
     $out.out vagrant_out
-
     Dir.chdir pwd
-
     if exit_code != 0
-      $out.error "command '#{possibly_failed_command}' exit with non-zero code: #{exit_code}"
-      exit_code = 1
+      raise "command '#{cmd}' exit with non-zero code: #{exit_code}"
     end
-
-    return exit_code
+    return 0
   end
 
   # load template nodes
@@ -221,15 +207,28 @@ EOF
         end
       else
         mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == node_arg }
+        raise "mdbci node with such name does not exist in #{dir}: #{node_arg}" if mdbci_node.nil?
         cmd = createCmd(params,mdbci_node,pwd)
         result.push(runSSH(cmd, params))
       end
     else # aws, vbox nodes
-      raise "Machine with such name: #{dir} does not exist" unless Dir.exist?(dir) 
-      Dir.chdir dir
-      cmd = 'vagrant ssh '+node_arg.to_s+' -c "'+$session.command+'"'
-      result.push(runSSH(cmd,params))      
-      Dir.chdir pwd
+      raise "Machine with such name: #{dir} does not exist" unless Dir.exist?(dir)
+      begin
+        nodes = get_nodes(dir)
+        Dir.chdir dir
+        if node_arg.nil? # ssh for all nodes
+          nodes.each do |node|
+            cmd = "vagrant ssh #{node} -c \"#{$session.command}\""
+            result.push(runSSH(cmd,params))
+          end
+        else
+          raise "node with such name does not exist in #{dir}: #{node_arg}" unless nodes.include? node_arg
+          cmd = "vagrant ssh #{node_arg} -c \"#{$session.command}\""
+          result.push(runSSH(cmd,params))
+        end
+      ensure
+        Dir.chdir pwd
+      end
     end
     return result
   end
@@ -241,7 +240,7 @@ EOF
     raise "Box: #{box} is empty" if box.empty?
 
     box_params = $session.boxes.getBox(box)
-    cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+box_params['keyfile'].to_s + " "\
+    cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + pwd.to_s+'/KEYS/'+box_params['keyfile'].to_s + " "\
                     + box_params['user'].to_s + "@"\
                     + box_params['IP'].to_s + " "\
                     + "'" + $session.command + "'"
@@ -464,6 +463,8 @@ EOF
         exit_code = snapshot.do(ARGV.shift)
       when 'clone'
         exit_code = $session.clone(ARGV[0], ARGV[1])
+      when 'check_relevance'
+        exit_code = $session.checkRelevanceNetworkConfig(ARGV.shift)
       else
         $out.error 'Unknown mdbci command. Please look help!'
         Help.display
@@ -801,7 +802,7 @@ EOF
           keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(pwd.to_s+'/'+@keyFile.to_s) }
           # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
           command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
-          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+          cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                           + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
@@ -824,7 +825,7 @@ EOF
           keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(pwd.to_s+'/'+@keyFile.to_s) }
           # add to the end of the authorized_keys file in ~/.ssh directory
           command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
-          cmd = 'ssh -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+          cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                           + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
@@ -840,7 +841,7 @@ EOF
     else # aws, vbox, libvirt, docker nodes
 
       unless Dir.exists? args[0]
-        raise "Directory with nodes does not exists: #{args[1]}"
+        raise "Directory with nodes does not exists: #{args[0]}"
       end
 
       network = Network.new
@@ -954,5 +955,9 @@ EOF
     end
 
   end
+  
+  def checkRelevanceNetworkConfig(filename)
+    system 'scripts/check_network_config.sh ' + filename
+  end  
 
 end

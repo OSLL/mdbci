@@ -1,11 +1,12 @@
 require 'rake'
-require_relative 'spec/rake_helper'
 
 DOCKER = 'docker'
 LIBVIRT = 'libvirt'
-AWS = 'aws'
 PPC = 'ppc'
-VIRTUALBOX = 'virtualbox'
+DOCKER_FOR_PPC = 'docker_for_ppc'
+PPC_FROM_DOCKER = 'ppc_from_docker'
+
+require_relative 'spec/rake_helper'
 
 # Bunch of tasks described as do...end block:
 # 1) Tasks description:

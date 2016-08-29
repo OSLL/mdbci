@@ -68,7 +68,7 @@ class ParametrizedTestWrapper
   def create_clone(config_name, cloned_config_name)
     out_info "Cloning #{config_name} to #{cloned_config_name}"
     mdbci_environment_variables_wrapper {
-      $session.clone(config_name, cloned_config_name)
+      Clone.new.clone_nodes(config_name, cloned_config_name, true)
     }
   end
 
@@ -102,18 +102,21 @@ class ParametrizedTestWrapper
 
   def destroy_docker_config(config_name)
     docker_images = Array.new
-    get_nodes(config_name).each do |node_name|
-      docker_images.concat(get_snapshots_for_node(config_name, node_name))
+    nodes = get_nodes(config_name) rescue nil
+    unless nodes.nil?
+      get_nodes(config_name).each do |node_name|
+        docker_images.concat(get_snapshots_for_node(config_name, node_name))
+      end
     end
-    destroy_config(config_name)
+    destroy_config(config_name) rescue nil
     remove_docker_images(docker_images)
   end
 
   def remove_ppc_clone
-    remove_ppc_from_docker_config(CLONE_CONFIG_PPC_FROM_DOCKER)
-    template_docker = get_template_path(CLONE_CONFIG_DOCKER_FOR_PPC)
+    remove_ppc_from_docker_config(CLONE_CONFIG_PPC_FROM_DOCKER) rescue nil
+    template_docker = get_template_path(CLONE_CONFIG_DOCKER_FOR_PPC) rescue nil
     destroy_docker_config(CLONE_CONFIG_DOCKER_FOR_PPC)
-    FileUtils.rm_rf(template_docker)
+    FileUtils.rm_rf(template_docker) unless template_docker.nil?
     Dir.glob('BOXES/fake_docker_boxes_*').each do |fake_box|
       FileUtils.rm_rf(fake_box)
     end
@@ -127,14 +130,14 @@ class ParametrizedTestWrapper
 
   def remove_clones(configs_providers)
     if configs_providers.include? DOCKER
-      template_docker = get_template_path(CLONE_CONFIG_DOCKER)
+      template_docker = get_template_path(CLONE_CONFIG_DOCKER) rescue nil
       destroy_docker_config(CLONE_CONFIG_DOCKER)
-      FileUtils.rm_rf(template_docker)
+      FileUtils.rm_rf(template_docker) unless template_docker.nil?
     end
     if configs_providers.include? LIBVIRT
-      template_libvirt = get_template_path(CLONE_CONFIG_LIBVIRT)
-      destroy_config(CLONE_CONFIG_LIBVIRT)
-      FileUtils.rm_rf(template_libvirt)
+      template_libvirt = get_template_path(CLONE_CONFIG_LIBVIRT) rescue nil
+      destroy_config(CLONE_CONFIG_LIBVIRT) rescue nil
+      FileUtils.rm_rf(template_libvirt) unless template_libvirt.nil?
     end
     remove_ppc_clone if configs_providers.include? PPC
   end

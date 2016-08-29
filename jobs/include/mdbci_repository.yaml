@@ -1,0 +1,4 @@
+string:
+  name: MDBCI_REPOSITORY
+  default: git@github.com:OSLL/mdbci.git
+  description:  'MDBCI repository.'

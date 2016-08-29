@@ -1,4 +1,5 @@
 require 'rspec'
+require 'fileutils'
 require_relative '../spec_helper'
 require_relative '../../core/session'
 require_relative '../../core/node_product'
@@ -30,17 +31,20 @@ describe 'Network' do
   # for mdbci node must be created appropriate mdbci_template file and
   # must be prepared box with IP and keyfile location that is targeting real running machine
   # that can be accessed through ssh
-  
-  file_network_config = "#{ENV['configPath']}_network_config"
-  nil_file_network_config = "_network_config"
-  wrong_file_network_config = "WRONG_PATH_network_config"
+
+  DOCKER_CONF = ENV['mdbci_param_conf_docker']
+  file_network_config = "#{DOCKER_CONF}_network_config"
+  nil_file_network_config = '_network_config'
+  wrong_file_network_config = 'WRONG_PATH_network_config'
   
   it 'collectConfigurationNetworkInfo should raise error: wrong path' do
-    lambda{collectConfigurationNetworkInfo(ENV['stoppedConfigPath'])}.should raise_error("Incorrect node")
+    stop_config_node(DOCKER_CONF, 'node1')
+    lambda{collectConfigurationNetworkInfo(DOCKER_CONF, 'node1')}.should raise_error('Incorrect node')
+    start_config_node(DOCKER_CONF, 'node1')
   end
 
   it 'collectConfigurationNetworkInfo should return correct Hash' do
-    result = collectConfigurationNetworkInfo(ENV['configPath'])
+    result = collectConfigurationNetworkInfo(DOCKER_CONF)
     result.each do |key,value|
       case key
       when /.*_network/
@@ -60,15 +64,16 @@ describe 'Network' do
   end
 
   it 'printConfigurationNetworkInfoToFile should raise error: error_name' do
-    lambda{printConfigurationNetworkInfoToFile(nil)}.should raise_error(/.* template not found/)
+    lambda{printConfigurationNetworkInfoToFile(nil)}.should raise_error('configuration name is required')
   end
 
   it 'printConfigurationNetworkInfoToFile should raise error: error_name' do
-    lambda{printConfigurationNetworkInfoToFile("WRONG_PATH")}.should raise_error(/.* template not found/)
+    lambda{printConfigurationNetworkInfoToFile('WRONG_PATH')}.should raise_error('configuration does not exist')
   end
 
   it 'printConfigurationNetworkInfoToFile should create file in repo dir' do
-    printConfigurationNetworkInfoToFile(ENV['configPath'])
+    FileUtils.rm_rf file_network_config if File.exist? file_network_config
+    printConfigurationNetworkInfoToFile(DOCKER_CONF)
     expect(File).to exist(file_network_config)
   end
 

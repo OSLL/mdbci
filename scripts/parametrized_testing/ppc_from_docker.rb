@@ -14,11 +14,11 @@ class PpcFromDocker
 Script creates test mdbci boxes/keys/config, that are made from docker running instances or removes them
 Usage:
 1) Generate mdbci(ppc) config from docker
-    ./scripts/mdbci_from_docker.rb ORIGIN_DOCKER_CONFIG_NAME -c
+    ./scripts/ppc_from_docker.rb -c ORIGIN_DOCKER_CONFIG_NAME
 2) Generate mdbci(ppc) config from docker with given name
-    ./scripts/mdbci_from_docker.rb ORIGIN_DOCKER_CONFIG_NAME -a NEW_CONFIG_NAME
+    ./scripts/ppc_from_docker.rb -a NEW_CONFIG_NAME ORIGIN_DOCKER_CONFIG_NAME
 3) Remove generated mdbci(ppc) config
-    ./scripts/mdbci_from_docker.rb -r GENERATED_(MDBCI)PPC_CONFIG_NAME
+    ./scripts/ppc_from_docker.rb -r GENERATED_(MDBCI)PPC_CONFIG_NAME
 Options:
     -r          remove generated mdbci config (and all leftovers)
     -c          creates new config

@@ -7,6 +7,9 @@ require_relative '../../core/session'
 
 describe 'Session' do
 
+  DOCKER_CONF = ENV['mdbci_param_conf_docker']
+  PPC_CONF = ENV['mdbci_param_conf_ppc']
+
   before :all do
     $out = Out.new
     $session = Session.new
@@ -20,31 +23,25 @@ describe 'Session' do
     $session.command = 'ls'
   end
 
-  # Before all tests must be generated configurations
-  # vagrant machine must be running
-  # for mdbci node must be created appropriate mdbci_template file and
-  # must be prepared box with IP and keyfile location that is targeting real running machine
-  # that can be accessed through ssh
-=begin
+
   it '#ssh should exit with zero code for concrete mdbci/ppc64 node' do
-    $session.ssh(ENV['pathToConfigToMDBCINode'].to_s).should(eql(0))
+    $session.ssh("#{PPC_CONF}/node1").should(eql(0))
   end
 
   it '#ssh should exit with zero code for all mdbci/ppc64 nodes' do
-    $session.ssh(ENV['pathToConfigToMDBCIFolder'].to_s).should(eql(0))
+    $session.ssh(PPC_CONF).should(eql(0))
   end
 
- it '#ssh should exit with non-zero code for mdbci/ppc64 nodes (when IP is wrong)' do
-    $session.ssh(ENV['pathToConfigToMDBCIBadNode'].to_s).should(eql(1))
+  it '#ssh should exit with zero code for all docker nodes' do
+    $session.ssh("#{DOCKER_CONF}/node1").should(eql(0))
   end
-=end
-  
-  it '#ssh should exit with zero code for all aws/vbox nodes' do
-    $session.ssh(ENV['pathToConfigToVBOXNode'].to_s).should(eql(0))
+
+  it '#ssh should exit with zero code for all docker nodes' do
+    $session.ssh(DOCKER_CONF).should(eql(0))
   end
 
   it '#ssh should raise error (when no such machine exists)' do
-    lambda{$session.ssh('TEST_MACHINE')}.should raise_error(/Machine with such name: .* does not exist/)
+    lambda{$session.ssh('TEST_MACHINE')}.should raise_error('Machine with such name: TEST_MACHINE does not exist')
   end
 
   it '#ssh should raise error (when no such machine exists)' do
@@ -52,6 +49,11 @@ describe 'Session' do
   end
 
   it '#ssh should raise error (when no such machine exists)' do
-    lambda{$session.ssh(ENV['pathToConfigToVBOXNode'].to_s+"_WRONG_NODE")}.should raise_error(/.* command returned non-zero exit code: (.?)/)
+    lambda{$session.ssh("#{DOCKER_CONF}/NOT_EXIST")}.should raise_error("node with such name does not exist in #{DOCKER_CONF}: NOT_EXIST")
   end
+
+  it '#ssh should raise error (when no such machine exists)' do
+    lambda{$session.ssh("#{PPC_CONF}/NOT_EXIST")}.should raise_error("mdbci node with such name does not exist in #{PPC_CONF}: NOT_EXIST")
+  end
+
 end

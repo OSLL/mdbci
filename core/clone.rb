@@ -148,7 +148,9 @@ class Clone
     File.open("#{path_to_nodes}/template", 'w') { |file| file.write new_template_path }
   end
 
-  def clone_nodes(path_to_nodes, new_path_to_nodes)
+  # libvirt_no_parallel is set to true in testing
+  # variable is used in parametrized testing to avoid deadlocks
+  def clone_nodes(path_to_nodes, new_path_to_nodes, libvirt_no_parallel = false)
     path_to_new_template = copy_old_template_to_new(path_to_nodes, new_path_to_nodes)
     provider = get_provider(path_to_nodes)
     if provider == DOCKER
@@ -162,7 +164,7 @@ class Clone
       copy_old_config_to_new(path_to_nodes, new_path_to_nodes)
       clone_libvirt_nodes(path_to_nodes, new_path_to_nodes)
       replace_libvirt_template_path(new_path_to_nodes, path_to_new_template)
-      start_config(new_path_to_nodes, true, false)
+      start_config(new_path_to_nodes, true, libvirt_no_parallel)
     else
       raise "#{provider}: provider does not support cloning"
     end
