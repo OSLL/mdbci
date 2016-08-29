@@ -1,4 +1,4 @@
-mdbci [option] <show | setup | generate>
+mdbci [option] {show | setup | generate}
 
 -h, --help:
   Shows this help screen
