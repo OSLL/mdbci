@@ -55,33 +55,60 @@ mdbci [option] <show | setup | generate>
   name of the snapshot
 
 COMMANDS:
+
   show [platforms, providers, versions, network, repos, keyfile config/node, network_config config/node ]
+  
   generate
+  
   setup [boxes]
+  
   show boxes --platform 'box platform' --platform-version 'box platform version'
+  
   sudo --command 'command arguments' config/node
+  
   ssh --command 'command arguments' config/node
+  
   up [--attempts 'attempts arguments'] config | config/node
+  
   setup_repo --product <product_name> config/node
+  
   install_product --product <product_name> config/node
+  
   public_keys --key keyfile.pem config/node
+  
   snapshot list --path-to-nodes T --node-name N
+  
   snapshot [take, revert, delete] --path-to-nodes T [ --node-name N ] --snapshot-name S
+  
   validate_template --template TEMPLATE_PATH
 
 
 EXAMPLES:
+  
   mdbci show versions --platform ubuntu
+  
   mdbci show boxes --platform centos
+  
   mdbci show boxes --platform ubuntu --platform-version trusty
+  
   mdbci show versions --platform ubuntu
+  
   mdbci show box T/node
+  
   mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
+  
   mdbci ssh --command "cat script.sh" T/node1
+  
   mdbci --repo-dir /home/testbed/config/repos show repos
+  
   mdbci up --attempts 4 T/node0
+  
   mdbci setup_repo --product maxscale T/node0
+  
   mdbci setup_repo --product mariadb --product-version 10.0 T/node0
+  
   mdbci install_product --product maxscale T/node0
+  
   mdbci public_keys --key keyfile.pem T/node0
+  
   mdbci validate_template --template TEMPLATE_PATH
