@@ -10,6 +10,7 @@ class RakeTaskManager
   PARAMETRIZED_CONFIG_ENV_VAR_PREFIX_ORIGIN = 'mdbci_param_conf_origin'
   PARAMETRIZED_CONFIG_PREFIX = 'mdbci_param_test_clone'
   PARAMETRIZED_CONFIG_PREFIX_ORIGIN = 'mdbci_param_test'
+
   PARAMETRIZED_CONFIGS = {
       "#{PARAMETRIZED_CONFIG_ENV_VAR_PREFIX}_#{DOCKER}" => "#{PARAMETRIZED_CONFIG_PREFIX}_#{DOCKER}",
       "#{PARAMETRIZED_CONFIG_ENV_VAR_PREFIX}_#{LIBVIRT}" => "#{PARAMETRIZED_CONFIG_PREFIX}_#{LIBVIRT}",
@@ -37,7 +38,6 @@ class RakeTaskManager
       @silent = false
     end
     @rspec_test_name = task_name.to_s.split(':')[1].split('_', 2)[1] + '_spec.rb'
-    puts @rspec_test_name
     @@tests_counter += 1
   end
 
