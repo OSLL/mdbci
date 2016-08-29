@@ -147,16 +147,16 @@ class Clone
   end
 
   def wait_libvirt_to_get_ip(path_to_nodes)
-    success = nil
-    old_directory = Dir.pwd
-    begin
-      Dir.chdir path_to_nodes
-      begin
-        out_info("waiting nodes in #{path_to_nodes} to get an IPs (ignore error messages)")
-        success = execute_bash('vagrant ssh-config', true) rescue nil
-      end while success.nil?
-    ensure
-      Dir.chdir old_directory
+    nodes = get_nodes(path_to_nodes)
+    nodes.delete_if do |node|
+      uuid = get_node_machine_id(path_to_nodes, node)
+      domain_name = get_libvirt_domain_name_by_uuid(uuid)
+      puts domain_name
+      mac = execute_bash("virsh domiflist #{domain_name} | grep vagrant-private-dhcp | awk '{print $5}'")
+      puts mac
+      ip_added = execute_bash("arp -a | grep #{mac}") rescue ''
+      puts ip_added
+      !ip_added.empty?
     end
   end
 
