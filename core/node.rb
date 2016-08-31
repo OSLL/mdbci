@@ -74,6 +74,19 @@ class Node
         exit_code = getInterfaceBoxIp(@name, "eth0")
       when '(aws)'
         if curlCheck
+          if @name.nil?
+            $out.error "@name is nil!!!!"
+          else
+            $out.error @name.to_s
+          end
+
+
+           if $session.awsConfig.nil?
+             $out.error "$session.awsConfig is nil!!!!"
+           else
+             $out.error $session.awsConfig.to_s
+           end
+
           if is_private
             cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["private_ip_service"]+'"'
           else

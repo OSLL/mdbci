@@ -186,7 +186,7 @@ class Network
   def self.getIpWrapper(node, pwd)
     begin
       node.getIp(node.provider, false)
-    rescue e
+    rescue => e
       Dir.chdir pwd
       $out.error e.message
       $out.error e.backtrace
