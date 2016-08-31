@@ -1,0 +1,8 @@
+{
+  "ubuntu_trusty_libvirt": {
+    "provider": "libvirt",
+    "box": "baremettle/ubuntu-14.04",
+    "platform": "ubuntu",
+    "platform_version": "trusty"
+  }
+}

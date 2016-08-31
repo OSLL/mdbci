@@ -1,8 +1,24 @@
-PATH_TO_RSPEC_SPEC_FOLDER = 'spec/'
-PATH_TO_INTEGRATION_TESTS_FOLDER = 'integration/'
-PATH_TO_UNIT_TESTS_FOLDER = 'unit/'
+require_relative '../scripts/parametrized_testing/parametrized_test_wrapper'
 
 class RakeTaskManager
+
+  PATH_TO_RSPEC_SPEC_FOLDER = 'spec/'
+  PATH_TO_INTEGRATION_TESTS_FOLDER = 'integration/'
+  PATH_TO_UNIT_TESTS_FOLDER = 'unit/'
+
+  PARAMETRIZED_CONFIG_ENV_VAR_PREFIX = 'mdbci_param_conf'
+  PARAMETRIZED_CONFIG_ENV_VAR_PREFIX_ORIGIN = 'mdbci_param_conf_origin'
+  PARAMETRIZED_CONFIG_PREFIX = 'mdbci_param_test_clone'
+  PARAMETRIZED_CONFIG_PREFIX_ORIGIN = 'mdbci_param_test'
+
+  PARAMETRIZED_CONFIGS = {
+      "#{PARAMETRIZED_CONFIG_ENV_VAR_PREFIX}_#{DOCKER}" => "#{PARAMETRIZED_CONFIG_PREFIX}_#{DOCKER}",
+      "#{PARAMETRIZED_CONFIG_ENV_VAR_PREFIX}_#{LIBVIRT}" => "#{PARAMETRIZED_CONFIG_PREFIX}_#{LIBVIRT}",
+      "#{PARAMETRIZED_CONFIG_ENV_VAR_PREFIX}_#{PPC}" => "#{PARAMETRIZED_CONFIG_PREFIX}_#{PPC_FROM_DOCKER}",
+      "#{PARAMETRIZED_CONFIG_ENV_VAR_PREFIX_ORIGIN}_#{DOCKER}" => "#{PARAMETRIZED_CONFIG_PREFIX_ORIGIN}_#{DOCKER}",
+      "#{PARAMETRIZED_CONFIG_ENV_VAR_PREFIX_ORIGIN}_#{LIBVIRT}" => "#{PARAMETRIZED_CONFIG_PREFIX_ORIGIN}_#{LIBVIRT}",
+      "#{PARAMETRIZED_CONFIG_ENV_VAR_PREFIX_ORIGIN}_#{DOCKER_FOR_PPC}" => "#{PARAMETRIZED_CONFIG_PREFIX_ORIGIN}_#{DOCKER_FOR_PPC}"
+  }
 
   attr_accessor :rspec_test_name
   attr_accessor :failed_tests
@@ -21,7 +37,7 @@ class RakeTaskManager
     elsif @silent == 'false'
       @silent = false
     end
-    @rspec_test_name = task_name.to_s.split('_', 2)[1] + '_spec.rb'
+    @rspec_test_name = task_name.to_s.split(':')[1].split('_', 2)[1] + '_spec.rb'
     @@tests_counter += 1
   end
 
@@ -47,7 +63,7 @@ class RakeTaskManager
     unless File.exists?("#{@rspec_test_name}")
       @@failed_tests.push("Test not exists: #{@rspec_test_name}")
       @@failed_tests_counter +=1
-      return 1    
+      return 1
     end
     @cmd = `rspec #{@rspec_test_name}`
     describe_test(@rspec_test_name, @cmd, $?.exitstatus)
@@ -79,20 +95,23 @@ class RakeTaskManager
       puts output.split("\n")[0..lines_counter-1]
     end
   end
-  # creating parameters for rspec test
-  # run tests
-  # generating output of failed tests
-  # removing parameters, test is over
+
+  def with_environment_variables(variables)
+    variables.each { |key, value| ENV[key.to_s] = value }
+    yield
+    variables.each { |key, _| ENV.delete(key.to_s) }
+  end
+
   def run_parametrized(arguments)
-    # Strange, but arguments variable is not Hash
-    # so it needs to be converted...
-    if !Hash.try_convert(arguments).empty?
-      arguments.each { |key, value| ENV[key.to_s] = value }
-      run
-      arguments.each { |key, _| ENV.delete(key.to_s) }
-    else
-      raise "No arguments provided for #{@rspec_test_name}, fix and try again."
-    end
+    with_environment_variables(PARAMETRIZED_CONFIGS) {
+      begin
+        ptw = ParametrizedTestWrapper.new
+        ptw.prepare_clones(arguments)
+        run
+      ensure
+        ptw.remove_clones(arguments)
+      end
+    }
   end
 
   def run_unit
@@ -115,13 +134,34 @@ class RakeTaskManager
     run_parametrized arguments
   end
 
+  def self.custom_task(*args, &block)
+    Rake::Task.define_task(*args, &block)
+  end
+
+  def self.rake_finalize(namespace_name_symbol)
+    namespace_name_all_tasks_sym = "#{namespace_name_symbol}_all".to_sym
+    custom_task :task_show_tests_info do
+      RakeTaskManager.get_failed_tests_info
+    end
+    custom_task namespace_name_all_tasks_sym do
+      Rake.application.in_namespace(namespace_name_symbol) do |x|
+        x.tasks.each do |t|
+          t.invoke
+        end
+      end
+    end
+    current_tasks = Rake.application.top_level_tasks
+    current_tasks << :task_show_tests_info
+    Rake.application.instance_variable_set(:@top_level_tasks, current_tasks)
+  end
+
   def self.get_failed_tests_info
     if @@failed_tests.length == 0
       puts "\nAll tests passed #{@@tests_counter}/#{@@tests_counter}"
       exit 0
     else
       puts "\nFailed tests #{@@failed_tests_counter}/#{@@tests_counter}:"
-      @@failed_tests.each { |line| puts line}
+      @@failed_tests.each { |line| puts line }
       exit 1
     end
   end

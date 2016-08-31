@@ -10,7 +10,6 @@ HELP_OPTION = '--help'
 
 # Db parameters
 DEFAULT_FILE = '/home/vagrant/build_parser_db_password'
-HOST = 'localhost'
 DB_NAME = 'test_results_db'
 
 # parse_ctest_log.rb keys definition
@@ -33,7 +32,7 @@ class BuildResultsWriter
 
   def write_results_from_input_file(input_file_path)
     parse_input_file(input_file_path)
-    connect_mdb(DEFAULT_FILE, HOST, DB_NAME)
+    connect_mdb(DEFAULT_FILE, DB_NAME)
 
     write_build_results_to_db(@parsed_content)
   end
@@ -43,11 +42,11 @@ class BuildResultsWriter
     @parsed_content = JSON.parse(unparsed_content)
   end
 
-  def connect_mdb(default_file, host, db_name)
+  def connect_mdb(default_file, db_name)
     @client = Mysql2::Client.new(:default_file => "#{default_file}",  \
-      :host => "#{host}", :database => "#{db_name}")
+      :database => "#{db_name}")
     puts "Connection to db (:default_file => #{default_file}, "\
-         ":host => #{host}, :database => #{db_name} established successfuly"
+         ":database => #{db_name} established successfuly"
   end
 
   def write_test_run_table(jenkins_id, start_time, target, box, \
