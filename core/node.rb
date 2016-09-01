@@ -73,6 +73,7 @@ class Node
       when '(docker)'
         exit_code = getInterfaceBoxIp(@name, "eth0")
       when '(aws)'
+        $session.loadAWSConfig
         if curlCheck
           if @name.nil?
             $out.error "@name is nil!!!!"

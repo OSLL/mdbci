@@ -84,8 +84,15 @@ EOF
 
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
+ 
 
   end
+
+  def loadAWSConfig
+    $out.info 'Load AWS config from ' + @awsConfigFile
+    @awsConfig = $exception_handler.handle('AWS configuration file not found') { YAML.load_file(@awsConfigFile)['aws'] }
+  end
+
 
   def setup(what)
     possibly_failed_command = ''
@@ -514,8 +521,7 @@ EOF
     LoadNodesProvider(configs)
     if $session.nodesProvider == 'aws'
       raise 'The path of configuration aws file is not specified' if @awsConfigFile == nil
-      $out.info 'Load AWS config from ' + @awsConfigFile
-      @awsConfig = $exception_handler.handle('AWS configuration file not found') { YAML.load_file(@awsConfigFile)['aws'] }
+      $session.loadAWSConfig
       aws_config_path_file = path+'/aws_config_path'
       aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
       @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
