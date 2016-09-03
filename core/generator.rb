@@ -129,6 +129,7 @@ EOF
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
             + templatedef + "\n"
+    vmdef += "\n\n\t#{name}.vm.provision 'shell', inline: 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v 12.9.38'"
     if provisioned
       vmdef += "\t##--- Chef binding ---\n"\
             + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
@@ -171,6 +172,7 @@ EOF
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
             + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n" \
             + "\t\t"+'qemu.memory = ' + vm_mem + "\n\tend"
+    qemudef += "\n\n\t#{name}.vm.provision 'shell', inline: 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v 12.9.38'"
     if provisioned
       qemudef += "\t##--- Chef binding ---\n"\
             + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
@@ -214,6 +216,8 @@ EOF
     end
 
     dockerdef = dockerdef+ "\t\t"+'d.env = {"container"=>"docker"}' + "\n\tend"
+
+    dockerdef += "\n\n\t#{name}.vm.provision 'shell', inline: 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v 12.9.38'"
 
     if provisioned
       dockerdef += "\t##--- Chef binding ---\n"\
@@ -293,6 +297,7 @@ EOF
            + "\t\toverride.ssh.username = " + quote(user) + "\n" \
            + "\tend\n" \
            + mountdef + "\n"
+    awsdef += "\n\n\t#{name}.vm.provision 'shell', inline: 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v 12.9.38'"
     if provisioned
       awsdef += "\t##--- Chef binding ---\n"\
            + "\t" + name + ".vm.provision "+ quote('chef_solo')+" do |chef| \n"\
