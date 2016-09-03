@@ -112,7 +112,7 @@ config.omnibus.chef_version = '12.9.38'
 EOF
   end
 
-  def install_chef_by_url(name)
+  def Generator.install_chef_by_url(name)
     return "\n\n\t#{name}.vm.provision 'shell', inline: 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v 12.9.38'"
   end
 
