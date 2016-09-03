@@ -10,6 +10,6 @@
   },
   "node3": {
     "hostname": "node3",
-    "box": "debian_wheezy_vbox"
+    "box": "suse_13_vbox"
   }
 }
