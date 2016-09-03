@@ -1,0 +1,10 @@
+{
+  "maxscale": {
+    "hostname": "maxscale",
+    "box": "suse_13_libvirt",
+    "memory_size": "2048",
+    "product": {
+      "name": "maxscale"
+    }
+  }
+}
