@@ -1,0 +1,74 @@
+- job:
+    name: mdbci_integration_test
+    description: 'This job perform running mdbci integration tests.'
+    key_one: &SORTED_GIT_BRANCHES_FILE_PATH '/home/vagranttest/mdbci_jenkins_config/branch_list'
+    parameters:
+        - choice:
+            name: box
+            choices:
+                !include: './maxscale_jobs/include/boxes_all.yaml'
+        - choice:
+            name: product
+            choices:
+                !include: './maxscale_jobs/include/products.yaml'
+        - choice:
+            name: version
+            choices:
+                !include: './maxscale_jobs/include/versions.yaml'
+        - !include: './maxscale_jobs/include/do_not_destroy_vm.yaml'
+        - extended-choice:
+              name: MDBCI_BRANCH
+              description: "MDBCI branch"
+              type: 'PT_SINGLE_SELECT'
+              property-file: *SORTED_GIT_BRANCHES_FILE_PATH
+              property-key: branch_name
+              default-value: refs/heads/integration
+    inject:
+      enabled: true
+      keep-system-variables: true
+      keep-build-variables: true
+    scm:
+        - git:
+            url: https://github.com/mariadb-corporation/maxscale-system-test.git
+            branches:
+                - master
+    wrappers:
+        - !include: './maxscale_jobs/include/workspace-cleanup-total.yaml'
+    builders:
+        - trigger-builds:
+          - project: 'smart_remove_lock'
+            block: true
+            current-parameters: true
+        - shell: |
+            /home/vagranttest/build-scripts/test/mdbc_integration_test.sh
+    publishers:
+        - email-ext:
+            body: $DEFAULT_CONTENT
+            attach-build-log: false
+            always: true
+            aborted: true
+            failure: true
+            still-failing: true
+            success: true
+            fixed: true
+            send-to:
+               - recipients
+               - developers
+        - email-ext:
+            recipients: !include-raw: "./maxscale_jobs/include/mail_recipients.yaml"
+            reply-to: $DEFAULT_REPLYTO
+            content-type: default
+            subject: $DEFAULT_SUBJECT - $MDBCI_BRANCH
+            body: !include-raw: "./maxscale_jobs/include/build_parser_email_body" 
+            attach-build-log: true
+            compress-log: true
+            always: true
+            aborted: true
+            failure: true
+            still-failing: true
+            success: true
+            fixed: true
+            presend-script: $DEFAULT_PRESEND_SCRIPT
+            send-to:
+              - recipients
+              - developers
