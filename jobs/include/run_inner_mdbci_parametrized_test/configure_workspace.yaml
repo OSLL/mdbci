@@ -12,7 +12,7 @@ shell: |
   prefix="mdbci_param_test"
   temp_dir=$HOME/"${prefix}_temp_${timestamp}"
   origin_configs_presented=false
-  configs=$(ls | grep $prefix)
+  configs=$(ls | grep $prefix) || true
   if [[ -n "$configs" ]]; then
       origin_configs_presented=true
       mkdir -p "$temp_dir"
