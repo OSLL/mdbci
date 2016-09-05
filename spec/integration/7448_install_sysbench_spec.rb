@@ -2,7 +2,7 @@ require 'rspec'
 require_relative '../spec_helper'
 require_relative '../../core/helper'
 
-CONF_LIBVIRT = 'mdbci_param_test_libvirt'#ENV['mdbci_param_conf_libvirt']
+CONF_LIBVIRT = ENV['mdbci_param_conf_libvirt']
 NODE_APT = 'node1'
 NODE_YUM = 'node2'
 #NODE_ZYPPER = 'node3'
