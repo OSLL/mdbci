@@ -489,7 +489,8 @@ EOF
           tags = generateAwsTag({
                                     'hostname' => Socket.gethostname,
                                     'username' => Etc.getlogin,
-                                    'full_config_path' => File.expand_path(path)
+                                    'full_config_path' => File.expand_path(path),
+                                    'machinename' => name
                                 })
           machine = getAWSVmDef(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned, tags)
         when 'libvirt'
