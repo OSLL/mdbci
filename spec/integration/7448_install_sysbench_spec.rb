@@ -19,12 +19,10 @@ def get_node_data(config_name, node)
     execute_bash("./mdbci show network_config #{config_name}")
   end
   configs = File.read(network_config).split("\n")
-  puts configs
   data = Hash.new
   data[PRIVATE_IP] = configs.select { |c| c =~ (/^#{node}_#{PRIVATE_IP}=(.*)/) }
   data[KEYFILE] = configs.select { |c| c =~ (/^#{node}_#{KEYFILE}=(.*)/) }
   data[WHOAMI] = configs.select { |c| c =~ (/^#{node}_#{WHOAMI}=(.*)/) }
-  puts data
   data.each { |key, value| data[key] = value.first.split('=')[1]}
   return data
 end
