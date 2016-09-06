@@ -323,6 +323,7 @@ mdbe@?+opensuse^13 => [http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb
 ```
 where mdbe@? means default mariadb community version on Opensuse13 target platfrom.
 
+
 ### Supported VM providers
 
 MDBCI supports next VM providers:
