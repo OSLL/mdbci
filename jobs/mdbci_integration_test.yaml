@@ -23,10 +23,11 @@
               property-file: *SORTED_GIT_BRANCHES_FILE_PATH
               property-key: branch_name
               default-value: refs/heads/integration
-    inject:
-      enabled: true
-      keep-system-variables: true
-      keep-build-variables: true
+    properties:
+        - inject:
+            enabled: true
+            keep-system-variables: true
+            keep-build-variables: true
     scm:
         - git:
             url: https://github.com/mariadb-corporation/maxscale-system-test.git
@@ -36,32 +37,20 @@
         - !include: './maxscale_jobs/include/workspace-cleanup-total.yaml'
     builders:
         - trigger-builds:
-          - project: 'smart_remove_lock'
+          - project: 'run-inner-mdbci-unit-tests'
             block: true
             current-parameters: true
         - shell: |
             /home/vagranttest/build-scripts/test/mdbc_integration_test.sh
     publishers:
         - email-ext:
-            body: $DEFAULT_CONTENT
-            attach-build-log: false
-            always: true
-            aborted: true
-            failure: true
-            still-failing: true
-            success: true
-            fixed: true
-            send-to:
-               - recipients
-               - developers
-        - email-ext:
-            recipients: !include-raw: "./maxscale_jobs/include/mail_recipients.yaml"
+            recipients: $DEFAULT_RECIPIENTS
             reply-to: $DEFAULT_REPLYTO
             content-type: default
             subject: $DEFAULT_SUBJECT - $MDBCI_BRANCH
-            body: !include-raw: "./maxscale_jobs/include/build_parser_email_body" 
+            body: !include-raw: "./maxscale_jobs/include/integration_tests_email_body" 
             attach-build-log: true
-            compress-log: true
+            compress-build-log: true
             always: true
             aborted: true
             failure: true
