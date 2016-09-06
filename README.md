@@ -417,6 +417,9 @@ mdbci [options] <show | setup | generate>
 -e, --template_validation_type
   Template validation type (aws, no_aws)
 
+-sn, --snapshot-name
+  name of the snapshot
+
 ### Commands:
 
   show [boxes, boxinfo, platforms, versions, network, repos [config | config/node], keyfile [config/node], validate_template ]
@@ -438,6 +441,10 @@ mdbci [options] <show | setup | generate>
     Install specified product by command option **--product** on a config/node. Currently supported only **Maxscale** product.
     
   validate_template -e aws -template TEMPLATE
+    
+  snapshot list --path-to-nodes T --node-name N
+  
+  snapshot [take, revert, delete] --path-to-nodes T [ --node-name N ] --snapshot-name S
 
 ### Examples:
 
