@@ -10,6 +10,9 @@ run_command() {
 		ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$key_path" "$user"@"$ip" "$1"
 		run_command_ret_val=$?
 }
+run_command 'sudo apt-get update -y'
+run_command 'sudo yum -y check-update'
+run_command 'sudo zypper --non-interactive ref'
 run_command "git --version"
 if [[ "0" -ne "$run_command_ret_val" ]]; then
 		run_command 'sudo apt-get install git -y'
