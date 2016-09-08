@@ -80,13 +80,11 @@ def extract_sysbench_results_raw(input_file)
           return sysbench_results_raw
         end
       end
-
       
     end
   end
 
   if sysbench_results_raw == '' 
-   
     raise "sysbench_results_raw not found"
   end
   return sysbench_results_raw
