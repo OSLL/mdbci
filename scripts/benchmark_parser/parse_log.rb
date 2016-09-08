@@ -9,6 +9,9 @@ ENV_FILE_OPTION = '--env-file'
 SILENT_OPTION = '--silent'
 HELP_OPTION = '--help'
 
+SYSBENCH_BLOCK_START = "OLTP test statistics:\n"
+NEW_LINE_SYSBENCH_COUNT = 3
+
 def parse_cmd_args
   opts = GetoptLong.new(
       [INPUT_FILE_OPTION, '-i', GetoptLong::REQUIRED_ARGUMENT],
@@ -47,10 +50,46 @@ def parse_cmd_args
     exit 1
   end
 
+  unless File.file?(options[:input_file])
+    puts "#{options[:input_file]} does not exist!"
+    exit 1
+  end
+
   return options
 end
 
 def extract_sysbench_results_raw(input_file)
+  sysbench_results_raw = ''
+  sysbench_block_found = false
+  new_line_count = 0
+  File.open(input_file, "r") do |f|
+    f.each_line do |line|
+      if line == SYSBENCH_BLOCK_START 
+        puts "Found start of sysbench block"
+        sysbench_block_found = true
+      end
+
+      if sysbench_block_found
+        sysbench_results_raw += line
+        if line == "\n"
+          new_line_count+=1
+        end
+
+        if new_line_count == NEW_LINE_SYSBENCH_COUNT
+          puts "Read all sysbench_results_raw" 
+          return sysbench_results_raw
+        end
+      end
+
+      
+    end
+  end
+
+  if sysbench_results_raw == '' 
+   
+    raise "sysbench_results_raw not found"
+  end
+  return sysbench_results_raw
 end
 
 def write_sysbench_results_to_env_file(sysbench_results_raw, env_file)
