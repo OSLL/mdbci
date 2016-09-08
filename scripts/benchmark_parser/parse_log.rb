@@ -11,6 +11,7 @@ HELP_OPTION = '--help'
 
 SYSBENCH_BLOCK_START = "OLTP test statistics:\n"
 NEW_LINE_SYSBENCH_COUNT = 3
+SYSBENCH_RESULTS_RAW = 'SYSBENCH_RESULTS_RAW'
 
 def parse_cmd_args
   opts = GetoptLong.new(
@@ -91,6 +92,12 @@ def extract_sysbench_results_raw(input_file)
 end
 
 def write_sysbench_results_to_env_file(sysbench_results_raw, env_file)
+  sysbench_results_raw.gsub!("\n", " \\\n")
+
+  sysbench_results_raw = "#{SYSBENCH_RESULTS_RAW} \\\n#{sysbench_results_raw}" 
+  File.open(env_file, 'a') do |f|
+    f.puts sysbench_results_raw
+  end
 end
 
 def parse_sysbench_results_raw(sysbench_results_raw)
