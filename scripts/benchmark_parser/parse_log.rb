@@ -84,6 +84,8 @@ def main
   hash = remove_units(hash)
   hash = split_slash_keys(hash)
   write_hash_to_json(hash, options[:output_file])
+ 
+  puts "Parsing completed!" 
 end
 
 if File.identical?(__FILE__, $0)
