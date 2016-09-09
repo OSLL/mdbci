@@ -92,10 +92,13 @@ def extract_sysbench_results_raw(input_file)
 end
 
 def write_sysbench_results_to_env_file(sysbench_results_raw, env_file)
+  # Adding \ at the end of each line to avoid losing multiline env variable
   sysbench_results_raw.gsub!("\n", " \\\n")
+  # Removing last \
+  sysbench_results_raw = sysbench_results_raw[0..-3] 
 
   sysbench_results_raw = "#{SYSBENCH_RESULTS_RAW} \\\n#{sysbench_results_raw}" 
-  File.open(env_file, 'a') do |f|
+  File.open(env_file, 'w') do |f|
     f.puts sysbench_results_raw
   end
 end
