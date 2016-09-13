@@ -24,5 +24,4 @@ def check_pullrequest_in_mdbci(branch):
         if pull[TITLE][:4] == branch:
             print PULLREQUEST_SUCCESS
             return True
-    print PULLREQUEST_FAILED
     return False

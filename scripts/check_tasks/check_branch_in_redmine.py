@@ -16,6 +16,7 @@ UNSUCCESS_PRINT = 'The issue {} is unsuccessfully completed'
 TEST_SCENARIO_FAILED = 'Test scenario is missed\n'
 TEST_SCENARIO_SUCCESS = 'Test scenario exists'
 PULLREQUEST_FAILED = 'Pullrequest is missed\n'
+PULLREQUEST_SUCCESS = 'Pullrequest exists'
 FAIL_REASON = "FAIL_REASON"
 
 # for env variable
@@ -71,7 +72,9 @@ def check_text_in_test_scenario_field(test_scenario_value):
             GITHUB_URL,
             MAXSCALE_OWNER,
             MAXSCALE_REPO)) != -1:
+        print PULLREQUEST_SUCCESS
         return True
+    print PULLREQUEST_FAILED
     return False
 
 
