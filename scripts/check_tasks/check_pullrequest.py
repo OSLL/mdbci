@@ -1,31 +1,28 @@
-from github import Github
-
-GITHUB_USERNAME = 'TestUserGeomongoGithub'
-PASSWORD = 'ND3GyNHCpxweSqC2'
-REPO = 'pytift_experimental'
-
-# constants
-OPEN = 'open'
-PULLREQUEST_EXISTS = 'pullrequest exists'
-PULLREQUEST_MISSED = 'pullrequest is missed'
+import json
+import requests
 
 
-def get_github_instance():
-    github = Github(GITHUB_USERNAME, PASSWORD)
-    return github
+GITHUB_API_URL = 'https://api.github.com/repos/{}/{}/pulls'
+
+MDBCI_OWNER = 'OSLL'
+MDBCI_REPO = 'mdbci'
+
+TITLE = 'title'
+
+PULLREQUEST_FAILED = 'Pullrequest is missed'
+PULLREQUEST_SUCCESS = 'Pullrequest exists'
+
+def get_url_for_check_pullrequest(url, owner, repository):
+    return url.format(owner, repository)
 
 
-def check_pullrequest(branch):
-    ghs = get_github_instance()
-    list_repo = ghs.get_user().get_repos()
-    for repo in list_repo:
-        if repo.name == REPO:
-            right_repo = repo
-            break
-    list_pulls = right_repo.get_pulls(OPEN)
-    for pullrequest in list_pulls:
-        if pullrequest.title == branch:
-            print PULLREQUEST_EXISTS
+def check_pullrequest_in_mdbci(branch):
+    response = requests.get(
+        get_url_for_check_pullrequest(GITHUB_API_URL,MDBCI_OWNER, MDBCI_REPO))
+    responseText = json.loads(response.text)
+    for pull in responseText:
+        if pull[TITLE][:4] == branch:
+            print PULLREQUEST_SUCCESS
             return True
-    print PULLREQUEST_MISSED
+    print PULLREQUEST_FAILED
     return False
