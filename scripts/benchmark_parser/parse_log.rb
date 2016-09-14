@@ -140,38 +140,38 @@ def split_slash_keys(hash)
 end
 
 def get_test_code_commit
-  return NOT_FOUND if ENV[WORKSPACE].nil?
+  return 'NOT FOUND' if ENV['WORKSPACE'].nil?
   current_directory = Dir.pwd
-  Dir.chdir ENV[WORKSPACE]
+  Dir.chdir ENV['WORKSPACE']
   git_log = `git log -1`
   Dir.chdir current_directory
-  return NOT_FOUND if git_log.nil?
+  return 'NOT FOUND' if git_log.nil?
   commit_regex = /commit\s+(.+)/
   if git_log.lines.first =~ commit_regex
     return git_log.lines.first.match(commit_regex).captures[0]
   end
-  return NOT_FOUND
+  return 'NOT FOUND'
 end
 
 def get_build_params_hash
-  provider = File.read("#{ENV['name']}/provider")
-  template_name = provider == 'MDBCI' ? 'mdbci_template' : 'template'
+  template_path = ENV['name'] ? "#{ENV['name']}.json" : 'NOT FOUND'
+  cnf_path = File.exist?('maxscale.cnf') ? "#{Dir.pwd}/maxscale.cnf" : 'NOT FOUND'
   return {
-      'jenkins_id' => ENV['BUILD_NUMBER'],
-      'start_time' => ENV['BUILD_TIMESTAMP'],
-      'box' => ENV['box'],
-      'product' => ENV['product'],
-      'mariadb_version' => ENV['version'],
+      'jenkins_id' => ENV['BUILD_NUMBER'] || 'NOT FOUND',
+      'start_time' => ENV['BUILD_TIMESTAMP'] || 'NOT FOUND',
+      'box' => ENV['box'] || 'NOT FOUND',
+      'product' => ENV['product'] || 'NOT FOUND',
+      'mariadb_version' => ENV['version'] || 'NOT FOUND',
       'test_code_commit_id' => get_test_code_commit,
       'product_under_test' => 'maxscale',
-      'job_name' => ENV['JOB_NAME'],
-      'machine_count' => ENV['machines_count'],
-      'sysbench_params' => ENV['sysbench_params'],
-      'mdbci_template' => File.read("#{ENV['name']}/#{template_name}"),
+      'job_name' => ENV['JOB_NAME'] || 'NOT FOUND',
+      'machine_count' => ENV['machines_count'] || 'NOT FOUND',
+      'sysbench_params' => ENV['sysbench_params'] || 'NOT FOUND',
+      'mdbci_template' => template_path,
       'test_tool' => 'sysbench',
-      'target' => ENV['target'],
-      '$maxscale_commit_id' => $maxscale_commit,
-      'maxscale_cnf' => `echo $(pwd)/maxscale.cnf`
+      'target' => ENV['target'] || 'NOT FOUND',
+      'maxscale_commit_id' => $maxscale_commit || 'NOT FOUND',
+      'maxscale_cnf' => cnf_path
   }
 end
 
