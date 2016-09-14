@@ -116,18 +116,11 @@ def flatten_keys(hash, temp_hash = nil, new_hash = nil)
     return
   end
   hash.each do |el|
-    next_element = process_characters(el[0])
+    next_element = el[0].gsub(/\s+/, '_')
     next_temp_hash = temp_hash.empty? ? next_element : "#{temp_hash}.#{next_element}"
     flatten_keys(el[1], next_temp_hash, new_hash)
   end
   return new_hash
-end
-
-def process_characters(characters)
-  characters = characters.downcase
-  characters = characters.gsub(/[.*|\/\\\s]+/, '_')
-  characters = characters.gsub(/[()]+/, '')
-  return characters
 end
 
 def remove_brackets(hash)
