@@ -2,6 +2,7 @@
 
 require 'getoptlong'
 require 'json'
+require 'yaml'
 
 INPUT_FILE_OPTION = '--input-file'
 OUTPUT_FILE_OPTION = '--output-file'
@@ -111,9 +112,22 @@ def write_sysbench_results_to_env_file(sysbench_results_raw, env_file)
 end
 
 def parse_sysbench_results_raw(sysbench_results_raw)
+  return YAML.load(sysbench_results_raw)
 end
 
-def flatten_keys(hash)
+def flatten_keys(hash, temp_hash = nil, new_hash = nil)
+  new_hash = Hash.new if new_hash.nil?
+  temp_hash = Hash.new if temp_hash.nil?
+  unless hash.is_a? Hash
+    new_hash[temp_hash] = hash
+    return
+  end
+  hash.each do |el|
+    next_element = el[0].gsub(/\s+/, '_')
+    next_temp_hash = temp_hash.empty? ? next_element : "#{temp_hash}.#{next_element}"
+    flatten_keys(el[1], next_temp_hash, new_hash)
+  end
+  return new_hash
 end
 
 def remove_brackets(hash)
