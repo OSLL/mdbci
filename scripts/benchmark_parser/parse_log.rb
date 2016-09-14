@@ -2,6 +2,7 @@
 
 require 'getoptlong'
 require 'json'
+require 'yaml'
 
 INPUT_FILE_OPTION = '--input-file'
 OUTPUT_FILE_OPTION = '--output-file'
@@ -65,7 +66,7 @@ def extract_sysbench_results_raw(input_file)
   new_line_count = 0
   File.open(input_file, "r") do |f|
     f.each_line do |line|
-      if line == SYSBENCH_BLOCK_START 
+      if line == SYSBENCH_BLOCK_START
         puts "Found start of sysbench block"
         sysbench_block_found = true
       end
@@ -77,15 +78,15 @@ def extract_sysbench_results_raw(input_file)
         end
 
         if new_line_count == NEW_LINE_SYSBENCH_COUNT
-          puts "Read all sysbench_results_raw" 
+          puts "Read all sysbench_results_raw"
           return sysbench_results_raw
         end
       end
-      
+
     end
   end
 
-  if sysbench_results_raw == '' 
+  if sysbench_results_raw == ''
     raise "sysbench_results_raw not found"
   end
   return sysbench_results_raw
@@ -95,18 +96,31 @@ def write_sysbench_results_to_env_file(sysbench_results_raw, env_file)
   # Adding \ at the end of each line to avoid losing multiline env variable
   sysbench_results_raw.gsub!("\n", " \\\n")
   # Removing last \
-  sysbench_results_raw = sysbench_results_raw[0..-3] 
+  sysbench_results_raw = sysbench_results_raw[0..-3]
 
-  sysbench_results_raw = "#{SYSBENCH_RESULTS_RAW} \\\n#{sysbench_results_raw}" 
+  sysbench_results_raw = "#{SYSBENCH_RESULTS_RAW} \\\n#{sysbench_results_raw}"
   File.open(env_file, 'w') do |f|
     f.puts sysbench_results_raw
   end
 end
 
 def parse_sysbench_results_raw(sysbench_results_raw)
+  return YAML.load(sysbench_results_raw)
 end
 
-def flatten_keys(hash)
+def flatten_keys(hash, temp_hash = nil, new_hash = nil)
+  new_hash = Hash.new if new_hash.nil?
+  temp_hash = Hash.new if temp_hash.nil?
+  unless hash.is_a? Hash
+    new_hash[temp_hash] = hash
+    return
+  end
+  hash.each do |el|
+    next_element = el[0].gsub(/\s+/, '_')
+    next_temp_hash = temp_hash.empty? ? next_element : "#{temp_hash}.#{next_element}"
+    flatten_keys(el[1], next_temp_hash, new_hash)
+  end
+  return new_hash
 end
 
 def remove_brackets(hash)
@@ -124,15 +138,15 @@ end
 def main
   options = parse_cmd_args
   sysbench_results_raw = extract_sysbench_results_raw(options[:input_file])
-  write_sysbench_results_to_env_file(sysbench_results_raw, options[:env_file]) 
+  write_sysbench_results_to_env_file(sysbench_results_raw, options[:env_file])
   hash = parse_sysbench_results_raw(sysbench_results_raw)
   hash = flatten_keys(hash)
   hash = remove_brackets(hash)
   hash = remove_units(hash)
   hash = split_slash_keys(hash)
   write_hash_to_json(hash, options[:output_file])
- 
-  puts "Parsing completed!" 
+
+  puts "Parsing completed!"
 end
 
 if File.identical?(__FILE__, $0)
