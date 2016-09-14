@@ -13,6 +13,10 @@ SYSBENCH_BLOCK_START = "OLTP test statistics:\n"
 NEW_LINE_SYSBENCH_COUNT = 3
 SYSBENCH_RESULTS_RAW = 'SYSBENCH_RESULTS_RAW'
 
+MAXSCALE_COMMIT_REGEX = /MaxScale\s+.*\d+\.*\d*\.*\d*\s+-\s+(.+)/
+
+$maxscale_commit = nil
+
 def parse_cmd_args
   opts = GetoptLong.new(
       [INPUT_FILE_OPTION, '-i', GetoptLong::REQUIRED_ARGUMENT],
@@ -65,7 +69,10 @@ def extract_sysbench_results_raw(input_file)
   new_line_count = 0
   File.open(input_file, "r") do |f|
     f.each_line do |line|
-      if line == SYSBENCH_BLOCK_START 
+      if line =~ MAXSCALE_COMMIT_REGEX and $maxscale_commit == nil
+        $maxscale_commit = line.match(MAXSCALE_COMMIT_REGEX).captures[0]
+      end
+      if line == SYSBENCH_BLOCK_START
         puts "Found start of sysbench block"
         sysbench_block_found = true
       end
@@ -77,15 +84,15 @@ def extract_sysbench_results_raw(input_file)
         end
 
         if new_line_count == NEW_LINE_SYSBENCH_COUNT
-          puts "Read all sysbench_results_raw" 
+          puts "Read all sysbench_results_raw"
           return sysbench_results_raw
         end
       end
-      
+
     end
   end
 
-  if sysbench_results_raw == '' 
+  if sysbench_results_raw == ''
     raise "sysbench_results_raw not found"
   end
   return sysbench_results_raw
@@ -95,9 +102,9 @@ def write_sysbench_results_to_env_file(sysbench_results_raw, env_file)
   # Adding \ at the end of each line to avoid losing multiline env variable
   sysbench_results_raw.gsub!("\n", " \\\n")
   # Removing last \
-  sysbench_results_raw = sysbench_results_raw[0..-3] 
+  sysbench_results_raw = sysbench_results_raw[0..-3]
 
-  sysbench_results_raw = "#{SYSBENCH_RESULTS_RAW} \\\n#{sysbench_results_raw}" 
+  sysbench_results_raw = "#{SYSBENCH_RESULTS_RAW} \\\n#{sysbench_results_raw}"
   File.open(env_file, 'w') do |f|
     f.puts sysbench_results_raw
   end
@@ -118,21 +125,58 @@ end
 def split_slash_keys(hash)
 end
 
+def get_test_code_commit
+  return NOT_FOUND if ENV[WORKSPACE].nil?
+  current_directory = Dir.pwd
+  Dir.chdir ENV[WORKSPACE]
+  git_log = `git log -1`
+  Dir.chdir current_directory
+  return NOT_FOUND if git_log.nil?
+  commit_regex = /commit\s+(.+)/
+  if git_log.lines.first =~ commit_regex
+    return git_log.lines.first.match(commit_regex).captures[0]
+  end
+  return NOT_FOUND
+end
+
+def get_build_params_hash
+  provider = File.read("#{ENV['name']}/provider")
+  template_name = provider == 'MDBCI' ? 'mdbci_template' : 'template'
+  return {
+      'jenkins_id' => ENV['BUILD_NUMBER'],
+      'start_time' => ENV['BUILD_TIMESTAMP'],
+      'box' => ENV['box'],
+      'product' => ENV['product'],
+      'mariadb_version' => ENV['version'],
+      'test_code_commit_id' => get_test_code_commit,
+      'product_under_test' => 'maxscale',
+      'job_name' => ENV['JOB_NAME'],
+      'machine_count' => ENV['machines_count'],
+      'sysbench_params' => ENV['sysbench_params'],
+      'mdbci_template' => File.read("#{ENV['name']}/#{template_name}"),
+      'test_tool' => 'sysbench',
+      'target' => ENV['target'],
+      '$maxscale_commit_id' => $maxscale_commit,
+      'maxscale_cnf' => `echo $(pwd)/maxscale.cnf`
+  }
+end
+
 def write_hash_to_json(hash, output_file)
 end
 
 def main
   options = parse_cmd_args
   sysbench_results_raw = extract_sysbench_results_raw(options[:input_file])
-  write_sysbench_results_to_env_file(sysbench_results_raw, options[:env_file]) 
+  write_sysbench_results_to_env_file(sysbench_results_raw, options[:env_file])
   hash = parse_sysbench_results_raw(sysbench_results_raw)
   hash = flatten_keys(hash)
   hash = remove_brackets(hash)
   hash = remove_units(hash)
   hash = split_slash_keys(hash)
+  hash = hash.merge get_build_params_hash
   write_hash_to_json(hash, options[:output_file])
- 
-  puts "Parsing completed!" 
+
+  puts "Parsing completed!"
 end
 
 if File.identical?(__FILE__, $0)
