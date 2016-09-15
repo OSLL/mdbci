@@ -10,7 +10,7 @@ CREATE TABLE performance_test_run (
   job_name VARCHAR(256),
   machine_count INT,
   sysbench_params VARCHAR(256),
-  mdbci_template BLOB,
+  mdbci_template LONGTEXT,
   test_tool VARCHAR(256),
   product_under_test VARCHAR(256),
   PRIMARY KEY(id)
@@ -20,7 +20,7 @@ CREATE TABLE maxscale_parameters (
   id INT,
   target VARCHAR(256),
   maxscale_commit_id VARCHAR(256),
-  maxscale_cnf BLOB,
+  maxscale_cnf LONGTEXT,
   FOREIGN KEY (id) REFERENCES performance_test_run(id)
 );
 

@@ -2,6 +2,11 @@
 
 require 'getoptlong'
 require 'json'
+require 'mysql2'
+
+# Db parameters
+DEFAULT_FILE = '/home/vagrant/build_parser_db_password'
+DB_NAME = 'test_results_db'
 
 INPUT_FILE_OPTION = '--input-file'
 ENV_FILE_OPTION = '--env-file'
@@ -58,15 +63,47 @@ def parse_json_file(input_file)
   return hash
 end
 
-def write_to_performance_test_run(hash)
+def write_to_performance_test_run(client, hash)
   puts "write_to_performance_test_run"
+
+  jenkins_id = hash[BUILD_PARAMS][JENKINS_ID]
+  start_time = hash[BUILD_PARAMS][START_TIME]
+  target = hash[BUILD_PARAMS][TARGET]
+  box = hash[BUILD_PARAMS][BOX]
+  product = hash[BUILD_PARAMS][PRODUCT]
+  mariadb_version = hash[BUILD_PARAMS][MARIADB_VERSION]
+  test_code_commit_id = hash[BUILD_PARAMS][TEST_CODE_COMMIT_ID]
+  job_name = hash[BUILD_PARAMS][JOB_NAME]
+  machine_count = hash[BUILD_PARAMS][MACHINE_COUNT]
+  sysbench_params = hash[BUILD_PARAMS][SYSBENCH_PARAMS]
+  test_tool = hash[BUILD_PARAMS][TEST_TOOL]
+  product_under_test = hash[BUILD_PARAMS][PRODUCT_UNDER_TEST]
+  mdbci_template_file = hash[BUILD_PARAMS][MDBCI_TEMPLATE]
+
+  # Submit entry
+  performance_test_run_query = "INSERT INTO performance_test_run (jenkins_id, "\
+  "start_time, target, box, product, mariadb_version, "\
+  "test_code_commit_id, job_name, machine_count, sysbench_params, "\
+  "test_tool, product_under_test) "\
+  "VALUES ('#{jenkins_id}', '#{start_time}', '#{target}', '#{box}', '#{product}', "\
+  "'#{mariadb_version}', '#{test_code_commit_id}', '#{job_name}', '#{machine_count}', "\
+  "'#{sysbench_params}', '#{test_tool}', '#{product_under_test}')"
+
+  client.query(performance_test_run_query)
+  test_run_id = client.last_id
+  # Submit blob
+  
+  
+
+
+  return test_run_id
 end
 
-def write_to_maxscale_parameters(hash, id)
+def write_to_maxscale_parameters(client, hash, test_run_id)
   puts "write_to_maxscale_parameters"
 end
 
-def write_to_sysbench_results(hash, id)
+def write_to_sysbench_results(client, hash, test_run_id)
   puts "write_to_sysbench_results"
 end
 
@@ -75,9 +112,11 @@ def write_results_to_db(hash)
   puts "write_results_to_db #{hash}"
   db_write_status = DB_WRITE_STATUS_SUCCESS 
   begin 
-    id = write_to_performance_test_run(hash)
-    write_to_maxscale_parameters(hash, id)
-    write_to_sysbench_results(hash, id)
+    client = Mysql2::Client.new(:default_file => "#{DEFAULT_FILE}",  \
+      :database => "#{DB_NAME}")
+    test_run_id = write_to_performance_test_run(client, hash)
+    write_to_maxscale_parameters(client, hash, test_run_id)
+    write_to_sysbench_results(client, hash, test_run_id)
   rescue => e
     db_write_status = "Error during writing to DB, #{e.message}" 
     puts db_write_status
