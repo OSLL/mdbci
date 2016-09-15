@@ -27,7 +27,6 @@ def parse_cmd_args
       [HELP_OPTION, '-h', GetoptLong::OPTIONAL_ARGUMENT]
   )
 
-
   options = {}
   opts.each do |opt, arg|
     case opt
@@ -124,7 +123,7 @@ def flatten_keys(hash, temp_hash = nil, new_hash = nil)
   end
   hash.each do |el|
     next_element = el[0].gsub(/\s+/, '_')
-    next_temp_hash = temp_hash.empty? ? next_element : "#{temp_hash}.#{next_element}"
+    next_temp_hash = temp_hash.empty? ? next_element : "#{temp_hash}_#{next_element}"
     flatten_keys(el[1], next_temp_hash, new_hash)
   end
   return new_hash
