@@ -14,6 +14,10 @@ SYSBENCH_BLOCK_START = "OLTP test statistics:\n"
 NEW_LINE_SYSBENCH_COUNT = 3
 SYSBENCH_RESULTS_RAW = 'SYSBENCH_RESULTS_RAW'
 
+MAXSCALE_COMMIT_REGEX = /MaxScale\s+.*\d+\.*\d*\.*\d*\s+-\s+(.+)/
+
+$maxscale_commit = nil
+
 def parse_cmd_args
   opts = GetoptLong.new(
       [INPUT_FILE_OPTION, '-i', GetoptLong::REQUIRED_ARGUMENT],
@@ -66,6 +70,9 @@ def extract_sysbench_results_raw(input_file)
   new_line_count = 0
   File.open(input_file, "r") do |f|
     f.each_line do |line|
+      if line =~ MAXSCALE_COMMIT_REGEX and $maxscale_commit == nil
+        $maxscale_commit = line.match(MAXSCALE_COMMIT_REGEX).captures[0]
+      end
       if line == SYSBENCH_BLOCK_START
         puts "Found start of sysbench block"
         sysbench_block_found = true
@@ -132,6 +139,42 @@ end
 def split_slash_keys(hash)
 end
 
+def get_test_code_commit
+  return 'NOT FOUND' if ENV['WORKSPACE'].nil?
+  current_directory = Dir.pwd
+  Dir.chdir ENV['WORKSPACE']
+  git_log = `git log -1`
+  Dir.chdir current_directory
+  return 'NOT FOUND' if git_log.nil?
+  commit_regex = /commit\s+(.+)/
+  if git_log.lines.first =~ commit_regex
+    return git_log.lines.first.match(commit_regex).captures[0]
+  end
+  return 'NOT FOUND'
+end
+
+def get_build_params_hash
+  template_path = ENV['name'] ? "#{ENV['name']}.json" : 'NOT FOUND'
+  cnf_path = File.exist?('maxscale.cnf') ? "#{Dir.pwd}/maxscale.cnf" : 'NOT FOUND'
+  return {
+      'jenkins_id' => ENV['BUILD_NUMBER'] || 'NOT FOUND',
+      'start_time' => ENV['BUILD_TIMESTAMP'] || 'NOT FOUND',
+      'box' => ENV['box'] || 'NOT FOUND',
+      'product' => ENV['product'] || 'NOT FOUND',
+      'mariadb_version' => ENV['version'] || 'NOT FOUND',
+      'test_code_commit_id' => get_test_code_commit,
+      'product_under_test' => 'maxscale',
+      'job_name' => ENV['JOB_NAME'] || 'NOT FOUND',
+      'machine_count' => ENV['machines_count'] || 'NOT FOUND',
+      'sysbench_params' => ENV['sysbench_params'] || 'NOT FOUND',
+      'mdbci_template' => template_path,
+      'test_tool' => 'sysbench',
+      'target' => ENV['target'] || 'NOT FOUND',
+      'maxscale_commit_id' => $maxscale_commit || 'NOT FOUND',
+      'maxscale_cnf' => cnf_path
+  }
+end
+
 def write_hash_to_json(hash, output_file)
 end
 
@@ -144,6 +187,7 @@ def main
   hash = remove_brackets(hash)
   hash = remove_units(hash)
   hash = split_slash_keys(hash)
+  hash = hash.merge get_build_params_hash
   write_hash_to_json(hash, options[:output_file])
 
   puts "Parsing completed!"
