@@ -72,6 +72,7 @@ def extract_sysbench_results_raw(input_file)
   new_line_count = 0
   File.open(input_file, "r") do |f|
     f.each_line do |line|
+      line = line.force_encoding("ISO-8859-1").encode("UTF-8")
       if line =~ MAXSCALE_COMMIT_REGEX and $maxscale_commit == nil
         $maxscale_commit = line.match(MAXSCALE_COMMIT_REGEX).captures[0]
       end
@@ -180,7 +181,7 @@ def get_test_code_commit
 end
 
 def get_build_params_hash
-  template_path = ENV['name'] ? "#{ENV['name']}.json" : 'NOT FOUND'
+  template_path = ENV['HOME'] + "/mdbci/" + (ENV['name'] ? "#{ENV['name']}.json" : 'NOT FOUND')
   cnf_path = File.exist?('maxscale.cnf') ? "#{Dir.pwd}/maxscale.cnf" : 'NOT FOUND'
   return {
       'jenkins_id' => ENV['BUILD_NUMBER'] || 'NOT FOUND',
