@@ -16,6 +16,9 @@ SYSBENCH_RESULTS_RAW = 'SYSBENCH_RESULTS_RAW'
 
 MAXSCALE_COMMIT_REGEX = /MaxScale\s+.*\d+\.*\d*\.*\d*\s+-\s+(.+)/
 
+BUILD_PARAMS = 'build_params'
+BENCHMARK_RESULTS = 'benchmark_results'
+
 $maxscale_commit = nil
 
 def parse_cmd_args
@@ -111,7 +114,6 @@ def write_sysbench_results_to_env_file(sysbench_results_raw, env_file)
 end
 
 def parse_sysbench_results_raw(sysbench_results_raw)
-  puts sysbench_results_raw
   return YAML.load(sysbench_results_raw)
 end
 
@@ -124,6 +126,7 @@ def flatten_keys(hash, temp_hash = nil, new_hash = nil)
   end
   hash.each do |el|
     next_element = el[0].gsub(/\s+/, '_')
+    next_element.gsub!('.', '_')
     next_temp_hash = temp_hash.empty? ? next_element : "#{temp_hash}_#{next_element}"
     flatten_keys(el[1], next_temp_hash, new_hash)
   end
@@ -179,6 +182,9 @@ def get_build_params_hash
 end
 
 def write_hash_to_json(hash, output_file)
+  File.open(output_file,"w") do |f|
+    f.write(hash.to_json)
+  end
 end
 
 def main
@@ -190,8 +196,9 @@ def main
   hash = remove_brackets(hash)
   hash = remove_units(hash)
   hash = split_slash_keys(hash)
-  hash = hash.merge get_build_params_hash
-  write_hash_to_json(hash, options[:output_file])
+  result = { BUILD_PARAMS => get_build_params_hash, BENCHMARK_RESULTS => hash}
+#  hash = hash.merge get_build_params_hash
+  write_hash_to_json(result, options[:output_file])
 
   puts "Parsing completed!"
 end
