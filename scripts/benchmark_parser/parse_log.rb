@@ -133,15 +133,35 @@ def flatten_keys(hash, temp_hash = nil, new_hash = nil)
   return new_hash
 end
 
-def remove_brackets(hash)
+def clean_values(hash)
+  hash.each do |key, value|
+    next if !value.is_a? String
+
+    new_value = value.gsub(/[a-zA-Z]+/,"")
+    new_value = new_value.gsub(/([^\s]+)\s+.+$/, '\1')
+    hash[key] = new_value.to_f
+  end
   return hash
 end
 
-def remove_units(hash)
-  return hash
-end
 
 def split_slash_keys(hash)
+  slash_keys = []
+  hash.each do |key, value|
+    slash_keys.push(key) if value.is_a? String and value.include? '/'
+  end
+  slash_keys.each do |key|
+    value = hash[key]
+    sub_keys = key.gsub(/.*\(([^\)]+)\)/, '\1').split('/')
+    sub_values = value.split('/')
+    base_key = key.gsub(/\(.*$/,"")
+
+    hash.delete key
+    (0..1).each do |i|
+      hash[base_key+sub_keys[i]] = sub_values[i]
+    end
+  end
+ 
   return hash
 end
 
@@ -193,9 +213,8 @@ def main
   write_sysbench_results_to_env_file(sysbench_results_raw, options[:env_file])
   hash = parse_sysbench_results_raw(sysbench_results_raw)
   hash = flatten_keys(hash)
-  hash = remove_brackets(hash)
-  hash = remove_units(hash)
   hash = split_slash_keys(hash)
+  hash = clean_values(hash)
   result = { BUILD_PARAMS => get_build_params_hash, BENCHMARK_RESULTS => hash}
 #  hash = hash.merge get_build_params_hash
   write_hash_to_json(result, options[:output_file])
