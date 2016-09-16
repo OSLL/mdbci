@@ -100,17 +100,18 @@ end
 
 def write_sysbench_results_to_env_file(sysbench_results_raw, env_file)
   # Adding \ at the end of each line to avoid losing multiline env variable
-  sysbench_results_raw.gsub!("\n", " \\\n")
+  sysbench_results_raw_ = sysbench_results_raw.gsub("\n", " \\\n")
   # Removing last \
-  sysbench_results_raw = sysbench_results_raw[0..-3]
+  sysbench_results_raw_ = sysbench_results_raw_[0..-3]
 
-  sysbench_results_raw = "#{SYSBENCH_RESULTS_RAW} \\\n#{sysbench_results_raw}"
+  sysbench_results_raw_ = "#{SYSBENCH_RESULTS_RAW} \\\n#{sysbench_results_raw_}"
   File.open(env_file, 'w') do |f|
-    f.puts sysbench_results_raw
+    f.puts sysbench_results_raw_
   end
 end
 
 def parse_sysbench_results_raw(sysbench_results_raw)
+  puts sysbench_results_raw
   return YAML.load(sysbench_results_raw)
 end
 
@@ -130,12 +131,15 @@ def flatten_keys(hash, temp_hash = nil, new_hash = nil)
 end
 
 def remove_brackets(hash)
+  return hash
 end
 
 def remove_units(hash)
+  return hash
 end
 
 def split_slash_keys(hash)
+  return hash
 end
 
 def get_test_code_commit
