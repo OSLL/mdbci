@@ -114,7 +114,6 @@ def write_sysbench_results_to_env_file(sysbench_results_raw, env_file)
 end
 
 def parse_sysbench_results_raw(sysbench_results_raw)
-  puts sysbench_results_raw
   return YAML.load(sysbench_results_raw)
 end
 
