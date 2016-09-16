@@ -148,17 +148,13 @@ end
 def split_slash_keys(hash)
   slash_keys = []
   hash.each do |key, value|
-    puts key
     slash_keys.push(key) if value.is_a? String and value.include? '/'
   end
-  puts slash_keys
   slash_keys.each do |key|
-    puts "key #{key}"
     value = hash[key]
     sub_keys = key.gsub(/.*\(([^\)]+)\)/, '\1').split('/')
     sub_values = value.split('/')
     base_key = key.gsub(/\(.*$/,"")
-    puts "base_key #{base_key}"
 
     hash.delete key
     (0..1).each do |i|
