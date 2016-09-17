@@ -166,6 +166,21 @@ def split_slash_keys(hash)
   return hash
 end
 
+def remove_slashes_from_keys(hash)
+  slash_keys = []
+  hash.each do |key, value|
+    slash_keys.push(key) if key.is_a? String and key.include? '/'
+  end
+
+  slash_keys.each do |key|
+    new_key = key.gsub('/', '_')
+    hash[new_key] = hash.delete key
+  end
+ 
+  return hash
+
+end
+
 def get_test_code_commit
   return 'NOT FOUND' if ENV['WORKSPACE'].nil?
   current_directory = Dir.pwd
@@ -181,7 +196,7 @@ def get_test_code_commit
 end
 
 def get_build_params_hash
-  template_path = ENV['HOME'] + "/mdbci/" + (ENV['name'] ? "#{ENV['name']}.json" : 'NOT FOUND')
+  template_path = ENV['name'] ? "#{ENV['HOME']}/mdbci/#{ENV['name']}.json" : 'NOT FOUND'
   cnf_path = File.exist?('maxscale.cnf') ? "#{Dir.pwd}/maxscale.cnf" : 'NOT FOUND'
   return {
       'jenkins_id' => ENV['BUILD_NUMBER'] || 'NOT FOUND',
@@ -216,8 +231,8 @@ def main
   hash = flatten_keys(hash)
   hash = split_slash_keys(hash)
   hash = clean_values(hash)
+  hash = remove_slashes_from_keys(hash)
   result = { BUILD_PARAMS => get_build_params_hash, BENCHMARK_RESULTS => hash}
-#  hash = hash.merge get_build_params_hash
   write_hash_to_json(result, options[:output_file])
 
   puts "Parsing completed!"
