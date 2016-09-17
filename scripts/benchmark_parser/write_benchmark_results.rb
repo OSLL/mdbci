@@ -50,7 +50,7 @@ GENERAL_STATISTICS_TOTAL_TIME_TAKEN_BY_EVENT_EXECUTION = "General_statistics_tot
 GENERAL_STATISTICS_RESPONSE_TIME_MIN = "General_statistics_response_time_min"
 GENERAL_STATISTICS_RESPONSE_TIME_AVG = "General_statistics_response_time_avg"
 GENERAL_STATISTICS_RESPONSE_TIME_MAX = "General_statistics_response_time_max"
-GENERAL_STATISTICS_RESPONSE_TIME_APPROX___95_PERCENTILE = "General_statistics_response_time_approx__95_percentile"
+GENERAL_STATISTICS_RESPONSE_TIME_APPROX__95_PERCENTILE = "General_statistics_response_time_approx__95_percentile"
 THREADS_FAIRNESS_EVENTS_AVG = "Threads_fairness_events_avg"
 THREADS_FAIRNESS_EVENTS_STDDEV = "Threads_fairness_events_stddev"
 THREADS_FAIRNESS_EXECUTION_TIME_AVG = "Threads_fairness_execution_time_avg"
@@ -182,7 +182,7 @@ def write_to_sysbench_results(client, benchmark_results, test_run_id)
   "General_statistics_response_time_min, "\
   "General_statistics_response_time_avg, "\
   "General_statistics_response_time_max, "\
-  "General_statistics_response_time_approx___95_percentile, "\
+  "General_statistics_response_time_approx__95_percentile, "\
   "Threads_fairness_events_avg, "\
   "Threads_fairness_events_stddev, "\
   "Threads_fairness_execution_time_avg, "\
@@ -203,7 +203,7 @@ def write_to_sysbench_results(client, benchmark_results, test_run_id)
   "#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_MIN]}, "\
   "#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_AVG]}, "\
   "#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_MAX]}, "\
-  "#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_APPROX___95_PERCENTILE]}, "\
+  "#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_APPROX__95_PERCENTILE]}, "\
   "#{benchmark_results[THREADS_FAIRNESS_EVENTS_AVG]}, "\
   "#{benchmark_results[THREADS_FAIRNESS_EVENTS_STDDEV]}, "\
   "#{benchmark_results[THREADS_FAIRNESS_EXECUTION_TIME_AVG]}, "\
