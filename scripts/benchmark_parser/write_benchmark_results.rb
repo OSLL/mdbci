@@ -229,6 +229,7 @@ def write_results_to_db(hash)
     db_write_status = "Error during writing to DB, #{e.message}" 
     puts db_write_status
   end
+  return db_write_status
 end
 
 def write_db_result_to_env_file(db_write_status, env_file)
