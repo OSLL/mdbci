@@ -41,7 +41,7 @@ CREATE TABLE sysbench_results (
   General_statistics_response_time_min FLOAT,
   General_statistics_response_time_avg FLOAT,
   General_statistics_response_time_max FLOAT,
-  General_statistics_response_time_approx___95_percentile FLOAT,
+  General_statistics_response_time_approx__95_percentile FLOAT,
   Threads_fairness_events_avg FLOAT,
   Threads_fairness_events_stddev FLOAT,
   Threads_fairness_execution_time_avg FLOAT,
