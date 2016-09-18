@@ -2,6 +2,8 @@
 
 require 'getoptlong'
 
+require 'trollop'
+
 require_relative 'core/help'
 require_relative 'core/generator'
 require_relative 'core/session'
@@ -31,6 +33,27 @@ opts = GetoptLong.new(
     ['--snapshot-name', GetoptLong::REQUIRED_ARGUMENT]
 )
 
+opts = Trollop::options do
+    opt :help, "Show this message"
+    opt :template, "", :type => :strings
+    opt :command, "", :type => :strings
+    opt :boxes, "", :type => :strings
+    opt :box_name, "", :short => "-n", :type => :strings
+    opt :field, "", :type => :strings
+    opt :override, "", :short => "-w"
+    opt :silent, ""
+    opt :repo_dir, "", :short => "-r", :type => :strings
+    opt :attempts, "", :type => :ints
+    opt :product, "", :type => :strings
+    opt :product_version, "", :short => "-v", :type => :strings
+    opt :key, "", :type => :strings
+    opt :platform, "", :short => "-o", :type => :strings
+    opt :platform_version, "", :short => "-i", :type => :strings
+    opt :path_to_nodes, "", :type => :strings
+    opt :node_name, "", :type => :strings
+    opt :snapshot_name, "", :type => :strings
+  end
+
 $session = Session.new
 $session.configFile='instance.json'
 $session.boxesFile='boxes.json'
@@ -38,9 +61,14 @@ $session.awsConfigFile='aws-config.yml'
 $exception_handler = ExceptionHandler.new
 
 $out = Out.new
-
+# DEBUG
+p opts
+temp = opts.select { |key| key.to_s.match(/.*_given/) }
+p temp
+#######
 begin
   opts.each do |opt, arg|
+  	p opt
     case opt
       when '--silent'
         $session.isSilent = true
