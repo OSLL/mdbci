@@ -100,7 +100,7 @@ describe nil do
     hash[BUILD_PARAMS][MACHINE_COUNT]='0'
     hash[BUILD_PARAMS][JENKINS_ID]='0'
     hash[BUILD_PARAMS][JOB_NAME]='notfound'
-    hash[BUILD_PARAMS][TEST_CODE_COMMIT_ID]='e70e64493c995e40ccbfd9277e95f2b74033bc5b'
+    hash[BUILD_PARAMS][TEST_CODE_COMMIT_ID]='notfound'
     validate_hash(hash)
     puts JSON.pretty_generate hash
     client = Mysql2::Client.new(:default_file => "#{DEFAULT_FILE}", :database => "#{DB_NAME}")
