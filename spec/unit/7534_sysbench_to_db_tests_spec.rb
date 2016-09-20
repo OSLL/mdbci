@@ -98,6 +98,8 @@ describe nil do
     puts File.read 'maxscale.cnf'
     hash[BUILD_PARAMS][MAXSCALE_CNF]='maxscale.cnf'
     hash[BUILD_PARAMS][MACHINE_COUNT]='0'
+    hash[BUILD_PARAMS][JENKINS_ID]='0'
+    hash[BUILD_PARAMS][JOB_NAME]='notfound'
     validate_hash(hash)
     puts JSON.pretty_generate hash
     client = Mysql2::Client.new(:default_file => "#{DEFAULT_FILE}", :database => "#{DB_NAME}")
