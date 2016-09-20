@@ -15,7 +15,7 @@ BENCHMARK_ENV_FILE = './spec/7534_sysbench_to_db_tests_benchmark_env_file.env'
 
 maxscale_parameters = {
     'id' => 1,
-    'target' => 'notfound',
+    'target' => 'NOT FOUND',
     'maxscale_commit_id' => 'e70e64493c995e40ccbfd9277e95f2b74033bc5b',
     'maxscale_cnf' => 'test'
 }
@@ -24,13 +24,13 @@ performance_test_run = {
     'id' => 1,
     'jenkins_id' => 0,
     'start_time' => nil,
-    'box' => 'notfound',
-    'product' => 'notfound',
-    'mariadb_version' => 'notfound',
-    'test_code_commit_id' => 'notfound',
-    'job_name' => 'notfound',
+    'box' => 'NOT FOUND',
+    'product' => 'NOT FOUND',
+    'mariadb_version' => 'NOT FOUND',
+    'test_code_commit_id' => 'NOT FOUND',
+    'job_name' => 'NOT FOUND',
     'machine_count' => 0,
-    'sysbench_params' => 'notfound',
+    'sysbench_params' => 'NOT FOUND',
     'mdbci_template' => 'confs/libvirt_lite.json',
     'test_tool' => 'sysbench',
     'product_under_test' => 'maxscale'
@@ -99,8 +99,8 @@ describe nil do
     hash[BUILD_PARAMS][MAXSCALE_CNF]='maxscale.cnf'
     hash[BUILD_PARAMS][MACHINE_COUNT]='0'
     hash[BUILD_PARAMS][JENKINS_ID]='0'
-    hash[BUILD_PARAMS][JOB_NAME]='notfound'
-    hash[BUILD_PARAMS][TEST_CODE_COMMIT_ID]='notfound'
+    hash[BUILD_PARAMS][JOB_NAME]='NOT FOUND'
+    hash[BUILD_PARAMS][TEST_CODE_COMMIT_ID]='NOT FOUND'
     validate_hash(hash)
     puts JSON.pretty_generate hash
     client = Mysql2::Client.new(:default_file => "#{DEFAULT_FILE}", :database => "#{DB_NAME}")
