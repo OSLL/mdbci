@@ -19,7 +19,7 @@ MAXSCALE_COMMIT_REGEX = /MaxScale\s+.*\d+\.*\d*\.*\d*\s+-\s+(.+)/
 BUILD_PARAMS = 'build_params'
 BENCHMARK_RESULTS = 'benchmark_results'
 
-NOT_FOUND = 'notfound'
+NOT_FOUND = 'NOT FOUND'
 
 $maxscale_commit = nil
 
