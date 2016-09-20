@@ -1,0 +1,4 @@
+[client]
+user=mdbci_dev
+password=mdbci_dev
+host=localhost
