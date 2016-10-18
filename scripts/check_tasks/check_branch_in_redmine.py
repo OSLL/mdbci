@@ -4,7 +4,7 @@ from check_pullrequest import check_pullrequest_in_mdbci, \
 from redmine_api import get_redmine_server, get_redmine_issue, \
     get_test_scenario_value, is_issue_resolved, \
     transition_issue, add_comment, assigned_issue_to_user_id
-from scripts.issue_statistics import getContributorsList, \
+from issue_statistics import getContributorsList, \
     getIssueJournal
 
 
