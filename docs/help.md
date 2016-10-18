@@ -1,4 +1,4 @@
-mdbci [option] {show | setup | generate}
+mdbci [option] {show | setup | generate | clone}
 
 -h, --help:
   Shows this help screen
@@ -82,6 +82,8 @@ COMMANDS:
   
   validate_template --template TEMPLATE_PATH
 
+  clone ORIGIN_CONFIG NEW_CONFIG_NAME
+
 
 EXAMPLES:
   
@@ -112,3 +114,5 @@ EXAMPLES:
   mdbci public_keys --key keyfile.pem T/node0
   
   mdbci validate_template --template TEMPLATE_PATH
+
+  mdbci clone docker_light docker_light_clone

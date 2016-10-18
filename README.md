@@ -116,6 +116,7 @@ There are next steps for managing testing configuration:
   * Creating stand template
   * Running up virtual machine cluster
   * Running tests
+  * [Cloning configuration]
   * Destroing allocated resources
   
 #### Creating configuration
@@ -446,6 +447,8 @@ mdbci [options] <show | setup | generate>
   
   snapshot [take, revert, delete] --path-to-nodes T [ --node-name N ] --snapshot-name S
 
+  clone ORIGIN_CONFIG NEW_CONFIG_NAME
+
 ### Examples:
 
 Run command inside of VM
@@ -464,6 +467,11 @@ Run command inside of VM
 Show repos with using alternative repo.d repository
 ```
   mdbci --repo-dir /home/testbed/config/repos show repos
+```
+
+Cloning configuration (docker_light should be launched before clonning)
+```
+  mdbci clone docker_light cloned_docker_light
 ```
 
 ## MDBCI scripts
