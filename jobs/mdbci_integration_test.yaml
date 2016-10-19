@@ -2,7 +2,10 @@
     name: mdbci_integration_test
     description: 'This job perform running mdbci integration tests.'
     parameters:
-        - !include: './jobs/include/boxes.yaml'
+        - choice:
+            name: box
+            choices:
+              !include: './jobs/include/boxes.yaml'
         - !include: './jobs/include/products.yaml'
         - !include: './jobs/include/versions.yaml'
         - !include: './jobs/include/do_not_destroy_vm.yaml'
@@ -24,4 +27,4 @@
         - shell: |
             /home/vagranttest/build-scripts/test/mdbc_integration_test.sh
     publishers:
-        - !include: './jobs/include/mdbci_integration_test/publishers.yaml'
+        !include: './jobs/include/mdbci_integration_test/publishers.yaml'
