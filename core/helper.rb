@@ -39,14 +39,12 @@ end
 # return value of last block statement will be returned
 def in_dir(path)
   root_dir = Dir.pwd
-  ret_val = nil
   begin
     Dir.chdir path
-    ret_val = yield
+    yield
   ensure
     Dir.chdir root_dir
   end
-  return ret_val
 end
 
 def get_provider(path_to_nodes)
@@ -136,7 +134,7 @@ def execute_bash(cmd, silent = false)
       wait_thr.value.exitstatus
     end
     raise unless process_status == 0
-  rescue Exception => e
+  rescue
     out_error "#{cmd}: #{NON_ZERO_BASH_EXIT_CODE_ERROR} - #{process_status} in #{Dir.pwd}"
     raise
   end
