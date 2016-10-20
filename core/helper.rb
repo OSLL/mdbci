@@ -134,9 +134,12 @@ def execute_bash(cmd, silent = false)
       wait_thr.value.exitstatus
     end
     raise unless process_status == 0
-  rescue
-    out_error "#{cmd}: #{NON_ZERO_BASH_EXIT_CODE_ERROR} - #{process_status} in #{Dir.pwd}"
-    raise
+  rescue Exception=>e
+    msg = ''
+    msg = ", message: #{e.message}" unless e.message.to_s.empty?
+    error_msg = "#{cmd}: #{NON_ZERO_BASH_EXIT_CODE_ERROR} - #{process_status} in #{Dir.pwd}#{msg}"
+    out_error error_msg
+    raise error_msg
   end
   return output
 end
