@@ -1,3 +1,10 @@
+# Incstalling git
+sudo apt-get install git
+
+# Configuring git
+git config --global user.email "timofey.turenko@mariadb.com"
+git config --global user.name "Timofey Turenko"
+
 # Cloning repositories
 git clone git@github.com:OSLL/mdbci.git $HOME/mdbci
 git clone git@github.com:mariadb-corporation/mdbci-boxes.git $HOME/mdbci-boxes

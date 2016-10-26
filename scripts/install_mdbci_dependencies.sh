@@ -29,6 +29,17 @@ sudo apt install qemu-kvm \
                  virtinst -y
 sudo adduser $USER libvirtd
 
+# Configuration of libvirt images path
+mkdir -p ~/libvirt-configs
+virsh pool-dumpxml default > ~/libvirt-configs/standard_pool.xml
+cp ~/libvirt-configs/standard_pool.xml ~/libvirt-configs/home_pool.xml
+visrh pool-destroy default
+sed -i "s/<path>.*/<path>\/home\/vagrant\/libvirt-images<\/path>/" libvirt-configs/home_pool.xml
+virsh pool-create ~/libvirt-configs/home_pool.xml
+virsh pool-define ~/libvirt-configs/home_pool.xml
+virsh pool-autostart default
+
+
 # Docker
 sudo apt-get update
 sudo apt-get install apt-transport-https \
