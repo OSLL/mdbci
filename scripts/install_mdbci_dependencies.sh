@@ -6,7 +6,10 @@ fi
 sudo apt-get install git build-essential -y
 
 # Vagrant and prerequisites
-sudo apt-get install ruby libxslt-dev libxml2-dev libvirt-dev zlib1g-dev -y
+sudo apt-get install ruby libxslt-dev \
+                          libxml2-dev \
+                          libvirt-dev \
+                          zlib1g-dev -y
 sudo gem install ipaddress
 sudo gem install json-schema
 if [[ $(vagrant --version) != "Vagrant 1.8.1" ]]; then
@@ -21,12 +24,15 @@ vagrant plugin install vagrant-mutate
 vagrant plugin install vagrant-omnibus
 
 # Libvirt and tools(virsh, virt-clone)
-sudo apt install qemu-kvm libvirt-bin virtinst -y
+sudo apt install qemu-kvm \
+                 libvirt-bin \
+                 virtinst -y
 sudo adduser $USER libvirtd
 
 # Docker
 sudo apt-get update
-sudo apt-get install apt-transport-https ca-certificates -y
+sudo apt-get install apt-transport-https \
+                     ca-certificates -y
 sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 echo "deb https://apt.dockerproject.org/repo ubuntu-$ubuntu_codename main" | sudo tee /etc/apt/sources.list.d/docker.list
 sudo apt-get update
