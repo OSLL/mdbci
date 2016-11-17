@@ -27,10 +27,10 @@ if [ ! -z $1 ]; then
     for i in $(virsh list --name --all | grep ${1}); do
       virsh shutdown $i
       virsh destroy $i
-      virsh undefine $i
       for k in $(virsh snapshot-list ${i} --tree); do
           virsh snapshot-delete $i $k # i-domain; k-snapshot
       done
+      virsh undefine $i
       if [ $only_one_config == 1 ]; then
            break
       fi
