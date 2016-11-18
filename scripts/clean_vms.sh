@@ -37,8 +37,8 @@ if [ ! -z $1 ]; then
         echo "Machine with prefixes ${1} will be cleaned"
     fi
 
-    if [[ provider==0 || provider==1 ]]; then
-        echo "Cleaning VirtuslBox machines"
+    if [[ $provider == 0 || $provider == 1 ]]; then
+        echo "Cleaning VirtualBox machines"
         for i in $(VBoxManage list vms | grep ${1} | grep -o '"[^\"]*"' | tr -d '"'); do
             echo $i
             VBoxManage controlvm $i poweroff
@@ -47,10 +47,10 @@ if [ ! -z $1 ]; then
                break
             fi
         done
-        if [[ provider == 1 ]]; then exit 0; fi
+        if [[ $provider == 1 ]]; then exit 0; fi
     fi
 
-    if [[ provider == 0 || provider == 2 ]]; then
+    if [[ $provider == 0 || $provider == 2 ]]; then
         echo "Cleaning libvirt machines"
         for i in $(virsh list --name --all | grep ${1}); do
           virsh shutdown $i
@@ -71,10 +71,10 @@ if [ ! -z $1 ]; then
                break
           fi
         done
-        if [[ provider == 2 ]]; then exit 0; fi
+        if [[ $provider == 2 ]]; then exit 0; fi
     fi
 
-    if [[ provider == 0 || provider == 3 ]]; then
+    if [[ $provider == 0 || $provider == 3 ]]; then
         echo "Cleaning docker machines"
         for i in $(docker ps --all -f "name=${1}" --format "{{.Names}}"); do
           docker rm -fv $i
@@ -82,7 +82,7 @@ if [ ! -z $1 ]; then
                break
           fi
         done
-        if [[ provider == 3 ]]; then exit 0; fi
+        if [[ $provider == 3 ]]; then exit 0; fi
     fi
 else
     echo "You need to define machine prefix as first argument!"
