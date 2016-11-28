@@ -10,7 +10,7 @@
 {
    "product":           "mariadb",
    "version":           "###version###",
-   "repo":              ""http://ftp.hosteurope.de/mirror/archive.mariadb.org/mariadb-###version###/yum/centos6-amd64",
+   "repo":              "http://ftp.hosteurope.de/mirror/archive.mariadb.org/mariadb-###version###/yum/centos6-amd64",
    "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
    "platform":          "centos",
    "platform_version":  6
@@ -18,7 +18,7 @@
 {
    "product":           "mariadb",
    "version":           "###version###",
-   "repo":              ""http://ftp.hosteurope.de/mirror/archive.mariadb.org/mariadb-###version###/yum/centos7-amd64",
+   "repo":              "http://ftp.hosteurope.de/mirror/archive.mariadb.org/mariadb-###version###/yum/centos7-amd64",
    "repo_key":          "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
    "platform":          "centos",
    "platform_version":  7
