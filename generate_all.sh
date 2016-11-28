@@ -32,3 +32,19 @@ dest=$1
 ~/mdbci-repository-config/generate.sh mysql sles $dest
 ~/mdbci-repository-config/generate.sh mysql debian $dest
 ~/mdbci-repository-config/generate.sh mysql ubuntu $dest
+
+
+~/mdbci-repository-config/generate.sh community_archive_yum centos $dest
+~/mdbci-repository-config/generate.sh community_archive_yum rhel $dest
+~/mdbci-repository-config/generate.sh community_archive_yum sles $dest
+~/mdbci-repository-config/generate.sh community_archive_yum opensuse $dest
+~/mdbci-repository-config/generate.sh community_archive_yum debian $dest
+~/mdbci-repository-config/generate.sh community_archive_yum ubuntu $dest
+
+~/mdbci-repository-config/generate.sh community_archive_noyum centos $dest
+~/mdbci-repository-config/generate.sh community_archive_noyum rhel $dest
+~/mdbci-repository-config/generate.sh community_archive_noyum sles $dest
+~/mdbci-repository-config/generate.sh community_archive_noyum opensuse $dest
+~/mdbci-repository-config/generate.sh community_archive_noyum debian $dest
+~/mdbci-repository-config/generate.sh community_archive_noyum ubuntu $dest
+
