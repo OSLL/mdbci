@@ -92,6 +92,14 @@ case node[:platform_family]
     end
 end # save iptables rules
 
+# Set timezone to Europe/Paris
+case node[:platform_family]
+when "debian", "ubuntu", "rhel", "fedora", "centos", "suse", "opensuse"
+  execute "Set timezone to Europe/Paris" do
+    command "rm -f /etc/localtime && ln -s /usr/share/Europe/Paris /etc/localtime"
+  end
+end # iptables rules
+
 # Install packages
 case node[:platform_family]
 when "suse"
