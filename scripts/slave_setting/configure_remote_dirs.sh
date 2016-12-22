@@ -1,4 +1,6 @@
 sudo apt-get install sshfs
+
+sudo echo "user_allow_other" >> /etc/fuse.conf
 ./scripts/slave_setting/sshfs/check_resync_in_crone.sh
 
 # Setting fstab
