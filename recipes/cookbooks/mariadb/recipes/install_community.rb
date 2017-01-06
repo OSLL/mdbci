@@ -1,6 +1,7 @@
 require 'shellwords'
 
 include_recipe "mariadb::mdbcrepos"
+include_recipe "ntp::default"
 
 system 'echo Platform family: '+node[:platform_family]
 system 'echo Platform version: '+node[:platform_version]
