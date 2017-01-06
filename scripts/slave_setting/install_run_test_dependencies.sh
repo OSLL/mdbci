@@ -1,4 +1,4 @@
-sudo apt-get install software-properties-common
+sudo apt-get install software-properties-common -y
 sudo add-apt-repository ppa:openjdk-r/ppa -y
 sudo add-apt-repository ppa:ondrej/php -y
 sudo apt-get update
