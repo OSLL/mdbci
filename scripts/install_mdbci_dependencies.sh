@@ -34,8 +34,8 @@ sudo virsh pool-destroy default
 sudo virsh pool-undefine default
 mkdir -p $HOME/libvirt-images
 sudo virsh pool-create ./scripts/slave_setting/libvirt/default.xml
-sudo virsh pool-dumpxml --pool default > ./scripts/slave_setting/libvirt/default.xml
-sudo virsh pool-define ./scripts/slave_setting/libvirt/default.xml
+sudo virsh pool-dumpxml --pool default > ./scripts/slave_setting/libvirt/default_tmp.xml
+sudo virsh pool-define ./scripts/slave_setting/libvirt/default_tmp.xml
 sudo virsh pool-autostart default
 
 
