@@ -32,7 +32,7 @@ sudo adduser $USER libvirtd
 # Configuration of libvirt images path
 sudo virsh pool-destroy default
 sudo virsh pool-undefine default
-mkdir -p libvirt-images
+mkdir -p $HOME/libvirt-images
 sudo virsh pool-create ./scripts/slave_setting/libvirt/default.xml
 sudo virsh pool-dumpxml -pool default > ./scripts/slave_setting/libvirt/default.xml
 sudo virsh pool-define ./scripts/slave_setting/libvirt/default.xml
