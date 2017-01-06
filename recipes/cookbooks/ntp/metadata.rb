@@ -1,3 +1,4 @@
+name             "ntp"
 maintainer       "OSLL"
 maintainer_email "mdbci@osll.ru"
 license          "Apache 2.0"
