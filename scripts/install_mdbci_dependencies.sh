@@ -33,7 +33,7 @@ sudo adduser $USER libvirtd
 sudo virsh pool-destroy default
 mkdir -p libvirt-images
 sudo virsh pool-create ./scripts/slave_setting/libvirt/default.xml
-sudo virsh pool-dumpxml > ./scripts/slave_setting/libvirt/default.xml
+sudo virsh pool-dumpxml -pool default > ./scripts/slave_setting/libvirt/default.xml
 sudo virsh pool-define ./scripts/slave_setting/libvirt/default.xml
 sudo virsh pool-autostart default
 
