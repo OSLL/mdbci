@@ -17,4 +17,4 @@ template "/etc/ntp.conf" do
     notifies :restart, resources(:service => node[:ntp][:service])#, :delayed
 end
 
-
+system 'sudo sntp -s 0.europe.pool.ntp.org'
