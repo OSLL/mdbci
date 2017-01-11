@@ -17,4 +17,8 @@ template "/etc/ntp.conf" do
     notifies :restart, resources(:service => node[:ntp][:service])#, :delayed
 end
 
+system 'echo @@@ TEST DATE'
+system 'sudo date --set "12 Sep 2012 12:12:12"'
+system 'echo @@@ BEFORE `date`'
 system 'sudo sntp -s 0.europe.pool.ntp.org'
+system 'echo @@@ AFTER `date`'
