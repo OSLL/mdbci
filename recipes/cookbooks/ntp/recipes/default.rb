@@ -17,13 +17,16 @@ template "/etc/ntp.conf" do
     notifies :restart, resources(:service => node[:ntp][:service])#, :delayed
 end
 
-system 'echo @@@ TEST DATE'
-system 'sudo date --set "12 Sep 2012 12:12:12"'
-system 'echo @@@ BEFORE `date`'
-system 'sudo sntp -s 0.europe.pool.ntp.org'
-
-system 'echo @@@ AFTER_1 `date`'
-
-system 'sudo ntpdate 0.europe.pool.ntp.org'
-
-system 'echo @@@ AFTER_2 `date`'
+script "test_date" do
+  interpreter "bash"
+  user "root"
+  code <<-EOH
+    echo @@@ TEST DATE
+    sudo date --set "12 Sep 2012 12:12:12"
+    echo @@@ BEFORE `date`
+    sudo sntp -s 0.europe.pool.ntp.org
+    echo @@@ AFTER_1 `date`
+    sudo ntpdate 0.europe.pool.ntp.org
+    echo @@@ AFTER_2 `date`
+  EOH
+end
