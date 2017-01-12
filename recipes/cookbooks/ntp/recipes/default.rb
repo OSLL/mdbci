@@ -27,8 +27,10 @@ script "test_date" do
     sudo sntp -s 0.europe.pool.ntp.org
     echo @@@ AFTER_1 `date`
     sudo service ntp stop
+    sudo service ntpd stop
     sudo ntpdate 0.europe.pool.ntp.org
     sudo service ntp start
+    sudo service ntpd stop
     echo @@@ AFTER_2 `date`
   EOH
 end
