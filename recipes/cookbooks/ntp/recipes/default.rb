@@ -26,7 +26,9 @@ script "test_date" do
     echo @@@ BEFORE `date`
     sudo sntp -s 0.europe.pool.ntp.org
     echo @@@ AFTER_1 `date`
+    sudo service ntp stop
     sudo ntpdate 0.europe.pool.ntp.org
+    sudo service ntp start
     echo @@@ AFTER_2 `date`
   EOH
 end
