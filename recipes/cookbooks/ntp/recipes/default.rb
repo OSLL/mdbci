@@ -26,20 +26,18 @@ script "test_date" do
     sudo date --set "12 Sep 2012 12:12:12"
     echo @@@ BEFORE `date`
     case $platform in
-    ubuntu)
+    ubuntu|debian)
         sudo sntp -s 0.europe.pool.ntp.org
-        sudo service ntp stop
-        sudo ntpdate 0.europe.pool.ntp.org
-        sudo service ntp start
-        ;;
-    debian)
-        sudo sntp -s 0.europe.pool.ntp.org
+        # sudo service ntp stop
+        # sudo ntpdate 0.europe.pool.ntp.org
+        # sudo service ntp start
         ;;
     *)
         sudo service ntpd stop
         sudo ntpdate 0.europe.pool.ntp.org
         sudo service ntpd start
         ;;
+    esac
     echo @@@ AFTER `date`
   EOH
 end
