@@ -25,6 +25,7 @@ script "test_date" do
     echo @@@ TEST DATE
     sudo date --set "12 Sep 2012 12:12:12"
     echo @@@ BEFORE `date`
+    echo $platform
     case $platform in
     ubuntu|debian)
         sudo sntp -s 0.europe.pool.ntp.org
