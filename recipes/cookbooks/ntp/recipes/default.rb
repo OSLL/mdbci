@@ -1,6 +1,6 @@
 # Cookbook Name:: ntp
 
-package "ntp" do		
+package "ntp" do	
     action [:install]
 end
  
@@ -20,17 +20,26 @@ end
 script "test_date" do
   interpreter "bash"
   user "root"
+  environment 'platform' => '#{platform}'
   code <<-EOH
     echo @@@ TEST DATE
     sudo date --set "12 Sep 2012 12:12:12"
     echo @@@ BEFORE `date`
-    sudo sntp -s 0.europe.pool.ntp.org
-    echo @@@ AFTER_1 `date`
-    sudo service ntp stop
-    sudo service ntpd stop
-    sudo ntpdate 0.europe.pool.ntp.org
-    sudo service ntp start
-    sudo service ntpd stop
-    echo @@@ AFTER_2 `date`
+    case $platform in
+    ubuntu)
+        sudo sntp -s 0.europe.pool.ntp.org
+        sudo service ntp stop
+        sudo ntpdate 0.europe.pool.ntp.org
+        sudo service ntp start
+        ;;
+    debian)
+        sudo sntp -s 0.europe.pool.ntp.org
+        ;;
+    *)
+        sudo service ntpd stop
+        sudo ntpdate 0.europe.pool.ntp.org
+        sudo service ntpd start
+        ;;
+    echo @@@ AFTER `date`
   EOH
 end
