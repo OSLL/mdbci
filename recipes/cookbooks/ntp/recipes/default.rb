@@ -20,7 +20,7 @@ end
 script "test_date" do
   interpreter "bash"
   user "root"
-  environment 'platform' => platform
+  environment 'platform' => node['platform']
   code <<-EOH
     echo @@@ TEST DATE
     sudo date --set "12 Sep 2012 12:12:12"
