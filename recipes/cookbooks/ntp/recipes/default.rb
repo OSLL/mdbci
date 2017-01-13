@@ -22,16 +22,11 @@ script "test_date" do
   user "root"
   environment 'platform' => node['platform']
   code <<-EOH
-    echo @@@ TEST DATE
     sudo date --set "12 Sep 2012 12:12:12"
-    echo @@@ BEFORE `date`
-    echo @@@@@@@ PLATFORM IS $platform
+    echo @@@ TEST DATE: `date`
     case $platform in
     ubuntu|debian)
         sudo sntp -s 0.europe.pool.ntp.org
-        # sudo service ntp stop
-        # sudo ntpdate 0.europe.pool.ntp.org
-        # sudo service ntp start
         ;;
     *)
         sudo service ntpd stop
@@ -39,6 +34,6 @@ script "test_date" do
         sudo service ntpd start
         ;;
     esac
-    echo @@@ AFTER `date`
+    echo @@@ SYNC DATE: `date`
   EOH
 end
