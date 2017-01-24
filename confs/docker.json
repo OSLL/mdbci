@@ -108,7 +108,7 @@
   "maxscale" :
   {
     "hostname" : "maxscale",
-    "box" : "ubuntu_trusty_docker",
+    "box" : "centos_7_docker",
     "product" : {
       "name" : "maxscale"
     },
