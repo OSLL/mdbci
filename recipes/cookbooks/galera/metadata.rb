@@ -7,6 +7,7 @@ version           '0.0.1'
 recipe            'install', 'Installs Enterprise edition'
 recipe            'uninstall', 'Uninstalls any edition'
 recipe            'start', 'Creates new instance of service and starts it'
+depends           'ntp'
 
 supports          'redhat'
 supports          'centos'
