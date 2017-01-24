@@ -2,7 +2,7 @@
 {
    "product":		"maxscale",
    "version":           "default",
-   "repo":		"http://maxscale-jenkins.mariadb.com/ci-repository/develop/mariadb-maxscale//debian sqeeze main ",
+   "repo":		"http://max-tst-01.mariadb.com/ci-repository/develop/mariadb-maxscale/debian sqeeze main ",
    "repo_key":		"70E4618A8167EE24",
    "platform":		"debian",
    "platform_version":  "sqeeze"
