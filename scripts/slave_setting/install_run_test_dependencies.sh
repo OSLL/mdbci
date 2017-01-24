@@ -10,5 +10,6 @@ sudo apt-get install libssl-dev \
                      libjansson-dev \
                      openjdk-7-jdk \
                      python-pip \
-                     cmake -y
+                     cmake -y \
+                     shellcheck
 sudo pip install JayDeBeApi
