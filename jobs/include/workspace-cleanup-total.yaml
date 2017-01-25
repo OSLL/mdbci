@@ -1,2 +1,2 @@
 workspace-cleanup:
-  dirmatch: true
+    dirmatch: true
