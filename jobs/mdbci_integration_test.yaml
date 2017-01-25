@@ -24,4 +24,5 @@
         - shell: |
             /home/vagranttest/build-scripts/test/mdbc_integration_test.sh
     publishers:
+        - !include: './jobs/include/call_cleanup.yaml'
         - !include: './jobs/include/mdbci_integration_test/publishers.yaml'
