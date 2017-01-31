@@ -52,7 +52,9 @@
         - shell: 
             'ruby -c `find ./ | grep ".rb"`'
         - shell: |
-            ln -s $MDBCI_CONFS/aws-config.yml aws-config.yml; ln -s $MDBCI_CONFS/maxscale.pem maxscale.pem
+            ln -s $MDBCI_CONFS/aws-config.yml aws-config.yml
+            ln -s $MDBCI_CONFS/maxscale.pem maxscale.pem
+            mkdir -p ./BOXES
             cp $BOXES_JSON_PATH/* ./BOXES
             ./scripts/run_unit_tests.sh
             ./scripts/run_integration_tests.sh
