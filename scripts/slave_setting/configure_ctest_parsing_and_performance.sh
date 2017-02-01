@@ -38,5 +38,9 @@ wget https://raw.githubusercontent.com/OSLL/mdbci/integration/scripts/db/test_re
 mysql -utest_bot -ppass --database test_results_db < ./test_results_db.sql
 rm test_results_db.sql
 
+wget https://raw.githubusercontent.com/OSLL/mdbci/integration/scripts/benchmark_parser/init_tables.sql
+mysql -utest_bot -ppass < init_tables.sql
+rm init_tables.sql
+
 sudo apt-get install build-essential ruby ruby-dev -y libnetcdf-dev libssl-dev libcrypto++-dev libmariadbclient-dev libmariadbd-dev
 sudo gem install mysql2
