@@ -41,6 +41,13 @@ RUN_TEST_BUILD_ENV_VARS_TO_MR = {
     'version' => 'version'
 }
 
+FIRST_LINES_CTEST_TO_SKIP = [
+    'Constructing a list of tests',
+    'Done constructing a list of tests',
+    'Checking test dependency graph...',
+    'Checking test dependency graph end'
+]
+
 WORKSPACE = 'WORKSPACE'
 
 FAILED = 'Failed'
@@ -75,6 +82,7 @@ opts = GetoptLong.new(
 )
 
 $log = nil
+$log_path = nil
 $only_failed = false
 $human_readable = false
 $output_log_file_path = nil
@@ -84,6 +92,7 @@ opts.each do |opt, arg|
   case opt
     when LOG_FILE_OPTION
       begin
+        $log_path = arg
         $log = File.read arg
         # Fixing encodings by encoding it to different encoding and back to utf8
         # (because encoding to the same encoding make no effect)
@@ -182,13 +191,23 @@ class CTestParser
     @all_ctest_info = Array.new
     @failed_ctest_info = Array.new
     @fail_ctest_counter = 0
+    puts ctest_sublogs_dir = "#{File.expand_path File.dirname $log_path}/ctest_sublogs"
+    Dir.mkdir ctest_sublogs_dir
+    ctest_sublog = Array.new
     ctest_log.each do |line|
       test_end_regex = /(\d+)\/(\d+)\s+Test\s+#(\d+):[\s]+([^\s]+)\s+[\.\*]+([^\d]+)([\d\.]+)/
+      ctest_sublog.push(line) unless FIRST_LINES_CTEST_TO_SKIP.include? line
       if line =~ test_end_regex
         test_index_number = line.match(test_end_regex).captures[0]
+        test_success = line.match(test_end_regex).captures[4].strip
+        if (test_success != PASSED and $only_failed == true) or $only_failed == false
+          File.open("#{ctest_sublogs_dir}/sublog_#{test_index_number}", 'w') do |f|
+            ctest_sublog.each { |c| f.puts c}
+          end
+        end
+        ctest_sublog = Array.new
         test_number = line.match(test_end_regex).captures[2]
         test_name = line.match(test_end_regex).captures[3]
-        test_success = line.match(test_end_regex).captures[4].strip
         test_time = line.match(test_end_regex).captures[5]
         @all_ctest_indexes.push(Integer(test_number))
         @all_ctest_info.push({
