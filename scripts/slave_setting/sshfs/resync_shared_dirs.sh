@@ -11,8 +11,10 @@ echo "List of sshfs mounts:"
 mount | grep sshfs
 
 LS_ERROR=$(ls LOGS)
+LS_ERROR_MSG="ls: cannot access 'LOGS': Input/output error"
 
-if ["$LS_ERROR" -eq "ls: cannot access 'LOGS': Input/output error"]
+
+if [ "$ERROR_MSG" = "$LS_ERROR" ] ; then
      fusermount -u LOGS
 fi
 
@@ -32,4 +34,3 @@ do
     echo "\tdir $HOME/${dir_to_resync} is mounted, skipping."
   fi
 done
-
