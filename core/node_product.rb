@@ -183,7 +183,7 @@ class NodeProduct
                        + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
                        + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
                        + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-                       + @@CLEAN_ALL+' && sudo yum update '+$session.nodeProduct.to_s+'"'
+                       + @@CLEAN_ALL+' && sudo yum -y update '+$session.nodeProduct.to_s+'"'
     elsif platform[0] == 'sles' || platform[0] == 'suse' || platform[0] == 'opensuse'
       cmd_install_repo = "vagrant ssh #{node_name} -c '#{suseSetupProductRepoCmd(repo)}'"
     end

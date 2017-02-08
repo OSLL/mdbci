@@ -1,0 +1,8 @@
+trigger-parameterized-builds:
+  - project: 'cleanup'
+    condition: UNSTABLE_OR_WORSE
+    predefined-parameters: |
+      build_full_name=$JOB_NAME-$BUILD_NUMBER
+      do_not_destroy_vm=$do_not_destroy_vm
+      name=$name
+    node-parameters: true
