@@ -9,7 +9,7 @@ then
 	exit 1
 fi
 
-BASE_DIR="/home/vagrant/"
+BASE_DIR="$HOME/"
 LOGS_PATH="${BASE_DIR}LOGS"
 
 buildId=${1}
