@@ -71,6 +71,8 @@ MAXSCALE_COMMIT_MR = "maxscale_commit"
 MAXSCALE_SYSTEM_TEST_COMMIT_HR = "MaxScale system test commit"
 MAXSCALE_SYSTEM_TEST_COMMIT_MR = "maxscale_system_test_commit"
 
+CTEST_SUBLOGS_PATH_IS_NOT_VALID = 'ERROR(ctest sublogs parsing): Path is not valid - '
+
 NEW_LINE_JENKINS_FORMAT = " \\\n"
 
 opts = GetoptLong.new(
@@ -196,6 +198,10 @@ class CTestParser
     @all_ctest_info = Array.new
     @failed_ctest_info = Array.new
     @fail_ctest_counter = 0
+    unless Dir.exists? $ctest_sublogs_path.to_s
+      puts "#{CTEST_SUBLOGS_PATH_IS_NOT_VALID}'#{$ctest_sublogs_path}'"
+      $ctest_sublogs_path = nil
+    end
     Dir.mkdir $ctest_sublogs_path unless $ctest_sublogs_path.nil?
     ctest_sublog = Array.new
     ctest_log.each do |line|
