@@ -8,6 +8,7 @@ OUTPUT_LOG_FILE_OPTION = '--output-log-file'
 OUTPUT_LOG_JSON_FILE_OPTION = '--output-log-json-file'
 ONLY_FAILED_OPTION = '--only-failed'
 HUMAN_READABLE_OPTION = '--human-readable'
+CTEST_SUBLOGS_PATH = '--ctest-sublogs-path'
 HELP_OPTION = '--help'
 
 TEST_INDEX_NUMBER = 'test_index_number'
@@ -78,6 +79,7 @@ opts = GetoptLong.new(
     [HUMAN_READABLE_OPTION, '-r', GetoptLong::OPTIONAL_ARGUMENT],
     [OUTPUT_LOG_FILE_OPTION, '-o', GetoptLong::OPTIONAL_ARGUMENT],
     [OUTPUT_LOG_JSON_FILE_OPTION, '-j', GetoptLong::OPTIONAL_ARGUMENT],
+    [CTEST_SUBLOGS_PATH, '-s', GetoptLong::OPTIONAL_ARGUMENT],
     [HELP_OPTION, '-h', GetoptLong::OPTIONAL_ARGUMENT]
 )
 
@@ -87,6 +89,7 @@ $only_failed = false
 $human_readable = false
 $output_log_file_path = nil
 $output_log_json_file_path = nil
+$ctest_sublogs_path = nil
 
 opts.each do |opt, arg|
   case opt
@@ -108,6 +111,8 @@ opts.each do |opt, arg|
       $output_log_file_path = arg
     when OUTPUT_LOG_JSON_FILE_OPTION
       $output_log_json_file_path = arg
+    when CTEST_SUBLOGS_PATH
+      $ctest_sublogs_path = arg
     when HELP_OPTION
       puts <<-EOT
 CTest parser usage:
@@ -191,8 +196,7 @@ class CTestParser
     @all_ctest_info = Array.new
     @failed_ctest_info = Array.new
     @fail_ctest_counter = 0
-    puts ctest_sublogs_dir = "#{File.expand_path File.dirname $log_path}/ctest_sublogs"
-    Dir.mkdir ctest_sublogs_dir
+    Dir.mkdir $ctest_sublogs_path unless $ctest_sublogs_path.nil?
     ctest_sublog = Array.new
     ctest_log.each do |line|
       test_end_regex = /(\d+)\/(\d+)\s+Test\s+#(\d+):[\s]+([^\s]+)\s+[\.\*]+([^\d]+)([\d\.]+)/
@@ -200,8 +204,8 @@ class CTestParser
       if line =~ test_end_regex
         test_index_number = line.match(test_end_regex).captures[0]
         test_success = line.match(test_end_regex).captures[4].strip
-        if (test_success != PASSED and $only_failed == true) or $only_failed == false
-          File.open("#{ctest_sublogs_dir}/sublog_#{test_index_number}", 'w') do |f|
+        if !$ctest_sublogs_path.nil? and ((test_success != PASSED and $only_failed == true) or $only_failed == false)
+          File.open("#{$ctest_sublogs_path}/sublog_#{test_index_number}", 'w') do |f|
             ctest_sublog.each { |c| f.puts c}
           end
         end
