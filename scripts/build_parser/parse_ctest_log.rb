@@ -86,7 +86,6 @@ opts = GetoptLong.new(
 )
 
 $log = nil
-$log_path = nil
 $only_failed = false
 $human_readable = false
 $output_log_file_path = nil
@@ -97,7 +96,6 @@ opts.each do |opt, arg|
   case opt
     when LOG_FILE_OPTION
       begin
-        $log_path = arg
         $log = File.read arg
         # Fixing encodings by encoding it to different encoding and back to utf8
         # (because encoding to the same encoding make no effect)
