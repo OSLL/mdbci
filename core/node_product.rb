@@ -9,6 +9,8 @@ require_relative  '../core/out'
 class NodeProduct
   #
   #
+  @@CLEAN_ALL = "sudo yum clean all"
+
   def NodeProduct.getProductRepoParameters(product, box)
 
     repo = nil
@@ -181,7 +183,7 @@ class NodeProduct
                        + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
                        + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
                        + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-                       + 'sudo yum clean all && sudo yum -y update '+$session.nodeProduct.to_s+'"'
+                       + @@CLEAN_ALL+' && sudo yum -y update '+$session.nodeProduct.to_s+'"'
     elsif platform[0] == 'sles' || platform[0] == 'suse' || platform[0] == 'opensuse'
       cmd_install_repo = "vagrant ssh #{node_name} -c '#{suseSetupProductRepoCmd(repo)}'"
     end
@@ -202,7 +204,7 @@ class NodeProduct
                        + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
                        + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
                        + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-                       + 'sudo yum clean all && sudo yum update '+$session.nodeProduct.to_s+''
+                       + @@CLEAN_ALL+' && sudo yum update '+$session.nodeProduct.to_s+''
     elsif platform[0] == 'sles' || platform[0] == 'suse' || platform[0] == 'opensuse'
       cmd_install_repo = suseSetupProductRepoCmd(repo)
     end
@@ -331,7 +333,7 @@ class NodeProduct
     if platform == 'ubuntu' || platform == 'debian'
       cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo DEBIAN_FRONTEND=noninteractive apt-get -y install '+ packages +'"'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
-      cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo yum -y install '+ packages + '"'
+      cmd_install_product = 'vagrant ssh '+node_name+' -c "'+ @@CLEAN_ALL +' && sudo yum -y install '+ packages + '"'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
       packages_with_repository = ''
       packages.split(' ').each { |package| packages_with_repository += $session.nodeProduct + ":" + package + ' ' }
@@ -345,7 +347,7 @@ class NodeProduct
     if platform == 'ubuntu' || platform == 'debian'
       cmd_install_product = 'sudo DEBIAN_FRONTEND=noninteractive apt-get -y install '+ packages
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
-      cmd_install_product = 'sudo yum -y install '+ packages
+      cmd_install_product = @@CLEAN_ALL + '&& sudo yum -y install '+ packages
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
       packages_with_repository = ''
       packages.split(' ').each { |package| packages_with_repository += $session.nodeProduct + ":" + package + ' ' }
