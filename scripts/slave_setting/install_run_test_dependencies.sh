@@ -11,6 +11,9 @@ sudo apt-get install libssl-dev \
                      openjdk-7-jdk \
                      python-pip \
                      cmake -y
+                     shellcheck
+
+sudo pip install JayDeBeApi
+
 sudo apt-get install libmariadbclient-dev -y
 sudo apt-get install libmariadb-client-lgpl-dev -y
-sudo pip install JayDeBeApi
