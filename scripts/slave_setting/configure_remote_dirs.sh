@@ -4,6 +4,7 @@ sudo echo "user_allow_other" >> /etc/fuse.conf
 ./scripts/slave_setting/sshfs/check_resync_in_crone.sh
 
 # Setting fstab
+: <<'EOFCOMMENT'
 sshfs_conf_arr=("sshfs#vagrant@max-tst-01.mariadb.com:/home/vagrant/LOGS /home/vagrant/LOGS" "sshfs#vagrant@max-tst-01.mariadb.com:/home/vagrant/repo /home/vagrant/repo" "sshfs#vagrant@max-tst-01.mariadb.com:/home/vagrant/repository /home/vagrant/repository")
 sudo cp '/etc/fstab' "/etc/fstab.$(($(date +%s%N)/1000000)).bak"
 for var in "${sshfs_conf_arr[@]}"; do
@@ -12,3 +13,5 @@ for var in "${sshfs_conf_arr[@]}"; do
         sudo sh -c "echo '$var' >> /etc/fstab"
     fi
 done
+EOFCOMMENT
+

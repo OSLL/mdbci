@@ -30,14 +30,13 @@ sudo apt install qemu-kvm \
 sudo adduser $USER libvirtd
 
 # Configuration of libvirt images path
-mkdir -p ~/libvirt-configs
-virsh pool-dumpxml default > ~/libvirt-configs/standard_pool.xml
-cp ~/libvirt-configs/standard_pool.xml ~/libvirt-configs/home_pool.xml
-visrh pool-destroy default
-sed -i "s/<path>.*/<path>\/home\/vagrant\/libvirt-images<\/path>/" libvirt-configs/home_pool.xml
-virsh pool-create ~/libvirt-configs/home_pool.xml
-virsh pool-define ~/libvirt-configs/home_pool.xml
-virsh pool-autostart default
+sudo virsh pool-destroy default
+sudo virsh pool-undefine default
+mkdir -p $HOME/libvirt-images
+sudo virsh pool-create ./scripts/slave_setting/libvirt/default.xml
+sudo virsh pool-dumpxml --pool default > ./scripts/slave_setting/libvirt/default_tmp.xml
+sudo virsh pool-define ./scripts/slave_setting/libvirt/default_tmp.xml
+sudo virsh pool-autostart default
 
 
 # Docker
