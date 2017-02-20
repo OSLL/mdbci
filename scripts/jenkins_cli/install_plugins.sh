@@ -53,8 +53,8 @@ while read line; do
         fi 
         java -jar "$HOME/jenkins-cli.jar" -s "$host:$port" install-plugin "$address"
         if [ "$?" -ne "0" ]; then
-            echo "Error: command 'java -jar $HOME/jenkins-cli.jar -s $host:$port install-plugin $address' failed with code - $?"
-            exit 1
+            echo "Error: command 'java -jar $HOME/jenkins-cli.jar -s $host:$port install-plugin $address' failed with code - $?, skipping..."
+            continue
         fi
     fi
 done < "$file"
