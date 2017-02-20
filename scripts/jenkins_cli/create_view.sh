@@ -29,15 +29,15 @@ if [ -z "$host" ] || [ -z "$port" ] || [ -z "$view_name" ] || [ -z "$job_names" 
     exit 1
 fi
 
-cp view_template.xml view_template.xml.temp
+cp ./scripts/jenkins_cli/view_template.xml ./scripts/jenkins_cli/view_template.xml.temp
 
-sed -i "s|#{VIEW_NAME}|$view_name|g" view_template.xml.temp
+sed -i "s|#{VIEW_NAME}|$view_name|g" ./scripts/jenkins_cli/view_template.xml.temp
 
-java -jar "$HOME/jenkins-cli.jar" -s "$host:$port" create-view "$view_name" < view_template.xml.temp
+java -jar "$HOME/jenkins-cli.jar" -s "$host:$port" create-view "$view_name" < ./scripts/jenkins_cli/view_template.xml.temp
 
 view_created=$?
 
-rm view_template.xml.temp
+rm ./scripts/jenkins_cli/view_template.xml.temp
 
 if [ "$view_created" -ne 0 ]; then
     echo "Error: view - '$view_name' creation failed!"
