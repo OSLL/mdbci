@@ -1,0 +1,4 @@
+git:
+  url: https://github.com/mariadb-corporation/maxscale-system-test.git
+  branches:
+      - master

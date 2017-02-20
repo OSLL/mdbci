@@ -1,0 +1,22 @@
+- job:
+    name: run-inner-mdbci-parametrized-tests
+    description: 'This job performs running parametrized tests.'
+    parameters:
+      - !include './jobs/include/boxes_json_path.yaml'
+      - !include './jobs/include/keys_json_path.yaml'
+      - !include './jobs/include/mdbci_dependencies_path.yaml'
+      - !include './jobs/include/mdbci_repository.yaml'
+      - !include './jobs/include/last_modified_branch_detection/sorted_git_branches_path.yaml'
+      - !include './jobs/include/last_modified_branch_detection/mdbci_branch.yaml'
+      - !include './jobs/include/test_type.yaml'
+      - !include './jobs/include/test_set.yaml'
+    wrappers:
+      - !include './jobs/include/last_modified_branch_detection/pre_scm.yaml'
+    scm:
+      - !include './jobs/include/last_modified_branch_detection/scm.yaml'
+    builders:
+      - !include './jobs/include/ruby_syntax_check.yaml'
+      - !include './jobs/include/run_inner_mdbci_parametrized_test/configure_workspace.yaml'
+      - !include './jobs/include/run_inner_mdbci_parametrized_test/start_test.yaml'
+    publishers:
+      - !include './jobs/include/last_modified_branch_detection/publishers.yaml'

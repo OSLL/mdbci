@@ -1,0 +1,117 @@
+{
+  "cookbook_path" : "../recipes/cookbooks/",
+  "node0" :
+  {
+    "hostname" : "node0",
+    "box" : "rhel_6_ppc64",
+    "memory_size" : "1024",
+    "product" : {
+      "name": "mariadb",
+      "version": "10.0",
+      "cnf_template" : "server1.cnf",
+      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+    }
+
+  },
+
+  "node1" :
+  {
+    "hostname" : "node1",
+    "box" : "rhel_7_ppc64",
+    "memory_size" : "1024",
+    "product" : {
+      "name": "mariadb",
+      "version": "10.0",
+      "cnf_template" : "server2.cnf",
+      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+    }
+  },
+
+  "node2" :
+  {
+    "hostname" : "node2",
+    "box" : "sles_12_ppc64",
+    "memory_size" : "1024",
+    "product" : {
+      "name": "mariadb",
+      "version": "10.0",
+      "cnf_template" : "server3.cnf",
+      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+    }
+  },
+
+  "node3" :
+  {
+    "hostname" : "node3",
+    "box" : "ubuntu_trusty_ppc64",
+    "memory_size" : "1024",
+    "product" : {
+      "name": "mariadb",
+      "version": "10.0",
+      "cnf_template" : "server4.cnf",
+      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+    }
+  },
+
+  "galera0" :
+  {
+    "hostname" : "galera0",
+    "box" : "ubuntu_trusty_ppc64",
+    "memory_size" : "1024",
+    "product" : {
+      "name": "galera",
+      "version": "5.5",
+      "cnf_template" : "galera_server1.cnf",
+      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+    }
+  },
+
+  "galera1" :
+  {
+    "hostname" : "galera1",
+    "box" : "ubuntu_utopic_ppc64",
+    "memory_size" : "1024",
+    "product" : {
+      "name": "galera",
+      "version": "5.5",
+      "cnf_template" : "galera_server2.cnf",
+      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+    }
+  },
+
+  "galera2" :
+  {
+    "hostname" : "galera2",
+    "box" : "rhel_7_ppc64be",
+    "memory_size" : "1024",
+    "product" : {
+      "name": "galera",
+      "version": "5.5",
+      "cnf_template" : "galera_server3.cnf",
+      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+    }
+  },
+
+  "galera3" :
+  {
+    "hostname" : "galera3",
+    "box" : "rhel_7_ppc64be",
+    "memory_size" : "1024",
+    "product" : {
+      "name": "galera",
+      "version": "5.5",
+      "cnf_template" : "galera_server4.cnf",
+      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+    }
+  },
+
+  "maxscale" :
+  {
+    "hostname" : "maxscale",
+    "box" : "ubuntu_trusty_ppc64",
+    "product" : {
+      "name" : "maxscale"
+    },
+    "memory_size" : "1024"
+  }
+}

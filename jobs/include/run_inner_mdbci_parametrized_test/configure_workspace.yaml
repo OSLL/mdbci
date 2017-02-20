@@ -1,0 +1,33 @@
+shell: |
+  files_to_save="mdbci_param_test_docker \
+  mdbci_param_test_docker_backup \
+  mdbci_param_test_docker_network_config \
+  mdbci_param_test_docker_for_ppc \
+  mdbci_param_test_docker_for_ppc_backup \
+  mdbci_param_test_docker_for_ppc_network_config \
+  mdbci_param_test_libvirt \
+  mdbci_param_test_libvirt_backup \
+  mdbci_param_test_libvirt_network_config"
+  timestamp=$(date +"%s")
+  prefix="mdbci_param_test"
+  temp_dir=$HOME/"${prefix}_temp_${timestamp}"
+  origin_configs_presented=false
+  configs=$(ls | grep $prefix) || true
+  if [[ -n "$configs" ]]; then
+      origin_configs_presented=true
+      mkdir -p "$temp_dir"
+      for i in ${files_to_save}; do
+        cp -r "$i" "$temp_dir" || true
+      done
+  fi
+  git clean -fdx
+  git reset --hard HEAD
+  ln -s $MDBCI_DEPENDENCIES/aws-config.yml aws-config.yml
+  ln -s $MDBCI_DEPENDENCIES/maxscale.pem maxscale.pem
+  cp $BOXES_JSON_PATH/* ./BOXES
+  mkdir -p ./KEYS
+  cp $KEYS_JSON_PATH/* ./KEYS
+  if [ "$origin_configs_presented" == true ]; then
+      cp -r "$temp_dir"/* .
+      rm -r "$temp_dir"
+  fi

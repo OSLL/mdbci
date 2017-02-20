@@ -25,7 +25,11 @@
               type: 'PT_SINGLE_SELECT'
               property-file: *SORTED_GIT_BRANCHES_FILE_PATH
               property-key: branch_name
+              default-property-file: $WORKSPACE/last_modified_branch
+              default-property-key: LAST_MODIFIED_BRANCH
     wrappers:
+        - workspace-cleanup:
+              dirmatch: true
         - pre-scm-buildstep:
             - shell: |
                 if [ -z "$MDBCI_BRANCH" ]; then
@@ -48,7 +52,9 @@
         - shell: 
             'ruby -c `find ./ | grep ".rb"`'
         - shell: |
-            ln -s $MDBCI_CONFS/aws-config.yml aws-config.yml; ln -s $MDBCI_CONFS/maxscale.pem maxscale.pem
+            ln -s $MDBCI_CONFS/aws-config.yml aws-config.yml
+            ln -s $MDBCI_CONFS/maxscale.pem maxscale.pem
+            mkdir -p ./BOXES
             cp $BOXES_JSON_PATH/* ./BOXES
             ./scripts/run_unit_tests.sh
             ./scripts/run_integration_tests.sh
@@ -57,7 +63,7 @@
             recipients: $DEFAULT_RECIPIENTS
             reply-to: $DEFAULT_REPLYTO
             content-type: default
-            subject: $DEFAULT_SUBJECT
+            subject: $DEFAULT_SUBJECT - $LAST_MODIFIED_BRANCH
             body: $DEFAULT_CONTENT
             attach-build-log: false
             always: true
