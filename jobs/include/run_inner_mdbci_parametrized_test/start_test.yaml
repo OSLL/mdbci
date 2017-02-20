@@ -1,0 +1,9 @@
+shell: |
+  ruby scripts/parametrized_testing/parametrized_testing_environment_setup.rb --start
+  if [ "$TEST_TYPE" == "unit" ]; then
+      ./scripts/run_unit_parametrized_tests.sh -t $TEST_SET
+  fi
+  if [ "$TEST_TYPE" == "integration" ]; then
+      ./scripts/run_integration_parametrized_tests.sh -t $TEST_SET
+  fi
+  ruby scripts/parametrized_testing/parametrized_testing_environment_setup.rb --pause

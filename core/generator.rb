@@ -103,6 +103,19 @@ config.omnibus.chef_version = '12.9.38'
     return ssh_pty_option
   end
 
+  def Generator.getDefaultRecipe(name, cookbook_path)
+    return <<EOF
+\t#{name}.vm.provision "chef_solo" do |chef|
+\t\tchef.cookbooks_path = "#{cookbook_path}"
+\t\tchef.add_recipe "packages"
+\tend
+EOF
+  end
+
+  def Generator.install_chef_by_url(name)
+    return "\n\n\t#{name}.vm.provision 'shell', inline: 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v 12.9.38'"
+  end
+
   # Vagrantfile for Vbox provider
   def Generator.getVmDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
 
@@ -120,13 +133,17 @@ config.omnibus.chef_version = '12.9.38'
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
             + templatedef + "\n"
+    vmdef += install_chef_by_url name
     if provisioned
       vmdef += "\t##--- Chef binding ---\n"\
             + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
             + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
+    else
+      vmdef += "\n\n#{getDefaultRecipe(name, cookbook_path)}"
     end
+
 
     if vm_mem
       vmdef += "\n\t"+'config.vm.provider :virtualbox do |vbox|' + "\n" \
@@ -159,12 +176,15 @@ config.omnibus.chef_version = '12.9.38'
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
             + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n" \
             + "\t\t"+'qemu.memory = ' + vm_mem + "\n\tend"
+    qemudef += install_chef_by_url name
     if provisioned
       qemudef += "\t##--- Chef binding ---\n"\
             + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
             + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
+    else
+      qemudef += "\n\n#{getDefaultRecipe(name, cookbook_path)}"
     end
     qemudef += "\nend #  <-- End of Qemu definition for machine: " + name +"\n\n"
 
@@ -201,12 +221,16 @@ config.omnibus.chef_version = '12.9.38'
 
     dockerdef = dockerdef+ "\t\t"+'d.env = {"container"=>"docker"}' + "\n\tend"
 
+    dockerdef += install_chef_by_url name
+
     if provisioned
       dockerdef += "\t##--- Chef binding ---\n"\
             + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
             + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
             + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
             + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
+    else
+      dockerdef += "\n\n#{getDefaultRecipe(name, cookbook_path)}"
     end
     dockerdef += "\nend #  <-- End of Docker definition for machine: " + name +"\n\n"
 
@@ -216,7 +240,7 @@ config.omnibus.chef_version = '12.9.38'
   # generate snapshot versioning
   def Generator.createDockerSnapshotsVersions(path, name, box)
     File.open("#{path}/#{name}/snapshots", 'w') do |f|
-      f.puts({name => {'id'=>SecureRandom.uuid.to_s.downcase, 'snapshots'=>[box], 'current_snapshot'=>box, 'initial_snapshot'=>box}}.to_json)
+      f.puts({name => {'id' => SecureRandom.uuid.to_s.downcase, 'snapshots' => [box], 'current_snapshot' => box, 'initial_snapshot' => box}}.to_json)
     end
   end
 
@@ -249,8 +273,15 @@ config.omnibus.chef_version = '12.9.38'
     `sed -i 's/###PLATFORM_VERSION###/#{platform_version}/g' #{node_path}/Dockerfile`
   end
 
+  def Generator.generateAwsTag(hash)
+    hashes_array = Array.new
+    hash.each { |key, value| hashes_array.push ("#{quote(key)} => #{quote(value)}") }
+    vagrantfile_tags = hashes_array.join(', ')
+    return "{ #{vagrantfile_tags} }"
+  end
+
   #  Vagrantfile for AWS provider
-  def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, ssh_pty, instance_type, template_path, provisioned)
+  def Generator.getAWSVmDef(cookbook_path, name, boxurl, user, ssh_pty, instance_type, template_path, provisioned, tags)
 
     if template_path
       mountdef = "\t" + name + ".vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync")
@@ -265,10 +296,12 @@ config.omnibus.chef_version = '12.9.38'
            + ssh_pty_option + "\n" \
            + "\t" + name + ".vm.provider :aws do |aws,override|\n" \
            + "\t\taws.ami = " + quote(boxurl) + "\n"\
+           + "\t\taws.tags = #{tags}\n"\
            + "\t\taws.instance_type = " + quote(instance_type) + "\n" \
            + "\t\toverride.ssh.username = " + quote(user) + "\n" \
            + "\tend\n" \
            + mountdef + "\n"
+    awsdef += install_chef_by_url name
     if provisioned
       awsdef += "\t##--- Chef binding ---\n"\
            + "\t" + name + ".vm.provision "+ quote('chef_solo')+" do |chef| \n"\
@@ -276,6 +309,8 @@ config.omnibus.chef_version = '12.9.38'
            + "\t\tchef.roles_path = "+ quote('.') + "\n" \
            + "\t\tchef.add_role "+ quote(name) + "\n" \
            + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend #<-- end of chef binding\n"
+    else
+      awsdef += "\n\n#{getDefaultRecipe(name, cookbook_path)}"
     end
     awsdef +="\nend #  <-- End AWS definition for machine: " + name +"\n\n"
 
@@ -460,7 +495,13 @@ config.omnibus.chef_version = '12.9.38'
         when 'virtualbox'
           machine = getVmDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'aws'
-          machine = getAWSVmDef(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned)
+          tags = generateAwsTag({
+                                    'hostname' => Socket.gethostname,
+                                    'username' => Etc.getlogin,
+                                    'full_config_path' => File.expand_path(path),
+                                    'machinename' => name
+                                })
+          machine = getAWSVmDef(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned, tags)
         when 'libvirt'
           machine = getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'docker'

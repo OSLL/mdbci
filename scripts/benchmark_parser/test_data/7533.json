@@ -1,0 +1,41 @@
+{
+  "build_params": {
+    "jenkins_id": "jenkins_id",
+    "start_time": "start_time",
+    "box": "box",
+    "product": "product",
+    "mariadb_version": "mariadb_version",
+    "test_code_commit_id": "test_code_commit_id",
+    "product_under_test": "maxscale",
+    "job_name": "job_name",
+    "machine_count": 5,
+    "sysbench_params": "sysbench_params",
+    "mdbci_template": "./scripts/benchmark_parser/test_data/7533_mdbci_template",
+    "test_tool": "sysbench",
+    "target": "target",
+    "maxscale_commit_id": "maxscale_commit_id",
+    "maxscale_cnf": "./scripts/benchmark_parser/test_data/7533_maxscale_cnf"
+  },
+  "benchmark_results": {
+    "OLTP_test_statistics_queries_performed_read": 1,
+    "OLTP_test_statistics_queries_performed_write": 2,
+    "OLTP_test_statistics_queries_performed_other": 3,
+    "OLTP_test_statistics_queries_performed_total": 4,
+    "OLTP_test_statistics_transactions": 5,
+    "OLTP_test_statistics_read_write_requests": 6,
+    "OLTP_test_statistics_other_operations": 7,
+    "OLTP_test_statistics_ignored_errors": 8,
+    "OLTP_test_statistics_reconnects": 9,
+    "General_statistics_total_time": 10,
+    "General_statistics_total_number_of_events": 11,
+    "General_statistics_total_time_taken_by_event_execution": 12,
+    "General_statistics_response_time_min": 13,
+    "General_statistics_response_time_avg": 14,
+    "General_statistics_response_time_max": 15,
+    "General_statistics_response_time_approx___95_percentile": 16,
+    "Threads_fairness_events_avg": 17,
+    "Threads_fairness_events_stddev": 18,
+    "Threads_fairness_execution_time_avg": 19,
+    "Threads_fairness_execution_time_stddev": 20
+  }
+}

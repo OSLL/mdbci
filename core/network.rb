@@ -3,6 +3,7 @@ require 'find'
 require_relative 'node'
 require_relative 'out'
 #require_relative 'session'
+require_relative 'helper'
 
 class Network
 
@@ -25,7 +26,6 @@ class Network
 
     vagrant_out = `vagrant status`
     list = vagrant_out.split("\n")
-
 =begin
   Vagrant prints node info in next format:
   >Current machine states:
@@ -57,60 +57,86 @@ class Network
     (2..list.length-offset).each do |x|
       getNodeInfo(config, list[x])
     end
-
   end
 
+  def self.getBoxParameters(node_param)
+    box = node_param['box'].to_s
+    raise "Can not find box parameter for node #{node_name}" if box.empty?
+    box_params = $session.boxes.getBox(box)
+    raise "Can not find box #{box} node #{node_param} in #{dir}" if box_params.empty?
+    return box_params
+  end
+
+  def self.getBoxParameterKeyPath(dir,node,pwd)
+    result_hash = Hash.new()
+    node_name = node[0]
+    node_params = node[1]
+    box_params = getBoxParameters(node_params)
+    key_path = "#{pwd}/KEYS/#{box_params['keyfile']}"
+    unless File.exist?(key_path)
+      raise "Key file #{box_params['keyfile']} is not found for node #{node_name} in #{dir}"
+    end
+    result_hash["key"] = key_path.to_s
+    return result_hash
+  end
 
   def self.showKeyFile(name)
-    #TODO refactor with show
-    pwd = Dir.pwd
-    raise 'Configuration name is required' if name.nil?
-    args = name.split('/')
-    # mdbci ppc64 boxes
-    if File.exist?(args[0]+'/mdbci_template')
-      $session.loadMdbciNodes args[0]
-      if args[1].nil?
-        raise "MDBCI nodes are not found in #{args[0]}" if $session.mdbciNodes.empty?
-        $session.mdbciNodes.each do |node|
-          box = node[1]['box'].to_s
-          raise "Box parameter is not found for node #{node[0]} in #{args[0]}" if box.empty?
-          box_params = $session.boxes.getBox(box)
-          raise "Box #{box} is not found for node #{node[0]} in #{args[0]}" if box_params.nil?
-          $out.info 'Node: ' + node[0].to_s
-          unless File.exist?("#{pwd}/KEYS/#{box_params['keyfile']}")
-            raise "Key file #{box_params['keyfile']} is not found for node #{node[0]} in #{args[0]}"
-          end
-          $out.out "#{pwd}/KEYS/#{box_params['keyfile']}"
-        end
-      else
-        mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
-        raise "MDBCI nodes are not found in #{args[0]}" if $session.mdbciNodes.empty? if mdbci_node.nil?
-        box = mdbci_node[1]['box'].to_s
-        raise "Box parameter is not found for node #{node[0]} in #{args[0]}" if box.empty?
-        mdbci_params = $session.boxes.getBox(box)
-        raise "Box #{box} is not found for node #{node[0]} in #{args[0]}" if mdbci_params.nil?
-        $out.info 'Node: ' + args[1].to_s
-        unless File.exist?("#{pwd}/KEYS/#{mdbci_params['keyfile']}")
-          raise "Key file #{mdbci_params['keyfile']} is not found for node #{node[0]} in #{args[0]}"
-        end
-        $out.out "#{pwd}/KEYS/#{mdbci_params['keyfile']}"
-      end
-    else
-      unless Dir.exists? pwd.to_s + '/' + args[0]
-        raise 'Configuration with such name does not exists'
-      end
-      Dir.chdir pwd.to_s + '/' + args[0]
-      cmd = "vagrant ssh-config #{args[1]} | grep IdentityFile"
-      vagrant_out = `#{cmd}`
-      raise "Command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
-      $out.out vagrant_out.split(' ')[1]
-      Dir.chdir pwd
+    result_keys = getKeyFile(name)
+    
+    result_keys.each do |hash|
+      $out.out(hash["key"].to_s)
     end
     return 0
   end
 
+  def self.getKeyFile(name)
+    result = Array.new()
+    pwd = Dir.pwd
+    raise 'Configuration name is required' if name.nil?
+    args = name.split('/')
+    dir = args[0]
+    node_arg = args[1]
+    # mdbci ppc64 boxes
+    if File.exist?(dir+'/mdbci_template')
+      $session.loadMdbciNodes dir
+      raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty?
+      if node_arg.nil?
+        $session.mdbciNodes.each do |node|
+          key_path = getBoxParameterKeyPath(dir,node,pwd)
+          result.push(key_path)
+        end
+      else
+        mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == node_arg }
+        raise "MDBCI node is not found in #{dir}" if mdbci_node.nil?
+        key_path = getBoxParameterKeyPath(dir,mdbci_node,pwd)
+        result.push(key_path)
+      end
+    else
+      configPath = pwd.to_s + '/' + dir
+      unless Dir.exists? configPath
+        raise 'Configuration with such name does not exists'
+      end
+      Dir.chdir configPath
+      cmd = "vagrant ssh-config #{node_arg} | grep IdentityFile"
+      vagrant_out = `#{cmd}`
+      raise "Command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
+      tempHash = { 'key' => vagrant_out.split(' ')[1] }
+      result.push(tempHash)
+      Dir.chdir pwd
+    end
+    return result
+  end
+
   def self.show(name)
-    exit_code = 1
+    results = getNetwork(name)
+    results.each do |hash|
+      $out.out hash["ip"]
+    end
+    return 0
+  end
+  
+  def self.getNetwork(name)
+    results = Array.new()
     pwd = Dir.pwd
 
     if name.nil?
@@ -118,121 +144,175 @@ class Network
     end
 
     args = name.split('/')
-
+    directory = args[0]
+    node_arg = args[1]   
     # mdbci ppc64 boxes
-    if File.exist?(args[0]+'/mdbci_template')
-      $session.loadMdbciNodes args[0]
-      if args[1].nil?
+    if File.exist?(directory+'/mdbci_template')
+      $session.loadMdbciNodes directory
+      if node_arg.nil?
         if $session.mdbciNodes.empty?
-          raise "MDBCI nodes not found in #{args[0]}"
+          raise "MDBCI nodes not found in #{directory}"
         end
         $session.mdbciNodes.each do |node|
-          box = node[1]['box'].to_s
-          if !box.empty?
-            box_params = $session.boxes.getBox(box)
-            $out.info 'Node: ' + node[0].to_s
-            $out.out box_params['IP'].to_s
-          else
-            raise "Can not read box parameter of node #{args[0]}"
-          end
+          results.push(getBoxParameter(node, 'IP'))
         end
       else
-        mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
+        mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == node_arg }
         if mdbci_node.nil?
           raise "mdbci node #{mdbci_node[1].to_s} not found!"
         end
-        box = mdbci_node[1]['box'].to_s
-        if !box.empty?
-          mdbci_params = $session.boxes.getBox(box)
-          $out.info 'Node: ' + args[1].to_s
-          $out.out mdbci_params['IP'].to_s
-        else
-          raise "Can not read parameter 'box' of node #{args[1]}"
-        end
+        results.push(getBoxParameter(mdbci_node, 'IP'))
       end
     else # aws, vbox nodes
-
-      unless Dir.exists? args[0]
-        raise "Configuration not found: #{args[0]}"
+      unless Dir.exist? directory
+        raise "Configuration not found: #{directory}"
       end
-
       network = Network.new
-      network.loadNodes pwd.to_s+'/'+args[0] # load nodes from dir
-
-      if args[1].nil? # No node argument, show all config
+      network.loadNodes pwd.to_s+'/'+directory # load nodes from dir
+      if node_arg.nil? # No node argument, show all config
         network.nodes.each do |node|
-          exit_code = node.getIp(node.provider, false)
-          $out.out node.ip.to_s
+          temp_var = getIpWrapper(node,pwd)
+          results.push(getIpWrapper(node,pwd))
         end
       else
-        node = network.nodes.find { |elem| elem.name == args[1]}
-        exit_code = node.getIp(node.provider, false)
-        $out.out node.ip.to_s
+        node = network.nodes.find { |elem| elem.name == node_arg}
+        results.push(getIpWrapper(node,pwd))
       end
     end
     Dir.chdir pwd
+    return results
+  end
 
-    return exit_code
+  def self.getIpWrapper(node, pwd)
+    begin
+      node.getIp(node.provider, false)
+    rescue
+      Dir.chdir pwd
+      raise "Incorrect node"
+    end
+    hash={ 'ip' => node.ip.to_s }
+    return hash
+  end
+
+  def self.getBoxParameter(node,param)
+    result = Hash.new()
+    box = node[1]['box'].to_s
+    if box.empty?
+      raise "Can not read box parameter of node #{directory}"
+    end
+    box_params = $session.boxes.getBox(box)
+    result["node"] = node[0].to_s
+    result[param] = box_params[param].to_s 
+ ##   $out.info 'Node: ' + node[0].to_s
+ ##   $out.out box_params[param].to_s
+    return result
   end
 
   # TODO - move mdbci box definition to new class - MdbciNode < Node
   def self.private_ip(name)
+    private_ip = getIP(name)
+    private_ip.each do |hash|
+      $out.info("Node: "+hash["node"])
+      $out.out(hash["ip"])
+    end
+    return 0
+  end
+  
+  def self.getIP(args)
     pwd = Dir.pwd
-
-    raise 'Configuration name is required' if name.nil?
-
-    args = name.split('/')
+    result_ip = Array.new()
+    raise 'Configuration name is required' if args.nil?
+    params = args.split('/')
+    dir = params[0]
+    node_arg = params[1]
 
     # mdbci box
-    if File.exist?(args[0]+'/mdbci_template')
-      $session.loadMdbciNodes args[0]
-      if args[1].nil?     # read ip for all nodes
-        raise "MDBCI nodes are not found in #{args[0]}" if $session.mdbciNodes.empty?
+    if File.exist?(dir+'/mdbci_template')
+      $session.loadMdbciNodes dir
+      raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty?
+      if node_arg.nil?     # read ip for all nodes
         $session.mdbciNodes.each do |node|
-          box = node[1]['box'].to_s
-          if !box.empty?
-            box_params = $session.boxes.getBox(box)
-            $out.info 'Node: ' + node[0].to_s
-            $out.out box_params['IP'].to_s
-          else
-            raise "Can not find box parameter for node #{args[0]}"
-          end
+          box_params = getBoxParameters(node[1])
+          result_ip.push({'node' =>node[0], 'ip' =>getNodeParam('IP', node[0], box_params)['IP']})
         end
       else
-        mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
-        raise "MDBCI node #{args[1]} is not found in #{args[0]}" if mdbci_node.nil?
-        box = mdbci_node[1]['box'].to_s
-        raise "Can not find box parameter for node #{args[1]}" if !box.empty?
-        mdbci_params = $session.boxes.getBox(box)
-        raise "Can not find box #{box} node #{args[1]} in #{args[0]}" if !box.empty?
-        $out.info 'Node: ' + args[1].to_s
-        $out.out mdbci_params['IP'].to_s
-
+        mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == node_arg }
+        raise "MDBCI node #{node_arg} is not found in #{dir}" if mdbci_node.nil?
+        box_params = getBoxParameters(mdbci_node[1])
+        result_ip.push({'node' =>mdbci_node[0], 'ip' =>getNodeParam('IP', mdbci_node[0], box_params)['IP']})
       end
     else # aws, vbox nodes
-      raise "Can not find directory #{args[0]}" unless Dir.exists? args[0]
+      raise "Can not find directory #{dir}" unless Dir.exists? dir
       network = Network.new
-      network.loadNodes pwd.to_s+'/'+args[0] # load nodes from dir
-      if args[1].nil? # No node argument, show all config
-        raise "Nodes are not found in #{args[0]}" if network.nodes.empty?
+      network.loadNodes pwd.to_s+'/'+dir # load nodes from dir
+      raise "Nodes are not found in #{dir}" if network.nodes.empty?
+      if node_arg.nil? # No node argument, show all config
         network.nodes.each do |node|
-          exit_code = node.getIp(node.provider, true)
-          raise "Can not get IP for #{node.name} in #{args[0]}" if exit_code != 0
-          $out.info 'Node: ' + node.name
-          $out.out node.ip.to_s
+          result_ip.push(getNodeIP(node))
         end
       else
-        node = network.nodes.find { |elem| elem.name == args[1]}
-        raise "Node #{args[1]} is not found in #{args[0]}" if node.nil?
-        exit_code = node.getIp(node.provider, true)
-        raise "Can not get IP for #{node.name} in #{args[0]}" if exit_code != 0
-        $out.info 'Node: ' + node.name
-        $out.out node.ip.to_s
+        node = network.nodes.find { |elem| elem.name == node_arg}
+        raise "Node #{node_arg} is not found in #{dir}" if node.nil?
+        result_ip.push(getNodeIP(node))
       end
     end
     Dir.chdir pwd
-
-    return 0
+    return result_ip
   end
 
+  def self.getNodeIP(node)
+    result = Hash.new("")
+    exit_code = node.getIp(node.provider, true)
+    raise "Can not get IP for #{node.name} in #{dir}" if exit_code != 0
+    result["node"] = node.name.to_s
+    result["ip"] = node.ip.to_s
+    return result
+  end
+
+  def self.getNodeParam(param,node_name,box_params)
+    result = Hash.new
+    result["node"] = node_name.to_s
+    result[param.to_s] = box_params[param].to_s
+    return result
+  end
+
+end
+
+COMMAND_WHOAMI='whoami'
+COMMAND_HOSTNAME='hostname'
+
+def printConfigurationNetworkInfoToFile(configuration,node='')
+  
+  open("#{configuration}_network_config", 'w') do |f|
+    configurationNetworkInfo = collectConfigurationNetworkInfo(configuration,node)
+    configurationNetworkInfo.each do |key, value|
+      # TODO Add correct array conversion 
+      f.puts "#{key}=#{value}"
+    end
+  end
+  puts "Full path of #{configuration}_network_config: " + File.expand_path("#{configuration}_network_config")
+  return 0
+
+end
+
+def collectConfigurationNetworkInfo(configuration,node_one='')
+
+  raise 'configuration name is required' if configuration.nil?
+  raise 'configuration does not exist' unless Dir.exist? configuration
+
+  configurationNetworkInfo = Hash.new
+  if node_one.empty?
+    nodes = get_nodes(configuration)
+  else
+    nodes = [node_one]
+  end
+  nodes.each do |node|
+    configPath = "#{configuration}/#{node}"
+    configurationNetworkInfo["#{node}_network"] = Network.getNetwork(configPath)[0]["ip"].to_s
+    configurationNetworkInfo["#{node}_keyfile"] = Network.getKeyFile(configPath)[0]["key"].to_s
+    configurationNetworkInfo["#{node}_private_ip"] = Network.getIP(configPath)[0]["ip"].to_s
+    configurationNetworkInfo["#{node}_whoami"] = $session.getSSH(configPath, COMMAND_WHOAMI)[0].chomp
+    configurationNetworkInfo["#{node}_hostname"] = $session.getSSH(configPath, COMMAND_HOSTNAME)[0].chomp
+  end
+  return configurationNetworkInfo
 end

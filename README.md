@@ -116,6 +116,7 @@ There are next steps for managing testing configuration:
   * Creating stand template
   * Running up virtual machine cluster
   * Running tests
+  * [Cloning configuration]
   * Destroing allocated resources
   
 #### Creating configuration
@@ -417,6 +418,9 @@ mdbci [options] <show | setup | generate>
 -e, --template_validation_type
   Template validation type (aws, no_aws)
 
+-sn, --snapshot-name
+  name of the snapshot
+
 ### Commands:
 
   show [boxes, boxinfo, platforms, versions, network, repos [config | config/node], keyfile [config/node], validate_template ]
@@ -438,6 +442,12 @@ mdbci [options] <show | setup | generate>
     Install specified product by command option **--product** on a config/node. Currently supported only **Maxscale** product.
     
   validate_template -e aws -template TEMPLATE
+    
+  snapshot list --path-to-nodes T --node-name N
+  
+  snapshot [take, revert, delete] --path-to-nodes T [ --node-name N ] --snapshot-name S
+
+  clone ORIGIN_CONFIG NEW_CONFIG_NAME
 
 ### Examples:
 
@@ -449,12 +459,19 @@ Run command inside of VM
   ./mdbci setup_repo --product maxscale T/node0
   ./mdbci setup_repo --product mariadb --product-version 10.0 T/node0
   ./mdbci install_product --product 'maxscale' T/node0
-  
+  ./mdbci validate_template --template TEMPLATE_PATH
+  ./mdbci show network_config T
+  ./mdbci show network_config T/node0
 ```
   
 Show repos with using alternative repo.d repository
 ```
   mdbci --repo-dir /home/testbed/config/repos show repos
+```
+
+Cloning configuration (docker_light should be launched before clonning)
+```
+  mdbci clone docker_light cloned_docker_light
 ```
 
 ## MDBCI scripts
@@ -487,6 +504,10 @@ Since stand is generated it can be managed with vagrant command. In the future r
 
 More information about vagrant features could be found in [vagrant documentation](https://docs.vagrantup.com/v2/). 
 
+## Build parsing
+
+This repository also contain a solution developed for parsing jenkins build logs. See https://github.com/OSLL/mdbci/tree/integration/scripts/build_parser/README.md for more details.
+
 ## Team
 
 * Project leader: Sergey Balandin
@@ -495,10 +516,3 @@ More information about vagrant features could be found in [vagrant documentation
   * Kirill Krinkin
   * Kirill Yudenok
   * Mark Zaslavskiy
-   
-   
-
-
-
-  
-
