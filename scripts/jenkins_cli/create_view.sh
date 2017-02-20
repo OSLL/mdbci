@@ -1,12 +1,12 @@
 #!/bin/bash
 
 function help {
-    echo "Usage ./create_view -h HOST(with protocol) -p PORT -v VIEW_NAME -j JOB_NAMES(devided with spaces)"
+    echo "Usage ./scripts/jenkins_cli/create_view -s HOST(with protocol) -p PORT -v VIEW_NAME -j JOB_NAMES(devided with spaces)"
 }
 
-while getopts ":h:p:v:j:" opt; do
+while getopts ":s:p:v:j:h" opt; do
   case $opt in
-    h) host="$OPTARG"
+    s) host="$OPTARG"
     ;;
     p) port="$OPTARG"
     ;;
