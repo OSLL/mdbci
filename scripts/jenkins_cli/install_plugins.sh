@@ -54,6 +54,7 @@ while read line; do
         java -jar "$HOME/jenkins-cli.jar" -s "$host:$port" install-plugin "$address"
         if [ "$?" -ne "0" ]; then
             echo "Error: command 'java -jar $HOME/jenkins-cli.jar -s $host:$port install-plugin $address' failed with code - $?, skipping..."
+            exit_code=1
             continue
         fi
     fi
