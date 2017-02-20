@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function help {
-    echo "Usage ./install_plugins -s HOST(with protocol) -p PORT -f PATH_TO_FILE"
+    echo "Usage .scripts/jenkins_cli/install_plugins -s HOST(with protocol) -p PORT -f PATH_TO_FILE"
     echo ""
     echo "File content is lines with name and version devided by space"
     echo "Example:"
@@ -11,7 +11,7 @@ function help {
 
 }
 
-while getopts ":s:p:f:h:" opt; do
+while getopts ":s:p:f:h" opt; do
   case $opt in
     s) host="$OPTARG"
     ;;
@@ -19,8 +19,7 @@ while getopts ":s:p:f:h:" opt; do
     ;;
     f) file="$OPTARG"
     ;;
-    h) help
-       exit
+    h) help; exit 0
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
         exit 1
