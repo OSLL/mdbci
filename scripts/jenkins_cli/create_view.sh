@@ -1,5 +1,7 @@
 #!/bin/bash
 
+
+
 function help {
     echo "Usage ./scripts/jenkins_cli/create_view -s HOST(with protocol) -p PORT -v VIEW_NAME -j JOB_NAMES(devided with spaces)"
 }
@@ -51,12 +53,6 @@ exit_code=0
 while read -r line; do
     for job_name in $line; do
         java -jar "$HOME/jenkins-cli.jar" -s "$host:$port" add-job-to-view "$view_name" "$job_name" &>/dev/null
-        if [ "$?" -ne "0" ]; then
-            echo "Error: check job name: $job_name, skipping..."
-            exit_code=1
-            continue
-        fi
-        java -jar "$HOME/jenkins-cli.jar" -s "$host:$port" add-job-to-view "$view_name" "$job_name"
         if [ "$?" -ne 0 ]; then
             echo "Error: job - '$job_name' adding failed!"
             exit_code=1
