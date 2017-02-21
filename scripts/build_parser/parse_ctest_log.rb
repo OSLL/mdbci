@@ -202,14 +202,15 @@ class CTestParser
       if line =~ test_end_regex
         test_index_number = line.match(test_end_regex).captures[0]
         test_success = line.match(test_end_regex).captures[4].strip
-        if !$ctest_sublogs_path.nil? and ((test_success != PASSED and $only_failed == true) or $only_failed == false)
-          File.open("#{$ctest_sublogs_path}/sublog_#{test_index_number}", 'w') do |f|
+        test_name = line.match(test_end_regex).captures[3]
+        unless $ctest_sublogs_path.nil?
+          Dir.mkdir "#{$ctest_sublogs_path}/#{test_name}"
+          File.open("#{$ctest_sublogs_path}/#{test_name}/ctest_sublog", 'w') do |f|
             ctest_sublog.each { |c| f.puts c}
           end
         end
         ctest_sublog = Array.new
         test_number = line.match(test_end_regex).captures[2]
-        test_name = line.match(test_end_regex).captures[3]
         test_time = line.match(test_end_regex).captures[5]
         @all_ctest_indexes.push(Integer(test_number))
         @all_ctest_info.push({
