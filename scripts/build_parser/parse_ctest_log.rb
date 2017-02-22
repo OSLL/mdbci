@@ -167,7 +167,6 @@ class CTestParser
     $log.each_line do |line|
       if line =~ maxscale_version_end_regex
         maxscale_version_end_found=true
-        puts @maxscale_entity
       end
       if maxscale_version_start_found and !maxscale_version_end_found and !line.gsub(/\n*/, '').empty?
         @maxscale_entity.push line
