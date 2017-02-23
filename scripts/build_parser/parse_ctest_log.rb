@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'getoptlong'
+require 'fileutils'
 require 'json'
 
 LOG_FILE_OPTION = '--log-file'
@@ -194,7 +195,7 @@ class CTestParser
     @all_ctest_info = Array.new
     @failed_ctest_info = Array.new
     @fail_ctest_counter = 0
-    Dir.mkdir $ctest_sublogs_path unless $ctest_sublogs_path.nil?
+    FileUtils.mkdir_p $ctest_sublogs_path unless $ctest_sublogs_path.nil?
     ctest_sublog = Array.new
     ctest_log.each do |line|
       test_end_regex = /(\d+)\/(\d+)\s+Test\s+#(\d+):[\s]+([^\s]+)\s+[\.\*]+([^\d]+)([\d\.]+)/
