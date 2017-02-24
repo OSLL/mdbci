@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'getoptlong'
+require 'fileutils'
 require 'json'
 
 LOG_FILE_OPTION = '--log-file'
@@ -8,6 +9,7 @@ OUTPUT_LOG_FILE_OPTION = '--output-log-file'
 OUTPUT_LOG_JSON_FILE_OPTION = '--output-log-json-file'
 ONLY_FAILED_OPTION = '--only-failed'
 HUMAN_READABLE_OPTION = '--human-readable'
+CTEST_SUBLOGS_PATH = '--ctest-sublogs-path'
 HELP_OPTION = '--help'
 
 TEST_INDEX_NUMBER = 'test_index_number'
@@ -41,6 +43,13 @@ RUN_TEST_BUILD_ENV_VARS_TO_MR = {
     'version' => 'version'
 }
 
+FIRST_LINES_CTEST_TO_SKIP = [
+    'Constructing a list of tests',
+    'Done constructing a list of tests',
+    'Checking test dependency graph...',
+    'Checking test dependency graph end'
+]
+
 WORKSPACE = 'WORKSPACE'
 
 FAILED = 'Failed'
@@ -71,6 +80,7 @@ opts = GetoptLong.new(
     [HUMAN_READABLE_OPTION, '-r', GetoptLong::OPTIONAL_ARGUMENT],
     [OUTPUT_LOG_FILE_OPTION, '-o', GetoptLong::OPTIONAL_ARGUMENT],
     [OUTPUT_LOG_JSON_FILE_OPTION, '-j', GetoptLong::OPTIONAL_ARGUMENT],
+    [CTEST_SUBLOGS_PATH, '-s', GetoptLong::OPTIONAL_ARGUMENT],
     [HELP_OPTION, '-h', GetoptLong::OPTIONAL_ARGUMENT]
 )
 
@@ -79,6 +89,7 @@ $only_failed = false
 $human_readable = false
 $output_log_file_path = nil
 $output_log_json_file_path = nil
+$ctest_sublogs_path = nil
 
 opts.each do |opt, arg|
   case opt
@@ -99,6 +110,8 @@ opts.each do |opt, arg|
       $output_log_file_path = arg
     when OUTPUT_LOG_JSON_FILE_OPTION
       $output_log_json_file_path = arg
+    when CTEST_SUBLOGS_PATH
+      $ctest_sublogs_path = arg
     when HELP_OPTION
       puts <<-EOT
 CTest parser usage:
@@ -182,13 +195,23 @@ class CTestParser
     @all_ctest_info = Array.new
     @failed_ctest_info = Array.new
     @fail_ctest_counter = 0
+    FileUtils.mkdir_p $ctest_sublogs_path unless $ctest_sublogs_path.nil?
+    ctest_sublog = Array.new
     ctest_log.each do |line|
       test_end_regex = /(\d+)\/(\d+)\s+Test\s+#(\d+):[\s]+([^\s]+)\s+[\.\*]+([^\d]+)([\d\.]+)/
+      ctest_sublog.push(line) unless FIRST_LINES_CTEST_TO_SKIP.include? line
       if line =~ test_end_regex
         test_index_number = line.match(test_end_regex).captures[0]
-        test_number = line.match(test_end_regex).captures[2]
-        test_name = line.match(test_end_regex).captures[3]
         test_success = line.match(test_end_regex).captures[4].strip
+        test_name = line.match(test_end_regex).captures[3]
+        unless $ctest_sublogs_path.nil?
+          Dir.mkdir "#{$ctest_sublogs_path}/#{test_name}"
+          File.open("#{$ctest_sublogs_path}/#{test_name}/ctest_sublog", 'w') do |f|
+            ctest_sublog.each { |c| f.puts c}
+          end
+        end
+        ctest_sublog = Array.new
+        test_number = line.match(test_end_regex).captures[2]
         test_time = line.match(test_end_regex).captures[5]
         @all_ctest_indexes.push(Integer(test_number))
         @all_ctest_info.push({

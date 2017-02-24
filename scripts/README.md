@@ -28,3 +28,6 @@ Alias "/URL_PATH" "/REAL_PATH_TO_BOXES"
 ```
 ./download_boxes.rb  --dir PATH_TO_DOWNLOADED_BOXES_DIRECTORY --boxes-dir PATH_TO_JSON_FILES_DIRECTORY
 ```
+
+## Configuration slave
+https://dev.osll.ru/projects/mdbci/wiki/Prepare_slave_for_run_test

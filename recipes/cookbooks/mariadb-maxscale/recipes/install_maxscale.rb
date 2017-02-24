@@ -1,4 +1,5 @@
 include_recipe "mariadb-maxscale::maxscale_repos"
+include_recipe "ntp::default"
 
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0

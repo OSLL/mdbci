@@ -1,0 +1,5 @@
+choice:
+  name: do_not_destroy_vm
+  choices:
+      - 'no'
+      - 'yes'
