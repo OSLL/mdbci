@@ -233,10 +233,14 @@ def get_config_node_status(config_name, node_name)
   if get_provider(config_name) == MDBCI
     raise "getting status for #{config_name}/#{node_name}: #{ACTION_NOT_SUPPORTED_FOR_PPC}"
   end
+  output = nil
   in_dir(config_name){
     output = execute_bash("vagrant status #{node_name}", true)
     output = output.to_s.split("\n")[2].split(/\s+/)
   }
+  if output.nil?
+    raise "can not get vagrant status output for node: #{config_name}/#{node_name}"
+  end
   if output.size == 4
     return "#{output[1]} #{output[2]}"
   elsif output.size == 3
