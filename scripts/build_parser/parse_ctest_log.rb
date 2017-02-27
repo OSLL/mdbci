@@ -169,7 +169,7 @@ class CTestParser
         maxscale_version_end_found=true
       end
       if maxscale_version_start_found and !maxscale_version_end_found and !line.gsub(/\n*/, '').empty?
-        @maxscale_entity.push line
+        @maxscale_entity.push line.gsub(/\n*/, '')
       end
       if line =~ maxscale_version_start_regex
         maxscale_version_start_found=true
