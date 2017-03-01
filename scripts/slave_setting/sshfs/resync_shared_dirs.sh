@@ -10,16 +10,17 @@ dirs=("repository" "repo" "LOGS")
 echo "List of sshfs mounts:"
 mount | grep sshfs
 
-LS_ERROR=$(ls LOGS)
-LS_ERROR_MSG="ls: cannot access 'LOGS': Input/output error"
-
-
-if [ "$ERROR_MSG" = "$LS_ERROR" ] ; then
-     fusermount -u LOGS
-fi
 
 for dir_to_resync in "${dirs[@]}"
 do
+
+  LS_ERROR=$(ls LOGS 2>&1)
+  LS_ERROR_MSG="ls: cannot access 'LOGS': Input/output error"
+
+  if [ "$ERROR_MSG" = "$LS_ERROR" ] ; then
+       fusermount -u LOGS
+  fi
+
   echo "checking ${dir_to_resync}"
   if ! mount | grep sshfs | grep -q "${dir_to_resync} "
   then
