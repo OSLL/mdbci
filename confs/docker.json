@@ -2,7 +2,7 @@
   "cookbook_path" : "../recipes/cookbooks/",
   "node_000" :
   {
-    "hostname" : "node_000",
+    "hostname" : "node-000",
     "box" : "centos_7_docker",
     "memory_size" : "1024",
     "product" : {
@@ -16,7 +16,7 @@
 
   "node_001" :
   {
-    "hostname" : "node_001",
+    "hostname" : "node-001",
     "box" : "centos_7_docker",
     "memory_size" : "1024",
     "product" : {
@@ -29,7 +29,7 @@
 
   "node_002" :
   {
-    "hostname" : "node_002",
+    "hostname" : "node-002",
     "box" : "centos_7_docker",
     "memory_size" : "1024",
     "product" : {
@@ -42,7 +42,7 @@
 
   "node_003" :
   {
-    "hostname" : "node_003",
+    "hostname" : "node-003",
     "box" : "centos_7_docker",
     "memory_size" : "1024",
     "product" : {
@@ -55,7 +55,7 @@
 
   "galera_000" :
   {
-    "hostname" : "galera_000",
+    "hostname" : "galera-000",
     "box" : "centos_7_docker",
     "memory_size" : "1024",
     "product" : {
@@ -68,7 +68,7 @@
 
   "galera_001" :
   {
-    "hostname" : "galera_001",
+    "hostname" : "galera-001",
     "box" : "centos_7_docker",
     "memory_size" : "1024",
     "product" : {
@@ -81,7 +81,7 @@
 
   "galera_002" :
   {
-    "hostname" : "galera_002",
+    "hostname" : "galera-002",
     "box" : "centos_7_docker",
     "memory_size" : "1024",
     "product" : {
@@ -94,7 +94,7 @@
 
   "galera_003" :
   {
-    "hostname" : "galera_003",
+    "hostname" : "galera--003",
     "box" : "centos_7_docker",
     "memory_size" : "1024",
     "product" : {
