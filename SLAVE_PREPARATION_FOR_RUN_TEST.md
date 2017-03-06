@@ -17,6 +17,7 @@ exec su $USER
 ```
 
 ## Descriptions of above script
+in case script above failed you can do it manually by running scripts below
 
 ### Run scripts(from MDBCI folder) in next order:
 Install MDBCI dependencies
