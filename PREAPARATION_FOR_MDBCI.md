@@ -1,4 +1,4 @@
-# Prepare slave for run test
+# Prepare machine for mdbci
 
 ## Preparation scripts and sequence (*+current order is important+*)
 
@@ -32,11 +32,4 @@ Cmnd_Alias VAGRANT_EXPORTS_COPY = /bin/cp /tmp/exports /etc/exports
 Cmnd_Alias VAGRANT_NFSD_CHECK = /etc/init.d/nfs-kernel-server status
 Cmnd_Alias VAGRANT_NFSD_START = /etc/init.d/nfs-kernel-server start
 Cmnd_Alias VAGRANT_NFSD_APPLY = /usr/sbin/exportfs -ar
-Cmnd_Alias VAGRANT_EXPORTS_REMOVE = /bin/sed -r -e * d -ibak /tmp/exports
-%sudo ALL=(root) NOPASSWD: VAGRANT_EXPORTS_ADD, VAGRANT_NFSD_CHECK, VAGRANT_NFSD_START, VAGRANT_NFSD_APPLY, VAGRANT_EXPORTS_REMOVE, VAGRANT_EXPORTS_COPY
-```
-
-### Relogin
-```bash
-exec su $USER
-```
+Cmnd_Alias VAGRANT_EXPORTS_REMOVE = /bin/sed -r -e * d -ibak /tmp/exp
