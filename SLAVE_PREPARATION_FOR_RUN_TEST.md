@@ -8,6 +8,15 @@ ssh-keygen -t rsa
 cat .ssh/id_rsa.pub | ssh vagrant@max-tst-01.mariadb.com 'cat >> .ssh/authorized_keys' # will ask for vagrant password
 ```
 
+### To setup current machine as slave run
+`.scripts/setup_as_slave.sh`
+
+### After that you need to logout and login
+```bash
+exec su $USER
+```
+
+## Descriptions of above script
 
 ### Run scripts(from MDBCI folder) in next order:
 Install MDBCI dependencies
