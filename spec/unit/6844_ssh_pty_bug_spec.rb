@@ -34,11 +34,11 @@ describe 'Generator' do
   end
 
   it "#getAWSVmDef should return string without '\tconfig.ssh.pty = true' in it" do
-    Generator.getAWSVmDef('TEST', 'TEST','TEST' , 'TEST', 'true', 'TEST', 'TEST', 'TEST').should include 'config.ssh.pty = true'
+    Generator.getAWSVmDef('TEST', 'TEST','TEST' , 'TEST', 'true', 'TEST', 'TEST', 'TEST', 'TEST').should include 'config.ssh.pty = true'
   end
 
   it "#getAWSVmDef should return string without '\tconfig.ssh.pty = true' in it" do
-    Generator.getAWSVmDef('TEST', 'TEST','TEST' , 'TEST', 'false', 'TEST', 'TEST', 'TEST').should_not include 'config.ssh.pty = true'
+    Generator.getAWSVmDef('TEST', 'TEST','TEST' , 'TEST', 'false', 'TEST', 'TEST', 'TEST', 'TEST').should_not include 'config.ssh.pty = true'
   end
 
 end

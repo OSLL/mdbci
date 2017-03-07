@@ -1,4 +1,11 @@
 require 'rake'
+
+DOCKER = 'docker'
+LIBVIRT = 'libvirt'
+PPC = 'ppc'
+DOCKER_FOR_PPC = 'docker_for_ppc'
+PPC_FROM_DOCKER = 'ppc_from_docker'
+
 require_relative 'spec/rake_helper'
 
 # Bunch of tasks described as do...end block:

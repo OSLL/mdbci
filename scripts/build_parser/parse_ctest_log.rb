@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'getoptlong'
+require 'fileutils'
 require 'json'
 
 LOG_FILE_OPTION = '--log-file'
@@ -8,6 +9,7 @@ OUTPUT_LOG_FILE_OPTION = '--output-log-file'
 OUTPUT_LOG_JSON_FILE_OPTION = '--output-log-json-file'
 ONLY_FAILED_OPTION = '--only-failed'
 HUMAN_READABLE_OPTION = '--human-readable'
+CTEST_SUBLOGS_PATH = '--ctest-sublogs-path'
 HELP_OPTION = '--help'
 
 TEST_INDEX_NUMBER = 'test_index_number'
@@ -41,6 +43,13 @@ RUN_TEST_BUILD_ENV_VARS_TO_MR = {
     'version' => 'version'
 }
 
+FIRST_LINES_CTEST_TO_SKIP = [
+    'Constructing a list of tests',
+    'Done constructing a list of tests',
+    'Checking test dependency graph...',
+    'Checking test dependency graph end'
+]
+
 WORKSPACE = 'WORKSPACE'
 
 FAILED = 'Failed'
@@ -63,6 +72,8 @@ MAXSCALE_COMMIT_MR = "maxscale_commit"
 MAXSCALE_SYSTEM_TEST_COMMIT_HR = "MaxScale system test commit"
 MAXSCALE_SYSTEM_TEST_COMMIT_MR = "maxscale_system_test_commit"
 
+MAXSCALE_FULL = "Maxscale full version"
+
 NEW_LINE_JENKINS_FORMAT = " \\\n"
 
 opts = GetoptLong.new(
@@ -71,6 +82,7 @@ opts = GetoptLong.new(
     [HUMAN_READABLE_OPTION, '-r', GetoptLong::OPTIONAL_ARGUMENT],
     [OUTPUT_LOG_FILE_OPTION, '-o', GetoptLong::OPTIONAL_ARGUMENT],
     [OUTPUT_LOG_JSON_FILE_OPTION, '-j', GetoptLong::OPTIONAL_ARGUMENT],
+    [CTEST_SUBLOGS_PATH, '-s', GetoptLong::OPTIONAL_ARGUMENT],
     [HELP_OPTION, '-h', GetoptLong::OPTIONAL_ARGUMENT]
 )
 
@@ -79,6 +91,7 @@ $only_failed = false
 $human_readable = false
 $output_log_file_path = nil
 $output_log_json_file_path = nil
+$ctest_sublogs_path = nil
 
 opts.each do |opt, arg|
   case opt
@@ -99,6 +112,8 @@ opts.each do |opt, arg|
       $output_log_file_path = arg
     when OUTPUT_LOG_JSON_FILE_OPTION
       $output_log_json_file_path = arg
+    when CTEST_SUBLOGS_PATH
+      $ctest_sublogs_path = arg
     when HELP_OPTION
       puts <<-EOT
 CTest parser usage:
@@ -124,6 +139,7 @@ class CTestParser
   attr_accessor :all_ctest_info
   attr_accessor :failed_ctest_info
   attr_accessor :maxscale_commit
+  attr_accessor :maxscale_entity
   attr_accessor :fail_ctest_counter
 
   def initialize
@@ -137,14 +153,28 @@ class CTestParser
     @all_ctest_info = nil
     @failed_ctest_info = nil
     @fail_ctest_counter = nil
+    @maxscale_entity = Array.new
   end
 
   def parse_ctest_log()
     ctest_first_line_regex = /Constructing a list of tests/
     ctest_last_line_regex = /tests passed,.+tests failed out of (.+)/
     maxscale_commit_regex = /MaxScale\s+.*\d+\.*\d*\.*\d*\s+-\s+(.+)/
+    maxscale_version_start_regex = /.*Maxscale_full_version_start:.*/
+    maxscale_version_end_regex = /.*Maxscale_full_version_end.*/
     ctest_start_line = 0;
+    maxscale_version_start_found=false
+    maxscale_version_end_found=false
     $log.each_line do |line|
+      if line =~ maxscale_version_end_regex
+        maxscale_version_end_found=true
+      end
+      if maxscale_version_start_found and !maxscale_version_end_found and !line.gsub(/\n*/, '').empty?
+        @maxscale_entity.push line.gsub(/\n*/, '')
+      end
+      if line =~ maxscale_version_start_regex
+        maxscale_version_start_found=true
+      end
       if line =~ maxscale_commit_regex and @maxscale_commit == nil
         @maxscale_commit = line.match(maxscale_commit_regex).captures[0]
       end
@@ -182,13 +212,23 @@ class CTestParser
     @all_ctest_info = Array.new
     @failed_ctest_info = Array.new
     @fail_ctest_counter = 0
+    FileUtils.mkdir_p $ctest_sublogs_path unless $ctest_sublogs_path.nil?
+    ctest_sublog = Array.new
     ctest_log.each do |line|
       test_end_regex = /(\d+)\/(\d+)\s+Test\s+#(\d+):[\s]+([^\s]+)\s+[\.\*]+([^\d]+)([\d\.]+)/
+      ctest_sublog.push(line) unless FIRST_LINES_CTEST_TO_SKIP.include? line
       if line =~ test_end_regex
         test_index_number = line.match(test_end_regex).captures[0]
-        test_number = line.match(test_end_regex).captures[2]
-        test_name = line.match(test_end_regex).captures[3]
         test_success = line.match(test_end_regex).captures[4].strip
+        test_name = line.match(test_end_regex).captures[3]
+        unless $ctest_sublogs_path.nil?
+          Dir.mkdir "#{$ctest_sublogs_path}/#{test_name}"
+          File.open("#{$ctest_sublogs_path}/#{test_name}/ctest_sublog", 'w') do |f|
+            ctest_sublog.each { |c| f.puts c}
+          end
+        end
+        ctest_sublog = Array.new
+        test_number = line.match(test_end_regex).captures[2]
         test_time = line.match(test_end_regex).captures[5]
         @all_ctest_indexes.push(Integer(test_number))
         @all_ctest_info.push({
@@ -278,6 +318,9 @@ class CTestParser
     hr_tests.push "#{MAXSCALE_SYSTEM_TEST_COMMIT_HR}: #{get_test_code_commit}"
     hr_tests = hr_tests + generate_run_test_build_parameters_hr
     hr_tests.push("#{ERROR}: #{CTEST_NOT_EXECUTED_ERROR}") unless @ctest_executed
+    @maxscale_entity.each do |me|
+      hr_tests.push "#{MAXSCALE_FULL}: #{me}"
+    end
     return hr_tests
   end
 
