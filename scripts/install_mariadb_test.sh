@@ -1,6 +1,6 @@
 version=`lsb_release -c`
 
-$ubuntu_codename=echo ${version#"Codename:"}
+$ubuntu_codename=`echo ${version#"Codename:"}`
 
 if [[ "$ubuntu_codename" == "xenial" ]]; then
         sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
