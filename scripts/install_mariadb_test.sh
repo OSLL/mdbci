@@ -1,3 +1,5 @@
+#!/bin/bash
+
 version=`lsb_release -c`
 
 $ubuntu_codename=`echo ${version#"Codename:"}`
