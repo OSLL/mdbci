@@ -17,3 +17,5 @@ sudo pip install JayDeBeApi
 
 sudo apt-get install libmariadbclient-dev -y
 sudo apt-get install libmariadb-client-lgpl-dev -y
+sudo apt-get install mariadb-test -y
+vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
