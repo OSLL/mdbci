@@ -19,11 +19,6 @@ cat .ssh/id_rsa.pub | ssh vagrant@max-tst-01.mariadb.com 'cat >> .ssh/authorized
 exec su $USER
 ```
 
-### *IMPORTANT* Vagrant needs additional package - *nfs-server-kernel*:
-```bash
-sudo apt-get install nfs-kernel-server
-```
-
 ### And you need to prepare vagrant user with all needed privileges
 Add to the */etc/sudoers.d/vagrant* next lines:
 ```bash
