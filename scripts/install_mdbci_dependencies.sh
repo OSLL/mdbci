@@ -23,6 +23,8 @@ vagrant plugin install vagrant-libvirt --plugin-version 0.0.33
 vagrant plugin install vagrant-mutate
 vagrant plugin install vagrant-omnibus
 
+sudo apt-get install nfs-kernel-server
+
 # Libvirt and tools(virsh, virt-clone)
 sudo apt install qemu-kvm \
                  libvirt-bin \
