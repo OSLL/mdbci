@@ -11,7 +11,7 @@ sudo apt-get install ruby libxslt-dev \
                           libvirt-dev \
                           zlib1g-dev -y
 sudo gem install ipaddress
-sudo gem install json-schema
+sudo gem install json-schema -v 2.6.2
 if [[ $(vagrant --version) != "Vagrant 1.8.1" ]]; then
         wget https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.deb
         sudo dpkg -i vagrant_1.8.1_x86_64.deb
