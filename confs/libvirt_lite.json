@@ -1,8 +1,8 @@
 {
   "cookbook_path" : "../recipes/cookbooks/",
-  "node0" :
+  "node000" :
   {
-    "hostname" : "node0",
+    "hostname" : "node000",
     "box" : "debian_wheezy_libvirt",
     "memory_size" : "1024",
     "product" : {
@@ -12,9 +12,9 @@
       "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
     }
   },
-  "galera0" :
+  "galera000" :
   {
-    "hostname" : "galera0",
+    "hostname" : "galera000",
     "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {

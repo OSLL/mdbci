@@ -1,9 +1,9 @@
 {
   "cookbook_path" : "../recipes/cookbooks/",
   "aws_config" : "../aws-config.yml",
-  "node0" :
+  "node000" :
   {
-        "hostname" : "node0",
+        "hostname" : "node000",
         "box" : "rhel6",
         "mariadb" : {
                 "version" : "10.0",
@@ -11,9 +11,9 @@
                 }
   },
 
-  "node1" :
+  "node001" :
   {
-        "hostname" : "node1",
+        "hostname" : "node001",
         "box" : "rhel6",
         "mariadb" : {
                 "version" : "10.0",
@@ -21,9 +21,9 @@
                 }
   },
 
-  "node2" :
+  "node002" :
   {
-        "hostname" : "node2",
+        "hostname" : "node002",
         "box" : "rhel6",
         "mariadb" : {
                 "version" : "10.0",
@@ -31,9 +31,9 @@
                 }
   },
 
-  "node3" :
+  "node003" :
   {
-        "hostname" : "node3",
+        "hostname" : "node003",
         "box" : "rhel6",
         "mariadb" : {
                 "version" : "10.0",
@@ -41,9 +41,9 @@
                 }
   },
 
-  "galera0" :
+  "galera000" :
   {
-        "hostname" : "galera0",
+        "hostname" : "galera000",
         "box" : "rhel6",
         "mariadb" : {
                 "version" : "10.0",
@@ -51,9 +51,9 @@
                 }
   },
 
-  "galera1" :
+  "galera001" :
   {
-        "hostname" : "galera1",
+        "hostname" : "galera001",
         "box" : "rhel6",
         "mariadb" : {
                 "version" : "10.0",
@@ -61,9 +61,9 @@
                 }
   },
 
-  "galera2" :
+  "galera002" :
   {
-        "hostname" : "galera2",
+        "hostname" : "galera002",
         "box" : "rhel6",
         "mariadb" : {
                 "version" : "10.0",
@@ -71,9 +71,9 @@
                 }
   },
 
-  "galera3" :
+  "galera003" :
   {
-        "hostname" : "galera3",
+        "hostname" : "galera003",
         "box" : "rhel6",
         "mariadb" : {
                 "version" : "10.0",

@@ -1,8 +1,8 @@
 {
   "cookbook_path" : "../recipes/cookbooks/",
-  "node0" :
+  "node000" :
   {
-    "hostname" : "node0",
+    "hostname" : "node000",
     "box" : "rhel_6_ppc64",
     "memory_size" : "1024",
     "product" : {
@@ -12,9 +12,9 @@
       "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
     }
   },
-  "galera0" :
+  "galera000" :
   {
-    "hostname" : "galera0",
+    "hostname" : "galera000",
     "box" : "ubuntu_trusty_ppc64",
     "memory_size" : "1024",
     "product" : {

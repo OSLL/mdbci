@@ -1,8 +1,8 @@
 {
   "cookbook_path" : "../recipes/cookbooks/",
-  "node0" :
+  "node000" :
   {
-    "hostname" : "node0",
+    "hostname" : "node000",
     "box" : "rhel_6_ppc64",
     "memory_size" : "1024",
     "product" : {
@@ -14,9 +14,9 @@
 
   },
 
-  "node1" :
+  "node001" :
   {
-    "hostname" : "node1",
+    "hostname" : "node001",
     "box" : "rhel_7_ppc64",
     "memory_size" : "1024",
     "product" : {
@@ -27,9 +27,9 @@
     }
   },
 
-  "node2" :
+  "node002" :
   {
-    "hostname" : "node2",
+    "hostname" : "node002",
     "box" : "sles_12_ppc64",
     "memory_size" : "1024",
     "product" : {
@@ -40,9 +40,9 @@
     }
   },
 
-  "node3" :
+  "node003" :
   {
-    "hostname" : "node3",
+    "hostname" : "node003",
     "box" : "ubuntu_trusty_ppc64",
     "memory_size" : "1024",
     "product" : {
@@ -53,9 +53,9 @@
     }
   },
 
-  "galera0" :
+  "galera000" :
   {
-    "hostname" : "galera0",
+    "hostname" : "galera000",
     "box" : "ubuntu_trusty_ppc64",
     "memory_size" : "1024",
     "product" : {
@@ -66,9 +66,9 @@
     }
   },
 
-  "galera1" :
+  "galera001" :
   {
-    "hostname" : "galera1",
+    "hostname" : "galera001",
     "box" : "ubuntu_utopic_ppc64",
     "memory_size" : "1024",
     "product" : {
@@ -79,9 +79,9 @@
     }
   },
 
-  "galera2" :
+  "galera002" :
   {
-    "hostname" : "galera2",
+    "hostname" : "galera002",
     "box" : "rhel_7_ppc64be",
     "memory_size" : "1024",
     "product" : {
@@ -92,9 +92,9 @@
     }
   },
 
-  "galera3" :
+  "galera003" :
   {
-    "hostname" : "galera3",
+    "hostname" : "galera003",
     "box" : "rhel_7_ppc64be",
     "memory_size" : "1024",
     "product" : {

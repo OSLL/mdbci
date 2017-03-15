@@ -1,8 +1,8 @@
 {
   "cookbook_path" : "../recipes/cookbooks/",
-  "node0" :
+  "node000" :
   {
-    "hostname" : "node0",
+    "hostname" : "node000",
     "box" : "centos_7_docker",
     "memory_size" : "1024",
     "product" : {
@@ -13,9 +13,9 @@
     }
 
   },
-  "galera0" :
+  "galera000" :
   {
-    "hostname" : "galera0",
+    "hostname" : "galera000",
     "box" : "centos_7_docker",
     "memory_size" : "1024",
     "product" : {
