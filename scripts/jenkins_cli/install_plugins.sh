@@ -48,17 +48,14 @@ if [ -z $attempts ]; then
   attempts=5
 fi
 
-cat "$file" &>/dev/null
-if [ "$?" -ne "0" ]; then
+if ! cat "$file" &>/dev/null; then
     echo "Error: file not found - $file"
     exit 1
 fi
 
 function install_plugin {
   cmd="java -jar $HOME/jenkins-cli.jar -s $1:$2 install-plugin $3 -deploy"
-  eval $cmd
-  exit_code=$?
-  if [ "$exit_code" -ne "0" ]; then
+  if ! eval $cmd; then  
     echo "Error: command '$cmd' failed with code - $exit_code, skipping..."
     install_result=1
   else
@@ -71,8 +68,7 @@ failed_plugins_addresses=()
 found_failed_plugins=false
 
 while read line; do
-    grep -Fxq "$line" current_plugins
-    if [ $? -eq 0 ]; then
+    if ! grep -Fxq "$line" current_plugins; then
       echo "Plugin $line already installed"
     else
       echo "Plugin $line NOT installed, installing..."
