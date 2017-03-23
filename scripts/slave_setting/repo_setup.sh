@@ -2,10 +2,10 @@
 sudo apt-get install git
 
 # Cloning repositories
-git clone git@github.com:OSLL/mdbci.git $HOME/mdbci
-git clone git@github.com:mariadb-corporation/mdbci-boxes.git $HOME/mdbci-boxes
-git clone git@github.com:mariadb-corporation/build-scripts-vagrant.git $HOME/build-scripts
-git clone git@github.com:mariadb-corporation/mdbci-repository-config.git $HOME/mdbci-repository-config
+git clone https://github.com/OSLL/mdbci.git $HOME/mdbci
+git clone https://github.com/mariadb-corporation/mdbci-boxes.git $HOME/mdbci-boxes
+git clone https://github.com/build-scripts-vagrant.git $HOME/build-scripts
+git clone https://github.com/mdbci-repository-config.git $HOME/mdbci-repository-config
 
 # MDBCI boxes and keys linking
 ln -s $HOME/mdbci-boxes/BOXES $HOME/mdbci/BOXES
