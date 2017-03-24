@@ -14,11 +14,6 @@
 exec su $USER
 ```
 
-### *IMPORTANT* Vagrant needs additional package - *nfs-server-kernel*:
-```bash
-sudo apt-get install nfs-kernel-server
-```
-
 ### And you need to prepare vagrant user with all needed privileges
 Add to the */etc/sudoers.d/vagrant* next lines:
 ```bash
@@ -28,3 +23,4 @@ Cmnd_Alias VAGRANT_NFSD_CHECK = /etc/init.d/nfs-kernel-server status
 Cmnd_Alias VAGRANT_NFSD_START = /etc/init.d/nfs-kernel-server start
 Cmnd_Alias VAGRANT_NFSD_APPLY = /usr/sbin/exportfs -ar
 Cmnd_Alias VAGRANT_EXPORTS_REMOVE = /bin/sed -r -e * d -ibak /tmp/exp
+%sudo ALL=(root) NOPASSWD: VAGRANT_EXPORTS_ADD, VAGRANT_NFSD_CHECK, VAGRANT_NFSD_START, VAGRANT_NFSD_APPLY, VAGRANT_EXPORTS_REMOVE, VAGRANT_EXPORTS_COPY
