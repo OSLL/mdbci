@@ -21,7 +21,7 @@ if [[ $(vagrant --version) != "Vagrant 1.8.1" ]]; then
 fi
 vagrant plugin install vagrant-vbguest
 vagrant plugin install vagrant-aws
-vagrant plugin install vagrant-libvirt
+vagrant plugin install vagrant-libvirt --plugin-version 0.0.33
 vagrant plugin install vagrant-mutate
 vagrant plugin install vagrant-omnibus
 
