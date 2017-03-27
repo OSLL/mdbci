@@ -28,7 +28,8 @@ opts = GetoptLong.new(
     ['--platform-version','-i',GetoptLong::REQUIRED_ARGUMENT],
     ['--path-to-nodes', GetoptLong::REQUIRED_ARGUMENT],
     ['--node-name', GetoptLong::REQUIRED_ARGUMENT],
-    ['--snapshot-name', GetoptLong::REQUIRED_ARGUMENT]
+    ['--snapshot-name', GetoptLong::REQUIRED_ARGUMENT],
+    ['--ipv6', GetoptLong::NO_ARGUMENT]
 )
 
 $session = Session.new
@@ -36,6 +37,7 @@ $session.configFile='instance.json'
 $session.boxesFile='boxes.json'
 $session.awsConfigFile='aws-config.yml'
 $exception_handler = ExceptionHandler.new
+$session.ipv6 = false
 
 $out = Out.new
 
@@ -101,6 +103,9 @@ begin
 
       when '--snapshot-name'
         $session.snapshot_name = arg
+
+      when '--ipv6'
+        $session.ipv6 = true
 
       else
         $out.error 'Option is not supported: '+opt

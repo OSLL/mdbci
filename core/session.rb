@@ -46,6 +46,7 @@ class Session
   attr_accessor :path_to_nodes
   attr_accessor :node_name
   attr_accessor :snapshot_name
+  attr_accessor :ipv6
 
   PLATFORM = 'platform'
   VAGRANT_NO_PARALLEL = '--no-parallel'

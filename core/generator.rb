@@ -166,9 +166,15 @@ EOF
     # ssh.pty option
     ssh_pty_option = sshPtyOption(ssh_pty)
 
+    network_conf = ""
+    if $session.ipv6
+      network_conf = "\t"+name+'.vm.network :public_network, :dev => "virbr0", :mode => "bridge", :type => "bridge"' + "\n"
+    end
+
     qemudef = "\n#  --> Begin definition for machine: " + name +"\n"\
             + "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
             + ssh_pty_option + "\n" \
+            + network_conf \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
             + "\t"+name+'.vm.synced_folder '+quote('./')+", "+quote('/vagrant')+", type: "+quote('rsync')+"\n" \
