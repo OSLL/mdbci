@@ -280,7 +280,8 @@ end
 
 COMMAND_WHOAMI='whoami'
 COMMAND_HOSTNAME='hostname'
-
+LIBVITR_IPV6 = "/sbin/ip -6 addr | grep -m1 global | awk -F' ' '{print $2}' | awk -F'/' '{print $1}'"
+DOCKER_IPV6 = "/sbin/ip -6 addr | grep -m1 'scope link' | awk -F' ' '{print $2}' | awk -F'/' '{print $1}'"
 def printConfigurationNetworkInfoToFile(configuration,node='')
   
   open("#{configuration}_network_config", 'w') do |f|
@@ -313,6 +314,14 @@ def collectConfigurationNetworkInfo(configuration,node_one='')
     configurationNetworkInfo["#{node}_private_ip"] = Network.getIP(configPath)[0]["ip"].to_s
     configurationNetworkInfo["#{node}_whoami"] = $session.getSSH(configPath, COMMAND_WHOAMI)[0].chomp
     configurationNetworkInfo["#{node}_hostname"] = $session.getSSH(configPath, COMMAND_HOSTNAME)[0].chomp
+    if $session.ipv6
+      provider = get_provider(configuration)
+      if provider == 'libvirt'
+        configurationNetworkInfo["#{node}_network6"] = in_dir(configuration){`vagrant ssh #{node} -- #{LIBVITR_IPV6}`.chop}
+      elsif provider == 'docker'
+        configurationNetworkInfo["#{node}_network6"] = in_dir(configuration){`vagrant ssh #{node} -- #{DOCKER_IPV6}`.chop}
+      end
+    end
   end
   return configurationNetworkInfo
 end
