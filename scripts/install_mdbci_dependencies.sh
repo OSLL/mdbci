@@ -36,10 +36,13 @@ sudo adduser $USER libvirtd
 sudo virsh pool-destroy default
 sudo virsh pool-undefine default
 mkdir -p $HOME/libvirt-images
+cp ./scripts/slave_setting/libvirt/default.xml ./scripts/slave_setting/libvirt/default_tmp.xml
+sed -i "s|#REPLACE_ME#|$HOME/libvirt_images|g" ./scripts/slave_setting/libvirt/default_tmp.xml
 sudo virsh pool-create ./scripts/slave_setting/libvirt/default.xml
 sudo virsh pool-dumpxml --pool default > ./scripts/slave_setting/libvirt/default_tmp.xml
 sudo virsh pool-define ./scripts/slave_setting/libvirt/default_tmp.xml
 sudo virsh pool-autostart default
+rm ./scripts/slave_setting/libvirt/default_tmp.xml
 
 
 # Docker
