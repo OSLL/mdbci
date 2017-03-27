@@ -38,7 +38,7 @@ Run
 ```
 virsh net-edit default
 ```
-Make changes so it looks like that(must be ip v6 field)
+Make changes so it looks like that(ip v6 field must exist)
 ```
 virsh net-dumpxml default
 <network connections='1'>
