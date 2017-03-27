@@ -1,8 +1,8 @@
 {
   "cookbook_path" : "../recipes/cookbooks/",
-  "node000" :
+  "node_000" :
   {
-    "hostname" : "node000",
+    "hostname" : "node_000",
     "box" : "ubuntu_trusty_vbox",
     "memory_size" : "1024",
     "product" : {
@@ -14,9 +14,9 @@
 
   },
 
-  "node001" :
+  "node_001" :
   {
-    "hostname" : "node001",
+    "hostname" : "node_001",
     "box" : "ubuntu_precise_vbox",
     "memory_size" : "1024",
     "product" : {
@@ -27,9 +27,9 @@
     }
   },
 
-  "node002" :
+  "node_002" :
   {
-    "hostname" : "node002",
+    "hostname" : "node_002",
     "box" : "centos_6_vbox",
     "memory_size" : "1024",
     "product" : {
@@ -40,9 +40,9 @@
     }
   },
 
-  "node003" :
+  "node_003" :
   {
-    "hostname" : "node003",
+    "hostname" : "node_003",
     "box" : "debian_wheezy_vbox",
     "memory_size" : "1024",
     "product" : {
@@ -53,9 +53,9 @@
     }
   },
 
-  "galera000" :
+  "galera_000" :
   {
-    "hostname" : "galera000",
+    "hostname" : "galera_000",
     "box" : "debian_wheezy_vbox",
     "memory_size" : "1024",
     "product" : {
@@ -66,9 +66,9 @@
     }
   },
 
-  "galera001" :
+  "galera_001" :
   {
-    "hostname" : "galera001",
+    "hostname" : "galera_001",
     "box" : "ubuntu_trusty_vbox",
     "memory_size" : "1024",
     "product" : {
@@ -79,9 +79,9 @@
     }
   },
 
-  "galera002" :
+  "galera_002" :
   {
-    "hostname" : "galera002",
+    "hostname" : "galera_002",
     "box" : "ubuntu_trusty_vbox",
     "memory_size" : "1024",
     "product" : {
@@ -92,9 +92,9 @@
     }
   },
 
-  "galera003" :
+  "galera_003" :
   {
-    "hostname" : "galera003",
+    "hostname" : "galera_003",
     "box" : "centos_6_vbox",
     "memory_size" : "1024",
     "product" : {

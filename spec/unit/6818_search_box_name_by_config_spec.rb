@@ -17,7 +17,7 @@ BOX = {
 
 CONFIG = File.read('spec/configs/generated_config/6818_search_box_name_by_config/template')
 
-NODE = 'node0'
+NODE = 'node_000'
 
 JSON_BOX = BOX.to_json + "\n"
 
