@@ -3,6 +3,8 @@ if [[ -z "$ubuntu_codename" ]]; then
     ubuntu_codename=$(cat /etc/*release 2>/dev/null | grep "DISTRIB_CODENAME" | awk -F'=' '{print $2}')
 fi
 
+sudo apt-get update
+
 sudo apt-get install git build-essential -y
 
 # Vagrant and prerequisites
