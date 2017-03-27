@@ -9,6 +9,10 @@ describe 'Generator' do
   # for mdbci node must be created appropriate mdbci_template file and
   # must be prepared box with IP and keyfile location that is targeting real running machine
   # that can be accessed through ssh
+  before :all do
+    $session = Session.new
+    $session.ipv6 = false
+  end
 
   it "#getVmDef should return string with '\tconfig.ssh.pty = true' in it" do
     Generator.getVmDef('TEST', 'TEST','TEST' , 'TEST', 'true', 'TEST', 'TEST', 'TEST').should include 'config.ssh.pty = true'
