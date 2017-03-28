@@ -1,9 +1,9 @@
 {
   "cookbook_path" : "../recipes/cookbooks/",
   "aws_config" : "../aws-config.yml",
-  "node0" :
+  "node000" :
   {
-        "hostname" : "node0",
+        "hostname" : "node000",
         "box" : "centos7",
 	"product" : {
       		"name": "mariadb",
@@ -12,9 +12,9 @@
 
   },
 
-  "node1" :
+  "node001" :
   {
-        "hostname" : "node1",
+        "hostname" : "node001",
         "box" : "centos7",
         "product" : {
                 "name": "mariadb",
@@ -22,9 +22,9 @@
         }
   },
 
-  "node2" :
+  "node002" :
   {
-        "hostname" : "node2",
+        "hostname" : "node002",
         "box" : "centos7",
         "product" : {
                 "name": "mariadb",
@@ -32,9 +32,9 @@
         }
   },
 
-  "node3" :
+  "node003" :
   {
-        "hostname" : "node3",
+        "hostname" : "node003",
         "box" : "centos7",
         "product" : {
                 "name": "mariadb",
@@ -42,9 +42,9 @@
         }
   },
 
-  "galera0" :
+  "galera000" :
   {
-        "hostname" : "galera0",
+        "hostname" : "galera000",
         "box" : "centos7",
         "product" : {
                 "name": "mariadb",
@@ -52,9 +52,9 @@
         }
   },
 
-  "galera1" :
+  "galera001" :
   {
-        "hostname" : "galera1",
+        "hostname" : "galera001",
         "box" : "centos7",
         "product" : {
                 "name": "mariadb",
@@ -62,9 +62,9 @@
         }
   },
 
-  "galera2" :
+  "galera002" :
   {
-        "hostname" : "galera2",
+        "hostname" : "galera002",
         "box" : "centos7",
         "product" : {
                 "name": "mariadb",
@@ -72,9 +72,9 @@
         }
   },
 
-  "galera3" :
+  "galera003" :
   {
-        "hostname" : "galera3",
+        "hostname" : "galera003",
         "box" : "centos7",
         "product" : {
                 "name": "mariadb",

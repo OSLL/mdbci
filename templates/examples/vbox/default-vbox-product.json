@@ -1,7 +1,7 @@
 {
 "cookbook_path" : "../recipes/cookbooks/",
-"node0" : {
-"hostname" : "node0",
+"node000" : {
+"hostname" : "node000",
 "box" : "centos6",
 "memory_size" : "2048",
 "product" : {
