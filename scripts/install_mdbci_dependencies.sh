@@ -3,6 +3,8 @@ if [[ -z "$ubuntu_codename" ]]; then
     ubuntu_codename=$(cat /etc/*release 2>/dev/null | grep "DISTRIB_CODENAME" | awk -F'=' '{print $2}')
 fi
 
+sudo apt-get update
+
 sudo apt-get install git build-essential -y
 
 # Vagrant and prerequisites
@@ -34,10 +36,13 @@ sudo adduser $USER libvirtd
 sudo virsh pool-destroy default
 sudo virsh pool-undefine default
 mkdir -p $HOME/libvirt-images
-sudo virsh pool-create ./scripts/slave_setting/libvirt/default.xml
+cp ./scripts/slave_setting/libvirt/default.xml ./scripts/slave_setting/libvirt/default_tmp.xml
+sed -i "s|#REPLACE_ME#|$HOME/libvirt-images|g" ./scripts/slave_setting/libvirt/default_tmp.xml
+sudo virsh pool-create ./scripts/slave_setting/libvirt/default_tmp.xml
 sudo virsh pool-dumpxml --pool default > ./scripts/slave_setting/libvirt/default_tmp.xml
 sudo virsh pool-define ./scripts/slave_setting/libvirt/default_tmp.xml
 sudo virsh pool-autostart default
+rm ./scripts/slave_setting/libvirt/default_tmp.xml
 
 
 # Docker
