@@ -1,0 +1,14 @@
+- job:
+    name: check_for_not_empty_test_scenario_and_pullrequest
+    description: 'This job checks test_scenario field in redmine and pullrequest existing. If one of these things absents, then task is returned to last commenter in new state.'
+    triggers:
+      - timed: "H 6 * * *"
+    scm:
+      - git:
+          url: !include: './maxscale_jobs/include/mdbci_repo.yaml'
+          branches:
+            - origin/integration
+    triggers:
+        - github
+    builders:
+      - !include: './maxscale_jobs/include/check_branch.yaml'
