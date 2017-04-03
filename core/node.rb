@@ -42,9 +42,11 @@ class Node
   # get node ip address from ifconfig interface
   def getInterfaceBoxIp(node_name, iface)
     exit_code = 1
-
+    $out.info('getInterfaceBoxIp attempt')
     cmd = 'vagrant ssh '+node_name+' -c "/sbin/ifconfig '+iface+' | grep \"inet \" "'
     vagrant_out = `#{cmd}`
+    $out.info(vagrant_out)
+    $out.info($?.exitstatus.to_s)
     exit_code = $?.exitstatus
 
     # parse ifconfig output
