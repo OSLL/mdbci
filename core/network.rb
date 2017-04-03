@@ -184,7 +184,7 @@ class Network
     rescue => e
       Dir.chdir pwd
       $out.error(e.message)
-      puts(e.backtrace)
+      $out.error(e.backtrace)
       raise "Incorrect node"
     end
     hash={ 'ip' => node.ip.to_s }
