@@ -22,6 +22,7 @@ namespace :run_unit do
   task :task_6818_search_box_name_by_config do |t| RakeTaskManager.new(t).run_unit end
   task :task_7435_comments_in_pull_284 do |t| RakeTaskManager.new(t).run_unit  end
   task :task_show_tests_info do RakeTaskManager.get_failed_tests_info end
+  task :task_7425_sysbench_parser do RakeTaskManager.get_failed_tests_info end
 
 end
 
