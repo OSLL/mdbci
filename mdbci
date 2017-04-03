@@ -35,7 +35,6 @@ opts = GetoptLong.new(
 $session = Session.new
 $session.configFile='instance.json'
 $session.boxesFile='boxes.json'
-$session.awsConfigFile='aws-config.yml'
 $exception_handler = ExceptionHandler.new
 $session.ipv6 = false
 

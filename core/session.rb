@@ -83,13 +83,17 @@ EOF
     $out.info 'Load Boxes from '+$session.boxesDir
     @boxes = BoxesManager.new($session.boxesDir)
 
-    $out.info 'Load AWS config from ' + @awsConfigFile
-    @awsConfig = $exception_handler.handle('AWS configuration file not found') { YAML.load_file(@awsConfigFile)['aws'] }
-
     $out.info 'Load Repos from '+$session.repoDir
     @repos = RepoManager.new($session.repoDir)
+ 
 
   end
+
+  def loadAWSConfig
+    $out.info 'Load AWS config from ' + @awsConfigFile
+    @awsConfig = $exception_handler.handle('AWS configuration file not found') { YAML.load_file(@awsConfigFile)['aws'] }
+  end
+
 
   def setup(what)
     possibly_failed_command = ''
@@ -477,6 +481,11 @@ EOF
   def LoadNodesProvider(configs)
     nodes = {}
     configs.keys.each do |node|
+      if node == "aws_config"
+      configs[node].slice! "../"  
+      @awsConfigFile = configs[node]
+        puts(@awsConfigFile)
+      end    
       nodes[node] = configs[node] if node != "aws_config" and node != "cookbook_path"
     end
     nodes.values.each do |node|
@@ -510,12 +519,14 @@ EOF
     end
     @configs = $exception_handler.handle('INSTANCE configuration file invalid') { JSON.parse(instanceConfigFile) }
     raise 'Template configuration file is empty!' if @configs.nil?
-
-    LoadNodesProvider configs
-    #
-    aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
-    @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
-    #
+    LoadNodesProvider(configs)
+    if $session.nodesProvider == 'aws'
+      raise 'The path of configuration aws file is not specified' if @awsConfigFile == nil
+      $session.loadAWSConfig
+      aws_config_path_file = path+'/aws_config_path'
+      aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
+      @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
+    end
     if @nodesProvider != 'mdbci'
       Generator.generate(path, configs, boxes, isOverride, nodesProvider)
       $out.info 'Generating config in ' + path
@@ -541,6 +552,11 @@ EOF
       else
         raise 'Configuration \'template\' file don\'t exist'
       end
+      if @nodesProvider == 'aws'
+        if !File.exist?(aws_config_path_file)
+          File.open(path+'/aws_config_path', 'w') { |f| f.write(@awsConfigFile.to_s) }
+        end
+      end
     end
 
     return 0
@@ -558,7 +574,6 @@ EOF
   # Deploy configurations
   def up(args)
     std_q_attampts = 5
-
     # No arguments provided
     raise "Command 'up' needs one argument, found zero" if args.nil?
 
@@ -615,6 +630,14 @@ EOF
       $out.warning 'You are using mdbci nodes template. ./mdbci up command doesn\'t supported for this boxes!'
       return 1
     else
+      if @nodesProvider == 'aws'
+        begin
+          $session.awsConfig = File.read('aws_config_path')
+        rescue
+          raise 'File with path to aws config not found'
+        end
+        puts($session.awsConfig)
+      end
       # Generating docker images (so it will not be loaded for similar nodes repeatedly)
       generateDockerImages(template, '.') if @nodesProvider == 'docker'
 
