@@ -1,3 +1,5 @@
+# Fetch repos (boxes, configs, MDBCI, maxscale repo with tests, load ssh keys)
+
 # Installing git
 sudo apt-get install git
 
