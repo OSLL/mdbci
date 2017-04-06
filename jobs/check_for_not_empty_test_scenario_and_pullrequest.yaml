@@ -5,10 +5,10 @@
       - timed: "H 6 * * *"
     scm:
       - git:
-          url: !include: './maxscale_jobs/include/mdbci_repo.yaml'
+          url: !include: './jobs/include/mdbci_repo.yaml'
           branches:
             - origin/integration
     triggers:
         - github
     builders:
-      - !include: './maxscale_jobs/include/check_branch.yaml'
+      - !include: './jobs/include/check_branch.yaml'
