@@ -1,0 +1,7 @@
+{
+  "cookbook_path": "../recipes/cookbooks/",
+  "node1": {
+    "hostname": "node1",
+    "box": "centos_6_libvirt"
+  }
+}

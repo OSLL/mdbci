@@ -117,20 +117,97 @@ def set_node_machine_id(path_to_nodes, node_name, id)
   File.open(path_to_id, 'w') { |file| file.write id }
 end
 
+
+class Timeout
+
+  attr_accessor :time
+  attr_accessor :start_time
+  attr_accessor :counter
+  attr_accessor :thread
+  attr_accessor :terminated
+
+  def start(time)
+    @time = time
+    @start_time = Time.now.to_i
+    @terminated = false
+    unless time == 0
+      puts 'timer started'
+      @thread = Thread.new do
+        while true
+          break if @terminated
+          puts (Time.now.to_i - @start_time)
+          if (Time.now.to_i - @start_time) >= @time
+            puts 'timer is raising exception'
+            raise "timer expired" 
+          end
+          sleep 1
+        end
+      end
+      @thread.abort_on_exception = true
+    end
+    yield
+  end
+
+  def reset
+    unless @time==0
+      puts 'timer reset'
+      @start_time = Time.now.to_i
+    end
+  end
+
+  def destroy
+    unless @time == 0
+      puts 'timer destroyed'
+      @terminated = true 
+    end
+  end
+
+  class TimeoutExpiration < RuntimeError
+  end
+
+end
+
 # method returns bash command exit code
-def execute_bash(cmd, silent = false)
+def execute_bash(cmd, silent = false, execution_timeout = 0)
   output = String.new
   process_status = nil
   begin
     process_status = Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
       stdin.close
-      stdout.each do |line|
-        out_info line unless silent
-        output = output + line
+      timeout_stdout = Timeout.new
+      timeout_stderr = Timeout.new
+      timeout_stdout.start(execution_timeout) do
+        stdout.each do |line|
+          out_info line unless silent
+          output = output + line
+          timeout_stdout.reset
+        end
       end
-      stdout.close
-      stderr.each { |line| out_error line }
-      stderr.close
+      timeout_stdout.destroy
+      timeout_stderr.start(execution_timeout) do
+        stderr.each do |line| 
+          out_error line
+          timeout_stderr.reset
+        end
+      end
+      timeout_stderr.destroy
+=begin
+      begin
+      rescue Timeout::TimeoutExpiration => e
+        puts 'aaa'
+        puts File.read("/proc/#{w.pid}/fd/1")
+        timeout.destroy
+        #Process.kill('TERM', w.pid)
+        #Process.wait
+        #stdout.each { |line| out_info line }
+        #stderr.each { |line| out_info line }
+        raise
+      ensure
+        #stdout.close unless stdout.nil?
+        #stderr.close unless stderr.nil?
+        timeout.destroy
+      end
+=end
       wait_thr.value.exitstatus
     end
     raise unless process_status == 0
