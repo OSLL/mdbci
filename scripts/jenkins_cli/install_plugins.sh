@@ -1,4 +1,6 @@
 #!/bin/bash
+trap "exit" INT
+
 
 function help {
     echo "Usage .scripts/jenkins_cli/install_plugins -s HOST(with protocol) -p PORT -f PATH_TO_FILE"
@@ -56,7 +58,7 @@ fi
 function install_plugin {
   cmd="java -jar $HOME/jenkins-cli.jar -s $1:$2 install-plugin $3 -deploy"
   if ! eval $cmd; then  
-    echo "Error: command '$cmd' failed with code - $exit_code, skipping..."
+    echo "Error: command '$cmd' failed, skipping..."
     install_result=1
   else
     echo "Ok"
@@ -68,7 +70,7 @@ failed_plugins_addresses=()
 found_failed_plugins=false
 
 while read line; do
-    if ! grep -Fxq "$line" current_plugins; then
+    if grep -Fxq "$line" current_plugins; then
       echo "Plugin $line already installed"
     else
       echo "Plugin $line NOT installed, installing..."
@@ -91,7 +93,7 @@ for i in $(seq 1 $attempts); do
   unset $failed_plugins_addresses
   failed_plugins_addresses=()
   if $found_failed_plugins ; then
-    echo "Trying ti install failed plugins, attempt: $i"
+    echo "Trying to install failed plugins, attempt: $i"
     found_failed_plugins=false
     echo "${failed_plugins_addresses_temp[@]}"
     for var in "${failed_plugins_addresses_temp[@]}"; do
@@ -117,5 +119,4 @@ else
   fi
   exit
 fi
-
 
