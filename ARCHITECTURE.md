@@ -71,34 +71,9 @@ In this example MDBCI will generate new vagrant/chef config from mynewstand.json
 
 *NB* Many stands could be configured by MDBCI in subdirectories. Each stand is autonomous.
 
-### Box, products, versions
+### Configuration files
 
-MDBCI makes matching between boxes, target platforms, products and vesions by lexicographical base. If we
-have a look at the output of next command
-
-```
-./mdbci show repos 
-```
-
-we can see something like this:
-
-```
-galera@5.1+debian^squeeze => [http://mirror.netinch.com/pub/mariadb/repo/5.1/debian squeeze main]
-galera@5.1+debian^jessie => [http://mirror.netinch.com/pub/mariadb/repo/5.1/debian jessie main]
-galera@10.0.16+rhel^5 => [http://yum.mariadb.org/10.0.16/rhel5-amd64]
-```
-
-It means that each exact product/platform version combination is encoded 
-
-product@version+platform^platform_version
-
-In cases, when we need to use default product version on particular platfrom this encoding will be 
-
-```
-mdbe@?+opensuse^13 => [http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.42-pgo/opensuse/13]
-```
-where mdbe@? means default mariadb community version on Opensuse13 target platfrom.
-
+[How to work with configuration files](CONFIGURATION_FILES.md)
 
 ### Supported VM providers
 
