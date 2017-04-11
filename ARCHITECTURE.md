@@ -68,9 +68,7 @@ In this example MDBCI will generate new vagrant/chef config from mynewstand.json
 
 *NB* Many stands could be configured by MDBCI in subdirectories. Each stand is autonomous.
 
-### Configuration files
-
-[How to work with configuration files](CONFIGURATION_FILES.md)
+### [How to work with configuration files](CONFIGURATION_FILES.md)
 
 ### Supported VM providers
 
