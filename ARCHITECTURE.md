@@ -26,10 +26,7 @@ This section describes MDBCI architecture, workflow and other technical details.
 
 MDBCI uses vagrant with set of plugins as the VM backend manager. It's written with Ruby in order to seamless integration with vagrant. Next releases will be partially converted to vagrant plugins.
 
-### Installation
-
-[How to install MDBCI and dependencies](REAPARATION_FOR_MDBCI.md)
-
+### [How to install MDBCI and dependencies](REAPARATION_FOR_MDBCI.md)
 
 #### Install boxes locally
 
