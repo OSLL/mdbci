@@ -1,4 +1,4 @@
-# MariaDb continuous integration infrastructure (MDBCI)aaa
+# MariaDb continuous integration infrastructure (MDBCI)
 
 [MDBCI](https://github.com/OSLL/mdbci) is a standard set of tools for testing MariaDb components on the wide set of configurations. The main features of **mdbci** are:
 
