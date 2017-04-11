@@ -6,6 +6,8 @@
 * automatic deploy MariaDb/Galera and other packages to VM nodes, running configuration procedures
 * support MariaDb repos on all available platforms (more than 300 at the moment)
 
+## [MDBCI architecture](ARCHITECTURE.md)
+
 ## MDBCI Syntax
 
 In this section mdbci commands are described. In order to get help in runtime just call mdbci with --help flag:
