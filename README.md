@@ -136,20 +136,6 @@ Run script examples
   ./scripts/install_mdbci_dependencies.sh - install MDBCI dependencies
   ./scripts/install_mdbci_dependencies_yum.sh - install MDBCI dependencies
 ```
-  
-## Using vagrant to manage stand
-
-Since stand is generated it can be managed with vagrant command. In the future releases it will be shadowed by corresponded mdbci commands
-
-* vagrant up --provision  -- started virtual machines and run chef scripts against them
-* vagrant ssh [node] getting segure shell to [node] machine
-* vagrant ssh-config [node] shows ssh configuration for [node] machine
-* vagrant status -- Shows the status of current stand (if it's being run in stand directory)
-* vagrant global-status -- Shows the host status$ it enumerates all machines on local host
-* vagrant suspend/resume -- Control the state of machine
-* vagrant destroy -- Destroys machines and all linked data
-
-More information about vagrant features could be found in [vagrant documentation](https://docs.vagrantup.com/v2/). 
 
 ## Build parsing
 
@@ -160,6 +146,8 @@ This repository also contain a solution developed for parsing jenkins build logs
 * Project leader: Sergey Balandin
 * Developers:
   * Alexander Kaluzhniy
+  * Tatiana Berlenko
   * Kirill Krinkin
   * Kirill Yudenok
   * Mark Zaslavskiy
+  
