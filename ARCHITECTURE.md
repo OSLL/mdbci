@@ -28,20 +28,6 @@ MDBCI uses vagrant with set of plugins as the VM backend manager. It's written w
 
 ### [How to install MDBCI and dependencies](REAPARATION_FOR_MDBCI.md)
 
-#### Install boxes locally
-
-Usually vagrant boxes are available remotely and they are being download at the first run of vagrant up. MDBCI uses only checked boxes and they should be downloaded before first start. **Note:** in the next version of MDBCI this step will be run automatically.
-
-<pre>
-  ./mdbci setup boxes
-</pre>
-
-Known boxes could be displayed by 
-
-<pre>
-  ./mdbci show boxes
-</pre>
-
 ### Workflow
 
 Currently, we use vagrant commands for running/destroing virtual machines. In Future releases it will be shadowed by mdbci.
