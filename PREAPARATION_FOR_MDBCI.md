@@ -60,17 +60,3 @@ virsh net-dumpxml default
   </ip>
 </network>
 ```
-
-#### Install boxes locally
-
-Usually vagrant boxes are available remotely and they are being download at the first run of vagrant up. MDBCI uses only checked boxes and they should be downloaded before first start. **Note:** in the next version of MDBCI this step will be run automatically.
-
-<pre>
-  ./mdbci setup boxes
-</pre>
-
-Known boxes could be displayed by 
-
-<pre>
-  ./mdbci show boxes
-</pre>
