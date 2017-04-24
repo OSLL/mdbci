@@ -2,8 +2,8 @@
   "cookbook_path" : "../recipes/cookbooks/",
   "node_000" :
   {
-    "hostname" : "node_000",
-    "box" : "debian_wheezy_libvirt",
+    "hostname" : "node-000",
+    "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
       "name": "mariadb",
@@ -16,8 +16,8 @@
 
   "node_001" :
   {
-    "hostname" : "node_001",
-    "box" : "debian_jessie_libvirt",
+    "hostname" : "node-001",
+    "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
       "name": "mariadb",
@@ -29,8 +29,8 @@
 
   "node_002" :
   {
-    "hostname" : "node_002",
-    "box" : "ubuntu_trusty_libvirt",
+    "hostname" : "node-002",
+    "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
       "name": "mariadb",
@@ -42,8 +42,8 @@
 
   "node_003" :
   {
-    "hostname" : "node_003",
-    "box" : "ubuntu_xenial_libvirt",
+    "hostname" : "node-003",
+    "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
       "name": "mariadb",
@@ -55,7 +55,7 @@
 
   "galera_000" :
   {
-    "hostname" : "galera_000",
+    "hostname" : "galera-000",
     "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
@@ -68,8 +68,8 @@
 
   "galera_001" :
   {
-    "hostname" : "galera_001",
-    "box" : "centos_6_libvirt",
+    "hostname" : "galera-001",
+    "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
       "name": "galera",
@@ -81,8 +81,8 @@
 
   "galera_002" :
   {
-    "hostname" : "galera_002",
-    "box" : "ubuntu_trusty_libvirt",
+    "hostname" : "galera-002",
+    "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
       "name": "galera",
@@ -94,8 +94,8 @@
 
   "galera_003" :
   {
-    "hostname" : "galera_003",
-    "box" : "ubuntu_trusty_libvirt",
+    "hostname" : "galera-003",
+    "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
       "name": "galera",
@@ -108,7 +108,7 @@
   "maxscale" :
   {
     "hostname" : "maxscale",
-    "box" : "ubuntu_trusty_libvirt",
+    "box" : "centos_7_libvirt",
     "product" : {
       "name" : "maxscale"
     },
