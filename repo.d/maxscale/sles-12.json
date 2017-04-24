@@ -2,7 +2,7 @@
 {
    "product":		"maxscale",
    "version":           "default",
-   "repo":		"http://maxscale-jenkins.mariadb.com/ci-repository/develop/mariadb-maxscale//sles/12/$basearch",
+   "repo":		"http://max-tst-01.mariadb.com/ci-repository/develop/mariadb-maxscale/sles/12/$basearch",
    "repo_key":		"http://maxscale-jenkins.mariadb.com/repository/release/mariadb-maxscale/Maxscale-GPG-KEY.public",
    "platform":		"sles",
    "platform_version":  "12"
