@@ -26,7 +26,7 @@ describe 'NodeProduct' do
 
     # test maxscale ubuntu repo
     maxscale_repo = { "product"=>"maxscale", "version"=>"default",
-                     "repo"=>"http://max-tst-01.mariadb.com/ci-repository/develop/mariadb-maxscale//ubuntu trusty main",
+                     "repo"=>"http://max-tst-01.mariadb.com/ci-repository/develop/mariadb-maxscale/ubuntu trusty main",
                      "repo_key"=>"70E4618A8167EE24", "platform"=>"ubuntu", "platform_version"=>"trusty" }
     repo = NodeProduct.getProductRepo(product_name, product_version, full_platform)
     repo.should eq(maxscale_repo)
