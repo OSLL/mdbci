@@ -134,7 +134,6 @@ EOF
 
   def sudo(args)
     raise 'config name is required' if args.nil?
-    puts `ls`
     config = args.split('/')
     raise 'config does not exists' unless Dir.exist?(config[0])
     raise 'node name is required' if config[1].to_s.empty?
