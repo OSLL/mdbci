@@ -4,14 +4,14 @@
 # 1. JENKINS_URL - url to jenkins system (http://maxscale-jenkins.mariadb.com:8090/)
 # 2. NODE_NAME - uniquely identifies an agent within this Jenkins installation
 # 3. HOST - to SSH connection.
-# 4. NODE_DESCRIPTION - optional human-readable description for this agent, default:"This node created at $DATE by $USER"
+# 4. NODE_DESCRIPTION - optional human-readable description for this agent, default:"This node created at $DATE"
 # 5. ROOT_DIRECTORY - path to the agent machine.
 # 6. NUM_EXECUTORS - the maximum number of concurrent builds that Jenkins may perform on this agent.
 # 7. CRED_ID - credentials to be used for logging in to the remote host.
 # 8. LABELS - to group multiple agents into one logical group
 # 9. PATH_TO_JAR - path to jenkins-cli.jar.
 # example: 
-# ./create_node.sh http://maxscale-jenkins.mariadb.com:8090/ testNode test-node.mariadb.com "Some description" "/home/vagrant/" 20 vagrant test
+# ./create_node.sh http://maxscale-jenkins.mariadb.com:8090/ testNode test-node.mariadb.com "Some description" "/home/vagrant/" 20 vagrant test /home/vagranttest
 
 JENKINS_URL=$1
 NODE_NAME=$2
@@ -26,7 +26,7 @@ USERID=${USER}
 PATH_TO_JAR=$9
 
 if [ -z "$NODE_DESCRIPTION" ]; then
-   NODE_DESCRIPTION="This node created at $(date +%s)"
+   NODE_DESCRIPTION="This node created at $(date +%Y-%m-%d\ %H:%M:%S)"
 fi
 
 if [ -z "$PATH_TO_JAR" ]; then
