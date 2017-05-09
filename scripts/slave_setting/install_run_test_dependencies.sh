@@ -1,3 +1,5 @@
+# Install dependencies for running Jenkins jobs like run_test
+
 sudo apt-get install software-properties-common -y
 sudo add-apt-repository ppa:openjdk-r/ppa -y
 sudo add-apt-repository ppa:ondrej/php -y
@@ -17,3 +19,5 @@ sudo pip install JayDeBeApi
 
 sudo apt-get install libmariadbclient-dev -y
 sudo apt-get install libmariadb-client-lgpl-dev -y
+sudo apt-get install mariadb-test -y
+vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box

@@ -90,7 +90,6 @@ def check_issue(branch):
                 test_scenario_value)
         if pullrequest and test_scenario:
             print SUCCESS_PRINT.format(branch)
-            add_comment(issue, SUCCESS_COMMENT)
             write_env_var(FAIL_REASON, SUCCESS)
         else:
             print UNSUCCESS_PRINT.format(branch)

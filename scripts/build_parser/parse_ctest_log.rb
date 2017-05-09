@@ -72,6 +72,8 @@ MAXSCALE_COMMIT_MR = "maxscale_commit"
 MAXSCALE_SYSTEM_TEST_COMMIT_HR = "MaxScale system test commit"
 MAXSCALE_SYSTEM_TEST_COMMIT_MR = "maxscale_system_test_commit"
 
+MAXSCALE_FULL = "Maxscale full version"
+
 NEW_LINE_JENKINS_FORMAT = " \\\n"
 
 opts = GetoptLong.new(
@@ -137,6 +139,7 @@ class CTestParser
   attr_accessor :all_ctest_info
   attr_accessor :failed_ctest_info
   attr_accessor :maxscale_commit
+  attr_accessor :maxscale_entity
   attr_accessor :fail_ctest_counter
 
   def initialize
@@ -150,14 +153,28 @@ class CTestParser
     @all_ctest_info = nil
     @failed_ctest_info = nil
     @fail_ctest_counter = nil
+    @maxscale_entity = Array.new
   end
 
   def parse_ctest_log()
     ctest_first_line_regex = /Constructing a list of tests/
     ctest_last_line_regex = /tests passed,.+tests failed out of (.+)/
     maxscale_commit_regex = /MaxScale\s+.*\d+\.*\d*\.*\d*\s+-\s+(.+)/
+    maxscale_version_start_regex = /.*Maxscale_full_version_start:.*/
+    maxscale_version_end_regex = /.*Maxscale_full_version_end.*/
     ctest_start_line = 0;
+    maxscale_version_start_found=false
+    maxscale_version_end_found=false
     $log.each_line do |line|
+      if line =~ maxscale_version_end_regex
+        maxscale_version_end_found=true
+      end
+      if maxscale_version_start_found and !maxscale_version_end_found and !line.gsub(/\n*/, '').empty?
+        @maxscale_entity.push line.gsub(/\n*/, '')
+      end
+      if line =~ maxscale_version_start_regex
+        maxscale_version_start_found=true
+      end
       if line =~ maxscale_commit_regex and @maxscale_commit == nil
         @maxscale_commit = line.match(maxscale_commit_regex).captures[0]
       end
@@ -247,7 +264,7 @@ class CTestParser
     sorted_test_indexes_array.each do |test_index|
       if test_index == sorted_test_indexes_array[0]
         ctest_arguments.push(test_index, test_index)
-        ctest_arguments.push(' ') if sorted_test_indexes_array.size > 1
+        ctest_arguments.push('1') if sorted_test_indexes_array.size > 1
       else
         ctest_arguments.push(test_index)
       end
@@ -301,6 +318,9 @@ class CTestParser
     hr_tests.push "#{MAXSCALE_SYSTEM_TEST_COMMIT_HR}: #{get_test_code_commit}"
     hr_tests = hr_tests + generate_run_test_build_parameters_hr
     hr_tests.push("#{ERROR}: #{CTEST_NOT_EXECUTED_ERROR}") unless @ctest_executed
+    @maxscale_entity.each do |me|
+      hr_tests.push "#{MAXSCALE_FULL}: #{me}"
+    end
     return hr_tests
   end
 

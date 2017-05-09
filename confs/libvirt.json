@@ -1,9 +1,9 @@
 {
   "cookbook_path" : "../recipes/cookbooks/",
-  "node0" :
+  "node_000" :
   {
-    "hostname" : "node0",
-    "box" : "debian_wheezy_libvirt",
+    "hostname" : "node-000",
+    "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
       "name": "mariadb",
@@ -14,10 +14,10 @@
 
   },
 
-  "node1" :
+  "node_001" :
   {
-    "hostname" : "node1",
-    "box" : "debian_jessie_libvirt",
+    "hostname" : "node-001",
+    "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
       "name": "mariadb",
@@ -27,10 +27,10 @@
     }
   },
 
-  "node2" :
+  "node_002" :
   {
-    "hostname" : "node2",
-    "box" : "ubuntu_trusty_libvirt",
+    "hostname" : "node-002",
+    "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
       "name": "mariadb",
@@ -40,10 +40,10 @@
     }
   },
 
-  "node3" :
+  "node_003" :
   {
-    "hostname" : "node3",
-    "box" : "ubuntu_xenial_libvirt",
+    "hostname" : "node-003",
+    "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
       "name": "mariadb",
@@ -53,9 +53,9 @@
     }
   },
 
-  "galera0" :
+  "galera_000" :
   {
-    "hostname" : "galera0",
+    "hostname" : "galera-000",
     "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
@@ -66,10 +66,10 @@
     }
   },
 
-  "galera1" :
+  "galera_001" :
   {
-    "hostname" : "galera1",
-    "box" : "centos_6_libvirt",
+    "hostname" : "galera-001",
+    "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
       "name": "galera",
@@ -79,10 +79,10 @@
     }
   },
 
-  "galera2" :
+  "galera_002" :
   {
-    "hostname" : "galera2",
-    "box" : "ubuntu_trusty_libvirt",
+    "hostname" : "galera-002",
+    "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
       "name": "galera",
@@ -92,10 +92,10 @@
     }
   },
 
-  "galera3" :
+  "galera_003" :
   {
-    "hostname" : "galera3",
-    "box" : "ubuntu_trusty_libvirt",
+    "hostname" : "galera-003",
+    "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
       "name": "galera",
@@ -108,7 +108,7 @@
   "maxscale" :
   {
     "hostname" : "maxscale",
-    "box" : "ubuntu_trusty_libvirt",
+    "box" : "centos_7_libvirt",
     "product" : {
       "name" : "maxscale"
     },

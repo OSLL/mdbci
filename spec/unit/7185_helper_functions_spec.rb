@@ -46,12 +46,14 @@ describe nil do
   end
 
   it 'execute bash command that not exists (popen raise)' do
-    lambda { execute_bash('hello_world') }.should raise_error 'No such file or directory - hello_world'
+    msg = "hello_world: command exited with non zero exit code -  in #{Dir.pwd}, message: No such file or directory - hello_world"
+    lambda { execute_bash('hello_world') }.should raise_error msg
   end
 
   it 'execute bash command that not exists (non zero exit code)' do
     File.open("#{TEST_PREFIX}.sh", 'w') { |file| file.write 'exit 1' }
-    lambda { execute_bash("sh #{TEST_PREFIX}.sh") }.should raise_error "sh #{TEST_PREFIX}.sh: command exited with non zero exit code - 1"
+    error_msg = "sh 7185_helper_functions_spec.sh: command exited with non zero exit code - 1 in #{Dir.pwd}"
+    lambda { execute_bash("sh #{TEST_PREFIX}.sh") }.should raise_error error_msg
     FileUtils.rm_rf "#{TEST_PREFIX}.sh"
   end
 

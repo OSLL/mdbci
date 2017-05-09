@@ -54,6 +54,9 @@ mdbci [option] {show | setup | generate | clone}
 -sn, --snapshot-name
   name of the snapshot
 
+--ipv6
+  if ipv6 must be added to network_config (also enables ipv6 for libvirt)
+
 COMMANDS:
 
   show [platforms, providers, versions, network, repos, keyfile config/node, network_config config/node ]
