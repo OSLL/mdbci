@@ -1,7 +1,9 @@
 # Prepare machine for mdbci
 
-## Preparation scripts and sequence (*+current order is important+*)
+## Preparation scripts and sequence (*current order is important*)
 
+### Before installation
+Check if yoe have Docker, Vagrant, Virsh, Libvirt installe. It's better to remove this packages before MDBCI dependencies installation, because MDBCI depends on certain versions of packages.
 
 ### Run scripts(from MDBCI folder) in next order:
 ```bash
