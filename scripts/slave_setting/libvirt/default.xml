@@ -1,6 +1,6 @@
 <pool type='dir'>                                                                                                                        [3/63]
   <name>default</name>
   <target>
-    <path>/home/vagrant/libvirt-images</path>
+    <path>#REPLACE_ME#</path>
   </target>
 </pool>

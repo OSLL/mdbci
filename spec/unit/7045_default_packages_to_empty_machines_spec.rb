@@ -15,6 +15,11 @@ EOF
 
 describe 'Generator' do
 
+  before :all do
+    $session = Session.new
+    $session.ipv6 = false
+  end
+
   it '#getDefaultRecipe returns default chef recipe for machine without product' do
     Generator.getDefaultRecipe('test', 'test').should eql getDefaultRecipeTemplate
   end

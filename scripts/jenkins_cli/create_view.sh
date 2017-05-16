@@ -35,16 +35,12 @@ cp ./scripts/jenkins_cli/view_template.xml ./scripts/jenkins_cli/view_template.x
 
 sed -i "s|#{VIEW_NAME}|$view_name|g" ./scripts/jenkins_cli/view_template.xml.temp
 
-java -jar "$HOME/jenkins-cli.jar" -s "$host:$port" create-view "$view_name" < ./scripts/jenkins_cli/view_template.xml.temp
-
-view_created=$?
-
-rm ./scripts/jenkins_cli/view_template.xml.temp
-
-if [ "$view_created" -ne 0 ]; then
+if ! java -jar "$HOME/jenkins-cli.jar" -s "$host:$port" create-view "$view_name" < ./scripts/jenkins_cli/view_template.xml.temp; then
     echo "Error: view - '$view_name' creation failed!"
+    rm ./scripts/jenkins_cli/view_template.xml.temp
     exit 1
 fi
+rm ./scripts/jenkins_cli/view_template.xml.temp
 
 echo "Success: view - '$view_name' has been created"
 
@@ -52,8 +48,7 @@ exit_code=0
 
 while read -r line; do
     for job_name in $line; do
-        java -jar "$HOME/jenkins-cli.jar" -s "$host:$port" add-job-to-view "$view_name" "$job_name" &>/dev/null
-        if [ "$?" -ne 0 ]; then
+        if ! java -jar "$HOME/jenkins-cli.jar" -s "$host:$port" add-job-to-view "$view_name" "$job_name" &>/dev/null; then
             echo "Error: job - '$job_name' adding failed!"
             exit_code=1
             continue

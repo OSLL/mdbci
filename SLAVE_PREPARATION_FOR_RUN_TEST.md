@@ -9,14 +9,9 @@ cat .ssh/id_rsa.pub | ssh vagrant@max-tst-01.mariadb.com 'cat >> .ssh/authorized
 ```
 
 
-### Run scripts(from MDBCI folder) in next order:
+### Run script (from MDBCI folder):
 ```bash
-./scripts/install_mdbci_dependencies.sh
-./scripts/slave_setting/repo_setup.sh
-./scripts/slave_setting/install_run_test_dependencies.sh
-./scripts/slave_setting/create_auxiliary_dirs.sh
-./scripts/slave_setting/import_gpg.sh
-./scripts/slave_setting/configure_ctest_parsing_and_performance.sh
+./scripts/setup_as_slave.sh
 ```
 
 ### After that you need to logout and login

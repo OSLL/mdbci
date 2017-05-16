@@ -18,23 +18,23 @@ Vagrant.configure("2") do |config|
 
   # Ubuntu 14.04 with MariaDB 5.5
   # TODO #6510 - mysqld don't start after installation 
-  config.vm.define :vm1 do |node1|
+  config.vm.define :vm1 do |node001|
 
-    #node1.vm.box = "bento/ubuntu-14.04"
-    #node1.vm.box = "ubuntu_precise64_kvm"
-    node1.vm.box = "s3than/trusty64"			# ubuntu 14.04
-    #node1.vm.box = "ubuntu-14.04-ppc64"		# no access
-    node1.vm.hostname = 'vm1'
+    #node001.vm.box = "bento/ubuntu-14.04"
+    #node001.vm.box = "ubuntu_precise64_kvm"
+    node001.vm.box = "s3than/trusty64"			# ubuntu 14.04
+    #node001.vm.box = "ubuntu-14.04-ppc64"		# no access
+    node001.vm.hostname = 'vm1'
 
-    node1.vm.synced_folder './', '/vagrant', type: 'rsync'
+    node001.vm.synced_folder './', '/vagrant', type: 'rsync'
 
-    node1.vm.provider :libvirt do |qemu|
+    node001.vm.provider :libvirt do |qemu|
       #qemu.memory = 256
       #qemu.nested = true
       qemu.driver = "kvm" # qemu slowly
     end
 
-    node1.vm.provision "chef_solo" do |chef| 
+    node001.vm.provision "chef_solo" do |chef| 
 	chef.cookbooks_path = "../../../recipes/cookbooks/"
 	chef.roles_path = "."
 	chef.add_role "node_ubuntu"
@@ -43,21 +43,21 @@ Vagrant.configure("2") do |config|
   end
 
   # Centos 7.0 with MariaDB 10.0
-  config.vm.define :vm2 do |node2|
+  config.vm.define :vm2 do |node002|
 
-    node2.vm.box = "uvsmtid/centos-7.0-minimal"		# centos 7.0
-    #node2.vm.box = "dliappis/centos65minlibvirt"	# centos 6.5
-    node2.vm.hostname = 'vm2'
+    node002.vm.box = "uvsmtid/centos-7.0-minimal"		# centos 7.0
+    #node002.vm.box = "dliappis/centos65minlibvirt"	# centos 6.5
+    node002.vm.hostname = 'vm2'
 
-    node2.vm.synced_folder './', '/vagrant', type: 'rsync'
+    node002.vm.synced_folder './', '/vagrant', type: 'rsync'
 
-    node2.vm.provider :libvirt do |domain|
+    node002.vm.provider :libvirt do |domain|
       #domain.memory = 256
       domain.driver = "kvm"
       #domain.nested = true
     end
 
-    node2.vm.provision "chef_solo" do |chef| 
+    node002.vm.provision "chef_solo" do |chef| 
 	chef.cookbooks_path = "../../../recipes/cookbooks/"
 	chef.roles_path = "."
 	chef.add_role "node_centos"

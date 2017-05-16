@@ -1,9 +1,9 @@
 {
   "aws_config" : "../aws-config.yml",
   "cookbook_path" : "../recipes/cookbooks/",
-  "node0" :
+  "node_000" :
   {
-    "hostname" : "node0",
+    "hostname" : "node_000",
     "box" : "ubuntu_xenial_aws",
     "memory_size" : "1024",
     "product" : {
@@ -15,9 +15,9 @@
 
   },
 
-  "node1" :
+  "node_001" :
   {
-    "hostname" : "node1",
+    "hostname" : "node_001",
     "box" : "ubuntu_wily_aws",
     "memory_size" : "1024",
     "product" : {
@@ -28,9 +28,9 @@
     }
   },
 
-  "node2" :
+  "node_002" :
   {
-    "hostname" : "node2",
+    "hostname" : "node_002",
     "box" : "ubuntu_vivid_aws",
     "memory_size" : "1024",
     "product" : {
@@ -41,9 +41,9 @@
     }
   },
 
-  "node3" :
+  "node_003" :
   {
-    "hostname" : "node3",
+    "hostname" : "node_003",
     "box" : "ubuntu_trusty_aws",
     "memory_size" : "1024",
     "product" : {
@@ -54,9 +54,9 @@
     }
   },
 
-  "galera0" :
+  "galera_000" :
   {
-    "hostname" : "galera0",
+    "hostname" : "galera_000",
     "box" : "centos_7_aws",
     "memory_size" : "1024",
     "product" : {
@@ -67,9 +67,9 @@
     }
   },
 
-  "galera1" :
+  "galera_001" :
   {
-    "hostname" : "galera1",
+    "hostname" : "galera_001",
     "box" : "centos_6_aws",
     "memory_size" : "1024",
     "product" : {
@@ -80,9 +80,9 @@
     }
   },
 
-  "galera2" :
+  "galera_002" :
   {
-    "hostname" : "galera2",
+    "hostname" : "galera_002",
     "box" : "debian_jessie_aws",
     "memory_size" : "1024",
     "product" : {
@@ -93,9 +93,9 @@
     }
   },
 
-  "galera3" :
+  "galera_003" :
   {
-    "hostname" : "galera3",
+    "hostname" : "galera_003",
     "box" : "debian_wheezy_aws",
     "memory_size" : "1024",
     "product" : {

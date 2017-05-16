@@ -264,7 +264,7 @@ class CTestParser
     sorted_test_indexes_array.each do |test_index|
       if test_index == sorted_test_indexes_array[0]
         ctest_arguments.push(test_index, test_index)
-        ctest_arguments.push(' ') if sorted_test_indexes_array.size > 1
+        ctest_arguments.push('1') if sorted_test_indexes_array.size > 1
       else
         ctest_arguments.push(test_index)
       end

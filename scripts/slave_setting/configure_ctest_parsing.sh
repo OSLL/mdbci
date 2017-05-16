@@ -1,3 +1,5 @@
+# Set up databases
+
 ubuntu_codename=$(cat /etc/*release 2>/dev/null | grep "UBUNTU_CODENAME" | awk -F'=' '{print $2}')
 if [[ -z "$ubuntu_codename" ]]; then
     ubuntu_codename=$(cat /etc/*release 2>/dev/null | grep "DISTRIB_CODENAME" | awk -F'=' '{print $2}')
