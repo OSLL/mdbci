@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hudson.model.ListView>
+  <name>push_tests</name>
+  <filterExecutors>false</filterExecutors>
+  <filterQueue>false</filterQueue>
+  <properties class="hudson.model.View$PropertyList"/>
+  <jobNames>
+    <comparator class="hudson.util.CaseInsensitiveComparator"/>
+    <string>daily_maxscale_bsl_branch_run_test</string>
+    <string>monitoring_of_particular_branch_set_in_maxscale-bsl</string>
+    <string>print_branch_list</string>
+    <string>print_branches_which_matches_regex_in_file</string>
+    <string>print_branches_with_regexp</string>
+    <string>remove_line_from_branches_file</string>
+    <string>update_branches_file</string>
+    <string>update_test_set_in_branches_file</string>
+  </jobNames>
+  <jobFilters/>
+  <columns>
+    <hudson.views.StatusColumn/>
+    <hudson.views.WeatherColumn/>
+    <hudson.views.JobColumn/>
+    <hudson.views.LastSuccessColumn/>
+    <hudson.views.LastFailureColumn/>
+    <hudson.views.LastDurationColumn/>
+    <hudson.views.BuildButtonColumn/>
+  </columns>
+  <recurse>false</recurse>
+</hudson.model.ListView>
