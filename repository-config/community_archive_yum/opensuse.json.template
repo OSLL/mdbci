@@ -1,0 +1,8 @@
+{
+   "product":		"mariadb",
+   "version":		"###version###",
+   "repo":		"http://ftp.hosteurope.de/mirror/archive.mariadb.org/mariadb-###version###/yum/opensuse13-amd64",
+   "repo_key":		"https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+   "platform":		"opensuse",
+   "platform_version":	13
+}
