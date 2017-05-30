@@ -11,7 +11,7 @@ if [ -z $ci_url ]; then
 fi
 
 #if [ -z $3 ]; then
-#	~/mdbci-repository-config/maxscale.sh $ci_url/$ci $dest
+#	~/mdbci/repository-config/maxscale.sh $ci_url/$ci $dest
 #else
-	~/mdbci-repository-config/maxscale.sh $ci_url/$ci/$3/ $dest
+	~/mdbci/repository-config/maxscale.sh $ci_url/$ci/$3/ $dest
 #fi

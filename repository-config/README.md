@@ -1,4 +1,4 @@
-# mdbci-repository-config
+# repository-config
 Repository configuration generator for mdbci
 
 ./generate_all.sh path
