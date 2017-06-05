@@ -1,7 +1,9 @@
 # Prepare machine for mdbci
 
-## Preparation scripts and sequence (*+current order is important+*)
+## Preparation scripts and sequence (*current order is important*)
 
+### Before installation
+Check if yoe have Docker, Vagrant, Virsh, Libvirt installed. It's better to remove this packages before MDBCI dependencies installation, because MDBCI depends on certain versions of packages.
 
 ### Run scripts(from MDBCI folder) in next order:
 ```bash
@@ -59,4 +61,40 @@ virsh net-dumpxml default
   <ip family='ipv6' address='2000:abcd:1:dead::1' prefix='64'>
   </ip>
 </network>
+```
+
+### AWS command line tool installation
+
+If tests use AWS command line tool:
+
+```
+pip install --upgrade --user awscli
+```
+
+and put configuration and credential files into ~/.aws/
+
+
+Config file example:
+```
+[default]
+region=eu-west-1
+output=json
+```
+
+Credentials file:
+```
+[default]
+aws_access_key_id=XXXXXXXXXXXXXXXXXXXX
+aws_secret_access_key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+In some cases following command is needed before _pip install_
+
+```
+export LC_ALL="en_US.UTF-8"
+```
+
+If AWS CLi tool still does not work:
+```
+sudo pip install awscli --force-reinstall --upgrade
 ```

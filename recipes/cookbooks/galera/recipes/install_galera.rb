@@ -131,7 +131,7 @@ system 'echo Platform family: '+node[:platform_family]
 # Install packages
 case node[:platform_family]
   when "suse"
-  if node['galera']['version'] == "10.1" || node['galera']['version'] == "10.2" || node['galera']['version'] == "10.3"
+  if node['galera']['version'] != "5.5" && node['galera']['version'] != "10.0"
     execute "install" do
       command "zypper -n install MariaDB-server"
     end
@@ -143,7 +143,7 @@ case node[:platform_family]
 
   when "rhel", "fedora", "centos"
     system 'echo shell install on: '+node[:platform_family]
-    if node['galera']['version'] == "10.1" || node['galera']['version'] == "10.2" || node['galera']['version'] == "10.3"
+    if node['galera']['version'] != "5.5" || node['galera']['version'] != "10.0"
       execute "install galera 10.1" do
         command "yum --assumeyes -c /etc/yum.repos.d/galera.repo install MariaDB-server"
       end
@@ -158,7 +158,7 @@ case node[:platform_family]
     end
  
   when "debian"
-    if node['galera']['version'] == "10.1" || node['galera']['version'] == "10.2" || node['galera']['version'] == "10.3"
+    if node['galera']['version'] != "5.5" || node['galera']['version'] != "10.0"
       package 'mariadb-server'
     else
       package 'mariadb-galera-server'
