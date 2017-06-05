@@ -537,7 +537,8 @@ EOF
 
     checkPath(path, override)
 
-    cookbook_path = '../recipes/cookbooks/' # default cookbook path
+    cookbook_path = $mdbci_exec_dir + '/recipes/cookbooks/' # default cookbook path
+          $out.info  cookbook_path
     unless (config['cookbook_path'].nil?)
       cookbook_path = config['cookbook_path']
     end

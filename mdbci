@@ -32,14 +32,18 @@ opts = GetoptLong.new(
     ['--ipv6', GetoptLong::NO_ARGUMENT]
 )
 
+$mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
+
 $session = Session.new
 $session.configFile='instance.json'
 $session.boxesFile='boxes.json'
-$session.awsConfigFile='aws-config.yml'
+$session.awsConfigFile=$mdbci_exec_dir+ '/aws-config.yml'
 $exception_handler = ExceptionHandler.new
 $session.ipv6 = false
 
 $out = Out.new
+
+
 
 begin
   opts.each do |opt, arg|

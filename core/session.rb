@@ -62,8 +62,8 @@ EOF
   LIBVIRT = 'libvirt'
 
   def initialize
-    @boxesDir = './BOXES'
-    @repoDir = './repo.d'
+    @boxesDir = $mdbci_exec_dir + '/BOXES'
+    @repoDir = $mdbci_exec_dir + '/repo.d'
     @mdbciNodes = Hash.new
     @templateNodes = Hash.new
   end
