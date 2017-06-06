@@ -79,6 +79,9 @@ EOF
   def loadCollections
 
     @mdbciDir = Dir.pwd
+    unless (ENV['MDBCI_VM_PATH'].nil?)
+      @mdbciDir = ENV['MDBCI_VM_PATH']
+    end
 
     $out.info 'Load Boxes from '+$session.boxesDir
     @boxes = BoxesManager.new($session.boxesDir)
