@@ -516,7 +516,7 @@ EOF
     LoadNodesProvider configs
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
-    @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
+    @awsConfigOption = aws_config.to_s.empty? ? $mdbci_exec_dir+'/aws-config.yml' : aws_config[1].to_s
     #
     if @nodesProvider != 'mdbci'
       Generator.generate(path, configs, boxes, isOverride, nodesProvider)

@@ -558,7 +558,6 @@ EOF
       # Generate AWS Configuration
       vagrant.puts Generator.awsProviderConfigImport($session.awsConfigOption)
       vagrant.puts Generator.vagrantConfigHeader
-
       vagrant.puts Generator.awsProviderConfig
 
       config.each do |node|
