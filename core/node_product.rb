@@ -81,7 +81,7 @@ class NodeProduct
           # execute command
           raise 'No such product for this node!' if repo.nil?
           command = setupProductRepoToMdbciCmd(full_platform, repo)
-          cmd = "ssh -i #{pwd}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
+          cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
           $out.info "Running #{cmd} on #{args[0]}/#{args[1]}"
           vagrant_out = `#{cmd}`
           $out.info vagrant_out
@@ -105,7 +105,7 @@ class NodeProduct
         # execute command
         raise 'No such product for this node!' if repo.nil?
         command = setupProductRepoToMdbciCmd(full_platform, repo)
-        cmd = "ssh -i #{pwd}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
+        cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
         $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
         vagrant_out = `#{cmd}`
         $out.info vagrant_out
@@ -265,7 +265,7 @@ class NodeProduct
           $out.info "Install #{$session.nodeProduct} repo to #{platform[0]}"
           # execute command
           command = installProductToMdbciCmd(platform[0], packages)
-          cmd = "ssh -i #{pwd}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
+          cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
           $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
           vagrant_out = `#{cmd}`
           $out.info vagrant_out
@@ -287,7 +287,7 @@ class NodeProduct
         $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0].to_s
         # execute command
         command = installProductToMdbciCmd(platform[0], packages)
-        cmd = "ssh -i #{pwd}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
+        cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
         $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
         vagrant_out = `#{cmd}`
         $out.info vagrant_out

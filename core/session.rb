@@ -243,7 +243,7 @@ EOF
     raise "Box: #{box} is empty" if box.empty?
 
     box_params = $session.boxes.getBox(box)
-    cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + pwd.to_s+'/KEYS/'+box_params['keyfile'].to_s + " "\
+    cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + $mdbci_exec_dir.to_s+'/KEYS/'+box_params['keyfile'].to_s + " "\
                     + box_params['user'].to_s + "@"\
                     + box_params['IP'].to_s + " "\
                     + "'" + $session.command + "'"
@@ -805,7 +805,7 @@ EOF
           keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read($current_dir.to_s+'/'+@keyFile.to_s) }
           # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
           command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
-          cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+          cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + $mdbci_exec_dir.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                           + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
@@ -828,7 +828,7 @@ EOF
           keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read($current_dir.to_s+'/'+@keyFile.to_s) }
           # add to the end of the authorized_keys file in ~/.ssh directory
           command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
-          cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+          cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + $mdbci_exec_dir.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                           + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
