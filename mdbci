@@ -43,6 +43,10 @@ $session.ipv6 = false
 
 $out = Out.new
 
+current_dir = Dir.pwd
+unless (ENV['MDBCI_VM_PATH'].nil?)
+   Dir.chdir ENV['MDBCI_VM_PATH']
+end
 
 
 begin
@@ -140,5 +144,5 @@ rescue Exception => error
   $out.error error.to_s
   exit_code =  1
 end
-
+Dir.chdir current_dir
 exit exit_code
