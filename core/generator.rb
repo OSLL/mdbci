@@ -177,7 +177,7 @@ EOF
             + network_conf \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
-            + "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/vagrant')+", type: "+quote('rsync')+"\n" \
+            + "\t"+name+'.vm.synced_folder '+quote($current_dir)+", "+quote('/vagrant')+", type: "+quote('rsync')+"\n" \
             + templatedef + "\n"\
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
             + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n" \
