@@ -245,7 +245,7 @@ class NodeProduct
   def self.installProduct(args)
     pwd = Dir.pwd
     # Loading file with product packages to every system
-    products = JSON.parse(File.read('products.json'))
+    products = JSON.parse(File.read($mdbci_exec_dir+'/products.json'))
     raise 'Configuration name is required' if args.nil?
     args = args.split('/')
     # mdbci box
