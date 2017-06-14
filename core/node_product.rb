@@ -112,7 +112,7 @@ class NodeProduct
         raise "command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
       end
     else # aws, vbox, libvirt, docker nodes
-      Dir.chdir args[0]
+      Dir.chdir $work_dir+'/'+args[0]
       $session.loadTemplateNodes
       if args[1].nil? # No node argument, copy keys to all nodes
         raise "0 nodes found in #{args[0]}" if $session.templateNodes.empty?
@@ -294,7 +294,7 @@ class NodeProduct
         raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}" if $?.exitstatus != 0
       end
     else # aws, vbox, libvirt, docker nodes
-      Dir.chdir args[0]
+      Dir.chdir $work_dir+'/'+args[0]
       $session.loadTemplateNodes
       if args[1].nil? # No node argument, copy keys to all nodes
         raise "nodes not  found in #{args[0]}" if $session.templateNodes.empty?
