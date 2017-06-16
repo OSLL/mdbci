@@ -155,7 +155,7 @@ EOF
   end
 
   # Vagrantfile for Libvirt provider
-  def Generator.getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
+  def Generator.getQemuDef(cookbook_path, path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
     if template_path
       templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates') \
                     +", type:"+quote('rsync')
@@ -177,7 +177,7 @@ EOF
             + network_conf \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
-            + "\t"+name+'.vm.synced_folder '+quote($current_dir)+quote("/")+quote(name)+", "+quote('/vagrant')+", type: "+quote('rsync')+"\n" \
+            + "\t"+name+'.vm.synced_folder '+quote(File.expand_path(path))+", "+quote('/vagrant')+", type: "+quote('rsync')+"\n" \
             + templatedef + "\n"\
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
             + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n" \
@@ -509,7 +509,7 @@ EOF
                                 })
           machine = getAWSVmDef(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned, tags)
         when 'libvirt'
-          machine = getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
+          machine = getQemuDef(cookbook_path, path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'docker'
           machine = getDockerDef(cookbook_path, path, name, ssh_pty, template_path, provisioned, platform, platform_version, box)
           copyDockerfiles(path, name, platform, platform_version)
