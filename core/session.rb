@@ -159,7 +159,7 @@ EOF
     pwd = Dir.pwd
     instanceFile = $exception_handler.handle('INSTANCE configuration file not found') { IO.read(pwd+'/template') }
     $out.info 'Load nodes from template file ' + instanceFile.to_s
-    @templateNodes = $exception_handler.handle('INSTANCE configuration file invalid') { JSON.parse(IO.read(@mdbciDir+'/'+instanceFile)) }
+    @templateNodes = $exception_handler.handle('INSTANCE configuration file invalid') { JSON.parse(IO.read(instanceFile)) }
     if @templateNodes.has_key?('cookbook_path');
       @templateNodes.delete('cookbook_path');
     end
@@ -945,7 +945,7 @@ EOF
     pwd = Dir.pwd
     # template file
     templateFile = $exception_handler.handle('Template nodes file not found') { IO.read(pwd.to_s+'/template') }
-    templateNodes = $exception_handler.handle('Template configuration file invalid') { JSON.parse(IO.read(@mdbciDir.to_s+"/"+templateFile)) }
+    templateNodes = $exception_handler.handle('Template configuration file invalid') { JSON.parse(IO.read(templateFile)) }
     #
     node = templateNodes.find { |elem| elem[0].to_s == name }
     box = node[1]['box'].to_s
