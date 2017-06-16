@@ -43,10 +43,10 @@ $session.ipv6 = false
 
 $out = Out.new
 
-$current_dir = Dir.pwd
 unless (ENV['MDBCI_VM_PATH'].nil?)
    Dir.chdir ENV['MDBCI_VM_PATH']
 end
+$current_dir = Dir.pwd
 $work_dir = Dir.pwd
 
 begin
