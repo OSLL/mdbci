@@ -527,5 +527,5 @@ This repository also contain a solution developed for parsing jenkins build logs
 * Developers:
   * Alexander Kaluzhniy
   * Kirill Krinkin
-  * Kirill Yudenok
+  * Ilfat Kinyaev
   * Mark Zaslavskiy

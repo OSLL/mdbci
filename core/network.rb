@@ -184,13 +184,23 @@ class Network
   end
 
   def self.getIpWrapper(node, pwd)
-    begin
-      node.getIp(node.provider, false)
-    rescue => e
-      Dir.chdir pwd
-      $out.error(e.message)
-      $out.error(e.backtrace)
-      raise "Incorrect node"
+    attempts = 10
+    duration = 5
+    while attampts > 0
+        begin
+           node.getIp(node.provider, false)
+           break
+        rescue => e
+           Dir.chdir pwd
+           $out.warning(e.message)
+           $out.warning(e.backtrace)
+           sleep duration
+           attempts = attempts - 1
+        end
+    end
+    if attempts == 0
+        Dir.chdir pwd
+        raise "Incorrect node"
     end
     hash={ 'ip' => node.ip.to_s }
     return hash
