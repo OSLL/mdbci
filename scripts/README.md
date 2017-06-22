@@ -35,9 +35,9 @@ https://dev.osll.ru/projects/mdbci/wiki/Prepare_slave_for_run_test
 ## Setup nodes as on max-tst-01
 0) Change directory into MDBCI directory
 
-1) Write unique to _<id>_ tag in file **scripts/jenkins_cli/credentials_template.xml**
+1) Write unique to _< id >_ tag in file **scripts/jenkins_cli/credentials_template.xml**
 
-2) Change _<name>_ tag and put _<id>_ from previous step to into _<credentialsId>_ in file **scripts/jenkins_cli/nodes_templates/maxtst2.xml**
+2) Change _< name >_ tag and put _< id >_ from previous step to into _< credentialsId >_ in file **scripts/jenkins_cli/nodes_templates/maxtst2.xml**
 
 3) Repeat second step for file **scripts/jenkins_cli/nodes_templates/maxtst3.xml**
 
@@ -45,4 +45,4 @@ https://dev.osll.ru/projects/mdbci/wiki/Prepare_slave_for_run_test
 ```
 /scripts/jenkins_cli/create_default_nodes.sh -s http://localhost -p 8091
 ```
-_Results_: new _<credentialsId>_ with id from first step and 2 slave nodes with _<name>_ from second and third steps.
+_Results_: new _< credentialsId >_ with id from first step and 2 slave nodes with _< name >_ from second and third steps.
