@@ -48,71 +48,6 @@ This section describes MDBCI architecture, workflow and other technical details.
 
 MDBCI uses vagrant with set of plugins as the VM backend manager. It's written with Ruby in order to seamless integration with vagrant. Next releases will be partially converted to vagrant plugins.
 
-### Installation
-
-#### Install Pre-requisities
-
-<pre>
-echo "deb http://download.virtualbox.org/virtualbox/debian trusty contrib" | sudo tee /etc/apt/sources.list.d/virtualbox.list
-wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add -
-sudo apt-get update
-sudo apt-get install virtualbox-4.3
-
-sudo apt-get install ruby
-sudo apt-get install libxslt-dev libxml2-dev libvirt-dev zlib1g-dev
-wget https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.deb
-sudo dpkg -i vagrant_1.8.1_x86_64.deb
-</pre>
-
-#### Optional packages (required by some vagrant plugins)
-For vagrant package command:
-```bash
-sudo apt-get install libguestfs-tools
-```
-
-#### Libvirt DNS problem (when guest vm does not resolve hosts) quick fix
-Run next command on host machine
-<pre>
-sudo sh -c 'echo "nameserver 8.8.8.8" >> /etc/resolv.conf'
-</pre>
-
-#### Vagrant plugins pre-install
-
-<pre>
-vagrant plugin install vagrant-vbguest
-vagrant plugin install vagrant-aws
-vagrant plugin install vagrant-libvirt
-vagrant plugin install vagrant-mutate
-vagrant plugin install vagrant-omnibus
-</pre>
-
-#### Ruby modules pre-install
-
-<pre>
-sudo gem install ipaddress
-sudo gem install json-schema
-</pre>
-
-#### Install mdbci
-
-<pre>
-  git clone https://github.com/OSLL/mdbci.git
-</pre>
-
-#### Install boxes locally
-
-Usually vagrant boxes are available remotely and they are being download at the first run of vagrant up. MDBCI uses only checked boxes and they should be downloaded before first start. **Note:** in the next version of MDBCI this step will be run automatically.
-
-<pre>
-  ./mdbci setup boxes
-</pre>
-
-Known boxes could be displayed by 
-
-<pre>
-  ./mdbci show boxes
-</pre>
-
 ### Workflow
 
 Currently, we use vagrant commands for running/destroing virtual machines. In Future releases it will be shadowed by mdbci.
@@ -502,20 +437,7 @@ Run script examples
   ./scripts/install_mdbci_dependencies.sh - install MDBCI dependencies
   ./scripts/install_mdbci_dependencies_yum.sh - install MDBCI dependencies
 ```
-  
-## Using vagrant to manage stand
 
-Since stand is generated it can be managed with vagrant command. In the future releases it will be shadowed by corresponded mdbci commands
-
-* vagrant up --provision  -- started virtual machines and run chef scripts against them
-* vagrant ssh [node] getting segure shell to [node] machine
-* vagrant ssh-config [node] shows ssh configuration for [node] machine
-* vagrant status -- Shows the status of current stand (if it's being run in stand directory)
-* vagrant global-status -- Shows the host status$ it enumerates all machines on local host
-* vagrant suspend/resume -- Control the state of machine
-* vagrant destroy -- Destroys machines and all linked data
-
-More information about vagrant features could be found in [vagrant documentation](https://docs.vagrantup.com/v2/). 
 
 ## Build parsing
 
@@ -529,3 +451,6 @@ This repository also contain a solution developed for parsing jenkins build logs
   * Kirill Krinkin
   * Ilfat Kinyaev
   * Mark Zaslavskiy
+* Former developers:
+  * Tatyana Berlenko
+  * Kirill Yudenok
