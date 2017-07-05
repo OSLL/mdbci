@@ -30,7 +30,7 @@ describe 'Generator' do
   end
 
   it '#getQemuDef returns config default recipe for machine without product' do
-    Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'TEST', 'false', '1024', 'TEST', false).should include getDefaultRecipeTemplate
+    Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'TEST', 'false', '1024', 'TEST', true).should include getDefaultRecipeTemplate
   end
 
   it '#getDockerDef returns config default recipe for machine without product' do
