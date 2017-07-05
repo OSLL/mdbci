@@ -7,8 +7,8 @@ require_relative '../../core/session'
 require_relative '../../core/network'
 
 getDefaultRecipeTemplate = <<EOF
-\ttest.vm.provision "chef_solo" do |chef|
-\t\tchef.cookbooks_path = "test"
+\tTEST.vm.provision "chef_solo" do |chef|
+\t\tchef.cookbooks_path = "TEST"
 \t\tchef.add_recipe "packages"
 \tend
 EOF
