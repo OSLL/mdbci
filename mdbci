@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+$mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
+
 require 'getoptlong'
 
 require_relative 'core/help'
@@ -32,8 +34,6 @@ opts = GetoptLong.new(
     ['--ipv6', GetoptLong::NO_ARGUMENT]
 )
 
-$mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
-
 $session = Session.new
 $session.configFile='instance.json'
 $session.boxesFile='boxes.json'
@@ -43,10 +43,10 @@ $session.ipv6 = false
 
 $out = Out.new
 
+$current_dir = Dir.pwd
 unless (ENV['MDBCI_VM_PATH'].nil?)
    Dir.chdir ENV['MDBCI_VM_PATH']
 end
-$current_dir = Dir.pwd
 $work_dir = Dir.pwd
 
 begin
