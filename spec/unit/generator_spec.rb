@@ -45,7 +45,7 @@ describe "Generator" do
   context '.VBOX' do
 
     it "Check Vagrantfile provider config" do
-      $mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
+      $mdbci_exec_dir = ENV['WORKSPACE']
       $session = Session.new
       $session.nodesProvider = 'virtualbox'
       providerConfig = Generator.providerConfig
@@ -84,7 +84,7 @@ describe "Generator" do
   context '.LIBVIRT' do
 
     it "Check Vagrantfile provider config" do
-      $mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
+      $mdbci_exec_dir = ENV['WORKSPACE']
       $session = Session.new
       $session.nodesProvider = 'libvirt'
       providerConfig = Generator.providerConfig
@@ -102,7 +102,7 @@ describe "Generator" do
   context '.DOCKER' do
 
     it "Check Vagrantfile provider config" do
-      $mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
+      $mdbci_exec_dir = ENV['WORKSPACE']
       $session = Session.new
       $session.nodesProvider = 'docker'
       providerConfig = Generator.providerConfig

@@ -11,6 +11,7 @@ CLONED_LIBVIRT_CONFIG_NAME = 'qwerty_123_libvirt'
 describe 'Session' do
 
   before :all do
+    $mdbci_exec_dir = ENV['WORKSPACE']
     $out = Out.new
     $session = Session.new
     $session.isSilent = true

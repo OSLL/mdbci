@@ -24,7 +24,7 @@ describe 'Session' do
   context '.configurationFiles' do
 
     before :all do
-      $mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
+      $mdbci_exec_dir = ENV['WORKSPACE']
       $out = Out.new
       $session = Session.new
       $session.isSilent = true
@@ -37,7 +37,7 @@ describe 'Session' do
     end
 
     it "Check aws config loading..." do
-      $mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
+      $mdbci_exec_dir = ENV['WORKSPACE']
       session = Session.new
       session.awsConfigFile='aws-config.yml'
 
@@ -50,7 +50,7 @@ describe 'Session' do
     end
 
     it "Check template loading..." do
-      $mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
+      $mdbci_exec_dir = ENV['WORKSPACE']
       session = Session.new
       session.configFile='spec/test_machine_configurations/galera-cnf-template.json'
 

@@ -7,6 +7,7 @@ require_relative '../../core/clone'
 describe nil do
 
   before :all do
+    $mdbci_exec_dir = ENV['WORKSPACE']
     $out = Out.new
     $session = Session.new
   end

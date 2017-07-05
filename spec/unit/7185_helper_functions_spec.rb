@@ -33,7 +33,7 @@ end
 describe nil do
 
   before :all do
-    $mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
+    $mdbci_exec_dir = ENV['WORKSPACE']
     $out = Out.new
     $session = Session.new
   end
