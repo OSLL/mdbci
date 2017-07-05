@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-$mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
-
 require 'getoptlong'
 
 require_relative 'core/help'
@@ -33,6 +31,8 @@ opts = GetoptLong.new(
     ['--snapshot-name', GetoptLong::REQUIRED_ARGUMENT],
     ['--ipv6', GetoptLong::NO_ARGUMENT]
 )
+
+$mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
 
 $session = Session.new
 $session.configFile='instance.json'

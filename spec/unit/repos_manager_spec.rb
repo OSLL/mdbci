@@ -8,6 +8,7 @@ require_relative '../../core/exception_handler'
 describe 'RepoManager' do
   context '.repos' do
     it "Check repos loading..." do
+      $mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
       $out = Out.new
       $session = Session.new
       $session.isSilent = true

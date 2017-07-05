@@ -10,6 +10,7 @@ PLATFORM = %w(ubuntu centos debian rhel sles suse fedora opensuse rhel_ppc64 rhe
 describe 'Session' do
 
   before :all do
+    $mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
     $out = Out.new
     $session = Session.new
     $session.isSilent = true

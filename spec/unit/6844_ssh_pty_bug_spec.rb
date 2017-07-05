@@ -10,6 +10,7 @@ describe 'Generator' do
   # must be prepared box with IP and keyfile location that is targeting real running machine
   # that can be accessed through ssh
   before :all do
+    $mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
     $session = Session.new
     $session.ipv6 = false
   end

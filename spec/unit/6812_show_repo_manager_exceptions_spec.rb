@@ -10,6 +10,7 @@ require_relative '../../core/boxes_manager'
 describe 'RepoManager' do
 
   before :all do
+    $mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
     $out = Out.new
     $session = Session.new
     $session.isSilent = true
