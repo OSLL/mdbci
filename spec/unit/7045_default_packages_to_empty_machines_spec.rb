@@ -7,8 +7,8 @@ require_relative '../../core/session'
 require_relative '../../core/network'
 
 getDefaultRecipeTemplate = <<EOF
-\tTEST.vm.provision "chef_solo" do |chef|
-\t\tchef.cookbooks_path = "TEST"
+\ttest.vm.provision "chef_solo" do |chef|
+\t\tchef.cookbooks_path = "test"
 \t\tchef.add_recipe "packages"
 \tend
 EOF
@@ -30,7 +30,7 @@ describe 'Generator' do
   end
 
   it '#getQemuDef returns config default recipe for machine without product' do
-    Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'TEST', 'false', '1024', 'TEST', true).should include getDefaultRecipeTemplate
+    Generator.getQemuDef('test', 'test','test' , 'test', 'test', 'false', '1024', 'test', true).should include getDefaultRecipeTemplate
   end
 
   it '#getDockerDef returns config default recipe for machine without product' do
@@ -46,7 +46,7 @@ describe 'Generator' do
   end
 
   it '#getQemuDef returns config default recipe for machine without product' do
-    Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'TEST', 'false', '1024', 'TEST', false).should_not include getDefaultRecipeTemplate
+    Generator.getQemuDef('test', 'test','test' , 'test', 'test', 'false', '1024', 'test', false).should_not include getDefaultRecipeTemplate
   end
 
   it '#getDockerDef returns config default recipe for machine without product' do
