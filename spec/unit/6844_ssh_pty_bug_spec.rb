@@ -24,11 +24,11 @@ describe 'Generator' do
   end
 
   it "#getQemuDef should return string with '\tconfig.ssh.pty = true' in it" do
-    Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'true', '1024', 'TEST', 'TEST').should include 'config.ssh.pty = true'
+    Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'true', '1024', 'TEST', 'TEST', false).should include 'config.ssh.pty = true'
   end
 
   it "#getQemuDef should return string without '\tconfig.ssh.pty = true' in it" do
-    Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'false', '1024', 'TEST', 'TEST').should_not include 'config.ssh.pty = true'
+    Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'false', '1024', 'TEST', 'TEST', false).should_not include 'config.ssh.pty = true'
   end
   it "#getDockerDef should return string with '\tconfig.ssh.pty = true' in it" do
     Generator.getDockerDef('TEST', 'TEST','true' , 'TEST', 'TEST', 'TEST', 'TEST', 'TEST', 'TEST').should_not include 'config.ssh.pty = true'
