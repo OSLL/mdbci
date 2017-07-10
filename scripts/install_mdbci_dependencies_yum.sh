@@ -7,6 +7,11 @@ sudo yum clean all
 sudo yum install git build-essential wget -y
 sudo yum groupinstall "Development Tools" -y
 
+# AWS CLI tool
+sudo pip install --upgrade awscli
+# Create security group and update aws-config.yml file
+./scripts/update_aws_config_security_group.sh hostname_$(date +%s)
+
 # Vagrant and prerequisites
 sudo yum  install ruby libxslt-devel \
                           libxml2-devel \
