@@ -34,7 +34,7 @@ require 'yaml'
     return awsConfig
   end
 
-  def Generator.awsProviderConfig
+  def Generator.awsProviderConfig(pemfile_path, keypair_name)
     awsProviderConfig = <<-EOF
 
   ###           AWS Provider config block                 ###
@@ -42,13 +42,11 @@ require 'yaml'
   config.vm.box = "dummy"
 
   config.vm.provider :aws do |aws, override|
-    aws.access_key_id = aws_config["access_key_id"]
-    aws.secret_access_key = aws_config["secret_access_key"]
-    aws.keypair_name = aws_config["keypair_name"]
+    aws.keypair_name = "#{keypair_name}"
     aws.region = aws_config["region"]
     aws.security_groups = aws_config["security_groups"]
     aws.user_data = aws_config["user_data"]
-    override.ssh.private_key_path = aws_config["pemfile"]
+    override.ssh.private_key_path = "#{pemfile}"
     override.nfs.functional = false
   end ## of AWS Provider config block
 

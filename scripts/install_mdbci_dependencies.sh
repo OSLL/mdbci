@@ -9,6 +9,11 @@ sudo apt-get update
 
 sudo apt-get install git build-essential -y
 
+# AWS CLI tool
+sudo pip install --upgrade awscli
+# Create security group and update aws-config.yml file
+./scripts/update_aws_config_security_group.sh hostname_$(date +%s)
+
 # Vagrant and prerequisites
 sudo apt-get install ruby libxslt-dev \
                           libxml2-dev \
