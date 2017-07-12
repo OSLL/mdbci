@@ -95,6 +95,14 @@
     "platform": "debian",
     "platform_version": "wheezy"
   },
+  "debian_stretch_aws" : {
+    "provider": "aws",
+    "ami": "ami-23c4dc45",
+    "user": "admin",
+    "default_instance_type": "m3.medium",
+    "platform": "debian",
+    "platform_version": "stretch"
+  },
   "rhel_5_aws" : {
     "provider": "aws",
     "ami": "ami-2e1c5b59",
