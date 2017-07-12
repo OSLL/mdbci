@@ -26,6 +26,7 @@ vagrant plugin install vagrant-aws
 vagrant plugin install vagrant-libvirt --plugin-version 0.0.33
 vagrant plugin install vagrant-mutate
 vagrant plugin install vagrant-omnibus
+vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
 
 
 # Libvirt and tools(virsh, virt-clone)
