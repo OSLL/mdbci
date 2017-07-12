@@ -50,6 +50,7 @@ require 'yaml'
     aws.user_data = aws_config["user_data"]
     override.ssh.private_key_path = "#{pemfile_path}"
     override.nfs.functional = false
+    aws.aws_profile = "mdbci"
   end ## of AWS Provider config block
 
     EOF
@@ -534,7 +535,7 @@ EOF
   def Generator.generateKeypair(path)
     hostname = Socket.gethostname
     keypair_name = Pathname(File.expand_path(path)).basename
-    aws_cmd_output = `aws --profile mdbci ec2 create-key-pair --key-name #{hostname}_#{keypair_name}`
+    aws_cmd_output = `aws --profile mdbci ec2 create-key-pair --key-name #{hostname}_#{keypair_name}_#{Time.new.to_i}`
     raise "AWS CLI command exited with non zero exit code: #{$?.exitstatus}" unless $?.success?
     aws_json_credential = JSON.parse(aws_cmd_output)
     keyfile_name = 'maxscale.pem'
