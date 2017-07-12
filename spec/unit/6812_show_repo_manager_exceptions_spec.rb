@@ -10,6 +10,7 @@ require_relative '../../core/boxes_manager'
 describe 'RepoManager' do
 
   before :all do
+    $mdbci_exec_dir = ENV['WORKSPACE']
     $out = Out.new
     $session = Session.new
     $session.isSilent = true

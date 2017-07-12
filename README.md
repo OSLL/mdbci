@@ -60,6 +60,10 @@ There are next steps for managing testing configuration:
   * [Cloning configuration]
   * Destroing allocated resources
   
+#### Environmental variables  
+  
+**MDBCI_VM_PATH** varibale points to the directory for virtual machines definitions.  
+  
 #### Creating configuration
 
 MDBCI generates Vagrant/chef files from template. Template example is available as instance.json. You can copy this file with another name and tailor configuration for your needs. It's possible to create multi-VM stands.

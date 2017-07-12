@@ -32,14 +32,22 @@ opts = GetoptLong.new(
     ['--ipv6', GetoptLong::NO_ARGUMENT]
 )
 
+$mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
+
 $session = Session.new
 $session.configFile='instance.json'
 $session.boxesFile='boxes.json'
-$session.awsConfigFile='aws-config.yml'
+$session.awsConfigFile=$mdbci_exec_dir+ '/aws-config.yml'
 $exception_handler = ExceptionHandler.new
 $session.ipv6 = false
 
 $out = Out.new
+
+$current_dir = Dir.pwd
+unless (ENV['MDBCI_VM_PATH'].nil?)
+   Dir.chdir ENV['MDBCI_VM_PATH']
+end
+$work_dir = Dir.pwd
 
 begin
   opts.each do |opt, arg|
@@ -136,5 +144,5 @@ rescue Exception => error
   $out.error error.to_s
   exit_code =  1
 end
-
+Dir.chdir $current_dir
 exit exit_code

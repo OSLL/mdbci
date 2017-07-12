@@ -45,6 +45,7 @@ describe "Generator" do
   context '.VBOX' do
 
     it "Check Vagrantfile provider config" do
+      $mdbci_exec_dir = ENV['WORKSPACE']
       $session = Session.new
       $session.nodesProvider = 'virtualbox'
       providerConfig = Generator.providerConfig
@@ -83,6 +84,7 @@ describe "Generator" do
   context '.LIBVIRT' do
 
     it "Check Vagrantfile provider config" do
+      $mdbci_exec_dir = ENV['WORKSPACE']
       $session = Session.new
       $session.nodesProvider = 'libvirt'
       providerConfig = Generator.providerConfig
@@ -90,8 +92,8 @@ describe "Generator" do
     end
 
     it "Check Libvirt VM definition" do
-      qemu_def = Generator.getQemuDef('../cookbooks/recipes/', 'galera0', 'galera0', 'centos_7_libvirt', 'true', '1024', './cnf', true)
-      Generator.getQemuDef('../cookbooks/recipes/', 'galera0', 'galera0', 'centos_7_libvirt', 'true', '1024', './cnf', true).should eq(qemu_def)
+      qemu_def = Generator.getQemuDef('../cookbooks/recipes/', ENV['WORKSPACE'], 'galera0', 'galera0', 'centos_7_libvirt', 'true', '1024', './cnf', true)
+      Generator.getQemuDef('../cookbooks/recipes/', ENV['WORKSPACE'], 'galera0', 'galera0', 'centos_7_libvirt', 'true', '1024', './cnf', true).should eq(qemu_def)
     end
 
   end
@@ -100,6 +102,7 @@ describe "Generator" do
   context '.DOCKER' do
 
     it "Check Vagrantfile provider config" do
+      $mdbci_exec_dir = ENV['WORKSPACE']
       $session = Session.new
       $session.nodesProvider = 'docker'
       providerConfig = Generator.providerConfig
