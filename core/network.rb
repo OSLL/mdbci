@@ -186,7 +186,7 @@ class Network
   def self.getIpWrapper(node, pwd)
     attempts = 10
     duration = 5
-    while attampts > 0
+    while attempts > 0
         begin
            node.getIp(node.provider, false)
            break
