@@ -190,10 +190,9 @@ class Network
         begin
            node.getIp(node.provider, false)
            break
-        rescue => e
+        rescue Exception => e
            Dir.chdir pwd
            $out.warning(e.message)
-           $out.warning(e.backtrace)
            sleep duration
            attempts = attempts - 1
         end
