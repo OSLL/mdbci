@@ -539,7 +539,7 @@ EOF
     if @nodesProvider != 'mdbci'
       template_file = path+'/template'
       if !File.exist?(template_file)
-        File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }
+        File.open(path+'/template', 'w') { |f| f.write(File.expand_path configFile) }
       else
         raise 'Configuration \'template\' file don\'t exist'
       end
