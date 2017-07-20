@@ -1,6 +1,6 @@
 # MariaDb continuous integration infrastructure (MDBCI)
 
-[MDBCI](https://github.com/OSLL/mdbci) is a standard set of tools for testing MariaDb components on the wide set of configurations. The main features of **mdbci** are:
+[MDBCI](https://github.com/mariadb-corporation/mdbci) is a standard set of tools for testing MariaDb components on the wide set of configurations. The main features of **mdbci** are:
 
 * automatic creation of virtual machine set by configuration template
 * automatic deploy MariaDb/Galera and other packages to VM nodes, running configuration procedures
@@ -28,7 +28,7 @@ This section describes MDBCI architecture, workflow and other technical details.
 
 * **Box** is a description of virtual machine image template. For vagrant provider the _box_ have the same meaning; for AWS EC2 _box_ is similar to _image_. Boxes described in [boxes.json](#boxesjson) file.
 
-* **[MDBCI](https://github.com/OSLL/mdbci)** is a standard set of tools for testing MariaDb components on the wide set of configurations.
+* **[MDBCI](https://github.com/mariadb-corporation/mdbci)** is a standard set of tools for testing MariaDb components on the wide set of configurations.
 
 * **[MariaDb](http://mariadb.org)** is an enhanced, drop-in replacement for MySQL. It contains several set of components which can be used in standalone configurations and in cluster based heterogenous systems. 
 
@@ -445,7 +445,7 @@ Run script examples
 
 ## Build parsing
 
-This repository also contain a solution developed for parsing jenkins build logs. See https://github.com/OSLL/mdbci/tree/integration/scripts/build_parser/README.md for more details.
+This repository also contain a solution developed for parsing jenkins build logs. See https://github.com/mariadb-corporation/mdbci/tree/integration/scripts/build_parser/README.md for more details.
 
 ## Team
 

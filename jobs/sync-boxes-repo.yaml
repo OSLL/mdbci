@@ -12,7 +12,7 @@
             description:  'Directory for box descriptions.'
     scm:
         - git:
-            url: git@github.com:OSLL/mdbci.git 
+            url: git@github.com:mariadb-corporation/mdbci.git 
             branches:
                 - 6785_boxes_repo
     builders:
