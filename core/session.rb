@@ -62,8 +62,8 @@ EOF
   LIBVIRT = 'libvirt'
 
   def initialize
-    @boxesDir = './BOXES'
-    @repoDir = './repo.d'
+    @boxesDir = $mdbci_exec_dir + '/BOXES'
+    @repoDir = $mdbci_exec_dir + '/repo.d'
     @mdbciNodes = Hash.new
     @templateNodes = Hash.new
   end
@@ -79,6 +79,9 @@ EOF
   def loadCollections
 
     @mdbciDir = Dir.pwd
+    unless (ENV['MDBCI_VM_PATH'].nil?)
+      @mdbciDir = ENV['MDBCI_VM_PATH']
+    end
 
     $out.info 'Load Boxes from '+$session.boxesDir
     @boxes = BoxesManager.new($session.boxesDir)
@@ -156,7 +159,7 @@ EOF
     pwd = Dir.pwd
     instanceFile = $exception_handler.handle('INSTANCE configuration file not found') { IO.read(pwd+'/template') }
     $out.info 'Load nodes from template file ' + instanceFile.to_s
-    @templateNodes = $exception_handler.handle('INSTANCE configuration file invalid') { JSON.parse(IO.read(@mdbciDir+'/'+instanceFile)) }
+    @templateNodes = $exception_handler.handle('INSTANCE configuration file invalid') { JSON.parse(IO.read(instanceFile)) }
     if @templateNodes.has_key?('cookbook_path');
       @templateNodes.delete('cookbook_path');
     end
@@ -240,7 +243,7 @@ EOF
     raise "Box: #{box} is empty" if box.empty?
 
     box_params = $session.boxes.getBox(box)
-    cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + pwd.to_s+'/KEYS/'+box_params['keyfile'].to_s + " "\
+    cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + $mdbci_exec_dir.to_s+'/KEYS/'+box_params['keyfile'].to_s + " "\
                     + box_params['user'].to_s + "@"\
                     + box_params['IP'].to_s + " "\
                     + "'" + $session.command + "'"
@@ -513,7 +516,7 @@ EOF
     LoadNodesProvider configs
     #
     aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
-    @awsConfigOption = aws_config.to_s.empty? ? '' : aws_config[1].to_s
+    @awsConfigOption = aws_config.to_s.empty? ? $mdbci_exec_dir+'/aws-config.yml' : aws_config[1].to_s
     #
     if @nodesProvider != 'mdbci'
       Generator.generate(path, configs, boxes, isOverride, nodesProvider)
@@ -536,7 +539,7 @@ EOF
     if @nodesProvider != 'mdbci'
       template_file = path+'/template'
       if !File.exist?(template_file)
-        File.open(path+'/template', 'w') { |f| f.write(configFile.to_s) }
+        File.open(path+'/template', 'w') { |f| f.write(File.expand_path configFile) }
       else
         raise 'Configuration \'template\' file don\'t exist'
       end
@@ -799,10 +802,10 @@ EOF
           raise "Box empty in node: #{node}" unless !box.empty?
           mdbci_params = $session.boxes.getBox(box)
           #
-          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(pwd.to_s+'/'+@keyFile.to_s) }
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read($current_dir.to_s+'/'+@keyFile.to_s) }
           # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
           command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
-          cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+          cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + $mdbci_exec_dir.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                           + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
@@ -822,10 +825,10 @@ EOF
         if !box.empty?
           mdbci_params = $session.boxes.getBox(box)
           #
-          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(pwd.to_s+'/'+@keyFile.to_s) }
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read($current_dir.to_s+'/'+@keyFile.to_s) }
           # add to the end of the authorized_keys file in ~/.ssh directory
           command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
-          cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + pwd.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
+          cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + $mdbci_exec_dir.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
                           + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
@@ -853,7 +856,7 @@ EOF
 
       if args[1].nil? # No node argument, copy keys to all nodes
         network.nodes.each do |node|
-          keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!") { File.read("#{pwd.to_s}/#{@keyFile.to_s}") }
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!") { File.read("#{$current_dir.to_s}/#{@keyFile.to_s}") }
           # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
           cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
           $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
@@ -870,7 +873,7 @@ EOF
         end
 
         #
-        keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!") { File.read("#{pwd.to_s}/#{@keyFile.to_s}") }
+        keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!") { File.read("#{$current_dir.to_s}/#{@keyFile.to_s}") }
         # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
         cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
         $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
@@ -942,7 +945,7 @@ EOF
     pwd = Dir.pwd
     # template file
     templateFile = $exception_handler.handle('Template nodes file not found') { IO.read(pwd.to_s+'/template') }
-    templateNodes = $exception_handler.handle('Template configuration file invalid') { JSON.parse(IO.read(@mdbciDir.to_s+"/"+templateFile)) }
+    templateNodes = $exception_handler.handle('Template configuration file invalid') { JSON.parse(IO.read(templateFile)) }
     #
     node = templateNodes.find { |elem| elem[0].to_s == name }
     box = node[1]['box'].to_s

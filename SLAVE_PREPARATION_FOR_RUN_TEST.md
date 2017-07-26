@@ -8,10 +8,41 @@ ssh-keygen -t rsa
 cat .ssh/id_rsa.pub | ssh vagrant@max-tst-01.mariadb.com 'cat >> .ssh/authorized_keys' # will ask for vagrant password
 ```
 
+### To setup current machine as slave run
+`.scripts/setup_as_slave.sh`
 
-### Run script (from MDBCI folder):
+### After that you need to logout and login
 ```bash
-./scripts/setup_as_slave.sh
+exec su $USER
+```
+
+## Descriptions of above script
+in case script above failed you can do it manually by running scripts below
+
+### Run scripts(from MDBCI folder) in next order:
+Install MDBCI dependencies
+```bash
+./scripts/install_mdbci_dependencies.sh
+```
+Fetch repos (boxes, configs, MDBCI, maxscale repo with tests, load ssh keys)
+```bash
+./scripts/slave_setting/repo_setup.sh
+```
+Install dependencies for running Jenkins jobs like run_test
+```bash
+./scripts/slave_setting/install_run_test_dependencies.sh
+```
+Create logging dirs
+```bash
+./scripts/slave_setting/create_auxiliary_dirs.sh
+```
+Import keys for MariaDB packages
+```bash
+./scripts/slave_setting/import_gpg.sh
+```
+Set up databases
+```bash
+./scripts/slave_setting/configure_ctest_parsing_and_performance.sh
 ```
 
 ### After that you need to logout and login
