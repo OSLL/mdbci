@@ -1,7 +1,9 @@
 require 'date'
 require 'fileutils'
 require 'json'
+require 'pathname'
 require 'securerandom'
+require 'socket'
 
 require_relative '../core/out'
 
@@ -23,18 +25,18 @@ class Generator
     vagrantFileHeader += " ####\n\n"
   end
 
-  def Generator.awsProviderConfigImport(aws_config_file)
+  def Generator.awsProviderConfigImport(path, aws_config_file)
     awsConfig = <<-EOF
 
 ### Import AWS Provider access config ###
 require 'yaml'
     EOF
-    awsConfig += 'aws_config = YAML.load_file(' + quote(aws_config_file.to_s) + ")['aws']\n"
+    awsConfig += "aws_config = YAML.load_file('#{File.expand_path(File.join(File.expand_path(path), aws_config_file))}')['aws']\n"
     awsConfig += '## of import AWS Provider access config' + "\n"
     return awsConfig
   end
 
-  def Generator.awsProviderConfig
+  def Generator.awsProviderConfig(pemfile_path, keypair_name)
     awsProviderConfig = <<-EOF
 
   ###           AWS Provider config block                 ###
@@ -42,14 +44,13 @@ require 'yaml'
   config.vm.box = "dummy"
 
   config.vm.provider :aws do |aws, override|
-    aws.access_key_id = aws_config["access_key_id"]
-    aws.secret_access_key = aws_config["secret_access_key"]
-    aws.keypair_name = aws_config["keypair_name"]
+    aws.keypair_name = "#{keypair_name}"
     aws.region = aws_config["region"]
     aws.security_groups = aws_config["security_groups"]
     aws.user_data = aws_config["user_data"]
-    override.ssh.private_key_path = aws_config["pemfile"]
+    override.ssh.private_key_path = "#{pemfile_path}"
     override.nfs.functional = false
+    aws.aws_profile = "mdbci"
   end ## of AWS Provider config block
 
     EOF
@@ -531,6 +532,20 @@ EOF
     return machine
   end
 
+  def Generator.generateKeypair(path)
+    hostname = Socket.gethostname
+    keypair_name = Pathname(File.expand_path(path)).basename
+    aws_cmd_output = `aws --profile mdbci ec2 create-key-pair --key-name #{hostname}_#{keypair_name}_#{Time.new.to_i}`
+    raise "AWS CLI command exited with non zero exit code: #{$?.exitstatus}" unless $?.success?
+    aws_json_credential = JSON.parse(aws_cmd_output)
+    keyfile_name = 'maxscale.pem'
+    path_to_keyfile = File.join(File.expand_path(path), keyfile_name)
+    open(path_to_keyfile, 'w') do |f|
+      f.write(aws_json_credential["KeyMaterial"])
+    end
+    return path_to_keyfile, aws_json_credential["KeyName"]
+  end
+
   def Generator.generate(path, config, boxes, override, provider)
 
     #TODO MariaDb Version Validator
@@ -556,10 +571,10 @@ EOF
 
     unless ($session.awsConfigOption.to_s.empty?)
       # Generate AWS Configuration
-      vagrant.puts Generator.awsProviderConfigImport($session.awsConfigOption)
+      vagrant.puts Generator.awsProviderConfigImport(path, $session.awsConfigOption)
       vagrant.puts Generator.vagrantConfigHeader
-      vagrant.puts Generator.awsProviderConfig
-
+      path_to_keyfile, keypair_name = Generator.generateKeypair path
+      vagrant.puts Generator.awsProviderConfig(path_to_keyfile, keypair_name)
       config.each do |node|
         $out.info 'Generate AWS Node definition for ['+node[0]+']'
         vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)

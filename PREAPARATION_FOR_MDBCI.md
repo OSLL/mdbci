@@ -10,6 +10,7 @@ Check if yoe have Docker, Vagrant, Virsh, Libvirt installed. It's better to remo
 ./scripts/install_mdbci_dependencies.sh
 ./scripts/slave_setting/repo_setup.sh
 ```
+*NOTE: if you does not have awscli installed or credentials not configured - you will be asked to provide credentials during execution of script ./scripts/install_mdbci_dependencies.sh
 
 ### After that you need to logout and login
 ```bash
