@@ -1,0 +1,27 @@
+[
+{
+   "product":		"mariadb",
+   "version":		"###version###",
+   "repo":		"http://mirror.netinch.com/pub/mariadb/repo/###version###/debian squeeze main",
+   "repo_key":		"0xcbcb082a1bb943db",
+   "platform":		"debian",
+   "platform_version":	"squeeze"
+},
+{
+   "product":           "mariadb",
+   "version":           "###version###",
+   "repo":              "http://mirror.netinch.com/pub/mariadb/repo/###version###/debian wheezy main",
+   "repo_key":          "0xcbcb082a1bb943db",
+   "platform":          "debian",
+   "platform_version":  "wheezy"
+},
+
+{
+   "product":           "mariadb",
+   "version":           "###version###",
+   "repo":              "http://mirror.netinch.com/pub/mariadb/repo/###version###/debian jessie main",
+   "repo_key":          "0xcbcb082a1bb943db",
+   "platform":          "debian",
+   "platform_version":  "jessie"
+}
+]

@@ -13,7 +13,7 @@
               description:  'Directory with mdbci configs.'
         - string:
               name: MDBCI_REPOSITORY
-              default: git@github.com:OSLL/mdbci.git
+              default: git@github.com:mariadb-corporation/mdbci.git
               description:  'MDBCI repository.'
         - string:
               name: SORTED_GIT_BRANCHES_FILE_PATH
