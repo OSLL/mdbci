@@ -31,7 +31,7 @@ class Generator
 ### Import AWS Provider access config ###
 require 'yaml'
     EOF
-    awsConfig += "aws_config = YAML.load_file('#{File.expand_path(File.join(File.expand_path(path), aws_config_file))}')['aws']\n"
+    awsConfig += "aws_config = YAML.load_file('#{File.expand_path(aws_config_file)}')['aws']\n"
     awsConfig += '## of import AWS Provider access config' + "\n"
     return awsConfig
   end
