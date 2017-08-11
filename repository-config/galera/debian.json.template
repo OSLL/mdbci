@@ -23,5 +23,15 @@
    "repo_key":          "0xcbcb082a1bb943db",
    "platform":          "debian",
    "platform_version":  "jessie"
+},
+
+{
+   "product":           "galera",
+   "version":           "###version###",
+   "repo":              "http://mirror.netinch.com/pub/mariadb/repo/###version###/debian stretch main",
+   "repo_key":          "0xcbcb082a1bb943db",
+   "platform":          "debian",
+   "platform_version":  "stretch"
 }
+
 ]
