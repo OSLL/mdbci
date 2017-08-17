@@ -568,8 +568,22 @@ EOF
     end
 
     vagrant.puts vagrantFileHeader
+    
+    # Check that all boxes have identical provider
+    $out.info 'Check all nodes provider defenitions'
+    providers_array = Array[]
+    config.each do |node|
+      box = node[1]['box'].to_s
+      if !box.empty?
+        provider = boxes.getBox(box)['provider'].to_s
+        providers_array.push(provider)
+      end
+    end
+    if !(providers_array.all? { |e| e == providers_array[0] })
+      raise 'Providers in the configuration file are different! Please correct their names and regenerate again.'
+    end
 
-    unless ($session.awsConfigOption.to_s.empty?)
+    if (!$session.awsConfigOption.to_s.empty? && provider=='aws')
       # Generate AWS Configuration
       vagrant.puts Generator.awsProviderConfigImport(path, $session.awsConfigOption)
       vagrant.puts Generator.vagrantConfigHeader
