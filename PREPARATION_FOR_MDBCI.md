@@ -3,14 +3,30 @@
 ## Preparation scripts and sequence (*current order is important*)
 
 ### Before installation
-Check if yoe have Docker, Vagrant, Virsh, Libvirt installed. It's better to remove this packages before MDBCI dependencies installation, because MDBCI depends on certain versions of packages.
 
-### Run scripts(from MDBCI folder) in next order:
+MDBCI depends upon the _Docker_, _Vagrant_, _Virsh_ and _Libvirt_ packages.
+
+However, as MDBCI depends upon _particular versions_ of these packages, it is
+better to remove them, in case they are already installed, _before_ running
+the installation scripts.
+
+### Run scripts(from MDBCI folder) in following order:
+
+*NOTE*: If you are using an _RPM_-based Linux distribution replace, in the
+following, `install_mdbci_dependencies.sh` with `install_mdbci_dependencies_yum.sh`.
+
 ```bash
 ./scripts/install_mdbci_dependencies.sh
 ./scripts/slave_setting/repo_setup.sh
 ```
-*NOTE: if you does not have awscli installed or credentials not configured - you will be asked to provide credentials during execution of script ./scripts/install_mdbci_dependencies.sh
+*NOTE*: If you do not have _awscli_ installed or credentials have not been
+configured, you will be asked during the execution of
+`./scripts/install_mdbci_dependencies.sh` to provide the following:
+
+* _AWS Access Key ID_: ask around before running the script
+* _AWS Secret Access Key_: ask around before running the script
+* _Default region name_: `eu-west-1`
+* _Default output format_: `json`
 
 ### After that you need to logout and login
 ```bash
