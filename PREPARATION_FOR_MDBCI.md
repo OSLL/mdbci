@@ -45,31 +45,42 @@ Cmnd_Alias VAGRANT_EXPORTS_REMOVE = /bin/sed -r -e * d -ibak /tmp/exp
 %sudo ALL=(root) NOPASSWD: VAGRANT_EXPORTS_ADD, VAGRANT_NFSD_CHECK, VAGRANT_NFSD_START, VAGRANT_NFSD_APPLY, VAGRANT_EXPORTS_REMOVE, VAGRANT_EXPORTS_COPY
 ```
 
-### Now we need to configure IP v6 support
+### Add IPv6 support
+### Optional: if you intend to use Docker, need to configure IPv6 Docker support
 #### Docker
 ```
 service docker stop
-docker daemon --ipv6 &
+dockerd --ipv6 &
 ```
-
+### Optional: if you intend to use Libvirt, need to configure Libvirt IPv6 support
 #### Libvirt
 Run
 ```
 virsh net-edit default
 ```
-Make changes so it looks like that(ip v6 field must exist)
+Add following line to *default* network configuration, between <network> tags:
+```
+<ip family='ipv6' address='2000:abcd:1:dead::1' prefix='64'>
+</ip>
+```
+
+After changes, run command for see changed default network configuration:
 ```
 virsh net-dumpxml default
+```
+
+Configuration will looks like that (ipv6 field must exist):
+```
 <network connections='1'>
   <name>default</name>
-  <uuid>fbe03136-3bfc-4b2f-9817-7a21a757a6ec</uuid>
+  <uuid>...</uuid>
   <forward mode='nat'>
     <nat>
       <port start='1024' end='65535'/>
     </nat>
   </forward>
   <bridge name='virbr0' stp='on' delay='0'/>
-  <mac address='52:54:00:50:f4:f2'/>
+  <mac address='...'/>
   <ip address='192.168.122.1' netmask='255.255.255.0'>
     <dhcp>
       <range start='192.168.122.2' end='192.168.122.254'/>
@@ -79,8 +90,24 @@ virsh net-dumpxml default
   </ip>
 </network>
 ```
+Then we need to restart network:
+```
+virsh net-destroy default
+virsh net-start default
+virsh net-autostart default
+```
 
-### AWS command line tool installation
+And you will see that ipv6 edded with command *ifconfig* (or *ip address*)
+```
+virbr0    Link encap:Ethernet  HWaddr ...
+          ...
+          inet6 addr: 2000:abcd:1:dead::1/64 Scope:Global
+          ...
+```
+
+
+### Optional: if you intend to use AWS
+#### AWS command line tool installation
 
 If tests use AWS command line tool:
 
