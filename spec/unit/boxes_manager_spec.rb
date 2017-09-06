@@ -8,6 +8,7 @@ require_relative '../../core/out'
 
 describe 'BoxesManager' do
   it 'lookup and add boxes' do
+    $mdbci_exec_dir = ENV['WORKSPACE']
     $out = Out.new
     $session = Session.new
     $session.isSilent = true

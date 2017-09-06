@@ -8,6 +8,7 @@ require_relative '../../core/session'
 describe 'Session.getBoxesPlatformVersions' do
 
   before :all do
+    $mdbci_exec_dir = ENV['WORKSPACE']
     $out = Out.new
     $session = Session.new
     $session.isSilent = true

@@ -81,7 +81,7 @@ class NodeProduct
           # execute command
           raise 'No such product for this node!' if repo.nil?
           command = setupProductRepoToMdbciCmd(full_platform, repo)
-          cmd = "ssh -i #{pwd}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
+          cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
           $out.info "Running #{cmd} on #{args[0]}/#{args[1]}"
           vagrant_out = `#{cmd}`
           $out.info vagrant_out
@@ -105,14 +105,14 @@ class NodeProduct
         # execute command
         raise 'No such product for this node!' if repo.nil?
         command = setupProductRepoToMdbciCmd(full_platform, repo)
-        cmd = "ssh -i #{pwd}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
+        cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
         $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
         vagrant_out = `#{cmd}`
         $out.info vagrant_out
         raise "command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
       end
     else # aws, vbox, libvirt, docker nodes
-      Dir.chdir args[0]
+      Dir.chdir $work_dir+'/'+args[0]
       $session.loadTemplateNodes
       if args[1].nil? # No node argument, copy keys to all nodes
         raise "0 nodes found in #{args[0]}" if $session.templateNodes.empty?
@@ -245,7 +245,7 @@ class NodeProduct
   def self.installProduct(args)
     pwd = Dir.pwd
     # Loading file with product packages to every system
-    products = JSON.parse(File.read('products.json'))
+    products = JSON.parse(File.read($mdbci_exec_dir+'/products.json'))
     raise 'Configuration name is required' if args.nil?
     args = args.split('/')
     # mdbci box
@@ -265,7 +265,7 @@ class NodeProduct
           $out.info "Install #{$session.nodeProduct} repo to #{platform[0]}"
           # execute command
           command = installProductToMdbciCmd(platform[0], packages)
-          cmd = "ssh -i #{pwd}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
+          cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
           $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
           vagrant_out = `#{cmd}`
           $out.info vagrant_out
@@ -287,14 +287,14 @@ class NodeProduct
         $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0].to_s
         # execute command
         command = installProductToMdbciCmd(platform[0], packages)
-        cmd = "ssh -i #{pwd}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
+        cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
         $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
         vagrant_out = `#{cmd}`
         $out.info vagrant_out
         raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}" if $?.exitstatus != 0
       end
     else # aws, vbox, libvirt, docker nodes
-      Dir.chdir args[0]
+      Dir.chdir $work_dir+'/'+args[0]
       $session.loadTemplateNodes
       if args[1].nil? # No node argument, copy keys to all nodes
         raise "nodes not  found in #{args[0]}" if $session.templateNodes.empty?

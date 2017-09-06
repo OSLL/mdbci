@@ -10,6 +10,7 @@ describe 'Session' do
   box_should_be_removed = nil
 
   before :all do
+    $mdbci_exec_dir = ENV['WORKSPACE']
     $out = Out.new
     $session = Session.new
     $session.isSilent = true

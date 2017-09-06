@@ -24,6 +24,7 @@ JSON_BOX = BOX.to_json + "\n"
 describe 'BoxesManager' do
 
   before :all do
+    $mdbci_exec_dir = ENV['WORKSPACE']
     $out = Out.new
     $session = Session.new
     $session.isSilent = true

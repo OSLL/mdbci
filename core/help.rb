@@ -5,9 +5,9 @@ DOCS_HELP_PATH = 'docs/help.md'
 
 class Help
   def Help.display
-    
-    $out.out `cat #{DOCS_HELP_PATH}`
- 
+
+    $out.out `cat #{$mdbci_exec_dir}/#{DOCS_HELP_PATH}`
+
   end
 
 end
