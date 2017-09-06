@@ -1,0 +1,10 @@
+[
+{
+   "product":		"maxscale",
+   "version":           "default",
+   "repo":		"###repo_prefix###/###version###/opensuse/###platform_version###/$basearch",
+   "repo_key":		"https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY",
+   "platform":		"opensuse",
+   "platform_version":  "###platform_version###"
+}
+]
