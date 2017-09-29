@@ -41,7 +41,7 @@ list=`ls -1 *.json`
 echo $list
 cd $c_dir
 
-vers=$(./get_release_versions.sh $repo $downloads_url)
+vers=$(~/mdbci/repository-config/get_release_versions.sh $repo $downloads_url)
 
 for f in $list
 do
