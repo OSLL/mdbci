@@ -258,6 +258,12 @@ class Snapshot
     case @provider
       when LIBVIRT
         execute_bash("virsh snapshot-revert --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{full_snapshot_name}", false, false)
+        pwd = Dir.pwd
+        Dir.chdir @nodes_directory_name
+        execute_bash("vagrant ssh #{@node_name} -c '/usr/bin/sudo service ntpd stop'", true, true)
+        execute_bash("vagrant ssh #{@node_name} -c '/usr/bin/sudo ntpdate 0.europe.pool.ntp.org'", $
+        execute_bash("vagrant ssh #{@node_name} -c '/usr/bin/sudo service ntpd start'", true, true)
+        Dir.chdir pwd
       when DOCKER
         change_current_docker_snapshot(node_name, full_snapshot_name)
         current_dir = Dir.pwd
