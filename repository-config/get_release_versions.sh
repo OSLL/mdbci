@@ -32,7 +32,7 @@ function is_not_contains () {
 repo=$1
 base_url=$2
 tags=`git ls-remote --tags $repo | grep -o -P '(?<=tags\/maxscale-).*(?=\^)'`
-release_versions=()
+release_versions=("beta" "latest" "2.0.1-oct27")
 for tag in $tags
 do
   url="$base_url$tag/"
