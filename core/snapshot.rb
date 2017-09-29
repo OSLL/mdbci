@@ -261,7 +261,7 @@ class Snapshot
         pwd = Dir.pwd
         Dir.chdir @nodes_directory_name
         execute_bash("vagrant ssh #{@node_name} -c '/usr/bin/sudo service ntpd stop'", true, true)
-        execute_bash("vagrant ssh #{@node_name} -c '/usr/bin/sudo ntpdate 0.europe.pool.ntp.org'", $
+        execute_bash("vagrant ssh #{@node_name} -c '/usr/bin/sudo ntpdate 0.europe.pool.ntp.org'", false, false)
         execute_bash("vagrant ssh #{@node_name} -c '/usr/bin/sudo service ntpd start'", true, true)
         Dir.chdir pwd
       when DOCKER
