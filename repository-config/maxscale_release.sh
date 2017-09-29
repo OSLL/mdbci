@@ -4,36 +4,6 @@
 # $2 - destanation
 # $3 - repo path
 
-get_release_versions () {
-  # $1 - repo path
-  # $2 - url to release downloads
-  repo=$3
-  base_url=$1
-  tags=`git ls-remote --tags $repo | grep -o -P '(?<=tags\/maxscale-).*(?=\^)'`
-  release_versions=()
-  for tag in $tags
-  do
-  	url="$base_url$tag/"
-  	if curl --output /dev/null --silent --head --fail "$url"; then
-      release_versions+=($tag)
-      url="$base_url$tag-debug/"
-      	if curl --output /dev/null --silent --head --fail "$url"; then
-          release_versions+=("$tag-debug")
-        fi
-    fi
-    tag=${tag::${#tag}-2}
-    url="$base_url$tag/"
-    if curl --output /dev/null --silent --head --fail "$url"; then
-      release_versions+=($tag)
-      url="$base_url$tag-debug/"
-      	if curl --output /dev/null --silent --head --fail "$url"; then
-          release_versions+=("$tag-debug")
-        fi
-    fi
-  done
-  echo ${release_versions[@]}
-}
-
 downloads_url=$1
 dest=$2
 repo=$3
@@ -71,7 +41,7 @@ list=`ls -1 *.json`
 echo $list
 cd $c_dir
 
-vers=$(get_release_versions $repo $downloads_url)
+vers=$(./get_release_versions.sh $repo $downloads_url)
 
 for f in $list
 do
