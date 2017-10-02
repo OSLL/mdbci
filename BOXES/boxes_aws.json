@@ -39,6 +39,14 @@
     "platform": "ubuntu",
     "platform_version": "precise"
   },
+  "ubuntu_yakkety_aws": {
+    "provider": "aws",
+    "ami": "ami-0a4d556c",
+    "user": "ubuntu",
+    "default_instance_type": "m3.medium",
+    "platform": "ubuntu",
+    "platform_version": "yakkety"
+  },
   "centos_7_aws" : {
     "provider": "aws",
     "ami": "ami-1c2e8b6b",
