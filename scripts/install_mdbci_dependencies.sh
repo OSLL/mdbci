@@ -23,11 +23,11 @@ if [[ $(vagrant --version) != "Vagrant 1.8.1" ]]; then
         sudo dpkg -i vagrant_1.8.1_x86_64.deb
         rm vagrant_1.8.1_x86_64.deb
 fi
-vagrant plugin install vagrant-vbguest
-vagrant plugin install vagrant-aws
+
+vagrant plugin install vagrant-aws --plugin-version 0.7.2
 vagrant plugin install vagrant-libvirt --plugin-version 0.0.33
-vagrant plugin install vagrant-mutate
-vagrant plugin install vagrant-omnibus
+vagrant plugin install vagrant-mutate --plugin-version 1.2.0
+vagrant plugin install vagrant-omnibus --plugin-version 1.5.0
 vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
 
 
