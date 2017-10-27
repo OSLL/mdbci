@@ -35,12 +35,11 @@ if [[ $(vagrant --version) != "Vagrant 1.8.1" ]]; then
         checkStatus rm vagrant_1.8.1_x86_64.deb
 fi
 
-checkStatus vagrant plugin install vagrant-aws
+checkStatus vagrant plugin install vagrant-aws --plugin-version 0.7.2
 checkStatus vagrant plugin install vagrant-libvirt --plugin-version 0.0.33
-checkStatus vagrant plugin install vagrant-mutate
-checkStatus vagrant plugin install vagrant-omnibus
+checkStatus vagrant plugin install vagrant-mutate --plugin-version 1.2.0
+checkStatus vagrant plugin install vagrant-omnibus --plugin-version 1.5.0
 checkStatus vagrant box add --force dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
-
 
 # Libvirt and tools(virsh, virt-clone)
 checkStatus sudo apt install qemu-kvm \
