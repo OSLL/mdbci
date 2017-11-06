@@ -16,6 +16,7 @@ EOF
 describe 'Generator' do
 
   before :all do
+    $mdbci_exec_dir = ENV['WORKSPACE']
     $session = Session.new
     $session.ipv6 = false
   end
@@ -29,7 +30,7 @@ describe 'Generator' do
   end
 
   it '#getQemuDef returns config default recipe for machine without product' do
-    Generator.getQemuDef('test', 'test', 'test', 'test', 'test', 'test', 'test', false).should include getDefaultRecipeTemplate
+    Generator.getQemuDef('test', 'test','test' , 'test', 'test', 'false', '1024', 'test', false).should include getDefaultRecipeTemplate
   end
 
   it '#getDockerDef returns config default recipe for machine without product' do
@@ -45,7 +46,7 @@ describe 'Generator' do
   end
 
   it '#getQemuDef returns config default recipe for machine without product' do
-    Generator.getQemuDef('test', 'test', 'test', 'test', 'test', 'test', 'test', true).should_not include getDefaultRecipeTemplate
+    Generator.getQemuDef('test', 'test','test' , 'test', 'test', 'false', '1024', 'test', true).should_not include getDefaultRecipeTemplate
   end
 
   it '#getDockerDef returns config default recipe for machine without product' do

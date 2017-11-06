@@ -1,7 +1,9 @@
 require 'date'
 require 'fileutils'
 require 'json'
+require 'pathname'
 require 'securerandom'
+require 'socket'
 
 require_relative '../core/out'
 
@@ -23,18 +25,18 @@ class Generator
     vagrantFileHeader += " ####\n\n"
   end
 
-  def Generator.awsProviderConfigImport(aws_config_file)
+  def Generator.awsProviderConfigImport(path, aws_config_file)
     awsConfig = <<-EOF
 
 ### Import AWS Provider access config ###
 require 'yaml'
     EOF
-    awsConfig += 'aws_config = YAML.load_file(' + quote(aws_config_file.to_s) + ")['aws']\n"
+    awsConfig += "aws_config = YAML.load_file('#{File.expand_path(aws_config_file)}')['aws']\n"
     awsConfig += '## of import AWS Provider access config' + "\n"
     return awsConfig
   end
 
-  def Generator.awsProviderConfig
+  def Generator.awsProviderConfig(pemfile_path, keypair_name)
     awsProviderConfig = <<-EOF
 
   ###           AWS Provider config block                 ###
@@ -42,14 +44,13 @@ require 'yaml'
   config.vm.box = "dummy"
 
   config.vm.provider :aws do |aws, override|
-    aws.access_key_id = aws_config["access_key_id"]
-    aws.secret_access_key = aws_config["secret_access_key"]
-    aws.keypair_name = aws_config["keypair_name"]
+    aws.keypair_name = "#{keypair_name}"
     aws.region = aws_config["region"]
     aws.security_groups = aws_config["security_groups"]
     aws.user_data = aws_config["user_data"]
-    override.ssh.private_key_path = aws_config["pemfile"]
+    override.ssh.private_key_path = "#{pemfile_path}"
     override.nfs.functional = false
+    aws.aws_profile = "mdbci"
   end ## of AWS Provider config block
 
     EOF
@@ -155,7 +156,7 @@ EOF
   end
 
   # Vagrantfile for Libvirt provider
-  def Generator.getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
+  def Generator.getQemuDef(cookbook_path, path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
     if template_path
       templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates') \
                     +", type:"+quote('rsync')
@@ -177,7 +178,7 @@ EOF
             + network_conf \
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
-            + "\t"+name+'.vm.synced_folder '+quote('./')+", "+quote('/vagrant')+", type: "+quote('rsync')+"\n" \
+            + "\t"+name+'.vm.synced_folder '+quote(File.expand_path(path))+", "+quote('/vagrant')+", type: "+quote('rsync')+"\n" \
             + templatedef + "\n"\
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
             + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n" \
@@ -509,7 +510,7 @@ EOF
                                 })
           machine = getAWSVmDef(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned, tags)
         when 'libvirt'
-          machine = getQemuDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
+          machine = getQemuDef(cookbook_path, path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
         when 'docker'
           machine = getDockerDef(cookbook_path, path, name, ssh_pty, template_path, provisioned, platform, platform_version, box)
           copyDockerfiles(path, name, platform, platform_version)
@@ -531,13 +532,28 @@ EOF
     return machine
   end
 
+  def Generator.generateKeypair(path)
+    hostname = Socket.gethostname
+    keypair_name = Pathname(File.expand_path(path)).basename
+    aws_cmd_output = `aws --profile mdbci ec2 create-key-pair --key-name #{hostname}_#{keypair_name}_#{Time.new.to_i}`
+    raise "AWS CLI command exited with non zero exit code: #{$?.exitstatus}" unless $?.success?
+    aws_json_credential = JSON.parse(aws_cmd_output)
+    keyfile_name = 'maxscale.pem'
+    path_to_keyfile = File.join(File.expand_path(path), keyfile_name)
+    open(path_to_keyfile, 'w') do |f|
+      f.write(aws_json_credential["KeyMaterial"])
+    end
+    return path_to_keyfile, aws_json_credential["KeyName"]
+  end
+
   def Generator.generate(path, config, boxes, override, provider)
 
     #TODO MariaDb Version Validator
 
     checkPath(path, override)
 
-    cookbook_path = '../recipes/cookbooks/' # default cookbook path
+    cookbook_path = $mdbci_exec_dir + '/recipes/cookbooks/' # default cookbook path
+          $out.info  cookbook_path
     unless (config['cookbook_path'].nil?)
       cookbook_path = config['cookbook_path']
     end
@@ -552,14 +568,27 @@ EOF
     end
 
     vagrant.puts vagrantFileHeader
+    
+    # Check that all boxes have identical provider
+    $out.info 'Check all nodes provider defenitions'
+    providers_array = Array[]
+    config.each do |node|
+      box = node[1]['box'].to_s
+      if !box.empty?
+        provider = boxes.getBox(box)['provider'].to_s
+        providers_array.push(provider)
+      end
+    end
+    if !(providers_array.all? { |e| e == providers_array[0] })
+      raise 'Providers in the configuration file are different! Please correct their names and regenerate again.'
+    end
 
-    unless ($session.awsConfigOption.to_s.empty?)
+    if (!$session.awsConfigOption.to_s.empty? && provider=='aws')
       # Generate AWS Configuration
-      vagrant.puts Generator.awsProviderConfigImport($session.awsConfigOption)
+      vagrant.puts Generator.awsProviderConfigImport(path, $session.awsConfigOption)
       vagrant.puts Generator.vagrantConfigHeader
-
-      vagrant.puts Generator.awsProviderConfig
-
+      path_to_keyfile, keypair_name = Generator.generateKeypair path
+      vagrant.puts Generator.awsProviderConfig(path_to_keyfile, keypair_name)
       config.each do |node|
         $out.info 'Generate AWS Node definition for ['+node[0]+']'
         vagrant.puts Generator.nodeDefinition(node, boxes, path, cookbook_path)

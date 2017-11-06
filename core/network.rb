@@ -72,7 +72,7 @@ class Network
     node_name = node[0]
     node_params = node[1]
     box_params = getBoxParameters(node_params)
-    key_path = "#{pwd}/KEYS/#{box_params['keyfile']}"
+    key_path = "#{$mdbci_exec_dir}/KEYS/#{box_params['keyfile']}"
     unless File.exist?(key_path)
       raise "Key file #{box_params['keyfile']} is not found for node #{node_name} in #{dir}"
     end
@@ -184,13 +184,22 @@ class Network
   end
 
   def self.getIpWrapper(node, pwd)
-    begin
-      node.getIp(node.provider, false)
-    rescue => e
-      Dir.chdir pwd
-      $out.error(e.message)
-      $out.error(e.backtrace)
-      raise "Incorrect node"
+    attempts = 10
+    duration = 5
+    while attempts > 0
+        begin
+           node.getIp(node.provider, false)
+           break
+        rescue Exception => e
+           Dir.chdir pwd
+           $out.warning(e.message)
+           sleep duration
+           attempts = attempts - 1
+        end
+    end
+    if attempts == 0
+        Dir.chdir pwd
+        raise "Incorrect node"
     end
     hash={ 'ip' => node.ip.to_s }
     return hash

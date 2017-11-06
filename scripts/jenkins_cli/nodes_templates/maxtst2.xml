@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<slave>
+  <name>maxtst2</name>
+  <description>maxtst2</description>
+  <remoteFS>/home/vagrant/</remoteFS>
+  <numExecutors>30</numExecutors>
+  <mode>EXCLUSIVE</mode>
+  <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+  <launcher class="hudson.plugins.sshslaves.SSHLauncher" plugin="ssh-slaves@1.17">
+    <host>max-tst-02.mariadb.com</host>
+    <port>22</port>
+    <credentialsId>8e6c1caa-d3b0-475b-9815-a46908f8aaf2</credentialsId>
+    <maxNumRetries>0</maxNumRetries>
+    <retryWaitTime>0</retryWaitTime>
+  </launcher>
+  <label>maxtst2</label>
+  <nodeProperties/>
+</slave>

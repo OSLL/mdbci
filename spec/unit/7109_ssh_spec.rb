@@ -11,6 +11,7 @@ describe 'Session' do
   PPC_CONF = ENV['mdbci_param_conf_ppc']
 
   before :all do
+    $mdbci_exec_dir = ENV['WORKSPACE']
     $out = Out.new
     $session = Session.new
     $session.isSilent = true

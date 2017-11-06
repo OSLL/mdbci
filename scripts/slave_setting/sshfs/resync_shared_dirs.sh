@@ -18,8 +18,8 @@ do
   LS_ERROR=$(ls $dir_to_resync 2>&1)
   LS_ERROR_MSG="ls: cannot access ${dir_to_resync}: Input/output error"
 
-  if [ "$ERROR_MSG" = "$LS_ERROR" ] ; then
-       fusermount -u $dir_to_resync
+  if ! ls $HOME/$dir_to_resync 2>&1 ; then
+       fusermount -u $HOME/$dir_to_resync
   fi
 
   echo "checking ${dir_to_resync}"
