@@ -8,7 +8,7 @@ cd $script_dir
 
 # Function executes the passed command. If it is not successfull, then
 # function shows the coman that have failed and exits from the script.
-function checkStatus {
+function failOnError {
   "$@"
   local status=$?
   if [ $status -ne 0 ]; then
