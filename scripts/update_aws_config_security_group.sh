@@ -1,3 +1,12 @@
+#!/bin/bash
+# This script generates aws-config.yaml file that contains the security group.
+# The group name is passed as the parameter to the script
+
+# Get the location of the script and go into parent directory.
+script_dir=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+cd $script_dir/../
+
+# Create security group and update aws-config.yml file
 group_name=$1
 aws  --profile mdbci --output json ec2 create-security-group --group-name ${group_name} --description "MDBCI ${group_name} security group"
 if [[ $? == 0 ]]; then
@@ -9,7 +18,9 @@ if [[ $? == 0 ]]; then
     echo "Security group ${group_name} configured!"
   else
     echo "Error occured while configuring security group ${group_name}!"
+    exit 1
   fi
 else
-  echo echo "Error occured while creating security group ${group_name}!"
+  echo "Error occured while creating security group ${group_name}!"
+  exit 1
 fi
