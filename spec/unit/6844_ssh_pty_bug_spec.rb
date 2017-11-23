@@ -10,6 +10,7 @@ describe 'Generator' do
   # must be prepared box with IP and keyfile location that is targeting real running machine
   # that can be accessed through ssh
   before :all do
+    $mdbci_exec_dir = ENV['WORKSPACE']
     $session = Session.new
     $session.ipv6 = false
   end
@@ -23,11 +24,11 @@ describe 'Generator' do
   end
 
   it "#getQemuDef should return string with '\tconfig.ssh.pty = true' in it" do
-    Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'true', '1024', 'TEST', 'TEST').should include 'config.ssh.pty = true'
+    Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'TEST', 'true', '1024', 'TEST', false).should include 'config.ssh.pty = true'
   end
 
-  it "#getQemuDef should return string without '\tconfig.ssh.pty = true' in it" do
-    Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'false', '1024', 'TEST', 'TEST').should_not include 'config.ssh.pty = true'
+  it "#getQemuDef should return string with '\tconfig.ssh.pty = false' in it" do
+    Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'TEST', 'false', '1024', 'TEST', false).should include 'config.ssh.pty = false'
   end
   it "#getDockerDef should return string with '\tconfig.ssh.pty = true' in it" do
     Generator.getDockerDef('TEST', 'TEST','true' , 'TEST', 'TEST', 'TEST', 'TEST', 'TEST', 'TEST').should_not include 'config.ssh.pty = true'

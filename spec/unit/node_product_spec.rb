@@ -9,6 +9,7 @@ require_relative '../../core/repo_manager'
 describe 'NodeProduct' do
 
   before :all do
+    $mdbci_exec_dir = ENV['WORKSPACE']
     $session = Session.new
     $session.isSilent = true
     $out = Out.new

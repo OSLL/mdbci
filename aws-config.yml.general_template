@@ -1,0 +1,6 @@
+aws:
+   security_groups : [ 'default', '#{SECURITY_GROUP}' ]
+   region : 'eu-west-1'
+   user_data : "#!/bin/bash\nsed -i -e 's/^Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers"
+   public_ip_service : 'curl http://169.254.169.254/latest/meta-data/public-ipv4'
+   private_ip_service : 'curl http://169.254.169.254/latest/meta-data/local-ipv4'
