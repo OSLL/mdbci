@@ -7,6 +7,16 @@ sudo yum clean all
 sudo yum install git build-essential wget -y
 sudo yum groupinstall "Development Tools" -y
 
+# AWS CLI tool
+sudo pip install --upgrade awscli
+# Check AWS CLI credentials
+aws --profile mdbci iam get-user
+if [[ $? != 0 ]]; then
+  aws --profile mdbci configure
+fi
+# Create security group and update aws-config.yml file
+./scripts/update_aws_config_security_group.sh hostname_$(date +%s)
+
 # Vagrant and prerequisites
 sudo yum  install ruby libxslt-devel \
                           libxml2-devel \
@@ -24,6 +34,8 @@ vagrant plugin install vagrant-aws
 vagrant plugin install vagrant-libvirt --plugin-version 0.0.33
 vagrant plugin install vagrant-mutate
 vagrant plugin install vagrant-omnibus
+vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
+
 
 # Libvirt and tools(virsh, virt-clone)
 sudo yum install qemu-kvm \

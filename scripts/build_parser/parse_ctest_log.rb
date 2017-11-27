@@ -74,7 +74,7 @@ MAXSCALE_SYSTEM_TEST_COMMIT_MR = "maxscale_system_test_commit"
 
 MAXSCALE_FULL = "Maxscale full version"
 
-NEW_LINE_JENKINS_FORMAT = " \\\n"
+NEW_LINE_JENKINS_FORMAT = " \\n\\\n"
 
 opts = GetoptLong.new(
     [LOG_FILE_OPTION, '-l', GetoptLong::REQUIRED_ARGUMENT],
