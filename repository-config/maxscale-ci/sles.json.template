@@ -1,0 +1,10 @@
+[
+{
+   "product":		"maxscale",
+   "version":		"default",
+   "repo":		"${ci_url}/$ci/mariadb-maxscale/sles/${platform_version}/\$basearch",
+   "repo_key":		"${rpm_repo_key}",
+   "platform":		"sles",
+   "platform_version":	"${platform_version}"
+}
+]

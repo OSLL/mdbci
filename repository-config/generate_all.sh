@@ -48,4 +48,3 @@ dest=$1
 ~/mdbci/repository-config/generate.sh community_archive_noyum debian $dest
 ~/mdbci/repository-config/generate.sh community_archive_noyum ubuntu $dest
 
-~/mdbci/repository-config/maxscale_release.sh https://downloads.mariadb.com/MaxScale/ $dest https://github.com/mariadb-corporation/MaxScale.git
