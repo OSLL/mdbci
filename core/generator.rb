@@ -25,7 +25,7 @@ class Generator
     vagrantFileHeader += " ####\n\n"
   end
 
-  def self.awsProviderConfigImport(path, aws_config_file)
+  def self.awsProviderConfigImport(aws_config_file)
     awsConfig = <<-EOF
 
 ### Import AWS Provider access config ###
@@ -585,7 +585,7 @@ EOF
 
     if (!$session.awsConfigOption.to_s.empty? && provider=='aws')
       # Generate AWS Configuration
-      vagrant.puts awsProviderConfigImport(path, $session.awsConfigOption)
+      vagrant.puts awsProviderConfigImport($session.awsConfigOption)
       vagrant.puts vagrantConfigHeader
       path_to_keyfile, keypair_name = generateKeypair path
       vagrant.puts awsProviderConfig(path_to_keyfile, keypair_name)
