@@ -35,22 +35,20 @@ class Generator
   end
 
   def self.awsProviderConfig(pemfile_path, keypair_name)
-    awsProviderConfig = <<-EOF
+    <<~EOF
+    ###           AWS Provider config block                 ###
+    ###########################################################
+    config.vm.box = "dummy"
 
-  ###           AWS Provider config block                 ###
-  ###########################################################
-  config.vm.box = "dummy"
-
-  config.vm.provider :aws do |aws, override|
-    aws.keypair_name = "#{keypair_name}"
-    aws.region = aws_config["region"]
-    aws.security_groups = aws_config["security_groups"]
-    aws.user_data = aws_config["user_data"]
-    override.ssh.private_key_path = "#{pemfile_path}"
-    override.nfs.functional = false
-    aws.aws_profile = "mdbci"
-  end ## of AWS Provider config block
-
+    config.vm.provider :aws do |aws, override|
+      aws.keypair_name = "#{keypair_name}"
+      aws.region = aws_config["region"]
+      aws.security_groups = aws_config["security_groups"]
+      aws.user_data = aws_config["user_data"]
+      override.ssh.private_key_path = "#{pemfile_path}"
+      override.nfs.functional = false
+      aws.aws_profile = "mdbci"
+    end ## of AWS Provider config block
     EOF
   end
 
