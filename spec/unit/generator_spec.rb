@@ -62,23 +62,26 @@ describe "Generator" do
   # tests for aws
   context '.AWS' do
 
-    it "Check Vagrantfile aws config import" do
+    it 'Check Vagrantfile aws config import' do
       aws_config_file = '../aws-config.yml'
-      awsConfigImport = Generator.awsProviderConfigImport(aws_config_file)
-      Generator.awsProviderConfigImport(aws_config_file).should eq(awsConfigImport)
+      aws_config_import = Generator.awsProviderConfigImport(aws_config_file)
+      expect(Generator.awsProviderConfigImport(aws_config_file)).to eq(aws_config_import)
     end
 
     it 'Check Vagrantfile aws provider config' do
       pem_file_path = 'file.pem'
       keypair_name = 'keypair'
-      awsProviderConfig = Generator.awsProviderConfig(pem_file_path, keypair_name)
-      expect(awsProviderConfig).to include(pem_file_path)
-      expect(awsProviderConfig).to include(keypair_name)
+      aws_provider_config = Generator.awsProviderConfig(pem_file_path, keypair_name)
+      expect(aws_provider_config).to include(pem_file_path)
+      expect(aws_provider_config).to include(keypair_name)
     end
 
-    it "Check AWS VM definition" do
-      aws_def = Generator.getAWSVmDef('../recipes/cookbooks/', 'node1', 'centos7', 'ec2-user', 'true', 't1.micro', './cnf', true, 'test')
-      aws_def = Generator.getAWSVmDef('../recipes/cookbooks/', 'node1', 'centos7', 'ec2-user', 'true', 't1.micro', './cnf', true, 'test').should eq(aws_def)
+    it 'Check AWS VM definition' do
+      aws_def = Generator.getAWSVmDef('../recipes/cookbooks/', 'node1', 'centos7',
+                                      'ec2-user', 'true', 't1.micro', './cnf', true, 'test')
+      expect(Generator.getAWSVmDef('../recipes/cookbooks/', 'node1', 'centos7',
+                                   'ec2-user', 'true', 't1.micro', './cnf', true,
+                                   'test')).to eq(aws_def)
     end
 
   end
