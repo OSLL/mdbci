@@ -33,7 +33,7 @@ describe 'Session' do
 end
 
 describe 'test_spec' do
-  executeShellCommandsAndTestExitCode ([
-      {'shell_command'=>'./mdbci show platforms', 'expectation'=>0},
+  execute_shell_commands_and_test_exit_code ([
+      {shell_command: './mdbci show platforms', exit_code: 0},
   ])
 end

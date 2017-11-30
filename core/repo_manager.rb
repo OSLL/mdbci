@@ -40,6 +40,7 @@ class RepoManager
     @repos.keys.each do |key|
       $out.out key + ' => [' +@repos[key]['repo'] +']'
     end
+    0
   end
 
   def getRepo(key)

@@ -199,7 +199,7 @@ EOF
     params = args.split('/')
     dir = params[0]
     node_arg =  params[1]
-    
+
     # mdbci ppc64 boxes
     if File.exist?(dir+'/mdbci_template')
       loadMdbciNodes dir
@@ -280,18 +280,6 @@ EOF
     return 0
   end
 
-  def showBoxes
-    exit_code = 1
-    begin
-      $out.out JSON.pretty_generate(@boxes.boxesManager)
-      exit_code = 0
-    rescue
-      $out.error "check boxes configuration and try again"
-      exit_code = 1
-    end
-    return exit_code
-  end
-
   def getPlatfroms
     if !@boxes.boxesManager.empty?
       platforms = Array.new
@@ -319,38 +307,37 @@ EOF
 
   # show boxes with platform and version
   def showBoxes
-    exit_code = 1
-
-    if $session.boxPlatform.nil?
-      $out.warning './mdbci show boxes --platform command option is not defined!'
-      exit_code = 1
-    elsif $session.boxPlatform.nil? and $session.boxPlatformVersion.nil?
-      $out.warning './mdbci show boxes --platform or --platform-version command parameters are not defined!'
-      exit_code = 1
+    if @boxPlatform.nil?
+      $out.warning 'Required parameter --platform is not defined.'
+      $out.info 'Full command specification:'
+      $out.info './mdbci show boxes --platform PLATFORM [--platform-version VERSION]'
+      return 1
     end
-    # check for undefined box
-    some_box = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
+    # check for undefined box platform
+    some_box = @boxes.boxesManager.find { |box| box[1]['platform'] == @boxPlatform }
     if some_box.nil?
-      $out.warning 'Platform '+$session.boxPlatform+' is not supported!'
-      exit_code = 1
+      $out.warning "Platform #{@boxPlatform} is not supported!"
+      return 1
+    end
+    if @boxPlatformVersion.nil?
+      $out.warning 'Optional paremeter --platform-version is not defined'
     end
 
-    if !$session.boxPlatformVersion.nil?
-      $out.info 'List of boxes for the '+$session.boxPlatform+'^'+$session.boxPlatformVersion+' platform'
-    else
-      $out.info 'List of boxes for the '+$session.boxPlatform+' platform:'
-    end
-    $session.boxes.boxesManager.each do |box, params|
-      if params.has_value?($session.boxPlatform) and $session.boxPlatformVersion.nil?
-        $out.out box.to_s
-        exit_code = 0
-      elsif params.has_value?($session.boxPlatform) and params.has_value?($session.boxPlatformVersion)
-        $out.out box.to_s
-        exit_code = 0
+    platform_name = if @boxPlatformVersion.nil?
+                      @boxPlatform
+                    else
+                      "#{@boxPlatform}^#{@boxPlatformVersion}"
+                    end
+    $out.info "List of boxes for the #{platform_name} platform:"
+    boxes_found = false
+    @boxes.boxesManager.each do |box, params|
+      if params['platform'] == @boxPlatform && (
+           @boxPlatformVersion.nil? || params['platform_version'] == @boxPlatformVersion)
+        $out.out box
+        boxes_found = true
       end
     end
-
-    return exit_code
+    boxes_found ? 0 : 1
   end
 
   def showBoxField
@@ -375,10 +362,14 @@ EOF
   end
 
 
-  def showBoxNameByPath(path)
+  def showBoxNameByPath(path = nil)
+    if path.nil?
+      $out.warning 'Please specify the path to the nodes configuration as a parameter'
+      return 2
+    end
     boxName = $session.boxes.getBoxNameByPath(path)
     $out.out boxName
-    return 0
+    0
   end
 
   def validate_template
@@ -395,40 +386,93 @@ EOF
     return 0
   end
 
+  # List of actions that are provided by the show command.
+  SHOW_COMMAND_ACTIONS = {
+    box: {
+      description: 'Show box name based on the path to the configuration file',
+      action: ->(*params) { showBoxNameByPath(*params) }
+    },
+    boxes: {
+      description: 'List available boxes',
+      action: ->(*) { showBoxes }
+    },
+    boxinfo: {
+      description: 'Show the field value of the box configuration',
+      action: ->(*) { showBoxField }
+    },
+    boxkeys: {
+      description: 'Show keys for all configured boxes',
+      action: ->(*) { showBoxKeys }
+    },
+    keyfile: {
+      description: 'Show box key file to access it',
+      action: ->(*params) { Network.showKeyFile(*params) }
+    },
+    help: {
+      description: 'Print list of available actions and exit',
+      action: ->(*) { display_usage_info('show', SHOW_COMMAND_ACTIONS) }
+    },
+    network: {
+      description: 'Show network interface configuration',
+      action: ->(*params) { Network.show(*params) }
+    },
+    network_config: {
+      description: 'Write host network configuration to the file',
+      action: ->(*params) { printConfigurationNetworkInfoToFile(*params) }
+    },
+    platforms: {
+      description: 'List all known platforms',
+      action: ->(*) { showPlatforms }
+    },
+    private_ip: {
+      description: 'Show private ip address of the box',
+      action: ->(*params) { Network.show(*params) }
+    },
+    provider: {
+      description: 'Show provider for the specified box',
+      action: ->(*params) { showProvider(*params) }
+    },
+    repos: {
+      description: 'List all configured repositories',
+      action: ->(*) { @repos.show }
+    },
+    versions: {
+      description: 'List boxes versions for specified platform',
+      action: ->(*) { showBoxesPlatformVersions }
+    }
+  }
 
-  def show(collection)
-    exit_code = 1
-    case collection
-      when 'boxes'
-        exit_code = showBoxes
-      when 'box'
-        exit_code = showBoxNameByPath(ARGV.shift)
-      when 'boxinfo'
-        exit_code = showBoxField
-      when 'repos'
-        @repos.show
-      when 'versions'
-        exit_code = showBoxesPlatformVersions
-      when 'platforms'
-        exit_code = showPlatforms
-      when 'network'
-        exit_code = Network.show(ARGV.shift)
-      when 'private_ip'
-        exit_code = Network.private_ip(ARGV.shift)
-      when 'keyfile'
-        exit_code = Network.showKeyFile(ARGV.shift)
-      when 'boxkeys'
-        exit_code = showBoxKeys
-      when 'provider'
-        exit_code = showProvider(ARGV.shift)
-      when 'network_config'
-        exit_code = printConfigurationNetworkInfoToFile(ARGV.shift)
-      else
-        $out.error 'Unknown show command collection: '+collection
+  # Show list of actions available for the base command
+  #
+  # @param base_command [String] name of the command user is typing
+  # @param actions [Hash] list of commands that must be described
+  def display_usage_info(base_command, actions)
+    max_width = actions.keys.map(&:length).max
+    $out.out "List of subcommands for #{base_command}"
+    actions.keys.sort.each do |action|
+      $out.out format("%-#{max_width}s %s", action, actions[action][:description])
     end
-    return exit_code
+    0
   end
 
+  # Show information to the user about
+  #
+  # @param parameters [Array] of parameters to the show command
+  def show(parameters)
+    if parameters.empty?
+      $out.warning 'Please specify an action for the show command.'
+      display_usage_info('show', SHOW_COMMAND_ACTIONS)
+      return 0
+    end
+    action_name, *action_parameters = *parameters
+    action = SHOW_COMMAND_ACTIONS[action_name.to_sym]
+    if action.nil?
+      $out.warning "Unknown action for the show command: #{action_name}."
+      display_usage_info('show', SHOW_COMMAND_ACTIONS)
+      return 2
+    end
+    instance_exec(*action_parameters, &action[:action])
+  end
 
   def clone(path_to_nodes, new_path_to_nodes)
     $out.info "Performing cloning operation for config #{path_to_nodes}. Cloned configuration name: #{new_path_to_nodes}"
@@ -436,41 +480,40 @@ EOF
     return 0
   end
 
-
   # all mdbci commands swith
   def commands
     exit_code = 1
     case ARGV.shift
-      when 'show'
-        exit_code = $session.show(ARGV.shift)
-      when 'sudo'
-        exit_code = $session.sudo(ARGV.shift)
-      when 'ssh'
-        exit_code = $session.ssh(ARGV.shift)
-      when 'setup'
-        exit_code = $session.setup(ARGV.shift)
-      when 'generate'
-        exit_code = $session.generate(ARGV.shift)
-      when 'up'
-        exit_code = $session.up(ARGV.shift)
-      when 'setup_repo'
-        exit_code = NodeProduct.setupProductRepo(ARGV.shift)
-      when 'install_product'
-        exit_code = NodeProduct.installProduct(ARGV.shift)
-      when 'public_keys'
-        exit_code = $session.publicKeys(ARGV.shift)
-      when 'validate_template'
-        exit_code = $session.validate_template
-      when 'snapshot'
-        snapshot = Snapshot.new
-        exit_code = snapshot.do(ARGV.shift)
-      when 'clone'
-        exit_code = $session.clone(ARGV[0], ARGV[1])
-      when 'check_relevance'
-        exit_code = $session.checkRelevanceNetworkConfig(ARGV.shift)
-      else
-        $out.error 'Unknown mdbci command. Please look help!'
-        Help.display
+    when 'show'
+      exit_code = show(ARGV)
+    when 'sudo'
+      exit_code = $session.sudo(ARGV.shift)
+    when 'ssh'
+      exit_code = $session.ssh(ARGV.shift)
+    when 'setup'
+      exit_code = $session.setup(ARGV.shift)
+    when 'generate'
+      exit_code = $session.generate(ARGV.shift)
+    when 'up'
+      exit_code = $session.up(ARGV.shift)
+    when 'setup_repo'
+      exit_code = NodeProduct.setupProductRepo(ARGV.shift)
+    when 'install_product'
+      exit_code = NodeProduct.installProduct(ARGV.shift)
+    when 'public_keys'
+      exit_code = $session.publicKeys(ARGV.shift)
+    when 'validate_template'
+      exit_code = $session.validate_template
+    when 'snapshot'
+      snapshot = Snapshot.new
+      exit_code = snapshot.do(ARGV.shift)
+    when 'clone'
+      exit_code = $session.clone(ARGV[0], ARGV[1])
+    when 'check_relevance'
+      exit_code = $session.checkRelevanceNetworkConfig(ARGV.shift)
+    else
+      $out.error 'Unknown mdbci command. Please look help!'
+      Help.display
     end
     return exit_code
   end
@@ -775,7 +818,7 @@ EOF
     Dir.chdir pwd
     $out.info "Generating #{config_path}_network_settings file"
     if up_type == false
-      printConfigurationNetworkInfoToFile(config_path) 
+      printConfigurationNetworkInfoToFile(config_path)
     else
       printConfigurationNetworkInfoToFile(config_path,node)
     end
@@ -888,7 +931,7 @@ EOF
 
   end
 
-  def showProvider(name)
+  def showProvider(name=nil)
     exit_code = 1
     if $session.boxes.boxesManager.has_key?(name)
       box_params = $session.boxes.getBox(name)
@@ -958,9 +1001,9 @@ EOF
     end
 
   end
-  
+
   def checkRelevanceNetworkConfig(filename)
     system 'scripts/check_network_config.sh ' + filename
-  end  
+  end
 
 end

@@ -13,9 +13,9 @@ describe 'test_spec' do
     FileUtils.rm_rf('default') if Dir.exists? 'default'
   end
 
-  executeShellCommandsAndTestExitCode ([
-      {'shell_command' => test_command('', ''), 'expectation' => 1},
-      {'shell_command' => test_command('spec/configs/template/centos_6_vbox_mariadb_10.0.json', ''), 'expectation' => 0},
-      {'shell_command' => test_command('spec/configs/template/centos_6_vbox_mariadb_10.0.json', 'default'), 'expectation' => 0}
+  execute_shell_commands_and_test_exit_code ([
+      {shell_command: test_command('', ''), exit_code: 1},
+      {shell_command: test_command('spec/configs/template/centos_6_vbox_mariadb_10.0.json', ''), exit_code: 0},
+      {shell_command: test_command('spec/configs/template/centos_6_vbox_mariadb_10.0.json', 'default'), exit_code: 0}
   ])
 end

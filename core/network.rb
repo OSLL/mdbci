@@ -80,9 +80,9 @@ class Network
     return result_hash
   end
 
-  def self.showKeyFile(name)
+  def self.showKeyFile(name=nil)
     result_keys = getKeyFile(name)
-    
+
     result_keys.each do |hash|
       $out.out(hash["key"].to_s)
     end
@@ -127,14 +127,14 @@ class Network
     return result
   end
 
-  def self.show(name)
+  def self.show(name=nil)
     results = getNetwork(name)
     results.each do |hash|
       $out.out hash["ip"]
     end
     return 0
   end
-  
+
   def self.getNetwork(name)
     results = Array.new()
     pwd = Dir.pwd
@@ -145,7 +145,7 @@ class Network
 
     args = name.split('/')
     directory = args[0]
-    node_arg = args[1]   
+    node_arg = args[1]
     # mdbci ppc64 boxes
     if File.exist?(directory+'/mdbci_template')
       $session.loadMdbciNodes directory
@@ -213,7 +213,7 @@ class Network
     end
     box_params = $session.boxes.getBox(box)
     result["node"] = node[0].to_s
-    result[param] = box_params[param].to_s 
+    result[param] = box_params[param].to_s
  ##   $out.info 'Node: ' + node[0].to_s
  ##   $out.out box_params[param].to_s
     return result
@@ -228,7 +228,7 @@ class Network
     end
     return 0
   end
-  
+
   def self.getIP(args)
     pwd = Dir.pwd
     result_ip = Array.new()
@@ -293,12 +293,12 @@ COMMAND_WHOAMI='whoami'
 COMMAND_HOSTNAME='hostname'
 LIBVITR_IPV6 = "/sbin/ip -6 addr | grep -m1 global | awk -F' ' '{print $2}' | awk -F'/' '{print $1}'"
 DOCKER_IPV6 = "/sbin/ip -6 addr | grep -m1 'scope link' | awk -F' ' '{print $2}' | awk -F'/' '{print $1}'"
-def printConfigurationNetworkInfoToFile(configuration,node='')
-  
+def printConfigurationNetworkInfoToFile(configuration=nil,node='')
+
   open("#{configuration}_network_config", 'w') do |f|
     configurationNetworkInfo = collectConfigurationNetworkInfo(configuration,node)
     configurationNetworkInfo.each do |key, value|
-      # TODO Add correct array conversion 
+      # TODO Add correct array conversion
       f.puts "#{key}=#{value}"
     end
   end

@@ -21,10 +21,10 @@ def pretest_command (product, product_version, config_path)
 end
 
 describe 'test_spec' do
-  executeShellCommandsAndTestExitCode ([
-    {'shell_command'=>test_command('mariadb', nil, "#{CONF_DOCKER}/node1"), 'expectation'=>1},
-    {'shell_command'=>test_command(nil, '10.0', "#{CONF_DOCKER}/node1"), 'expectation'=>1},
-    {'shell_command'=>test_command('mariadb', '10.0', nil), 'expectation'=>1},
-    {'shell_command'=>test_command('mariadb', '10.0', 'TEST_MACHINE'), 'expectation'=>1}
+  execute_shell_commands_and_test_exit_code ([
+    {shell_command: test_command('mariadb', nil, "#{CONF_DOCKER}/node1"), exit_code: 1},
+    {shell_command: test_command(nil, '10.0', "#{CONF_DOCKER}/node1"), exit_code: 1},
+    {shell_command: test_command('mariadb', '10.0', nil), exit_code: 1},
+    {shell_command: test_command('mariadb', '10.0', 'TEST_MACHINE'), exit_code: 1}
   ])
 end
