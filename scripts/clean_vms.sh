@@ -39,7 +39,7 @@ if [ ! -z $1 ]; then
 
     if [[ $provider == 0 || $provider == 1 ]]; then
         echo "Cleaning VirtualBox machines"
-        for i in $(VBoxManage list vms | grep ${1} | grep -o '"[^\"]*"' | tr -d '"'); do
+        for i in $(VBoxManage list vms | grep -o '"[^\"]*"' | tr -d '"'  | grep "^${1}" ); do
             echo $i
             VBoxManage controlvm $i poweroff
             VBoxManage unregistervm $i -delete
@@ -52,7 +52,7 @@ if [ ! -z $1 ]; then
 
     if [[ $provider == 0 || $provider == 2 ]]; then
         echo "Cleaning libvirt machines"
-        for i in $(virsh list --name --all | grep ${1}); do
+        for i in $(virsh list --name --all | grep "^${1}"); do
           virsh shutdown $i
           virsh destroy $i
           for k in $(virsh snapshot-list ${i} --tree); do
@@ -65,7 +65,7 @@ if [ ! -z $1 ]; then
         done
 
         echo "Deleting libvirt machine's volumes"
-        for i in $(virsh -q vol-list --pool default | grep $1 | awk '{print $1}'); do
+        for i in $(virsh -q vol-list --pool default | awk '{print $1}' | grep "^$1"); do
           virsh vol-delete --pool default $i
           if [ $only_one_config == 1 ]; then
                break
@@ -76,7 +76,7 @@ if [ ! -z $1 ]; then
 
     if [[ $provider == 0 || $provider == 3 ]]; then
         echo "Cleaning docker machines"
-        for i in $(docker ps --all -f "name=${1}" --format "{{.Names}}"); do
+        for i in $(docker ps --all -f "name=${1}" --format "{{.Names}}" | grep "^${1}"); do
           docker rm -fv $i
           if [ $only_one_config == 1 ]; then
                break
