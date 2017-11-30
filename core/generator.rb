@@ -26,14 +26,12 @@ class Generator
   end
 
   def self.awsProviderConfigImport(aws_config_file)
-    awsConfig = <<-EOF
-
-### Import AWS Provider access config ###
-require 'yaml'
+    <<~EOF
+    ### Import AWS Provider access config ###
+    require 'yaml'
+    aws_config = YAML.load_file('#{File.expand_path(aws_config_file)}')['aws']
+    ## End of import AWS Provider access config' ###
     EOF
-    awsConfig += "aws_config = YAML.load_file('#{File.expand_path(aws_config_file)}')['aws']\n"
-    awsConfig += '## of import AWS Provider access config' + "\n"
-    return awsConfig
   end
 
   def self.awsProviderConfig(pemfile_path, keypair_name)
