@@ -6,6 +6,21 @@
 script_dir=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 cd $script_dir
 
+# Determine distribution and set up distribution-specific variables
+distr=`awk -F= '/^ID=/{print $2}' /etc/os-release`
+if [ $distr = debian ] ; then
+    distr_codename=`awk -F"[()]" '/^VERSION=/{print $2}' /etc/os-release`
+    libvirt_packages="libvirt-daemon-system libvirt-clients virtinst"
+    libvirt_group=libvirt
+elif [ $distr = ubuntu ] ; then
+    distr_codename=`awk -F= '/^UBUNTU_CODENAME=/{print $2}' /etc/os-release`
+    libvirt_packages="libvirt-bin virtinst"
+    libvirt_group=libvirtd
+else
+    echo Unsupported Linux distribution: $distr
+    exit 1
+fi
+
 # Function executes the passed command. If it is not successfull, then
 # function shows the coman that have failed and exits from the script.
 function failOnError {
@@ -25,16 +40,10 @@ function warnOnError {
   "$@"
   local status=$?
   if [ $status -ne 0 ]; then
-    echo "[ISTALLATION WARNING]: $@"
+    echo "[INSTALLATION WARNING]: $@"
   fi
   return $status
 }
-
-# Try to find out the code name of the installed ubuntu release
-ubuntu_codename=$(cat /etc/*release 2>/dev/null | grep "UBUNTU_CODENAME" | awk -F'=' '{print $2}')
-if [[ -z "$ubuntu_codename" ]]; then
-    ubuntu_codename=$(cat /etc/*release 2>/dev/null | grep "DISTRIB_CODENAME" | awk -F'=' '{print $2}')
-fi
 
 # Update the packages of the system and install git and build-essential packages
 failOnError sudo apt-get update
@@ -65,11 +74,9 @@ failOnError vagrant plugin install vagrant-omnibus --plugin-version 1.5.0
 failOnError vagrant box add --force dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
 
 # Install libvirt and tools to controll it including virsh, virt-clone
-failOnError sudo apt install -y qemu-kvm \
-                                libvirt-bin \
-                                virtinst
+failOnError sudo apt install -y qemu-kvm $libvirt_packages
 # Allow user to manage libvirt daemon
-failOnError sudo adduser $USER libvirtd
+failOnError sudo adduser $USER $libvirt_group
 
 # Configure libvirt daemon images path
 warnOnError sudo virsh pool-destroy default
@@ -89,10 +96,10 @@ failOnError sudo apt-get update
 failOnError sudo apt-get install apt-transport-https \
                                  ca-certificates -y
 failOnError sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-failOnError echo "deb https://apt.dockerproject.org/repo ubuntu-$ubuntu_codename main" | sudo tee /etc/apt/sources.list.d/docker.list
+failOnError echo "deb https://apt.dockerproject.org/repo $distr-$distr_codename main" | sudo tee /etc/apt/sources.list.d/docker.list
 failOnError sudo apt-get update
 #sudo apt-get install linux-image-extra-$(uname -r) linux-image-extra-virtual
-failOnError sudo apt-get install "docker-engine=1.11.0-0~$ubuntu_codename" -y --allow-downgrades
+failOnError sudo apt-get install "docker-engine=1.11.0-0~$distr_codename" -y --allow-downgrades
 failOnError sudo groupadd -f docker
 failOnError sudo usermod -aG docker $USER
 
