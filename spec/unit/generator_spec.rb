@@ -68,9 +68,12 @@ describe "Generator" do
       Generator.awsProviderConfigImport(aws_config_file).should eq(awsConfigImport)
     end
 
-    it "Check Vagrantfile aws provider config" do
-      awsProviderConfig = Generator.awsProviderConfig
-      Generator.awsProviderConfig.should eq(awsProviderConfig)
+    it 'Check Vagrantfile aws provider config' do
+      pem_file_path = 'file.pem'
+      keypair_name = 'keypair'
+      awsProviderConfig = Generator.awsProviderConfig(pem_file_path, keypair_name)
+      expect(awsProviderConfig).to include(pem_file_path)
+      expect(awsProviderConfig).to include(keypair_name)
     end
 
     it "Check AWS VM definition" do
