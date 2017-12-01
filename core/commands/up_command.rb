@@ -75,10 +75,9 @@ class UpCommand < BaseCommand
 
     # Saving dir, do then to change it back
     pwd = Dir.pwd
-
     Dir.chdir(config_path)
 
-    template = JSON.parse(File.read(File.read("#{config_path}/template")))
+    template = JSON.parse(File.read(File.read('template')))
 
     # Setting provider: VBox, AWS, Libvirt, Docker
     begin
@@ -104,7 +103,7 @@ class UpCommand < BaseCommand
       @ui.info "Bringing up #{(node.empty? ? 'configuration ' : 'node ')} #{@configuration}"
 
       @ui.info 'Destroying everything'
-      exec_cmd_destr = `vagrant destroy --forse #{node}`
+      exec_cmd_destr = `vagrant destroy --force #{node}`
       @ui.info exec_cmd_destr
 
       cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{node}"
