@@ -19,13 +19,13 @@ class BaseCommand
 
   # Create the command instance.
   #
-  # @param ui [Out] the object that should be used to log information.
   # @param args [Array<String>] list of arguments for the curernt command.
-  # @param env [Array<String>] information about the environment
-  def initialize(ui, args, env)
-    @ui = ui
+  # @param env [Session] reference to the GOD object of this application.
+  # @param ui [Out] the object that should be used to log information.
+  def initialize(args, env, ui)
     @args = args
     @env = env
+    @ui = ui
   end
 
   # This method is called whenever the command is executed. Any
