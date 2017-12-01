@@ -81,23 +81,23 @@ class UpCommand < BaseCommand
 
     # Setting provider: VBox, AWS, Libvirt, Docker
     begin
-      @nodesProvider = File.read('provider')
+      nodes_provider = File.read('provider')
     rescue
       raise 'File with provider info not found'
     end
 
-    @ui.info 'Current provider: ' + @nodesProvider
+    @ui.info 'Current provider: ' + nodes_provider
 
-    if @nodesProvider == 'mdbci'
+    if nodes_provider == 'mdbci'
       @ui.warning 'You are using mdbci nodes template. ./mdbci up command doesn\'t supported for this boxes!'
       return ERROR_RESULT
     end
 
     # Generating docker images (so it will not be loaded for similar nodes repeatedly)
-    generateDockerImages(template, '.') if @nodesProvider == 'docker'
+    generateDockerImages(template, '.') if nodes_provider == 'docker'
 
     no_parallel_flag = ''
-    if (@nodesProvider == 'aws') || (@nodesProvider == 'docker')
+    if (nodes_provider == 'aws') || (nodes_provider == 'docker')
       no_parallel_flag = " #{VAGRANT_NO_PARALLEL} "
     end
 
@@ -107,7 +107,7 @@ class UpCommand < BaseCommand
     exec_cmd_destr = `vagrant destroy --force #{node}`
     @ui.info exec_cmd_destr
 
-    cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{node}"
+    cmd_up = "vagrant up #{no_parallel_flag} --provider=#{nodes_provider} #{node}"
     @ui.info "Actual command: #{cmd_up}"
     chef_not_found_node = nil
     status = nil
@@ -117,12 +117,12 @@ class UpCommand < BaseCommand
         stdin.close
         stdout.each_line do |line|
           @ui.info line
-          chef_not_found_node = line if @nodesProvider == 'aws'
+          chef_not_found_node = line if nodes_provider == 'aws'
         end
         stdout.close
         error = stderr.read
         stderr.close
-        if (@nodesProvider == 'aws') && error.to_s.include?(CHEF_NOT_FOUND_ERROR)
+        if (nodes_provider == 'aws') && error.to_s.include?(CHEF_NOT_FOUND_ERROR)
           chef_not_found_node = chef_not_found_node.to_s.match(OUTPUT_NODE_NAME_REGEX).captures[0]
         else
           error.each_line { |line| @ui.error line }
@@ -185,7 +185,7 @@ class UpCommand < BaseCommand
           @ui.info "Attempt: #{i}"
           dead_machines.delete_if do |machine|
             puts `vagrant destroy -f #{machine}`
-            cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{machine}"
+            cmd_up = "vagrant up #{no_parallel_flag} --provider=#{nodes_provider} #{machine}"
             success = Open3.popen3(cmd_up) do |_stdin, stdout, stderr, wthr|
               stdout.each_line { |line| @ui.info line }
               stderr.each_line { |line| @ui.error line }
@@ -223,7 +223,7 @@ class UpCommand < BaseCommand
             @ui.info "Attempt: #{i}"
             machines_with_broken_chef.delete_if do |machine|
               puts `vagrant destroy -f #{machine}`
-              cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{machine}"
+              cmd_up = "vagrant up #{no_parallel_flag} --provider=#{nodes_provider} #{machine}"
               success = Open3.popen3(cmd_up) do |_stdin, stdout, stderr, wthr|
                 stdout.each_line { |line| @ui.info line }
                 stderr.each_line { |line| @ui.error line }
