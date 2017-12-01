@@ -198,9 +198,7 @@ EOF
     $session.command = command unless command.empty?
     raise 'Configuration name is required' if args.nil?
     params = args.split('/')
-    dir = params[0]
-    node_arg =  params[1]
-
+    dir, node_arg = extract_directory_and_node(args)
     # mdbci ppc64 boxes
     if File.exist?(dir+'/mdbci_template')
       loadMdbciNodes dir
@@ -218,7 +216,7 @@ EOF
     else # aws, vbox nodes
       raise "Machine with such name: #{dir} does not exist" unless Dir.exist?(dir)
       begin
-        nodes = get_nodes(dir)
+        nodes = get_nodes(File.absolute_path(dir))
         Dir.chdir dir
         if node_arg.nil? # ssh for all nodes
           nodes.each do |node|

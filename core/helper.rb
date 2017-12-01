@@ -347,3 +347,16 @@ def get_box_name_from_node(path_to_nodes, node_name)
   template = JSON.parse(File.read (get_template_path path_to_nodes))
   return template[node_name][BOX]
 end
+
+# Extract directory and the node from the specified name.
+# Name is <path>/<node>. Both parts are mandatory.
+#
+# @param name [String] name of the node
+#
+# @return [Array<String>] path to configuration and node name.
+def extract_directory_and_node(name)
+  args = name.split('/')
+  directory = args[0, args.length - 1].join('/')
+  node_arg = args.last
+  [directory, node_arg]
+end
