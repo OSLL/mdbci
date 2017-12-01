@@ -135,7 +135,7 @@ class Network
     return 0
   end
 
-  def self.getNetwork(name)
+  def self.getNetwork(name, node = '')
     results = Array.new()
     pwd = Dir.pwd
 

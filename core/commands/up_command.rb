@@ -11,11 +11,10 @@ class UpCommand < BaseCommand
   # Checks that all required parameters are passed to the command
   # and set them as instance variables.
   #
-  # @return [Boolean] false if unable to setup command.
+  # @raise [ArgumentError] if unable to parse arguments.
   def setup_command
     if @args.empty? || @args.first.nil?
-      @ui.warning 'You must specify path to the mdbci configuration as a parameter.'
-      return false
+      raise ArgumentError, 'You must specify path to the mdbci configuration as a parameter.'
     end
     @configuration = @args.first
 
@@ -24,7 +23,7 @@ class UpCommand < BaseCommand
                 else
                   @env.attempts.to_i
                 end
-    true
+    self
   end
 
   # Checks whether provided path is a directory containing configurations.
@@ -41,12 +40,11 @@ class UpCommand < BaseCommand
       File.exist?("#{path}/Vagrantfile")
   end
 
-  def execute
-    return ARGUMENT_ERROR_RESULT unless setup_command
-
-    # Saving dir, do then to change it back
-    pwd = Dir.pwd
-
+  # Method parses up command configuration and extracts path to the
+  # configuration and node name if specified.
+  #
+  # @raise [ArgumentError] if path to the configuration is invalid
+  def parse_configuration
     # Separating config_path from node
     paths = @configuration.split('/') # Split path to the configuration
     config_path = paths[0, paths.length - 1].join('/')
@@ -56,14 +54,27 @@ class UpCommand < BaseCommand
     else
       node = ''
       config_path = @configuration
-      @ui.info "Node is not specified in #{config_path}}"
+      @ui.info "Node is not specified in #{config_path}"
     end
 
     # Checking if vagrant instance derictory exists
     unless configuration_directory?(config_path)
-      @ui.warning "Specified path #{config_path} does not point to configuration directory"
+      raise ArgumentError, "Specified path #{config_path} does not point to configuration directory"
+    end
+    [config_path, node]
+  end
+
+  def execute
+    begin
+      setup_command
+      config_path, node = parse_configuration
+    rescue ArgumentError => error
+      @ui.warning error.message
       return ARGUMENT_ERROR_RESULT
     end
+
+    # Saving dir, do then to change it back
+    pwd = Dir.pwd
 
     Dir.chdir(config_path)
 

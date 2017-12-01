@@ -49,7 +49,8 @@ end
 
 def get_provider(path_to_nodes)
   begin
-    return File.read "./#{path_to_nodes}/provider"
+    absolute_path = File.absolute_path(path_to_nodes)
+    return File.read "#{absolute_path}/provider"
   rescue Exception => e
     raise "#{path_to_nodes}: #{UNKNOWN_PROVIDER_ERROR}, #{e.message}"
   end
