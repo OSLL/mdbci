@@ -61,7 +61,7 @@ class UpCommand < BaseCommand
     unless configuration_directory?(config_path)
       raise ArgumentError, "Specified path #{config_path} does not point to configuration directory"
     end
-    [config_path, node]
+    [File.absolute_path(config_path), node]
   end
 
   # Read template from the specified configuration.
