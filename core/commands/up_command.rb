@@ -8,6 +8,10 @@ class UpCommand < BaseCommand
     'Setup environment as specified in the configuration'
   end
 
+  # Checks that all required parameters are passed to the command
+  # and set them as instance variables.
+  #
+  # @return [Boolean] false if unable to setup command.
   def setup_command
     if @args.empty? || @args.first.nil?
       @ui.warning 'You must specify path to the mdbci configuration as a parameter.'
@@ -243,10 +247,4 @@ class UpCommand < BaseCommand
     end
     SUCCESS_RESULT
   end
-
-  # Checks that all required parameters are passed to the command
-  # and set them as instance variables.
-  #
-  # @return [Boolean] false if unable to setup command.
-
 end
