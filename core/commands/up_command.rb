@@ -51,11 +51,9 @@ class UpCommand < BaseCommand
     paths = @configuration.split('/') # Split path to the configuration
     config_path = paths[0, paths.length - 1].join('/')
     if configuration_directory?(config_path)
-      up_type = true
       node = paths.last
       @ui.info "Node #{node} is specified in #{config_path}"
     else
-      up_type = false
       node = ''
       config_path = @configuration
       @ui.info "Node is not specified in #{config_path}}"
@@ -92,7 +90,7 @@ class UpCommand < BaseCommand
         no_parallel_flag = " #{VAGRANT_NO_PARALLEL} "
       end
 
-      @ui.info "Bringing up #{(up_type ? 'node ' : 'configuration ')} #{@configuration}"
+      @ui.info "Bringing up #{(node.empty? ? 'configuration ' : 'node ')} #{@configuration}"
 
       @ui.info 'Destroying everything'
       exec_cmd_destr = `vagrant destroy --forse #{node}`
@@ -240,11 +238,7 @@ class UpCommand < BaseCommand
     @ui.info "CONF_PATH=#{config_path}"
     Dir.chdir pwd
     @ui.info "Generating #{config_path}_network_settings file"
-    if up_type == false
-      printConfigurationNetworkInfoToFile(config_path)
-    else
-      printConfigurationNetworkInfoToFile(config_path, node)
-    end
+    printConfigurationNetworkInfoToFile(config_path, node)
     SUCCESS_RESULT
   end
 end
