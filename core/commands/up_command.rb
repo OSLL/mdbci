@@ -64,10 +64,30 @@ class UpCommand < BaseCommand
     [config_path, node]
   end
 
+  # Read template from the specified configuration.
+  #
+  # @param config_path [String] path to the configuration.
+  #
+  # @returns [Hash] produced by parsing JSON.
+  #
+  # @raise [ArgumentError] if there is an error during template configuration.
+  def read_template(config_path)
+    template_file_name_path = "#{config_path}/template"
+    unless File.exist?(template_file_name_path)
+      raise ArgumentError, "There is no template configuration for MDBCI in #{config_path}."
+    end
+    template_path = File.read(template_file_name_path)
+    unless File.exist?(template_path)
+      raise ArgumentError, "The template #{template_path} specified in #{template_file_name_path} does not exist."
+    end
+    JSON.parse(File.read(template_path))
+  end
+
   def execute
     begin
       setup_command
       config_path, node = parse_configuration
+      template = read_template(config_path)
     rescue ArgumentError => error
       @ui.warning error.message
       return ARGUMENT_ERROR_RESULT
@@ -76,8 +96,6 @@ class UpCommand < BaseCommand
     # Saving dir, do then to change it back
     pwd = Dir.pwd
     Dir.chdir(config_path)
-
-    template = JSON.parse(File.read(File.read('template')))
 
     # Setting provider: VBox, AWS, Libvirt, Docker
     begin
