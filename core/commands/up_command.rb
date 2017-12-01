@@ -74,7 +74,7 @@ class UpCommand < BaseCommand
   def read_template(config_path)
     template_file_name_path = "#{config_path}/template"
     unless File.exist?(template_file_name_path)
-      raise ArgumentError, "There is no template configuration for MDBCI in #{config_path}."
+      raise ArgumentError, "There is no template configuration specified in #{config_path}."
     end
     template_path = File.read(template_file_name_path)
     unless File.exist?(template_path)
@@ -83,11 +83,29 @@ class UpCommand < BaseCommand
     JSON.parse(File.read(template_path))
   end
 
+  # Read node provider specified in the configuration.
+  #
+  # @return [String] name of the provider specified in the file.
+  #
+  # @raise ArgumentError if there is no file or invalid provider specified.
+  def read_provider(config_path)
+    provider_file_path = "#{config_path}/provider"
+    unless File.exist?(provider_file_path)
+      raise ArgumentError, "There is no provider configuration specified in #{config_path}."
+    end
+    provider = File.read(provider_file_path).strip
+    if provider == 'mdbci'
+      raise ArgumentError, 'You are using mdbci node template. Please generate valid one before running up command.'
+    end
+    provider
+  end
+
   def execute
     begin
       setup_command
       config_path, node = parse_configuration
       template = read_template(config_path)
+      nodes_provider = read_provider(config_path)
     rescue ArgumentError => error
       @ui.warning error.message
       return ARGUMENT_ERROR_RESULT
@@ -97,19 +115,7 @@ class UpCommand < BaseCommand
     pwd = Dir.pwd
     Dir.chdir(config_path)
 
-    # Setting provider: VBox, AWS, Libvirt, Docker
-    begin
-      nodes_provider = File.read('provider')
-    rescue
-      raise 'File with provider info not found'
-    end
-
-    @ui.info 'Current provider: ' + nodes_provider
-
-    if nodes_provider == 'mdbci'
-      @ui.warning 'You are using mdbci nodes template. ./mdbci up command doesn\'t supported for this boxes!'
-      return ERROR_RESULT
-    end
+    @ui.info 'Using provider: ' + nodes_provider
 
     # Generating docker images (so it will not be loaded for similar nodes repeatedly)
     generateDockerImages(template, '.') if nodes_provider == 'docker'
