@@ -23,6 +23,20 @@ class UpCommand < BaseCommand
     true
   end
 
+  # Checks whether provided path is a directory containing configurations.
+  #
+  # @param path [String] path that should be checked
+  #
+  # @returns [Boolean]
+  def configuration_directory?(path)
+    !path.nil? &&
+      !path.empty? &&
+      Dir.exist?(path) &&
+      File.exist?("#{path}/template") &&
+      File.exist?("#{path}/provider") &&
+      File.exist?("#{path}/Vagrantfile")
+  end
+
   def execute
     return ARGUMENT_ERROR_RESULT unless setup_command
 
@@ -30,34 +44,28 @@ class UpCommand < BaseCommand
     pwd = Dir.pwd
 
     # Separating config_path from node
-    config = []
-    node = ''
-    up_type = false # Means no node specified
-    paths = @configuration.split('/') # Get array of dirs
-    # Get path to vagrant instance directory
+    paths = @configuration.split('/') # Split path to the configuration
     config_path = paths[0, paths.length - 1].join('/')
-    if !config_path.empty?
-      # So there may be node specified
-      node = paths[paths.length - 1]
-      config[0] = config_path
-      config[1] = node
-      up_type = true # Node specified
+    if configuration_directory?(config_path)
+      up_type = true
+      node = paths.last
+      @ui.info "Node #{node} is specified in #{config_path}"
     else
-      config_path = paths[0, paths.length].join('/')
+      up_type = false
+      node = ''
+      config_path = @configuration
+      @ui.info "Node is not specified in #{config_path}}"
     end
 
     # Checking if vagrant instance derictory exists
-    if Dir.exist?(config[0].to_s) # to_s in case of 'nil'
-      up_type = true # node specified
-      @ui.info 'Node is specified ' + config[1] + ' in ' + config[0]
-    else
-      up_type = false # node not specified
-      @ui.info 'Node isn\'t specified in ' + @configuration
+    unless configuration_directory?(config_path)
+      @ui.warning "Specified path #{config_path} does not point to configuration directory"
+      return ARGUMENT_ERROR_RESULT
     end
 
-    template = JSON.parse(File.read(File.read("#{up_type ? config[0] : @configuration}/template")))
+    Dir.chdir(config_path)
 
-    up_type ? Dir.chdir(config[0]) : Dir.chdir(@configuration)
+    template = JSON.parse(File.read(File.read("#{config_path}/template")))
 
     # Setting provider: VBox, AWS, Libvirt, Docker
     begin
@@ -70,7 +78,7 @@ class UpCommand < BaseCommand
 
     if @nodesProvider == 'mdbci'
       @ui.warning 'You are using mdbci nodes template. ./mdbci up command doesn\'t supported for this boxes!'
-      return 1
+      return ERROR_RESULT
     else
       # Generating docker images (so it will not be loaded for similar nodes repeatedly)
       generateDockerImages(template, '.') if @nodesProvider == 'docker'
@@ -83,11 +91,10 @@ class UpCommand < BaseCommand
       @ui.info "Bringing up #{(up_type ? 'node ' : 'configuration ')} #{@configuration}"
 
       @ui.info 'Destroying everything'
-      cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1] : '')
-      exec_cmd_destr = `#{cmd_destr}`
+      exec_cmd_destr = `vagrant destroy --forse #{node}`
       @ui.info exec_cmd_destr
 
-      cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{(up_type ? config[1] : '')}"
+      cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{node}"
       @ui.info "Actual command: #{cmd_up}"
       chef_not_found_node = nil
       status = nil
