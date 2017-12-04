@@ -149,7 +149,7 @@ class UpCommand < BaseCommand
 
     vagrant_flags = generate_vagrant_run_flags(nodes_provider)
 
-    @ui.info 'Destroying everything'
+    @ui.info 'Destroying existing nodes.'
     exec_cmd_destr = `vagrant destroy --force #{node}`
     @ui.info exec_cmd_destr
 
@@ -161,14 +161,11 @@ class UpCommand < BaseCommand
     begin
       chef_not_found_node = nil
       status = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
-        stdin.close
         stdout.each_line do |line|
           @ui.info line
           chef_not_found_node = line if nodes_provider == 'aws'
         end
-        stdout.close
         error = stderr.read
-        stderr.close
         if (nodes_provider == 'aws') && error.to_s.include?(CHEF_NOT_FOUND_ERROR)
           chef_not_found_node = chef_not_found_node.to_s.match(OUTPUT_NODE_NAME_REGEX).captures[0]
         else
@@ -181,15 +178,13 @@ class UpCommand < BaseCommand
         @ui.warning "Chef not is found on aws node: #{chef_not_found_node}, applying quick fix..."
         cmd_provision = "vagrant provision #{chef_not_found_node}"
         status = Open3.popen3(cmd_provision) do |stdin, stdout, stderr, wthr|
-          stdin.close
           stdout.each_line { |line| @ui.info line }
-          stdout.close
           stderr.each_line { |line| @ui.error line }
-          stderr.close
           wthr.value
         end
       end
     end while !chef_not_found_node.nil?
+
     unless status.success?
       @ui.error 'Bringing up failed'
       exit_code = status.exitstatus
