@@ -590,15 +590,6 @@ EOF
     return 0
   end
 
-  def generateDockerImages(config, nodes_directory)
-    $out.info 'Generating docker images...'
-    config.each do |node|
-      unless node[1]['box'].nil?
-        DockerManager.build_image("#{nodes_directory}/#{node[0]}", node[1]['box'])
-      end
-    end
-  end
-
   # Deploy configurations
   def up(args)
     command = UpCommand.new([args], self, $out)

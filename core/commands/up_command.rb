@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'base_command'
+require_relative '../docker_manager'
 
 # The command sets up the environment specified in the configuration file.
 class UpCommand < BaseCommand
@@ -99,7 +100,21 @@ class UpCommand < BaseCommand
     if provider == 'mdbci'
       raise ArgumentError, 'You are using mdbci node template. Please generate valid one before running up command.'
     end
+    @ui.info "Using provider: #{provider}"
     provider
+  end
+
+  # Generate docker images, so they will not be loaded during production
+  #
+  # @param config [Hash] configuration read from the template
+  # @param nodes_directory [String] path to the directory where they are located
+  def generate_docker_images(config, nodes_directory)
+    @ui.info 'Generating docker images.'
+    config.each do |node|
+      unless node[1]['box'].nil?
+        DockerManager.build_image("#{nodes_directory}/#{node[0]}", node[1]['box'])
+      end
+    end
   end
 
   def execute
@@ -117,10 +132,7 @@ class UpCommand < BaseCommand
     pwd = Dir.pwd
     Dir.chdir(config_path)
 
-    @ui.info 'Using provider: ' + nodes_provider
-
-    # Generating docker images (so it will not be loaded for similar nodes repeatedly)
-    generateDockerImages(template, '.') if nodes_provider == 'docker'
+    generate_docker_images(template, '.') if nodes_provider == 'docker'
 
     no_parallel_flag = ''
     if (nodes_provider == 'aws') || (nodes_provider == 'docker')
