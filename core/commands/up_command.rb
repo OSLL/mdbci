@@ -8,6 +8,8 @@ class UpCommand < BaseCommand
     'Setup environment as specified in the configuration'
   end
 
+  VAGRANT_NO_PARALLEL = '--no-parallel'
+
   # Checks that all required parameters are passed to the command
   # and set them as instance variables.
   #
@@ -111,7 +113,7 @@ class UpCommand < BaseCommand
       return ARGUMENT_ERROR_RESULT
     end
 
-    # Saving dir, do then to change it back
+    # Changing directory to the configuration, so Vagrant commands will work
     pwd = Dir.pwd
     Dir.chdir(config_path)
 
