@@ -117,6 +117,19 @@ class UpCommand < BaseCommand
     end
   end
 
+  # Generate flags based upon the configuration
+  #
+  # @param provider [String] name of the provider to work with
+  #
+  # @return [String] flags that should be passed to Vagrant commands
+  def generate_vagrant_run_flags(provider)
+    flags = []
+    if (provider == 'aws') || (provider == 'docker')
+      flags << VAGRANT_NO_PARALLEL
+    end
+    flags.join(' ')
+  end
+
   def execute
     begin
       setup_command
@@ -134,18 +147,14 @@ class UpCommand < BaseCommand
 
     generate_docker_images(template, '.') if nodes_provider == 'docker'
 
-    no_parallel_flag = ''
-    if (nodes_provider == 'aws') || (nodes_provider == 'docker')
-      no_parallel_flag = " #{VAGRANT_NO_PARALLEL} "
-    end
-
-    @ui.info "Bringing up #{(node.empty? ? 'configuration ' : 'node ')} #{@configuration}"
+    vagrant_flags = generate_vagrant_run_flags(nodes_provider)
 
     @ui.info 'Destroying everything'
     exec_cmd_destr = `vagrant destroy --force #{node}`
     @ui.info exec_cmd_destr
 
-    cmd_up = "vagrant up #{no_parallel_flag} --provider=#{nodes_provider} #{node}"
+    @ui.info "Bringing up #{(node.empty? ? 'configuration ' : 'node ')} #{@configuration}"
+    cmd_up = "vagrant up #{vagrant_flags} --provider=#{nodes_provider} #{node}"
     @ui.info "Actual command: #{cmd_up}"
     chef_not_found_node = nil
     status = nil
@@ -223,7 +232,7 @@ class UpCommand < BaseCommand
           @ui.info "Attempt: #{i}"
           dead_machines.delete_if do |machine|
             puts `vagrant destroy -f #{machine}`
-            cmd_up = "vagrant up #{no_parallel_flag} --provider=#{nodes_provider} #{machine}"
+            cmd_up = "vagrant up #{vagrant_flags} --provider=#{nodes_provider} #{machine}"
             success = Open3.popen3(cmd_up) do |_stdin, stdout, stderr, wthr|
               stdout.each_line { |line| @ui.info line }
               stderr.each_line { |line| @ui.error line }
@@ -261,7 +270,7 @@ class UpCommand < BaseCommand
             @ui.info "Attempt: #{i}"
             machines_with_broken_chef.delete_if do |machine|
               puts `vagrant destroy -f #{machine}`
-              cmd_up = "vagrant up #{no_parallel_flag} --provider=#{nodes_provider} #{machine}"
+              cmd_up = "vagrant up #{vagrant_flags} --provider=#{nodes_provider} #{machine}"
               success = Open3.popen3(cmd_up) do |_stdin, stdout, stderr, wthr|
                 stdout.each_line { |line| @ui.info line }
                 stderr.each_line { |line| @ui.error line }
