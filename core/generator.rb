@@ -4,6 +4,7 @@ require 'json'
 require 'pathname'
 require 'securerandom'
 require 'socket'
+require 'erb'
 
 require_relative '../core/out'
 
@@ -100,13 +101,29 @@ config.omnibus.chef_version = '12.9.38'
     return ssh_pty_option
   end
 
-  def self.getDefaultRecipe(name, cookbook_path)
-    return <<EOF
-\t#{name}.vm.provision "chef_solo" do |chef|
-\t\tchef.cookbooks_path = "#{cookbook_path}"
-\t\tchef.add_recipe "packages"
-\tend
-EOF
+  # Generate chef provision block for the VM
+  #
+  # @param name [String] name of the virtual machine
+  # @param cookbook_path [String] path to the cookbooks to use
+  # @param provisioned [Boolean] some bogus boolean variable
+  #
+  # @return [String] provision block for the VM
+  def self.generate_provision_block(name, cookbook_path, provisioned)
+    template = ERB.new <<-PROVISION
+      ##--- Chef configuration ----
+      #{name}.vm.provision 'chef_solo' do |chef|
+        chef.cookbooks_path = '#{cookbook_path}'
+        <% if provisioned %>
+        chef.roles_path = '.'
+        chef.add_role '#{name}'
+        <% else %>
+        chef.add_recipe 'packages'
+        <% end %>
+        chef.synced_folder_type = 'rsync'
+      end
+      ##--- Chef configuration complete
+PROVISION
+    template.result binding
   end
 
   def self.install_chef_by_url(name)
@@ -131,16 +148,7 @@ EOF
             + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
             + templatedef + "\n"
     vmdef += install_chef_by_url name
-    if provisioned
-      vmdef += "\t##--- Chef binding ---\n"\
-            + "\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
-            + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
-            + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
-            + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
-    else
-      vmdef += "\n\n#{getDefaultRecipe(name, cookbook_path)}"
-    end
-
+    vmdef += generate_provision_block(name, cookbook_path, provisioned)
 
     if vm_mem
       vmdef += "\n\t"+'config.vm.provider :virtualbox do |vbox|' + "\n" \
@@ -180,17 +188,8 @@ EOF
             + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n" \
             + "\t\t"+'qemu.memory = ' + vm_mem + "\n\tend"
     qemudef += install_chef_by_url name
-    if provisioned
-      qemudef += "\t##--- Chef binding ---\n"\
-            + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
-            + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
-            + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
-            + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
-    else
-      qemudef += "\n\n#{getDefaultRecipe(name, cookbook_path)}"
-    end
+    qemudef += generate_provision_block(name, cookbook_path, provisioned)
     qemudef += "\nend #  <-- End of Qemu definition for machine: " + name +"\n\n"
-
     return qemudef
   end
 
@@ -226,15 +225,7 @@ EOF
 
     dockerdef += install_chef_by_url name
 
-    if provisioned
-      dockerdef += "\t##--- Chef binding ---\n"\
-            + "\n\t"+name+'.vm.provision '+ quote('chef_solo')+' do |chef| '+"\n" \
-            + "\t\t"+'chef.cookbooks_path = '+ quote(cookbook_path)+"\n" \
-            + "\t\t"+'chef.roles_path = '+ quote('.')+"\n" \
-            + "\t\t"+'chef.add_role '+ quote(name) + "\n\tend"
-    else
-      dockerdef += "\n\n#{getDefaultRecipe(name, cookbook_path)}"
-    end
+    dockerdef += generate_provision_block(name, cookbook_path, provisioned)
     dockerdef += "\nend #  <-- End of Docker definition for machine: " + name +"\n\n"
 
     return dockerdef
@@ -305,16 +296,8 @@ EOF
            + "\tend\n" \
            + mountdef + "\n"
     awsdef += install_chef_by_url name
-    if provisioned
-      awsdef += "\t##--- Chef binding ---\n"\
-           + "\t" + name + ".vm.provision "+ quote('chef_solo')+" do |chef| \n"\
-           + "\t\tchef.cookbooks_path = "+ quote(cookbook_path) + "\n" \
-           + "\t\tchef.roles_path = "+ quote('.') + "\n" \
-           + "\t\tchef.add_role "+ quote(name) + "\n" \
-           + "\t\tchef.synced_folder_type = "+quote('rsync') + "\n\tend #<-- end of chef binding\n"
-    else
-      awsdef += "\n\n#{getDefaultRecipe(name, cookbook_path)}"
-    end
+    awsdef += generate_provision_block(name, cookbook_path, provisioned)
+
     awsdef +="\nend #  <-- End AWS definition for machine: " + name +"\n\n"
 
     return awsdef
