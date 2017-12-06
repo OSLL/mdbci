@@ -10,6 +10,13 @@ class UpCommand < BaseCommand
   end
 
   VAGRANT_NO_PARALLEL = '--no-parallel'
+  CHEF_NOT_FOUND_ERROR = <<~ERROR_TEXT
+    The chef binary (either `chef-solo` or `chef-client`) was not found on
+    the VM and is required for chef provisioning. Please verify that chef
+    is installed and that the binary is available on the PATH.
+    ERROR_TEXT
+
+  OUTPUT_NODE_NAME_REGEX = "==>\s+(.*):{1}"
 
   # Checks that all required parameters are passed to the command
   # and set them as instance variables.
@@ -130,6 +137,43 @@ class UpCommand < BaseCommand
     flags.join(' ')
   end
 
+  # Try to use `vagrant up` command to setup machines
+  def setup_machines_with_vagrant(node, vagrant_flags, nodes_provider)
+    @ui.info "Bringing up #{(node.empty? ? 'configuration ' : 'node ')} #{@configuration}"
+    cmd_up = "vagrant up #{vagrant_flags} --provider=#{nodes_provider} #{node}"
+    @ui.info "Actual command: #{cmd_up}"
+
+    status = nil
+    loop do
+      chef_not_found_node = false
+      status = Open3.popen3(cmd_up) do |_stdin, stdout, stderr, wthr|
+        stdout.each_line do |line|
+          @ui.info line
+          chef_not_found_node = line if nodes_provider == 'aws'
+        end
+        error = stderr.read
+        if (nodes_provider == 'aws') && error.to_s.include?(CHEF_NOT_FOUND_ERROR)
+          chef_not_found_node = chef_not_found_node.to_s.match(OUTPUT_NODE_NAME_REGEX).captures[0]
+        else
+          error.each_line { |line| @ui.error line }
+          chef_not_found_node = false
+        end
+        wthr.value
+      end
+      if chef_not_found_node
+        @ui.warning "Chef not is found on aws node: #{chef_not_found_node}, applying quick fix..."
+        cmd_provision = "vagrant provision #{chef_not_found_node}"
+        status = Open3.popen3(cmd_provision) do |_stdin, stdout, stderr, wthr|
+          stdout.each_line { |line| @ui.info line }
+          stderr.each_line { |line| @ui.error line }
+          wthr.value
+        end
+      end
+      break unless chef_not_found_node # Possible infinite loop, does not honor @max_attempts
+    end
+    status
+  end
+
   def execute
     begin
       setup_command
@@ -153,37 +197,7 @@ class UpCommand < BaseCommand
     exec_cmd_destr = `vagrant destroy --force #{node}`
     @ui.info exec_cmd_destr
 
-    @ui.info "Bringing up #{(node.empty? ? 'configuration ' : 'node ')} #{@configuration}"
-    cmd_up = "vagrant up #{vagrant_flags} --provider=#{nodes_provider} #{node}"
-    @ui.info "Actual command: #{cmd_up}"
-    chef_not_found_node = nil
-    status = nil
-    begin
-      chef_not_found_node = nil
-      status = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
-        stdout.each_line do |line|
-          @ui.info line
-          chef_not_found_node = line if nodes_provider == 'aws'
-        end
-        error = stderr.read
-        if (nodes_provider == 'aws') && error.to_s.include?(CHEF_NOT_FOUND_ERROR)
-          chef_not_found_node = chef_not_found_node.to_s.match(OUTPUT_NODE_NAME_REGEX).captures[0]
-        else
-          error.each_line { |line| @ui.error line }
-          chef_not_found_node = nil
-        end
-        wthr.value
-      end
-      if chef_not_found_node
-        @ui.warning "Chef not is found on aws node: #{chef_not_found_node}, applying quick fix..."
-        cmd_provision = "vagrant provision #{chef_not_found_node}"
-        status = Open3.popen3(cmd_provision) do |stdin, stdout, stderr, wthr|
-          stdout.each_line { |line| @ui.info line }
-          stderr.each_line { |line| @ui.error line }
-          wthr.value
-        end
-      end
-    end while !chef_not_found_node.nil?
+    status = setup_machines_with_vagrant(node, vagrant_flags, nodes_provider)
 
     unless status.success?
       @ui.error 'Bringing up failed'
