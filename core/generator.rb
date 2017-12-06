@@ -126,10 +126,6 @@ PROVISION
     template.result binding
   end
 
-  def self.install_chef_by_url(name)
-    return "\n\n\t#{name}.vm.provision 'shell', inline: 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v 12.9.38'"
-  end
-
   # Vagrantfile for Vbox provider
   def self.getVmDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
 
@@ -147,7 +143,6 @@ PROVISION
             + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
             + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
             + templatedef + "\n"
-    vmdef += install_chef_by_url name
     vmdef += generate_provision_block(name, cookbook_path, provisioned)
 
     if vm_mem
@@ -187,7 +182,6 @@ PROVISION
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
             + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n" \
             + "\t\t"+'qemu.memory = ' + vm_mem + "\n\tend"
-    qemudef += install_chef_by_url name
     qemudef += generate_provision_block(name, cookbook_path, provisioned)
     qemudef += "\nend #  <-- End of Qemu definition for machine: " + name +"\n\n"
     return qemudef
@@ -222,8 +216,6 @@ PROVISION
     end
 
     dockerdef = dockerdef+ "\t\t"+'d.env = {"container"=>"docker"}' + "\n\tend"
-
-    dockerdef += install_chef_by_url name
 
     dockerdef += generate_provision_block(name, cookbook_path, provisioned)
     dockerdef += "\nend #  <-- End of Docker definition for machine: " + name +"\n\n"
@@ -295,7 +287,6 @@ PROVISION
            + "\t\toverride.ssh.username = " + quote(user) + "\n" \
            + "\tend\n" \
            + mountdef + "\n"
-    awsdef += install_chef_by_url name
     awsdef += generate_provision_block(name, cookbook_path, provisioned)
 
     awsdef +="\nend #  <-- End AWS definition for machine: " + name +"\n\n"
