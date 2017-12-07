@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #
 # Cookbook:: mdbci_provision_mark
 # Spec:: default

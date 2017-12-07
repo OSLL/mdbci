@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 name 'mdbci_provision_mark'
 maintainer 'The Authors'
 maintainer_email 'you@example.com'

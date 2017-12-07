@@ -1,4 +1,4 @@
-# # encoding: utf-8
+# frozen_string_literal: true
 
 # Inspec test for recipe mdbci_provision_mark::default
 
