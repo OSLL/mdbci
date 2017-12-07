@@ -10,13 +10,6 @@ class UpCommand < BaseCommand
   end
 
   VAGRANT_NO_PARALLEL = '--no-parallel'
-  CHEF_NOT_FOUND_ERROR = <<~ERROR_TEXT
-    The chef binary (either `chef-solo` or `chef-client`) was not found on
-    the VM and is required for chef provisioning. Please verify that chef
-    is installed and that the binary is available on the PATH.
-    ERROR_TEXT
-
-  OUTPUT_NODE_NAME_REGEX = "==>\s+(.*):{1}"
 
   # Checks that all required parameters are passed to the command
   # and set them as instance variables.
@@ -137,41 +130,196 @@ class UpCommand < BaseCommand
     flags.join(' ')
   end
 
-  # Try to use `vagrant up` command to setup machines
-  def setup_machines_with_vagrant(node, vagrant_flags, nodes_provider)
-    @ui.info "Bringing up #{(node.empty? ? 'configuration ' : 'node ')} #{@configuration}"
-    cmd_up = "vagrant up #{vagrant_flags} --provider=#{nodes_provider} #{node}"
-    @ui.info "Actual command: #{cmd_up}"
-
-    status = nil
-    loop do
-      chef_not_found_node = false
-      status = Open3.popen3(cmd_up) do |_stdin, stdout, stderr, wthr|
-        stdout.each_line do |line|
-          @ui.info line
-          chef_not_found_node = line if nodes_provider == 'aws'
-        end
-        error = stderr.read
-        if (nodes_provider == 'aws') && error.to_s.include?(CHEF_NOT_FOUND_ERROR)
-          chef_not_found_node = chef_not_found_node.to_s.match(OUTPUT_NODE_NAME_REGEX).captures[0]
-        else
-          error.each_line { |line| @ui.error line }
-          chef_not_found_node = false
-        end
-        wthr.value
+  # Execute the command, log stdout and stderr
+  #
+  # @param command [String] command to run
+  #
+  # @return [Process::Status] of the run command
+  def run_command_and_log(command)
+    @ui.info "Invoking command: #{command}"
+    Open3.popen3(command) do |_stdin, stdout, stderr, wthr|
+      stdout.each_line do |line|
+        @ui.info line
       end
-      if chef_not_found_node
-        @ui.warning "Chef not is found on aws node: #{chef_not_found_node}, applying quick fix..."
-        cmd_provision = "vagrant provision #{chef_not_found_node}"
-        status = Open3.popen3(cmd_provision) do |_stdin, stdout, stderr, wthr|
-          stdout.each_line { |line| @ui.info line }
-          stderr.each_line { |line| @ui.error line }
-          wthr.value
-        end
+      stderr.each_line do |line|
+        @ui.error line
       end
-      break unless chef_not_found_node # Possible infinite loop, does not honor @max_attempts
+      wthr.value
     end
-    status
+  end
+
+  # Find out names of the machines for this vagrant configuration.
+  # Currently it relies on the format of vagrant status command.
+  #
+  # @return [Array<String>] names of the nodes
+  def fetch_node_names
+    node_lines = `vagrant status`.split("\n\n")[1].split("\n")
+    node_lines.map { |line| line.split(/\s+/)[0] }
+  end
+
+  # Check whether node is running or not.
+  #
+  # @param node [String] name of the node to get status from.
+  # @return [Boolean]
+  def node_running?(node)
+    status = `vagrant status #{node}`.split("\n")[2]
+    @ui.info "Node '#{node}' status: #{status}"
+    if status.include? 'running'
+      @ui.info "Node '#{node}' is running."
+      true
+    else
+      @ui.error "Node '#{node}' is not running."
+      false
+    end
+  end
+
+  # Check whether chef was successfully installed on the machine or not
+  #
+  # @param node [String] name of the node to check.
+  # @return [Boolean]
+  def chef_installed?(node)
+    command = "vagrant ssh #{node} -c "\
+              '"test -e /var/chef/cache/chef-stacktrace.out && printf FOUND || printf NOT_FOUND"'
+    chef_stacktrace = `#{command}`
+    if chef_stacktrace == 'FOUND'
+      @ui.error "Chef on node '#{node}' was installed with error."
+      false
+    else
+      @ui.info "Chef on node '#{node}' was successfully installed."
+      true
+    end
+  end
+
+  # Check whether chef have provisioned the server or not
+  #
+  # @param node [String] name of the node to check
+  # return [Boolean]
+  def node_provisioned?(node)
+    command = "vagrant ssh #{node} -c"\
+                     '"test -e /var/mdbci/provisioned && printf PROVISIONED || printf NOT"'
+    provision_file = `#{command}`
+    if provision_file == 'PROVISIONED'
+      @ui.info "Node '#{node}' was configured."
+      true
+    else
+      @ui.error "Node '#{node}' is not configured."
+      false
+    end
+  end
+
+  # Check that all specified nodes are configured and brought up.
+  # Return list of nodes that needs to be re-created or re-provisioned.
+  #
+  # @param nodes [Array<String>] name of nodes that should be checked.
+  # @return [Array<String>, Array<String>] nodes to recreate and nodes to re-provision.
+  def check_nodes(nodes)
+    recreate = []
+    reconfigure = []
+    nodes.each do |node|
+      unless node_running?(node) && chef_installed?(node)
+        recreate.push node
+        next
+      end
+      reconfigure.push(node) unless node_provisioned?(node)
+    end
+    [recreate, reconfigure]
+  end
+
+  # Try to reconfigure the specified nodes. If the operation was not
+  # successfull, return them as a list of nodes to be reproduced.
+  #
+  # @param nodes [Array<String>] list of node names to be reconfigureed.
+  # @param provider [String] name of the provider to use to bring up nodes.
+  # @return [Array<String>] list of nodes that were not reconfigureed.
+  def reconfigure(nodes, provider)
+    nodes.reject do |node|
+      @ui.info "Trying to configure node '#{node}.'"
+      run_command_and_log("vagrant provision #{node} --provider=#{provider}")
+      node_provisioned?(node)
+    end
+  end
+
+  # Destroy and then create specified nodes.
+  #
+  # @param nodes [Array<String>] list of nodes that should be re-created
+  # @param provider [String] name of virtual box provider
+  def recreate(nodes, provider)
+    nodes.each do |node|
+      @ui.info "Destroying '#{node}' node."
+      run_command_and_log("vagrant destroy --force #{node}")
+      @ui.info "Creating '#{node}' node."
+      run_command_and_log("vagrant up #{node} --provider=#{provider}")
+    end
+  end
+
+  # Destroy all existing nodes and setup configuration
+  #
+  # @param template [Hash] template that was used to setup the provision.
+  # @param nodes_provider [String] name of the node provider to use
+  # @param node [String] name of the node to bring up
+  # @return [Array<String>] list of nodes that should be checked
+  def setup_nodes(template, nodes_provider, node = '')
+    generate_docker_images(template, '.') if nodes_provider == 'docker'
+    @ui.info 'Destroying existing nodes.'
+    run_command_and_log("vagrant destroy --force #{node}")
+
+    vagrant_flags = generate_vagrant_run_flags(nodes_provider)
+    @ui.info "Bringing up #{(node.empty? ? 'configuration ' : 'node ')} #{@configuration}"
+    run_command_and_log("vagrant up #{vagrant_flags} --provider=#{nodes_provider} #{node}")
+    if node.empty?
+      fetch_node_names
+    else
+      [node]
+    end
+  end
+
+  # Check that nodes were brough up and configured. If not, try to repair
+  # them several times.
+  #
+  # @param nodes_to_check [Array<String>] list of node names to check.
+  # @param nodes_provider [String] name of the provider.
+  # @return [Boolean]
+  def check_and_fix_nodes(nodes_to_check, nodes_provider)
+    @attempts.times do |attempt|
+      @ui.info "Checking that nodes were brought up. Attempt #{attempt + 1}"
+      halt_nodes, unconfigured_nodes = check_nodes(nodes_to_check)
+      halt_nodes.concat(reconfigure(unconfigured_nodes, nodes_provider))
+      recreate(halt_nodes, nodes_provider)
+      nodes_to_check = halt_nodes
+      break if nodes_to_check.empty?
+    end
+
+    broken_nodes, unconfigured_nodes = check_nodes(nodes_to_check)
+    unless broken_nodes.empty? && unconfigured_nodes.empty?
+      @ui.error "The following nodes were not brought up: #{broken_nodes.join(', ')}"
+      @ui.error "The following nodes were not configured: #{unconfigured_nodes.join(', ')}"
+      return false
+    end
+    true
+  end
+
+  # Provide information for the end-user where to find the required information
+  # @param working_directory [String] path to the current working directory
+  # @param config_path [String] path to the configuration
+  # @param node [String] name of the node that was brought up
+  def generate_config_information(working_directory, config_path, node = '')
+    @ui.info 'All nodes were brought up and configured.'
+    @ui.info "DIR_PWD=#{working_directory}"
+    @ui.info "CONF_PATH=#{config_path}"
+    @ui.info "Generating #{config_path}_network_settings file"
+    printConfigurationNetworkInfoToFile(config_path, node)
+  end
+
+  # Switch to the working directory, so all Vagrant commands will
+  # be run in corresponding directory. The directory will be returned
+  # to the invoking one after the completion.
+  #
+  # @param directory [String] path to the directory to switch to.
+  def run_in_directory(directory)
+    current_dir = Dir.pwd
+    Dir.chdir(directory)
+    yield
+    Dir.chdir(current_dir)
   end
 
   def execute
@@ -184,128 +332,11 @@ class UpCommand < BaseCommand
       @ui.warning error.message
       return ARGUMENT_ERROR_RESULT
     end
-
-    # Changing directory to the configuration, so Vagrant commands will work
-    pwd = Dir.pwd
-    Dir.chdir(config_path)
-
-    generate_docker_images(template, '.') if nodes_provider == 'docker'
-
-    vagrant_flags = generate_vagrant_run_flags(nodes_provider)
-
-    @ui.info 'Destroying existing nodes.'
-    exec_cmd_destr = `vagrant destroy --force #{node}`
-    @ui.info exec_cmd_destr
-
-    status = setup_machines_with_vagrant(node, vagrant_flags, nodes_provider)
-
-    unless status.success?
-      @ui.error 'Bringing up failed'
-      exit_code = status.exitstatus
-      @ui.error "exit code #{exit_code}"
-
-      dead_machines = []
-      machines_with_broken_chef = []
-
-      vagrant_status = `vagrant status`.split("\n\n")[1].split("\n")
-      nodes = []
-      vagrant_status.each { |stat| nodes.push(stat.split(/\s+/)[0]) }
-
-      @ui.warning 'Checking for dead machines and checking Chef runs on machines'
-      nodes.each do |machine_name|
-        status = `vagrant status #{machine_name}`.split("\n")[2]
-        @ui.info status
-        unless status.include? 'running'
-          dead_machines.push(machine_name)
-          next
-        end
-
-        chef_log_cmd = "vagrant ssh #{machine_name} -c \"test -e /var/chef/cache/chef-stacktrace.out && printf 'FOUND' || printf 'NOT_FOUND'\""
-        chef_log_out = `#{chef_log_cmd}`
-        machines_with_broken_chef.push machine_name if chef_log_out == 'FOUND'
-      end
-
-      unless dead_machines.empty?
-        @ui.error 'Some machines are dead:'
-        dead_machines.each { |machine| @ui.error "\t#{machine}" }
-      end
-
-      unless machines_with_broken_chef.empty?
-        @ui.error 'Some machines have broken Chef run:'
-        machines_with_broken_chef.each { |machine| @ui.error "\t#{machine}" }
-      end
-
-      unless dead_machines.empty?
-        (1..@attempts).each do |i|
-          @ui.info 'Trying to force restart broken machines'
-          @ui.info "Attempt: #{i}"
-          dead_machines.delete_if do |machine|
-            puts `vagrant destroy -f #{machine}`
-            cmd_up = "vagrant up #{vagrant_flags} --provider=#{nodes_provider} #{machine}"
-            success = Open3.popen3(cmd_up) do |_stdin, stdout, stderr, wthr|
-              stdout.each_line { |line| @ui.info line }
-              stderr.each_line { |line| @ui.error line }
-              wthr.value.success?
-            end
-            success
-          end
-          if !dead_machines.empty?
-            @ui.error 'Some machines are still dead:'
-            dead_machines.each { |machine| @ui.error "\t#{machine}" }
-          else
-            @ui.info 'All dead machines successfuly resurrected'
-            break
-          end
-        end
-        raise 'Bringing up failed (error description is above)' unless dead_machines.empty?
-      end
-
-      unless machines_with_broken_chef.empty?
-        @ui.info 'Trying to re-provision machines'
-        machines_with_broken_chef.delete_if do |machine|
-          cmd_up = "vagrant provision #{machine}"
-          success = Open3.popen3(cmd_up) do |_stdin, stdout, stderr, wthr|
-            stdout.each_line { |line| @ui.info line }
-            stderr.each_line { |line| @ui.error line }
-            wthr.value.success?
-          end
-          success
-        end
-        unless machines_with_broken_chef.empty?
-          @ui.error 'Some machines are still have broken Chef run:'
-          machines_with_broken_chef.each { |machine| @ui.error "\t#{machine}" }
-          (1..@attempts).each do |i|
-            @ui.info 'Trying to force restart machines'
-            @ui.info "Attempt: #{i}"
-            machines_with_broken_chef.delete_if do |machine|
-              puts `vagrant destroy -f #{machine}`
-              cmd_up = "vagrant up #{vagrant_flags} --provider=#{nodes_provider} #{machine}"
-              success = Open3.popen3(cmd_up) do |_stdin, stdout, stderr, wthr|
-                stdout.each_line { |line| @ui.info line }
-                stderr.each_line { |line| @ui.error line }
-                wthr.value.success?
-              end
-              success
-            end
-            if !machines_with_broken_chef.empty?
-              @ui.error 'Some machines are still have broken Chef run:'
-              machines_with_broken_chef.each { |machine| @ui.error "\t#{machine}" }
-            else
-              @ui.info 'All broken_chef machines successfuly reprovisioned.'
-              break
-            end
-          end
-          raise 'Bringing up failed (error description is above)' unless machines_with_broken_chef.empty?
-        end
-      end
+    run_in_directory(config_path) do
+      nodes_to_check = setup_nodes(template, nodes_provider, node)
+      return ERROR_RESULT unless check_and_fix_nodes(nodes_to_check, nodes_provider)
     end
-
-    @ui.info 'All nodes successfully up!'
-    @ui.info "DIR_PWD=#{pwd}"
-    @ui.info "CONF_PATH=#{config_path}"
-    Dir.chdir pwd
-    @ui.info "Generating #{config_path}_network_settings file"
-    printConfigurationNetworkInfoToFile(config_path, node)
+    generate_config_information(Dir.pwd, config_path, node)
     SUCCESS_RESULT
   end
 end
