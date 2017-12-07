@@ -119,6 +119,7 @@ config.omnibus.chef_version = '12.9.38'
         <% else %>
         chef.add_recipe 'packages'
         <% end %>
+        chef.add_recipe 'mdbci_provision_mark'
         chef.synced_folder_type = 'rsync'
       end
       ##--- Chef configuration complete
