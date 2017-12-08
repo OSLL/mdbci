@@ -1,7 +1,7 @@
 namespace :run_unit do
 
   task :task_generator do |t| RakeTaskManager.new(t).run_unit end
-  task :task_commands_base_command do RakeTaskManager.new(t).run_unit end
+  task :task_commands_base_command do |t| RakeTaskManager.new(t).run_unit end
   task :task_6819_show_box_info do |t| RakeTaskManager.new(t).run_unit end
   task :task_6755_show_platform_versions do |t| RakeTaskManager.new(t).run_unit end
   task :task_6844_ssh_pty_bug do |t| RakeTaskManager.new(t).run_unit end
