@@ -1,7 +1,6 @@
 namespace :run_unit do
 
   task :task_generator do |t| RakeTaskManager.new(t).run_unit end
-  task :task_commands_base_command do |t| RakeTaskManager.new(t).run_unit end
   task :task_6819_show_box_info do |t| RakeTaskManager.new(t).run_unit end
   task :task_6755_show_platform_versions do |t| RakeTaskManager.new(t).run_unit end
   task :task_6844_ssh_pty_bug do |t| RakeTaskManager.new(t).run_unit end
@@ -21,7 +20,6 @@ namespace :run_unit do
   task :task_6641_setup_exit_code do |t| RakeTaskManager.new(t).run_unit end
   task :task_6818_search_box_name_by_config do |t| RakeTaskManager.new(t).run_unit end
   task :task_7435_comments_in_pull_284 do |t| RakeTaskManager.new(t).run_unit  end
-
   task :task_show_tests_info do RakeTaskManager.get_failed_tests_info end
 end
 

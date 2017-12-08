@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'commands/base_command'
-
 describe BaseCommand do
   context '.synopsis' do
     it 'should return string' do
