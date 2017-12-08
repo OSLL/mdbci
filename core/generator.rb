@@ -113,6 +113,7 @@ config.omnibus.chef_version = '12.9.38'
       ##--- Chef configuration ----
       #{name}.vm.provision 'chef_solo' do |chef|
         chef.cookbooks_path = '#{cookbook_path}'
+        chef.add_recipe 'mdbci_provision_mark::remove_mark'
         <% if provisioned %>
         chef.roles_path = '.'
         chef.add_role '#{name}'
