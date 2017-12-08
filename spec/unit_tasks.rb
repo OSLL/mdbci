@@ -15,7 +15,6 @@ namespace :run_unit do
   task :task_6812_show_repo_manager_exceptions do |t| RakeTaskManager.new(t).run_unit end
   task :task_6863_tests_for_6821_show_box do |t| RakeTaskManager.new(t).run_unit end
   task :task_7185_helper_functions do |t| RakeTaskManager.new(t).run_unit end
-  task :task_7045_default_packages_to_empty_machines do |t| RakeTaskManager.new(t).run_unit end
   task :task_7144_copying_old_config_to_new do |t| RakeTaskManager.new(t).run_unit end
   task :task_7154_refer_old_node_to_new do |t| RakeTaskManager.new(t).run_unit end
   task :task_7209_add_aws_tag do |t| RakeTaskManager.new(t).run_unit end
