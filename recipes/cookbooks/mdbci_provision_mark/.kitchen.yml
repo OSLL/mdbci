@@ -23,3 +23,7 @@ suites:
       inspec_tests:
         - test/smoke/default
     attributes:
+  - name: remove_existing_file
+    run_list:
+      - recipe[mdbci_provision_mark::default]
+      - recipe[mdbci_provision_mark::remove_mark]
