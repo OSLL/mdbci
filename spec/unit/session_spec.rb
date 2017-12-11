@@ -68,4 +68,51 @@ describe 'Session' do
       expect { $session.getPlatfroms }.to raise_error 'Boxes are not found'
     end
   end
+
+  context '.getBoxesPlatformVersions' do
+    def generate_boxes_for_platform(platform, versions)
+      versions.map do |version|
+        [nil,
+         {
+           Session::PLATFORM => platform,
+           'platform_version' => version
+         }]
+      end
+    end
+
+    it 'should return empty array if there are no boxes' do
+      fake_box_manager = double('manager')
+      allow(fake_box_manager).to receive(:each)
+      found_versions = $session.getBoxesPlatformVersions('', fake_box_manager)
+      expect(found_versions).to be_empty
+    end
+
+    it 'should return empty array if there are no boxes for specified platform' do
+      fake_box_manager = double('manager')
+      boxes = generate_boxes_for_platform('platform-one', %w[one two])
+      allow(fake_box_manager).to receive(:each).and_yield(*boxes[0]).and_yield(*boxes[1])
+      found_versions = $session.getBoxesPlatformVersions('other-platform', fake_box_manager)
+      expect(found_versions).to be_empty
+    end
+
+    it 'should provide correct boxes versions' do
+      fake_box_manager = double('manager')
+      platform = 'ubuntu'
+      versions = %w[wily vivid trusty]
+      boxes = generate_boxes_for_platform(platform, versions)
+      allow(fake_box_manager).to receive(:each).and_yield(*boxes[0]).and_yield(*boxes[1]).and_yield(*boxes[2])
+      found_versions = $session.getBoxesPlatformVersions(platform, fake_box_manager)
+      expect(found_versions.sort).to eq(versions.sort)
+    end
+
+    it 'should remove doubles' do
+      fake_box_manager = double('manager')
+      platform = 'ubuntu'
+      versions = ['vivid']
+      boxes = generate_boxes_for_platform(platform, versions)
+      allow(fake_box_manager).to receive(:each).and_yield(*boxes[0]).and_yield(*boxes[0])
+      found_versions = $session.getBoxesPlatformVersions(platform, fake_box_manager)
+      expect(found_versions).to eq(versions)
+    end
+  end
 end
