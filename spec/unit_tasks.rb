@@ -4,7 +4,6 @@ namespace :run_unit do
   task :task_6819_show_box_info do |t| RakeTaskManager.new(t).run_unit end
   task :task_6755_show_platform_versions do |t| RakeTaskManager.new(t).run_unit end
   task :task_6844_ssh_pty_bug do |t| RakeTaskManager.new(t).run_unit end
-  task :task_6754_bug do |t| RakeTaskManager.new(t).run_unit end
   task :task_6783_show_boxes do |t| RakeTaskManager.new(t).run_unit end
   task :task_6813_divide_show_boxes do |t| RakeTaskManager.new(t).run_unit end
   task :task_node_product do |t| RakeTaskManager.new(t).run_unit end
