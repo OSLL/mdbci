@@ -1,3 +1,5 @@
+include_recipe 'packages::configure_apt'
+
 #
 # install default packages
 #

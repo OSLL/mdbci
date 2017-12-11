@@ -9,6 +9,7 @@ recipe            'install', 'Installs Enterprise edition'
 recipe            'uninstall', 'Uninstalls any edition'
 recipe            'purge', 'Uninstalls any edition and remove all data'
 recipe            'start', 'Creates new instance of service and starts it'
+depends           'packages'
 
 supports          'redhat'
 supports          'centos'
@@ -16,4 +17,3 @@ supports          'fedora'
 supports          'debian'
 supports          'ubuntu'
 supports          'suse'
-
