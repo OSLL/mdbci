@@ -11,7 +11,6 @@ BOX = {
     "provider"=>"libvirt",
     "box"=>"baremettle/debian-7.5",
     "platform"=>"debian",
-    "box_version"=>"1.0.0",
     "platform_version"=>"wheezy"
 }
 

@@ -5,7 +5,7 @@ require_relative '../../core/out'
 require_relative '../../core/session'
 require_relative '../../core/helper'
 
-PROVIDERS = %W(aws docker libvirt virtualbox mdbci)
+PROVIDERS = %W(aws docker libvirt virtualbox)
 
 TEST_PREFIX = File.basename(__FILE__, File.extname(__FILE__))
 
@@ -30,7 +30,7 @@ EOF
 end
 
 
-describe nil do
+describe 'Helper functions' do
 
   before :all do
     $mdbci_exec_dir = ENV['WORKSPACE']
@@ -65,6 +65,7 @@ describe nil do
     template = "#{TEST_PREFIX}_#{provider}_config.json"
     config = template.to_s.chomp '.json'
     id_path = "#{config}/.vagrant/machines/node0/#{provider}"
+
     before :all do
       $out = Out.new
       $session = Session.new

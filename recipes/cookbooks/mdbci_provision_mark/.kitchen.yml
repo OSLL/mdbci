@@ -1,0 +1,29 @@
+---
+driver:
+  name: vagrant
+
+provisioner:
+  name: chef_zero
+  # You may wish to disable always updating cookbooks in CI or other testing environments.
+  # For example:
+  #   always_update_cookbooks: <%= !ENV['CI'] %>
+  always_update_cookbooks: true
+
+verifier:
+  name: inspec
+
+platforms:
+  - name: ubuntu-16.04
+
+suites:
+  - name: default
+    run_list:
+      - recipe[mdbci_provision_mark::default]
+    verifier:
+      inspec_tests:
+        - test/smoke/default
+    attributes:
+  - name: remove_existing_file
+    run_list:
+      - recipe[mdbci_provision_mark::default]
+      - recipe[mdbci_provision_mark::remove_mark]

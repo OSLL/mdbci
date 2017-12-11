@@ -49,7 +49,8 @@ end
 
 def get_provider(path_to_nodes)
   begin
-    return File.read "./#{path_to_nodes}/provider"
+    absolute_path = File.absolute_path(path_to_nodes)
+    return File.read "#{absolute_path}/provider"
   rescue Exception => e
     raise "#{path_to_nodes}: #{UNKNOWN_PROVIDER_ERROR}, #{e.message}"
   end
@@ -345,4 +346,17 @@ end
 def get_box_name_from_node(path_to_nodes, node_name)
   template = JSON.parse(File.read (get_template_path path_to_nodes))
   return template[node_name][BOX]
+end
+
+# Extract directory and the node from the specified name.
+# Name is <path>/<node>. Both parts are mandatory.
+#
+# @param name [String] name of the node
+#
+# @return [Array<String>] path to configuration and node name.
+def extract_directory_and_node(name)
+  args = name.split('/')
+  directory = args[0, args.length - 1].join('/')
+  node_arg = args.last
+  [directory, node_arg]
 end

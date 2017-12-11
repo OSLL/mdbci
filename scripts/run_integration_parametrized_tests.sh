@@ -6,13 +6,13 @@ while getopts ":s:t:" opt; do
     ;;
     t) test_set="$OPTARG"
     ;;
-    \?) silent="true" 
+    \?) silent="true"
     ;;
   esac
 done
 
 if [[ "$silent" != "true" ]] && [[ "$silent" != "false" ]]; then
-  silent=true
+  silent=false
 fi
 
 if [[ -z "$test_set" ]]; then

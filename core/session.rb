@@ -13,6 +13,7 @@ require_relative 'docker_manager'
 require_relative 'snapshot'
 require_relative 'helper'
 require_relative 'clone'
+require_relative 'commands/up_command'
 
 
 class Session
@@ -197,9 +198,7 @@ EOF
     $session.command = command unless command.empty?
     raise 'Configuration name is required' if args.nil?
     params = args.split('/')
-    dir = params[0]
-    node_arg =  params[1]
-
+    dir, node_arg = extract_directory_and_node(args)
     # mdbci ppc64 boxes
     if File.exist?(dir+'/mdbci_template')
       loadMdbciNodes dir
@@ -217,7 +216,7 @@ EOF
     else # aws, vbox nodes
       raise "Machine with such name: #{dir} does not exist" unless Dir.exist?(dir)
       begin
-        nodes = get_nodes(dir)
+        nodes = get_nodes(File.absolute_path(dir))
         Dir.chdir dir
         if node_arg.nil? # ssh for all nodes
           nodes.each do |node|
@@ -487,30 +486,30 @@ EOF
     when 'show'
       exit_code = show(ARGV)
     when 'sudo'
-      exit_code = $session.sudo(ARGV.shift)
+      exit_code = sudo(ARGV.shift)
     when 'ssh'
-      exit_code = $session.ssh(ARGV.shift)
+      exit_code = ssh(ARGV.shift)
     when 'setup'
-      exit_code = $session.setup(ARGV.shift)
+      exit_code = setup(ARGV.shift)
     when 'generate'
-      exit_code = $session.generate(ARGV.shift)
+      exit_code = generate(ARGV.shift)
     when 'up'
-      exit_code = $session.up(ARGV.shift)
+      exit_code = up(ARGV.shift)
     when 'setup_repo'
       exit_code = NodeProduct.setupProductRepo(ARGV.shift)
     when 'install_product'
       exit_code = NodeProduct.installProduct(ARGV.shift)
     when 'public_keys'
-      exit_code = $session.publicKeys(ARGV.shift)
+      exit_code = publicKeys(ARGV.shift)
     when 'validate_template'
-      exit_code = $session.validate_template
+      exit_code = validate_template
     when 'snapshot'
       snapshot = Snapshot.new
       exit_code = snapshot.do(ARGV.shift)
     when 'clone'
-      exit_code = $session.clone(ARGV[0], ARGV[1])
+      exit_code = clone(ARGV[0], ARGV[1])
     when 'check_relevance'
-      exit_code = $session.checkRelevanceNetworkConfig(ARGV.shift)
+      exit_code = checkRelevanceNetworkConfig(ARGV.shift)
     else
       $out.error 'Unknown mdbci command. Please look help!'
       Help.display
@@ -591,238 +590,10 @@ EOF
     return 0
   end
 
-  def generateDockerImages(config, nodes_directory)
-    $out.info 'Generating docker images...'
-    config.each do |node|
-      unless node[1]['box'].nil?
-        DockerManager.build_image("#{nodes_directory}/#{node[0]}", node[1]['box'])
-      end
-    end
-  end
-
   # Deploy configurations
   def up(args)
-    std_q_attampts = 5
-
-    # No arguments provided
-    raise "Command 'up' needs one argument, found zero" if args.nil?
-
-    # No attempts provided
-    if @attempts.nil?
-      @attempts = std_q_attampts
-    else
-      @attempts = @attempts.to_i
-    end
-
-    # Saving dir, do then to change it back
-    pwd = Dir.pwd
-
-    # Separating config_path from node
-    config = []
-    node = ''
-    up_type = false # Means no node specified
-    paths = args.split('/') # Get array of dirs
-    # Get path to vagrant instance directory
-    config_path = paths[0, paths.length - 1].join('/')
-    if !config_path.empty?
-      # So there may be node specified
-      node = paths[paths.length - 1]
-      config[0] = config_path
-      config[1] = node
-      up_type = true # Node specified
-    else
-      config_path = paths[0, paths.length].join('/')
-    end
-
-    # Checking if vagrant instance derictory exists
-    if Dir.exist?(config[0].to_s) # to_s in case of 'nil'
-      up_type = true # node specified
-      $out.info 'Node is specified ' + config[1] + ' in ' + config[0]
-    else
-      up_type = false # node not specified
-      $out.info 'Node isn\'t specified in ' + args
-    end
-
-    template = JSON.parse(File.read(File.read "#{up_type ? config[0] : args}/template"))
-
-    up_type ? Dir.chdir(config[0]) : Dir.chdir(args)
-
-    # Setting provider: VBox, AWS, Libvirt, Docker
-    begin
-      @nodesProvider = File.read('provider')
-    rescue
-      raise 'File with provider info not found'
-    end
-
-    $out.info 'Current provider: ' + @nodesProvider
-
-    if @nodesProvider == 'mdbci'
-      $out.warning 'You are using mdbci nodes template. ./mdbci up command doesn\'t supported for this boxes!'
-      return 1
-    else
-      # Generating docker images (so it will not be loaded for similar nodes repeatedly)
-      generateDockerImages(template, '.') if @nodesProvider == 'docker'
-
-      no_parallel_flag = ''
-      if @nodesProvider == 'aws' or @nodesProvider == 'docker'
-        no_parallel_flag = " #{VAGRANT_NO_PARALLEL} "
-      end
-
-      $out.info "Bringing up #{(up_type ? 'node ' : 'configuration ')} #{args}"
-
-      $out.info 'Destroying everything'
-      cmd_destr = 'vagrant destroy --force ' + (up_type ? config[1] : '')
-      exec_cmd_destr = `#{cmd_destr}`
-      $out.info exec_cmd_destr
-
-      cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{(up_type ? config[1] : '')}"
-      $out.info "Actual command: #{cmd_up}"
-      chef_not_found_node = nil
-      status = nil
-      begin
-        chef_not_found_node = nil
-        status = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
-          stdin.close
-          stdout.each_line do |line|
-            $out.info line
-            chef_not_found_node = line if @nodesProvider == 'aws'
-          end
-          stdout.close
-          error = stderr.read
-          stderr.close
-          if @nodesProvider == 'aws' and error.to_s.include? CHEF_NOT_FOUND_ERROR
-            chef_not_found_node = chef_not_found_node.to_s.match(OUTPUT_NODE_NAME_REGEX).captures[0]
-          else
-            error.each_line { |line| $out.error line }
-            chef_not_found_node = nil
-          end
-          wthr.value
-        end
-        if chef_not_found_node
-          $out.warning "Chef not is found on aws node: #{chef_not_found_node}, applying quick fix..."
-          cmd_provision = "vagrant provision #{chef_not_found_node}"
-          status = Open3.popen3(cmd_provision) do |stdin, stdout, stderr, wthr|
-            stdin.close
-            stdout.each_line { |line| $out.info line }
-            stdout.close
-            stderr.each_line { |line| $out.error line }
-            stderr.close
-            wthr.value
-          end
-        end
-      end while chef_not_found_node != nil
-      unless status.success?
-        $out.error 'Bringing up failed'
-        exit_code = status.exitstatus
-        $out.error "exit code #{exit_code}"
-
-        dead_machines = Array.new
-        machines_with_broken_chef = Array.new
-
-        vagrant_status = `vagrant status`.split("\n\n")[1].split("\n")
-        nodes = Array.new
-        vagrant_status.each { |stat| nodes.push(stat.split(/\s+/)[0]) }
-
-        $out.warning 'Checking for dead machines and checking Chef runs on machines'
-        nodes.each do |machine_name|
-          status = `vagrant status #{machine_name}`.split("\n")[2]
-          $out.info status
-          unless status.include? 'running'
-            dead_machines.push(machine_name)
-            next
-          end
-
-          chef_log_cmd = "vagrant ssh #{machine_name} -c \"test -e /var/chef/cache/chef-stacktrace.out && printf 'FOUND' || printf 'NOT_FOUND'\""
-          chef_log_out = `#{chef_log_cmd}`
-          machines_with_broken_chef.push machine_name if chef_log_out == 'FOUND'
-        end
-
-        unless dead_machines.empty?
-          $out.error 'Some machines are dead:'
-          dead_machines.each { |machine| $out.error "\t#{machine}" }
-        end
-
-        unless machines_with_broken_chef.empty?
-          $out.error 'Some machines have broken Chef run:'
-          machines_with_broken_chef.each { |machine| $out.error "\t#{machine}" }
-        end
-
-        unless dead_machines.empty?
-          (1..@attempts).each do |i|
-            $out.info 'Trying to force restart broken machines'
-            $out.info "Attempt: #{i}"
-            dead_machines.delete_if do |machine|
-              puts `vagrant destroy -f #{machine}`
-              cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{machine}"
-              success = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
-                stdout.each_line { |line| $out.info line }
-                stderr.each_line { |line| $out.error line }
-                wthr.value.success?
-              end
-              success
-            end
-            if !dead_machines.empty?
-              $out.error 'Some machines are still dead:'
-              dead_machines.each { |machine| $out.error "\t#{machine}" }
-            else
-              $out.info "All dead machines successfuly resurrected"
-              break
-            end
-          end
-          raise 'Bringing up failed (error description is above)' unless dead_machines.empty?
-        end
-
-        unless machines_with_broken_chef.empty?
-          $out.info 'Trying to re-provision machines'
-          machines_with_broken_chef.delete_if do |machine|
-            cmd_up = "vagrant provision #{machine}"
-            success = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
-              stdout.each_line { |line| $out.info line }
-              stderr.each_line { |line| $out.error line }
-              wthr.value.success?
-            end
-            success
-          end
-          unless machines_with_broken_chef.empty?
-            $out.error 'Some machines are still have broken Chef run:'
-            machines_with_broken_chef.each { |machine| $out.error "\t#{machine}" }
-            (1.. @attempts).each do |i|
-              $out.info 'Trying to force restart machines'
-              $out.info "Attempt: #{i}"
-              machines_with_broken_chef.delete_if do |machine|
-                puts `vagrant destroy -f #{machine}`
-                cmd_up = "vagrant up #{no_parallel_flag} --provider=#{@nodesProvider} #{machine}"
-                success = Open3.popen3(cmd_up) do |stdin, stdout, stderr, wthr|
-                  stdout.each_line { |line| $out.info line }
-                  stderr.each_line { |line| $out.error line }
-                  wthr.value.success?
-                end
-                success
-              end
-              if !machines_with_broken_chef.empty?
-                $out.error 'Some machines are still have broken Chef run:'
-                machines_with_broken_chef.each { |machine| $out.error "\t#{machine}" }
-              else
-                $out.info "All broken_chef machines successfuly reprovisioned."
-                break
-              end
-            end
-            raise 'Bringing up failed (error description is above)' unless machines_with_broken_chef.empty?
-          end
-        end
-      end
-    end
-    $out.info 'All nodes successfully up!'
-    $out.info "DIR_PWD=#{pwd}"
-    $out.info "CONF_PATH=#{config_path}"
-    Dir.chdir pwd
-    $out.info "Generating #{config_path}_network_settings file"
-    if up_type == false
-      printConfigurationNetworkInfoToFile(config_path)
-    else
-      printConfigurationNetworkInfoToFile(config_path,node)
-    end
-    return 0
+    command = UpCommand.new([args], self, $out)
+    command.execute
   end
 
   # copy ssh keys to config/node
@@ -928,7 +699,6 @@ EOF
     end
 
     Dir.chdir pwd
-
   end
 
   def showProvider(name=nil)

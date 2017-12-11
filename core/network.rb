@@ -93,9 +93,7 @@ class Network
     result = Array.new()
     pwd = Dir.pwd
     raise 'Configuration name is required' if name.nil?
-    args = name.split('/')
-    dir = args[0]
-    node_arg = args[1]
+    dir, node_arg = extract_directory_and_node(name)
     # mdbci ppc64 boxes
     if File.exist?(dir+'/mdbci_template')
       $session.loadMdbciNodes dir
@@ -112,7 +110,7 @@ class Network
         result.push(key_path)
       end
     else
-      configPath = pwd.to_s + '/' + dir
+      configPath = File.absolute_path(dir)
       unless Dir.exists? configPath
         raise 'Configuration with such name does not exists'
       end
@@ -143,9 +141,7 @@ class Network
       raise 'Configuration name is required'
     end
 
-    args = name.split('/')
-    directory = args[0]
-    node_arg = args[1]
+    directory, node_arg = extract_directory_and_node(name)
     # mdbci ppc64 boxes
     if File.exist?(directory+'/mdbci_template')
       $session.loadMdbciNodes directory
@@ -168,7 +164,7 @@ class Network
         raise "Configuration not found: #{directory}"
       end
       network = Network.new
-      network.loadNodes pwd.to_s+'/'+directory # load nodes from dir
+      network.loadNodes File.absolute_path(directory) # load nodes from dir
       if node_arg.nil? # No node argument, show all config
         network.nodes.each do |node|
           temp_var = getIpWrapper(node,pwd)
@@ -233,10 +229,7 @@ class Network
     pwd = Dir.pwd
     result_ip = Array.new()
     raise 'Configuration name is required' if args.nil?
-    params = args.split('/')
-    dir = params[0]
-    node_arg = params[1]
-
+    dir, node_arg = extract_directory_and_node(args)
     # mdbci box
     if File.exist?(dir+'/mdbci_template')
       $session.loadMdbciNodes dir
@@ -255,7 +248,7 @@ class Network
     else # aws, vbox nodes
       raise "Can not find directory #{dir}" unless Dir.exists? dir
       network = Network.new
-      network.loadNodes pwd.to_s+'/'+dir # load nodes from dir
+      network.loadNodes File.absolute_path(dir) # load nodes from dir
       raise "Nodes are not found in #{dir}" if network.nodes.empty?
       if node_arg.nil? # No node argument, show all config
         network.nodes.each do |node|

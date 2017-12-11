@@ -4,13 +4,13 @@ while getopts ":s:" opt; do
   case $opt in
     s) silent="$OPTARG"
     ;;
-    \?) silent="true" 
+    \?) silent="true"
     ;;
   esac
 done
 
 if [[ $silent != "true" ]] && [[ $silent != "false" ]]; then
-  silent=true
+  silent=false
 fi
 
 SILENT=$silent rake run_integration_all

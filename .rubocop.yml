@@ -9,3 +9,11 @@ Metrics/LineLength:
 
 Metrics/MethodLength:
   Max: 15
+
+Metrics/ClassLength:
+  Max: 400
+
+Metrics/BlockLength:
+  ExcludedMethods:
+    - describe
+    - context
