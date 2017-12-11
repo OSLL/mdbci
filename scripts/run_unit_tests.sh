@@ -10,7 +10,7 @@ while getopts ":s:" opt; do
 done
 
 if [[ $silent != "true" ]] && [[ $silent != "false" ]]; then
-  silent=true
+  silent=false
 fi
 
 SILENT=$silent rake run_unit_all && rake spec
