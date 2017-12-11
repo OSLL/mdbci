@@ -1,3 +1,5 @@
+include_recipe 'packages::configure_apt'
+
 # install default packages
 [ "net-tools", "psmisc" ].each do |pkg|
   package pkg
@@ -37,7 +39,7 @@ when "suse"
   end
 when "windows"
   arch = node[:kernel][:machine] == "x86_64" ? "winx64" : "win32"
-  
+
   md5sums_file = "#{Chef::Config[:file_cache_path]}/md5sums.txt"
   remote_file "#{md5sums_file}" do
     source "https://code.mariadb.com/mariadb-enterprise/" + node['maria']['version'] + "/" + arch + "-packages/md5sums.txt"

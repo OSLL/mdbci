@@ -1,3 +1,5 @@
+include_recipe 'packages::configure_apt'
+
 #
 # install default packages
 [ "net-tools", "psmisc" ].each do |pkg|
@@ -39,7 +41,7 @@ case node[:platform_family]
 
   release_name = "if cat /etc/SuSE-release | grep Enterprise &>/dev/null; then echo sles; else echo opensuse; fi"
   execute "Change suse on sles repository" do
-  	command "cat /etc/zypp/repos.d/mysql.repo | sed s/suse/$(" + release_name + ")/g > /etc/zypp/repos.d/mysql.repo"
+    command "cat /etc/zypp/repos.d/mysql.repo | sed s/suse/$(" + release_name + ")/g > /etc/zypp/repos.d/mysql.repo"
   end
 
 end
