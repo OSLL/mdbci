@@ -13,33 +13,28 @@ describe 'Session' do
     $mdbci_exec_dir = ENV['WORKSPACE']
     $out = Out.new
     $session = Session.new
-    $session.isSilent = true
-    $session.mdbciDir = Dir.pwd
+    @session = $session
+    @session.isSilent = true
+    @session.mdbciDir = Dir.pwd
     $exception_handler = ExceptionHandler.new
-    boxesPath = './BOXES'
-    $session.boxes = BoxesManager.new boxesPath
-    reposPath = './repo.d'
-    $session.repos = RepoManager.new reposPath
+    @session.boxes = BoxesManager.new './BOXES'
+    @session.repos = RepoManager.new './repo.d'
   end
 
   context '.configurationFiles' do
     it 'Check aws config loading...' do
-      $mdbci_exec_dir = ENV['WORKSPACE']
       session = Session.new
       session.awsConfigFile = 'aws-config.yml'
-      awsConfig = YAML.load_file(session.awsConfigFile)['aws']
-      awsConfig.size.should_not eq(0)
+      aws_config = YAML.load_file(session.awsConfigFile)['aws']
+      expect(aws_config).not_to be_empty
     end
 
     it 'Check template loading...' do
-      $mdbci_exec_dir = ENV['WORKSPACE']
       session = Session.new
       session.configFile = 'spec/test_machine_configurations/galera-cnf-template.json'
       nodes = JSON.parse(IO.read(session.configFile))
-      # out.out 'Found boxes: ' + boxes.size().to_s
-      # boxes is not empty
-      nodes.size.should_not eq(0)
-      nodes.size.should eq(7)
+      expect(nodes).not_to be_empty
+      expect(nodes.side).to eq(7)
     end
   end
 
@@ -55,8 +50,8 @@ describe 'Session' do
       allow(fake_box_manager).to receive(:empty?).and_return(false)
       fake_boxes = double
       allow(fake_boxes).to receive(:boxesManager).and_return(fake_box_manager)
-      $session.boxes = fake_boxes
-      expect($session.getPlatfroms.sort).to eq(platforms.sort)
+      @session.boxes = fake_boxes
+      expect(@session.getPlatfroms.sort).to eq(platforms.sort)
     end
 
     it 'should rise error when boxes are not found' do
@@ -64,8 +59,8 @@ describe 'Session' do
       allow(fake_box_manager).to receive(:empty?).and_return(true)
       fake_boxes = double('boxes')
       allow(fake_boxes).to receive(:boxesManager).and_return(fake_box_manager)
-      $session.boxes = fake_boxes
-      expect { $session.getPlatfroms }.to raise_error 'Boxes are not found'
+      @session.boxes = fake_boxes
+      expect { @session.getPlatfroms }.to raise_error 'Boxes are not found'
     end
   end
 
@@ -83,7 +78,7 @@ describe 'Session' do
     it 'should return empty array if there are no boxes' do
       fake_box_manager = double('manager')
       allow(fake_box_manager).to receive(:each)
-      found_versions = $session.getBoxesPlatformVersions('', fake_box_manager)
+      found_versions = @session.getBoxesPlatformVersions('', fake_box_manager)
       expect(found_versions).to be_empty
     end
 
@@ -91,7 +86,7 @@ describe 'Session' do
       fake_box_manager = double('manager')
       boxes = generate_boxes_for_platform('platform-one', %w[one two])
       allow(fake_box_manager).to receive(:each).and_yield(*boxes[0]).and_yield(*boxes[1])
-      found_versions = $session.getBoxesPlatformVersions('other-platform', fake_box_manager)
+      found_versions = @session.getBoxesPlatformVersions('other-platform', fake_box_manager)
       expect(found_versions).to be_empty
     end
 
@@ -101,7 +96,7 @@ describe 'Session' do
       versions = %w[wily vivid trusty]
       boxes = generate_boxes_for_platform(platform, versions)
       allow(fake_box_manager).to receive(:each).and_yield(*boxes[0]).and_yield(*boxes[1]).and_yield(*boxes[2])
-      found_versions = $session.getBoxesPlatformVersions(platform, fake_box_manager)
+      found_versions = @session.getBoxesPlatformVersions(platform, fake_box_manager)
       expect(found_versions.sort).to eq(versions.sort)
     end
 
@@ -111,7 +106,7 @@ describe 'Session' do
       versions = ['vivid']
       boxes = generate_boxes_for_platform(platform, versions)
       allow(fake_box_manager).to receive(:each).and_yield(*boxes[0]).and_yield(*boxes[0])
-      found_versions = $session.getBoxesPlatformVersions(platform, fake_box_manager)
+      found_versions = @session.getBoxesPlatformVersions(platform, fake_box_manager)
       expect(found_versions).to eq(versions)
     end
   end
