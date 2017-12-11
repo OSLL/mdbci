@@ -34,7 +34,7 @@ describe 'Session' do
       session.configFile = 'spec/test_machine_configurations/galera-cnf-template.json'
       nodes = JSON.parse(IO.read(session.configFile))
       expect(nodes).not_to be_empty
-      expect(nodes.side).to eq(7)
+      expect(nodes.size).to eq(7)
     end
   end
 
