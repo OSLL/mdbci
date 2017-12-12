@@ -110,6 +110,9 @@ config.omnibus.chef_version = '12.9.38'
   # @return [String] provision block for the VM
   def self.generate_provision_block(name, cookbook_path, provisioned)
     template = ERB.new <<-PROVISION
+      ##--- Install chef on this machine with manual setup ---
+      #{name}.vm.provision 'shell', inline: 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v 12.9.38'
+
       ##--- Chef configuration ----
       #{name}.vm.provision 'chef_solo' do |chef|
         chef.cookbooks_path = '#{cookbook_path}'
