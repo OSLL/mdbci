@@ -229,12 +229,11 @@ class UpCommand < BaseCommand
   # successfull, return them as a list of nodes to be reproduced.
   #
   # @param nodes [Array<String>] list of node names to be reconfigureed.
-  # @param provider [String] name of the provider to use to bring up nodes.
   # @return [Array<String>] list of nodes that were not reconfigureed.
-  def reconfigure(nodes, provider)
+  def reconfigure(nodes)
     nodes.reject do |node|
       @ui.info "Trying to configure node '#{node}.'"
-      run_command_and_log("vagrant provision #{node} --provider=#{provider}")
+      run_command_and_log("vagrant provision #{node}")
       node_provisioned?(node)
     end
   end
@@ -283,7 +282,7 @@ class UpCommand < BaseCommand
     @attempts.times do |attempt|
       @ui.info "Checking that nodes were brought up. Attempt #{attempt + 1}"
       halt_nodes, unconfigured_nodes = check_nodes(nodes_to_check)
-      halt_nodes.concat(reconfigure(unconfigured_nodes, nodes_provider))
+      halt_nodes.concat(reconfigure(unconfigured_nodes))
       recreate(halt_nodes, nodes_provider)
       nodes_to_check = halt_nodes
       break if nodes_to_check.empty?
