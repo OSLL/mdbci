@@ -232,7 +232,7 @@ class UpCommand < BaseCommand
   # @return [Array<String>] list of nodes that were not reconfigureed.
   def reconfigure(nodes)
     nodes.reject do |node|
-      @ui.info "Trying to configure node '#{node}.'"
+      @ui.info "Trying to configure node '#{node}'."
       run_command_and_log("vagrant provision #{node}")
       node_provisioned?(node)
     end
@@ -251,6 +251,16 @@ class UpCommand < BaseCommand
     end
   end
 
+  # Check that nodes were brougt up and configrued. If they were not
+  # configured, then try to reconfigure them
+  #
+  # @param nodes_to_check [Array<String>] list of nodes to check
+  # @return [Array<String>] list of nodes that are still misconfigured.
+  def check_and_configure_nodes(nodes_to_check)
+    halt_nodes, unconfigured_nodes = check_nodes(nodes_to_check)
+    halt_nodes.concat(reconfigure(unconfigured_nodes))
+  end
+
   # Destroy all existing nodes and setup configuration
   #
   # @param template [Hash] template that was used to setup the provision.
@@ -265,30 +275,29 @@ class UpCommand < BaseCommand
     vagrant_flags = generate_vagrant_run_flags(nodes_provider)
     @ui.info "Bringing up #{(node.empty? ? 'configuration ' : 'node ')} #{@configuration}"
     run_command_and_log("vagrant up #{vagrant_flags} --provider=#{nodes_provider} #{node}")
-    if node.empty?
-      fetch_node_names
-    else
-      [node]
-    end
+    nodes_to_check = if node.empty?
+                       fetch_node_names
+                     else
+                       [node]
+                     end
+    check_and_configure_nodes(nodes_to_check)
   end
 
-  # Check that nodes were brough up and configured. If not, try to repair
-  # them several times.
+  # Try to fix nodes that were not brought up. Try to reconfigure them.
+  # If any operation fails, try to repair them several times.
   #
-  # @param nodes_to_check [Array<String>] list of node names to check.
+  # @param nodes_to_fix [Array<String>] list of node names to fix.
   # @param nodes_provider [String] name of the provider.
   # @return [Boolean]
-  def check_and_fix_nodes(nodes_to_check, nodes_provider)
+  def fix_nodes(nodes_to_fix, nodes_provider)
     @attempts.times do |attempt|
       @ui.info "Checking that nodes were brought up. Attempt #{attempt + 1}"
-      halt_nodes, unconfigured_nodes = check_nodes(nodes_to_check)
-      halt_nodes.concat(reconfigure(unconfigured_nodes))
-      recreate(halt_nodes, nodes_provider)
-      nodes_to_check = halt_nodes
-      break if nodes_to_check.empty?
+      recreate(nodes_to_fix, nodes_provider)
+      nodes_to_fix = check_and_configure_nodes(nodes_to_fix)
+      break if nodes_to_fix.empty?
     end
 
-    broken_nodes, unconfigured_nodes = check_nodes(nodes_to_check)
+    broken_nodes, unconfigured_nodes = check_nodes(nodes_to_fix)
     unless broken_nodes.empty? && unconfigured_nodes.empty?
       @ui.error "The following nodes were not brought up: #{broken_nodes.join(', ')}"
       @ui.error "The following nodes were not configured: #{unconfigured_nodes.join(', ')}"
@@ -332,8 +341,8 @@ class UpCommand < BaseCommand
       return ARGUMENT_ERROR_RESULT
     end
     run_in_directory(config_path) do
-      nodes_to_check = setup_nodes(template, nodes_provider, node)
-      return ERROR_RESULT unless check_and_fix_nodes(nodes_to_check, nodes_provider)
+      nodes_to_fix = setup_nodes(template, nodes_provider, node)
+      return ERROR_RESULT unless fix_nodes(nodes_to_fix, nodes_provider)
     end
     generate_config_information(Dir.pwd, config_path, node)
     SUCCESS_RESULT
