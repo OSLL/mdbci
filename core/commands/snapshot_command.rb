@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'open3'
 require_relative 'base_command'
 
 # Snapshot command allows to manage snapshots of virtual environments for configurations.
@@ -189,25 +190,21 @@ class SnapshotCommand < BaseCommand
 
   # method returns bash command exit code
   def execute_bash(cmd, disable_stdout_output)
-    output = String.new
+    output = []
     process_status = Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-      stdin.close
       stdout.each do |line|
         @ui.info line unless disable_stdout_output
-        output += line
+        output.push(line.chomp)
       end
-      stdout.close
       stderr.each { |line| @ui.error line }
-      stderr.close
-      wait_thr.value.exitstatus
+      wait_thr.value
     end
-    raise "#{cmd} #{NON_ZERO_BASH_EXIT_CODE_ERROR} #{process_status}" unless process_status == 0
-    [process_status, output]
+    raise "#{cmd} #{NON_ZERO_BASH_EXIT_CODE_ERROR} #{process_status}" unless process_status.success?
+    output
   end
 
   def get_docker_images
-    _, output = execute_bash('docker images --format "{{.Repository}}"', true)
-    output.split("\n")
+    execute_bash('docker images --format "{{.Repository}}"', true)
   end
 
   # args[0] node name
@@ -216,16 +213,16 @@ class SnapshotCommand < BaseCommand
     raise NODE_NAME_OPTIONS_REQUIRED if node_name.to_s.empty?
     case @provider
     when LIBVIRT
-      _, output = execute_bash("virsh -q snapshot-list --domain #{@nodes_directory_name}_#{node_name} | awk '{print $1}'", true)
-      return output.split("\n").reverse
+      output = execute_bash("virsh -q snapshot-list --domain #{@nodes_directory_name}_#{node_name} | awk '{print $1}'", true)
+      return output.reverse
     when DOCKER
       return get_docker_snapshots(node_name)
     else
       current_dir = Dir.pwd
       Dir.chdir @path_to_nodes
-      _, output = execute_bash("vagrant snap list #{node_name} | grep +.* | awk '{print $2}'", true)
+      output = execute_bash("vagrant snap list #{node_name} | grep +.* | awk '{print $2}'", true)
       Dir.chdir current_dir
-      return output.split("\n")
+      return output
     end
   end
 
