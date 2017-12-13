@@ -10,11 +10,10 @@ require_relative 'boxes_manager'
 require_relative 'repo_manager'
 require_relative 'out'
 require_relative 'docker_manager'
-require_relative 'snapshot'
 require_relative 'helper'
 require_relative 'clone'
 require_relative 'commands/up_command'
-
+require_relative 'commands/snapshot_command'
 
 class Session
 
@@ -504,8 +503,8 @@ EOF
     when 'validate_template'
       exit_code = validate_template
     when 'snapshot'
-      snapshot = Snapshot.new
-      exit_code = snapshot.do(ARGV.shift)
+      snapshot = SnapshotCommand.new(ARGV, self, $out)
+      exit_code = snapshot.execute
     when 'clone'
       exit_code = clone(ARGV[0], ARGV[1])
     when 'check_relevance'

@@ -3,7 +3,6 @@ require 'fileutils'
 require 'open3'
 
 require_relative 'spec_helper'
-require_relative '../core/snapshot'
 
 PATH_TO_TEMPLATES = 'spec/test_machine_configurations'
 CONFIG_PREFIX = 'snapshot_test'

@@ -4,6 +4,7 @@ require 'open3'
 
 # Import all the elements that will be tested
 require 'commands/base_command'
+require 'commands/snapshot_command'
 
 # Module provides methods to test the execution of shell-commands
 module ExecutionHelper

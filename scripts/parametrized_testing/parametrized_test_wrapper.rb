@@ -2,7 +2,7 @@ require 'fileutils'
 
 require_relative '../../core/session'
 require_relative '../../core/out'
-require_relative '../../core/snapshot'
+require_relative '../../core/commands/snapshot_command'
 require_relative '../../core/helper'
 require_relative '../../core/clone'
 require_relative '../../core/exception_handler'
@@ -85,7 +85,7 @@ class ParametrizedTestWrapper
   def get_snapshots_for_node(config_name, node_name)
     return mdbci_environment_variables_wrapper {
       $session.path_to_nodes = config_name
-      snapshots = Snapshot.new.get_snapshots node_name
+      snapshots = SnapshotCommand.new([], $session, $out).get_snapshots node_name
       $session.path_to_nodes = nil
       snapshots
     }
