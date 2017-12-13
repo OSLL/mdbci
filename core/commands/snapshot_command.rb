@@ -8,7 +8,8 @@ class SnapshotCommand < BaseCommand
   SNAPSHOT_ACTION_REQUIRED = 'snapshot action is required (take, revert, delete, list)'
 
   PATH_TO_NODES_OPTION_REQUIRED = '--path-to-nodes option must be specified'
-  SNAPSHOT_NAME_AND_NODE_NAME_OPTIONS_REQUIRED = '--node-name and --snapshot-name must be specified both or only --snapshot-name'
+  SNAPSHOT_NAME_AND_NODE_NAME_OPTIONS_REQUIRED =
+    '--node-name and --snapshot-name must be specified both or only --snapshot-name'
   NODE_NAME_OPTIONS_REQUIRED = '--node-name must be specified'
 
   NON_ZERO_BASH_EXIT_CODE_ERROR = 'command exited with non zero exit code'
@@ -19,7 +20,8 @@ class SnapshotCommand < BaseCommand
   DOCKER_CONTAINER_ID_NOT_FOUND = 'docker container id not found'
   DOCKER_SNAPSHOT_INITIAL_OR_IN_USE_NO_DELETION = 'docker snapshot is initial or in use and could not be deleted'
   DOCKER_SNAPSHOT_NAME_MUST_BE_DOWNCASE = 'docker snapshot name will be converted to downcase'
-  DOCKER_IMAGE_NAME_EXISTS = 'docker snapshot name is an image name, and that name already exists (check with "docker images")'
+  DOCKER_IMAGE_NAME_EXISTS =
+    'docker snapshot name is an image name, and that name already exists (check with "docker images")'
 
   NODES_NOT_FOUND_ERROR = 'nodes are not found'
   SNAPSHOT_ALREADY_EXISTS = 'snapshot already exists'
@@ -103,11 +105,10 @@ class SnapshotCommand < BaseCommand
         raise SNAPSHOT_NAME_AND_NODE_NAME_OPTIONS_REQUIRED
       end
     when ACTION_REMOVE
-      if !@node_name.to_s.empty? && !@snapshot_name.to_s.empty?
-        remove_snapshot(@node_name, @snapshot_name)
-      else
+      if @node_name.to_s.empty? || @snapshot_name.to_s.empty?
         raise SNAPSHOT_NAME_AND_NODE_NAME_OPTIONS_REQUIRED
       end
+      remove_snapshot(@node_name, @snapshot_name)
     when ACTION_LIST
       list_snapshots node_name
     end
@@ -132,7 +133,7 @@ class SnapshotCommand < BaseCommand
     @nodes.each do |node_name|
       begin
         container_ids[node_name] = File.read("#{@path_to_nodes}/.vagrant/machines/#{node_name}/docker/id")
-      rescue Errno::ENOENT => e
+      rescue Errno::ENOENT
       end
     end
     container_ids
@@ -191,7 +192,7 @@ class SnapshotCommand < BaseCommand
   # method returns bash command exit code
   def execute_bash(cmd, disable_stdout_output)
     output = []
-    process_status = Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
+    process_status = Open3.popen3(cmd) do |_, stdout, stderr, wait_thr|
       stdout.each do |line|
         @ui.info line unless disable_stdout_output
         output.push(line.chomp)
