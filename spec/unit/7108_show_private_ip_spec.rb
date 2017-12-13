@@ -11,7 +11,7 @@ require_relative '../../core/network'
 describe 'Network' do
 
   before :all do
-    $mdbci_exec_dir = ENV['WORKSPACE']
+    $mdbci_exec_dir = File.absolute_path('.')
     $out = Out.new
     $session = Session.new
     $session.isSilent = true
