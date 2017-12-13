@@ -12,7 +12,7 @@ describe 'Session' do
   DOCKER_CONF = ENV['mdbci_param_conf_docker']
 
   before :all do
-    $mdbci_exec_dir = ENV['WORKSPACE']
+    $mdbci_exec_dir = File.absolute_path('.')
     $out = Out.new
     $session = Session.new
     $session.isSilent = true

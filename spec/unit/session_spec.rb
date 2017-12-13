@@ -10,7 +10,7 @@ require_relative '../../core/exception_handler'
 
 describe 'Session' do
   before :all do
-    $mdbci_exec_dir = ENV['WORKSPACE']
+    $mdbci_exec_dir = File.absolute_path('.')
     $out = Out.new
     $session = Session.new
     @session = $session

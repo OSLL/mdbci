@@ -14,7 +14,7 @@ full_cloned_libvirt_node_name = nil
 describe nil do
 
   before :all do
-    $mdbci_exec_dir = ENV['WORKSPACE']
+    $mdbci_exec_dir = File.absolute_path('.')
     $out = Out.new
     $session = Session.new
     $session.isSilent = false

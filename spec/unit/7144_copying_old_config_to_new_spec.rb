@@ -12,7 +12,7 @@ EXISTING_NEW_PATH = 'spec/unit/test_empty_folder'
 describe 'Clone' do
 
   before :all do
-    $mdbci_exec_dir = ENV['WORKSPACE']
+    $mdbci_exec_dir = File.absolute_path('.')
     $out = Out.new
     $session = Session.new
   end
