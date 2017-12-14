@@ -1,4 +1,5 @@
 require_relative 'boxes_manager'
+require_relative 'constants'
 
 TEMPLATE_COOKBOOK_PATH = 'cookbook_path'
 TEMPLATE_AWS_CONFIG = 'aws_config'
@@ -14,18 +15,12 @@ UNKNOWN_PROVIDER_ERROR = 'provider is unknown (file with provider definition is 
 TEMPLATE_FILE_NOT_FOUND = 'template (or mdbci_template) file not found'
 TEMPLATE_PATH_EMPTY = 'template (or mdbci_template) path is empty'
 
-MDBCI = 'mdbci'
-DOCKER = 'docker'
-LIBVIRT = 'libvirt'
-
 RUNNING = 'running'
 SHUTOFF = 'shutoff' # when call 'vagrant halt'
 SHUTTING_DOWN = 'shutting down' # sometimes libvirt gets in this state before shutoff state
 STOPPED = 'stopped' # when call 'vagrant halt' on docker machine
 NOT_CREATED = 'not created' # when machine has never been started
 PAUSED = 'paused' # when machine is suspended
-
-BOX = 'box'
 
 def out_info(content)
   puts " INFO: #{content}"

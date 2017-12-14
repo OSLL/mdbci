@@ -11,7 +11,6 @@ NODE0 = 'node0'
 NODE1 = 'node1'
 NEW_BOX0 = 'NEW_BOX0'
 NEW_BOX1 = 'NEW_BOX1'
-BOX = 'box'
 
 RES1 = JSON.parse(<<EOF
 {

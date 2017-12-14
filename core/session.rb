@@ -14,6 +14,7 @@ require_relative 'helper'
 require_relative 'clone'
 require_relative 'commands/up_command'
 require_relative 'commands/snapshot_command'
+require_relative 'constants'
 
 class Session
 
@@ -58,8 +59,6 @@ is installed and that the binary is available on the PATH.
 EOF
 
   OUTPUT_NODE_NAME_REGEX = "==>\s+(.*):{1}"
-  DOCKER = 'docker'
-  LIBVIRT = 'libvirt'
 
   def initialize
     @boxesDir = $mdbci_exec_dir + '/BOXES'

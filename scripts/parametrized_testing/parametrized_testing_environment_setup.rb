@@ -6,6 +6,7 @@ require_relative '../../core/session'
 require_relative '../../core/out'
 require_relative '../../core/exception_handler'
 require_relative '../../core/snapshot'
+require_relative '../../core/constants'
 require_relative 'ppc_from_docker'
 
 class ParametrizedTestingEnvironmentSetup
@@ -15,13 +16,6 @@ class ParametrizedTestingEnvironmentSetup
   PATH_TO_TEMPLATES = 'spec/parametrized_tests_templates'
   CONFIG_PREFIX = 'mdbci_param_test'
   BACKUP_CONFIG_POSTFIX = 'backup'
-
-  # configs
-  DOCKER = 'docker'
-  LIBVIRT = 'libvirt'
-  VIRTUALBOX = 'virtualbox'
-  DOCKER_FOR_PPC = 'docker_for_ppc'
-  AWS = 'aws'
 
   CONFIG_DOCKER = "#{CONFIG_PREFIX}_#{DOCKER}"
   CONFIG_LIBVIRT = "#{CONFIG_PREFIX}_#{LIBVIRT}"

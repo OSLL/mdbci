@@ -1,11 +1,12 @@
 require 'fileutils'
 require 'json'
 
+require_relative 'constants'
 require_relative 'out'
 require_relative 'helper'
 
 class Clone
-  
+
   UUID_FOR_DOMAIN_NOT_FOUND_ERROR = 'uuid for domain is not found'
   CONFIG_DIRECTORY_NOT_FOUND_ERROR = 'config directory is not found'
   NODE_NOT_FOUND_ERROR = 'node is not found'
@@ -13,11 +14,6 @@ class Clone
   LIBVIRT_NODE_RUNNING_ERROR = 'libvirt node is not in shutoff state (for cloning state must be shutoff)'
   OLD_CONFIG_NOT_FULLY_CREATED = 'old config is not fully created'
   NEW_CONFIG_DIRECTORY_EXISTS = 'new config directory already exists (remove it and try again)'
-
-  BOX = 'box'
-
-  DOCKER = 'docker'
-  LIBVIRT = 'libvirt'
 
   def get_libvirt_uuid_by_domain_name(domain_name)
     list_output = execute_bash('virsh -q list --all | awk \'{print $2}\'', true).to_s.split "\n"

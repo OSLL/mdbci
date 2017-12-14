@@ -7,7 +7,7 @@ require_relative '../../core/exception_handler'
 require_relative '../../core/boxes_manager'
 require_relative '../../core/session'
 
-BOX = {
+BOX_CONFIG = {
     "provider"=>"libvirt",
     "box"=>"baremettle/debian-7.5",
     "platform"=>"debian",
@@ -18,7 +18,7 @@ CONFIG = File.read('spec/configs/generated_config/6818_search_box_name_by_config
 
 NODE = 'node_000'
 
-JSON_BOX = BOX.to_json + "\n"
+JSON_BOX = BOX_CONFIG.to_json + "\n"
 
 describe 'BoxesManager' do
 
@@ -35,7 +35,7 @@ describe 'BoxesManager' do
   end
 
   it '#getBoxByConfig return json with box definition' do
-    $session.boxes.getBoxByConfig(CONFIG, NODE).should(eql(BOX))
+    $session.boxes.getBoxByConfig(CONFIG, NODE).should(eql(BOX_CONFIG))
   end
 
   it '#getBoxByConfig return nil for wrong configPath' do

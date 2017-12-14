@@ -1,5 +1,6 @@
 require 'fileutils'
 
+require_relative '../../core/constants'
 require_relative '../../core/session'
 require_relative '../../core/out'
 require_relative '../../core/commands/snapshot_command'
@@ -12,14 +13,6 @@ class ParametrizedTestWrapper
 
   CONFIG_PREFIX = 'mdbci_param_test'
   CLONED_CONFIG_INFIX = 'clone'
-
-  DOCKER = 'docker'
-  LIBVIRT = 'libvirt'
-  VIRTUALBOX = 'virtualbox'
-  AWS = 'aws'
-  PPC = 'ppc'
-  DOCKER_FOR_PPC = 'docker_for_ppc'
-  PPC_FROM_DOCKER = 'ppc_from_docker'
 
   CONFIG_DOCKER = "#{CONFIG_PREFIX}_#{DOCKER}"
   CONFIG_LIBVIRT = "#{CONFIG_PREFIX}_#{LIBVIRT}"

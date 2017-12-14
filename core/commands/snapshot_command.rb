@@ -2,6 +2,7 @@
 
 require 'open3'
 require_relative 'base_command'
+require_relative '../constants'
 
 # Snapshot command allows to manage snapshots of virtual environments for configurations.
 class SnapshotCommand < BaseCommand
@@ -34,10 +35,6 @@ class SnapshotCommand < BaseCommand
   SNAPSHOT_NAME_OPTION = '--snapshot-name'
 
   SNAPSHOT_GLOBAL_PREFIX = 'mdbci_snapshot'
-
-  LIBVIRT = 'libvirt'
-  DOCKER = 'docker'
-  VIRTUALBOX = 'virtualbox'
 
   TEMPLATE_COOKBOOK_PATH = 'cookbook_path'
   TEMPLATE_AWS_CONFIG = 'aws_config'
