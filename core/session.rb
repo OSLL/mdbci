@@ -532,12 +532,10 @@ EOF
   end
 
   def generate(name)
-    path = Dir.pwd
-
     if name.nil?
-      path += '/default'
+      path = "#{Dir.pwd}/default"
     else
-      path +='/'+name.to_s
+      path = File.absolute_path(name.to_s)
     end
     #
     # TODO: ExceptionHandler need to be refactored! Don't return 1 for error
