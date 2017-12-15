@@ -1,30 +1,30 @@
-require 'open3'
+# frozen_string_literal: true
+
+require_relative 'command_result'
 
 # Module provides methods to test the execution of shell-commands
 module ShellHelper
-  # Internal module that provides the functionality
-  module ClassMethods
-    # Method executes the passed commands on the shell
-    # and checks that status code matches with the expectation
-    #
-    # @param shall_command_with_expectations [Array] of Hashes having
-    # shell_command and exit_code parameters defined.
-    # Hash example: { shell_command: 'echo *', exit_code: 0 }
-    def execute_shell_commands_and_test_exit_code(shell_commands_with_expectations)
-      context 'shell command' do
-        shell_commands_with_expectations.each do |shell_command_with_expectation|
-          shell_command = shell_command_with_expectation[:shell_command]
-          expectation = shell_command_with_expectation[:exit_code]
-          it shell_command do
-            _, _, _, wait_thr = Open3.popen3(shell_command)
-            wait_thr.value.exitstatus.should(eql(expectation))
-          end
-        end
-      end
-    end
+  TEMPLATE_FOLDER = File.absolute_path('spec/configs/template').freeze
+  MDBCI_EXECUTABLE = './mdbci'
+
+  # Create the configuration in directory with specified template.
+  #
+  # @param directory [String] path to the directory that should be used.
+  # @param template [String] name of the template in template folder to use.
+  # @return [String] path to the created configuration
+  # @raise [RuntimeError] if the command execution has failed.
+  def mdbci_create_configuration(directory, template)
+    template_file = "#{TEMPLATE_FOLDER}/#{template}.json"
+    target_directory = "#{directory}/#{template}"
+    result = mdbci_command("generate --template #{template_file} #{target_directory}")
+    raise "Unable to create config from template #{template}\n#{result}" unless result.success?
+    target_directory
   end
 
-  def self.included(base)
-    base.extend(ClassMethods)
+  # Run mdbci command and return the exit code of the application.
+  # @param command [String] command that should be run.
+  # @return [Process::Status] result of executing the command.
+  def mdbci_command(command)
+    CommandResult.for_command("#{MDBCI_EXECUTABLE} #{command}")
   end
 end

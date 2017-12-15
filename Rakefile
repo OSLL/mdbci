@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rake'
 
 # The obsolete way to describe tests
@@ -11,7 +13,6 @@ require_relative 'spec/rake_helper'
 # 2) Task execution:
 #       Rake::Task[:task_generator].execute
 #       ...
-
 require_relative 'spec/unit_tasks'
 require_relative 'spec/unit_parametrized_tasks'
 require_relative 'spec/integration_tasks'
@@ -22,6 +23,10 @@ begin
   require 'rspec/core/rake_task'
   RSpec::Core::RakeTask.new(:spec) do |task|
     task.pattern = 'spec/new/**{,/*/**}/*_spec.rb'
+  end
+
+  RSpec::Core::RakeTask.new(:system_spec) do |task|
+    task.pattern = 'spec/system/**{,/*/**}/*_spec.rb'
   end
 rescue LoadError
 end

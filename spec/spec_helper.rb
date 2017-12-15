@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'helpers/shell_helper'
+require 'helpers/system_tests'
 
 # Import all the elements that will be tested
 require 'commands/base_command'
@@ -37,9 +38,8 @@ RSpec.configure do |config|
     # ...rather than:
     #     # => "be bigger than 2"
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
+    expectations.syntax = %i[should expect]
   end
-
-  config.expect_with(:rspec) { |c| c.syntax = [:should, :expect] }
 
   # rspec-mocks config goes here. You can use an alternate test double
   # library (such as bogus or mocha) by changing the `mock_with` option here.
@@ -51,7 +51,8 @@ RSpec.configure do |config|
   end
 
   # Making function for suppressing/encouraging available to rspec
-  config.include ShellHelper
+  config.include ShellHelper, :system
+  config.extend SystemTests
 
 # The settings below are suggested to provide a good initial experience
 # with RSpec, but feel free to customize to your heart's content.
