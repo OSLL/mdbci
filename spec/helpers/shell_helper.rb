@@ -1,11 +1,14 @@
 # frozen_string_literal: true
 
 require_relative 'command_result'
+require_relative 'logger_helper'
 
-# Module provides methods to test the execution of shell-commands
+# Module provides methods to test the execution of shell-commands.
 module ShellHelper
   TEMPLATE_FOLDER = File.absolute_path('spec/configs/template').freeze
   MDBCI_EXECUTABLE = './mdbci'
+
+  include LoggerHelper
 
   # Create the configuration in directory with specified template.
   #
@@ -14,17 +17,46 @@ module ShellHelper
   # @return [String] path to the created configuration
   # @raise [RuntimeError] if the command execution has failed.
   def mdbci_create_configuration(directory, template)
+    logger.info("Generating configuration for template #{template}")
     template_file = "#{TEMPLATE_FOLDER}/#{template}.json"
     target_directory = "#{directory}/#{template}"
-    result = mdbci_command("generate --template #{template_file} #{target_directory}")
-    raise "Unable to create config from template #{template}\n#{result}" unless result.success?
+    mdbci_check_command("generate --template #{template_file} #{target_directory}")
     target_directory
   end
 
   # Run mdbci command and return the exit code of the application.
+  #
   # @param command [String] command that should be run.
-  # @return [Process::Status] result of executing the command.
-  def mdbci_command(command)
-    CommandResult.for_command("#{MDBCI_EXECUTABLE} #{command}")
+  # @return [CommandResult] result of executing the command.
+  def mdbci_run_command(command)
+    mdbci_command = "#{MDBCI_EXECUTABLE} #{command}"
+    logger.info("Running mdbci command: '#{mdbci_command}'")
+    result = CommandResult.for_command(mdbci_command)
+    logger.debug(result.to_s)
+    result
+  end
+
+  # Run mdbci command, check for the status of the exit code. If the command
+  # does not succeed, raise an exception.
+  #
+  # @param command [String] command that should be run.
+  # @return [CommandResult] result of executing the command.
+  # @raise [RuntimeError] if the command execution has failed.
+  def mdbci_check_command(command)
+    result = mdbci_run_command(command)
+    raise "Unable to execute command: #{result}" unless result.success?
+    result
+  end
+
+  # Run arbitrary command in the specified directory.
+  #
+  # @param command [String] command that should be run.
+  # @param directory [String] directory to go to.
+  # @return [CommandResult] result of running the command.
+  def command_in_dir(command, directory)
+    logger.info("Running command '#{command}' in directory '#{directory}'")
+    result = CommandResult.for_command(command, chdir: directory)
+    logger.debug(result.to_s)
+    result
   end
 end

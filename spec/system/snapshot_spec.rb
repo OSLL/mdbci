@@ -5,18 +5,23 @@ require 'fileutils'
 
 describe 'snaphot command', :system do
   before(:example) do
+    @configs_to_destroy = []
     @test_dir = Dir.mktmpdir
   end
 
   after(:example) do
+    @configs_to_destroy.each do |config|
+      command_in_dir('vagrant destroy -f', config)
+    end
     FileUtils.rm_r @test_dir
   end
 
   context 'revert subcommand' do
-    context 'when trying to revert non-created configuration' do
-      it 'should return error code' do
+    context 'when trying to revert not-created configuration' do
+      it 'should return an error code' do
         config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
-        expect(mdbci_command("snapshot revert --path-to-nodes #{config} --snapshot unknown")).not_to be_success
+        @configs_to_destroy.push(config)
+        expect(mdbci_run_command("snapshot revert --path-to-nodes #{config} --snapshot-name test")).not_to be_success
       end
     end
   end

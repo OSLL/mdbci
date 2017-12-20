@@ -7,12 +7,13 @@ require 'open3'
 class CommandResult
   attr_reader :command, :messages, :result
 
-  # Alternative form of constructing the result from the command
+  # Alternative form of constructing the result from the command.
   #
   # @param command [String] command to execture
+  # @param options [Hash] list of options to pass to Open3 library
   # @returm [CommandResult] object representing the result.
-  def self.for_command(command)
-    CommandResult.new(command, *Open3.capture2e(command))
+  def self.for_command(command, **options)
+    CommandResult.new(command, *Open3.capture2e(command, **options))
   end
 
   # Creates new instance of the object
