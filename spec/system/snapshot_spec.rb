@@ -11,7 +11,7 @@ describe 'snaphot command', :system do
 
   after(:example) do
     @configs_to_destroy.each do |config|
-      command_in_dir('vagrant destroy -f', config)
+      run_command_in_dir('vagrant destroy -f', config)
     end
     FileUtils.rm_r @test_dir
   end
@@ -29,9 +29,9 @@ describe 'snaphot command', :system do
       it 'should return an error code' do
         config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
         @configs_to_destroy.push(config)
-        command_in_dir('vagrant up', config)
+        run_command_in_dir('vagrant up', config)
         mdbci_check_command("snapshot take --path-to-nodes #{config} --snapshot-name test")
-        command_in_dir('vagrant halt', config)
+        run_command_in_dir('vagrant halt', config)
         expect(mdbci_run_command("snapshot revert --path-to-nodes #{config} --snapshot-name test")).not_to be_success
       end
     end
