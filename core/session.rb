@@ -481,33 +481,33 @@ EOF
   def commands
     exit_code = 1
     case ARGV.shift
-    when 'show'
-      exit_code = show(ARGV)
-    when 'sudo'
-      exit_code = sudo(ARGV.shift)
-    when 'ssh'
-      exit_code = ssh(ARGV.shift)
-    when 'setup'
-      exit_code = setup(ARGV.shift)
+    when 'check_relevance'
+      exit_code = checkRelevanceNetworkConfig(ARGV.shift)
+    when 'clone'
+      exit_code = clone(ARGV[0], ARGV[1])
     when 'generate'
       exit_code = generate(ARGV.shift)
-    when 'up'
-      exit_code = up(ARGV.shift)
-    when 'setup_repo'
-      exit_code = NodeProduct.setupProductRepo(ARGV.shift)
     when 'install_product'
       exit_code = NodeProduct.installProduct(ARGV.shift)
     when 'public_keys'
       exit_code = publicKeys(ARGV.shift)
-    when 'validate_template'
-      exit_code = validate_template
+    when 'setup'
+      exit_code = setup(ARGV.shift)
+    when 'setup_repo'
+      exit_code = NodeProduct.setupProductRepo(ARGV.shift)
+    when 'show'
+      exit_code = show(ARGV)
     when 'snapshot'
       snapshot = SnapshotCommand.new(ARGV, self, $out)
       exit_code = snapshot.execute
-    when 'clone'
-      exit_code = clone(ARGV[0], ARGV[1])
-    when 'check_relevance'
-      exit_code = checkRelevanceNetworkConfig(ARGV.shift)
+    when 'ssh'
+      exit_code = ssh(ARGV.shift)
+    when 'sudo'
+      exit_code = sudo(ARGV.shift)
+    when 'up'
+      exit_code = up(ARGV.shift)
+    when 'validate_template'
+      exit_code = validate_template
     else
       $out.error 'Unknown mdbci command. Please look help!'
       Help.display
