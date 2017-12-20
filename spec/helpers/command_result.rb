@@ -12,8 +12,8 @@ class CommandResult
   # @param command [String] command to execture
   # @param options [Hash] list of options to pass to Open3 library
   # @returm [CommandResult] object representing the result.
-  def self.for_command(command, **options)
-    CommandResult.new(command, *Open3.capture2e(command, **options))
+  def self.for_command(command, options = {})
+    CommandResult.new(command, *Open3.capture2e(command, options))
   end
 
   # Creates new instance of the object

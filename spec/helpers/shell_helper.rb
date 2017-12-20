@@ -55,7 +55,7 @@ module ShellHelper
   # @return [CommandResult] result of running the command.
   def command_in_dir(command, directory)
     logger.info("Running command '#{command}' in directory '#{directory}'")
-    result = CommandResult.for_command(command, chdir: directory)
+    result = CommandResult.for_command(command, { chdir: directory })
     logger.debug(result.to_s)
     result
   end
