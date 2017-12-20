@@ -270,7 +270,7 @@ class SnapshotCommand < BaseCommand
     when LIBVIRT
       execute_bash("virsh snapshot-revert --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{full_snapshot_name}", false)
       pwd = Dir.pwd
-      Dir.chdir @nodes_directory_name
+      Dir.chdir @path_to_nodes
       execute_bash("vagrant ssh #{node_name} -c '/usr/bin/sudo service ntpd stop'", true)
       execute_bash("vagrant ssh #{node_name} -c '/usr/bin/sudo ntpdate 0.europe.pool.ntp.org'", false)
       execute_bash("vagrant ssh #{node_name} -c '/usr/bin/sudo service ntpd start'", true)
