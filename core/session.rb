@@ -14,6 +14,7 @@ require_relative 'helper'
 require_relative 'clone'
 require_relative 'commands/up_command'
 require_relative 'commands/snapshot_command'
+require_relative 'commands/destroy_command'
 require_relative 'constants'
 
 class Session
@@ -485,6 +486,9 @@ EOF
       exit_code = checkRelevanceNetworkConfig(ARGV.shift)
     when 'clone'
       exit_code = clone(ARGV[0], ARGV[1])
+    when 'destroy'
+      destroy = DestroyCommand.new(ARGV, self, $out)
+      exit_code = destroy.execute
     when 'generate'
       exit_code = generate(ARGV.shift)
     when 'install_product'
