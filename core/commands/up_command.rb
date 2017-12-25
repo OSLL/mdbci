@@ -2,6 +2,7 @@
 
 require_relative 'base_command'
 require_relative '../docker_manager'
+require_relative '../models/configuration'
 
 # The command sets up the environment specified in the configuration file.
 class UpCommand < BaseCommand
@@ -29,42 +30,18 @@ class UpCommand < BaseCommand
     self
   end
 
-  # Checks whether provided path is a directory containing configurations.
-  #
-  # @param path [String] path that should be checked
-  #
-  # @returns [Boolean]
-  def configuration_directory?(path)
-    !path.nil? &&
-      !path.empty? &&
-      Dir.exist?(path) &&
-      File.exist?("#{path}/template") &&
-      File.exist?("#{path}/provider") &&
-      File.exist?("#{path}/Vagrantfile")
-  end
-
   # Method parses up command configuration and extracts path to the
   # configuration and node name if specified.
   #
   # @raise [ArgumentError] if path to the configuration is invalid
   def parse_configuration
-    # Separating config_path from node
-    paths = @configuration.split('/') # Split path to the configuration
-    config_path = paths[0, paths.length - 1].join('/')
-    if configuration_directory?(config_path)
-      node = paths.last
-      @ui.info "Node #{node} is specified in #{config_path}"
+    config, node = Configuration.parse_spec(@configuration)
+    if node.empty?
+      @ui.info "Node #{node} is specified in #{@configuration}"
     else
-      node = ''
-      config_path = @configuration
-      @ui.info "Node is not specified in #{config_path}"
+      @ui.info "Node is not specified in #{@configuration}"
     end
-
-    # Checking if vagrant instance derictory exists
-    unless configuration_directory?(config_path)
-      raise ArgumentError, "Specified path #{config_path} does not point to configuration directory"
-    end
-    [File.absolute_path(config_path), node]
+    [config.path, node]
   end
 
   # Read template from the specified configuration.

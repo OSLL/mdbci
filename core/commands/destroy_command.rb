@@ -10,6 +10,7 @@ class DestroyCommand < BaseCommand
 
   def initialize(args, env, ui)
     super(args, env, ui)
+
   end
 
   def execute
