@@ -2,7 +2,7 @@
 
 # Class represents the MDBCI configuration on the hard drive.
 class Configuration
-  attr_reader :path
+  attr_reader :path, :provider
 
   # Checks whether provided path is a directory containing configurations.
   #
@@ -40,5 +40,24 @@ class Configuration
   def initialize(path)
     raise ArgumentError, "Invalid path to the MDBCI configuration: #{path}" unless self.class.config_directory?(path)
     @path = File.absolute_path(path)
+    @provider = read_provider(@path)
+  end
+
+  private
+
+  # Read node provider specified in the configuration.
+  #
+  # @return [String] name of the provider specified in the file.
+  # @raise ArgumentError if there is no file or invalid provider specified.
+  def read_provider(config_path)
+    provider_file_path = "#{config_path}/provider"
+    unless File.exist?(provider_file_path)
+      raise ArgumentError, "There is no provider configuration specified in #{config_path}."
+    end
+    provider = File.read(provider_file_path).strip
+    if provider == 'mdbci'
+      raise ArgumentError, 'You are using mdbci node template. Please generate valid one before running up command.'
+    end
+    provider
   end
 end

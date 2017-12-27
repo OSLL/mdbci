@@ -1,13 +1,17 @@
+# frozen_string_literal: true
+
 require 'models/configuration'
 require 'tmpdir'
 require 'fileutils'
 
 describe Configuration do
-
-  def with_fake_config
+  def with_fake_config(provider = '')
     dir = Dir.mktmpdir
     begin
       FileUtils.touch("#{dir}/template")
+      File.open("#{dir}/provider", 'w') do |file|
+        file.write(provider)
+      end
       FileUtils.touch("#{dir}/provider")
       FileUtils.touch("#{dir}/Vagrantfile")
       yield dir
@@ -43,9 +47,10 @@ describe Configuration do
 
     context 'when given correct path' do
       it 'should store absolute path to the configuration' do
-        with_fake_config do |config_path|
+        with_fake_config('libvirt') do |config_path|
           config = Configuration.new("/../#{config_path}")
           expect(config.path).to eq(config_path)
+          expect(config.provider).to eq('libvirt')
         end
       end
     end

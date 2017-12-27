@@ -41,7 +41,7 @@ class UpCommand < BaseCommand
     else
       @ui.info "Node is not specified in #{@configuration}"
     end
-    [config.path, node]
+    [config, node]
   end
 
   # Read template from the specified configuration.
@@ -61,24 +61,6 @@ class UpCommand < BaseCommand
       raise ArgumentError, "The template #{template_path} specified in #{template_file_name_path} does not exist."
     end
     JSON.parse(File.read(template_path))
-  end
-
-  # Read node provider specified in the configuration.
-  #
-  # @return [String] name of the provider specified in the file.
-  #
-  # @raise ArgumentError if there is no file or invalid provider specified.
-  def read_provider(config_path)
-    provider_file_path = "#{config_path}/provider"
-    unless File.exist?(provider_file_path)
-      raise ArgumentError, "There is no provider configuration specified in #{config_path}."
-    end
-    provider = File.read(provider_file_path).strip
-    if provider == 'mdbci'
-      raise ArgumentError, 'You are using mdbci node template. Please generate valid one before running up command.'
-    end
-    @ui.info "Using provider: #{provider}"
-    provider
   end
 
   # Generate docker images, so they will not be loaded during production
@@ -310,18 +292,17 @@ class UpCommand < BaseCommand
   def execute
     begin
       setup_command
-      config_path, node = parse_configuration
-      template = read_template(config_path)
-      nodes_provider = read_provider(config_path)
+      config, node = parse_configuration
+      template = read_template(config.path)
     rescue ArgumentError => error
       @ui.warning error.message
       return ARGUMENT_ERROR_RESULT
     end
-    run_in_directory(config_path) do
-      nodes_to_fix = setup_nodes(template, nodes_provider, node)
-      return ERROR_RESULT unless fix_nodes(nodes_to_fix, nodes_provider)
+    run_in_directory(config.path) do
+      nodes_to_fix = setup_nodes(template, config.provider, node)
+      return ERROR_RESULT unless fix_nodes(nodes_to_fix, config.provider)
     end
-    generate_config_information(Dir.pwd, config_path, node)
+    generate_config_information(Dir.pwd, config.path, node)
     SUCCESS_RESULT
   end
 end
