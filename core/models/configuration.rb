@@ -2,7 +2,7 @@
 
 # Class represents the MDBCI configuration on the hard drive.
 class Configuration
-  attr_reader :path, :provider
+  attr_reader :path, :provider, :template
 
   # Checks whether provided path is a directory containing configurations.
   #
@@ -41,6 +41,7 @@ class Configuration
     raise ArgumentError, "Invalid path to the MDBCI configuration: #{path}" unless self.class.config_directory?(path)
     @path = File.absolute_path(path)
     @provider = read_provider(@path)
+    @template = read_template(@path)
   end
 
   private
@@ -59,5 +60,22 @@ class Configuration
       raise ArgumentError, 'You are using mdbci node template. Please generate valid one before running up command.'
     end
     provider
+  end
+
+  # Read template from the specified configuration.
+  #
+  # @param config_path [String] path to the configuration.
+  # @returns [Hash] produced by parsing JSON.
+  # @raise [ArgumentError] if there is an error during template configuration.
+  def read_template(config_path)
+    template_file_name_path = "#{config_path}/template"
+    unless File.exist?(template_file_name_path)
+      raise ArgumentError, "There is no template configuration specified in #{config_path}."
+    end
+    template_path = File.read(template_file_name_path)
+    unless File.exist?(template_path)
+      raise ArgumentError, "The template #{template_path} specified in #{template_file_name_path} does not exist."
+    end
+    JSON.parse(File.read(template_path))
   end
 end

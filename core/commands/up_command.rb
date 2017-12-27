@@ -44,25 +44,6 @@ class UpCommand < BaseCommand
     [config, node]
   end
 
-  # Read template from the specified configuration.
-  #
-  # @param config_path [String] path to the configuration.
-  #
-  # @returns [Hash] produced by parsing JSON.
-  #
-  # @raise [ArgumentError] if there is an error during template configuration.
-  def read_template(config_path)
-    template_file_name_path = "#{config_path}/template"
-    unless File.exist?(template_file_name_path)
-      raise ArgumentError, "There is no template configuration specified in #{config_path}."
-    end
-    template_path = File.read(template_file_name_path)
-    unless File.exist?(template_path)
-      raise ArgumentError, "The template #{template_path} specified in #{template_file_name_path} does not exist."
-    end
-    JSON.parse(File.read(template_path))
-  end
-
   # Generate docker images, so they will not be loaded during production
   #
   # @param config [Hash] configuration read from the template
@@ -293,13 +274,12 @@ class UpCommand < BaseCommand
     begin
       setup_command
       config, node = parse_configuration
-      template = read_template(config.path)
     rescue ArgumentError => error
       @ui.warning error.message
       return ARGUMENT_ERROR_RESULT
     end
     run_in_directory(config.path) do
-      nodes_to_fix = setup_nodes(template, config.provider, node)
+      nodes_to_fix = setup_nodes(config.template, config.provider, node)
       return ERROR_RESULT unless fix_nodes(nodes_to_fix, config.provider)
     end
     generate_config_information(Dir.pwd, config.path, node)
