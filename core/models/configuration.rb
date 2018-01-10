@@ -44,6 +44,14 @@ class Configuration
     @template = read_template(@path)
   end
 
+  # Provide a list of nodes that are defined in the configuration
+  # @return [Array<String>] names of the nodes.
+  def node_names
+    @template.select do |_, value|
+      value.instance_of?(Hash)
+    end.keys
+  end
+
   private
 
   # Read node provider specified in the configuration.

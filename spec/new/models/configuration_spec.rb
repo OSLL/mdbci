@@ -83,4 +83,16 @@ describe Configuration do
       end
     end
   end
+
+  describe '#node_names' do
+    context 'when configuration contains several nodes' do
+      it 'should return all of them' do
+        with_fake_config('libvirt',
+                         { 'test' => { 'box' => 'test' }, 'info' => { 'box' => 'test' } }) do |path|
+          config = Configuration.new(path)
+          expect(config.node_names).to eq(%w[test info])
+        end
+      end
+    end
+  end
 end

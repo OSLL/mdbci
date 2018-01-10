@@ -88,15 +88,6 @@ class UpCommand < BaseCommand
     end
   end
 
-  # Find out names of the machines for this vagrant configuration.
-  # Currently it relies on the format of vagrant status command.
-  #
-  # @return [Array<String>] names of the nodes
-  def fetch_node_names
-    node_lines = `vagrant status`.split("\n\n")[1].split("\n")
-    node_lines.map { |line| line.split(/\s+/)[0] }
-  end
-
   # Check whether node is running or not.
   #
   # @param node [String] name of the node to get status from.
@@ -203,20 +194,19 @@ class UpCommand < BaseCommand
 
   # Destroy all existing nodes and setup configuration
   #
-  # @param template [Hash] template that was used to setup the provision.
-  # @param nodes_provider [String] name of the node provider to use
+  # @param config [Configuration] configuration that should be run
   # @param node [String] name of the node to bring up
   # @return [Array<String>] list of nodes that should be checked
-  def setup_nodes(template, nodes_provider, node = '')
-    generate_docker_images(template, '.') if nodes_provider == 'docker'
+  def setup_nodes(config, node = '')
+    generate_docker_images(config.template, '.') if config.provider == 'docker'
     @ui.info 'Destroying existing nodes.'
     run_command_and_log("vagrant destroy --force #{node}")
 
-    vagrant_flags = generate_vagrant_run_flags(nodes_provider)
+    vagrant_flags = generate_vagrant_run_flags(config.provider)
     @ui.info "Bringing up #{(node.empty? ? 'configuration ' : 'node ')} #{@configuration}"
-    run_command_and_log("vagrant up #{vagrant_flags} --provider=#{nodes_provider} #{node}")
+    run_command_and_log("vagrant up #{vagrant_flags} --provider=#{config.provider} #{node}")
     nodes_to_check = if node.empty?
-                       fetch_node_names
+                       config.node_names
                      else
                        [node]
                      end
@@ -279,7 +269,7 @@ class UpCommand < BaseCommand
       return ARGUMENT_ERROR_RESULT
     end
     run_in_directory(config.path) do
-      nodes_to_fix = setup_nodes(config.template, config.provider, node)
+      nodes_to_fix = setup_nodes(config, node)
       return ERROR_RESULT unless fix_nodes(nodes_to_fix, config.provider)
     end
     generate_config_information(Dir.pwd, config.path, node)
