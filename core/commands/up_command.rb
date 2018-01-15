@@ -3,9 +3,12 @@
 require_relative 'base_command'
 require_relative '../docker_manager'
 require_relative '../models/configuration'
+require_relative '../helpers/shell_commands'
 
 # The command sets up the environment specified in the configuration file.
 class UpCommand < BaseCommand
+  include ShellCommands
+
   def self.synopsis
     'Setup environment as specified in the configuration'
   end
@@ -51,9 +54,8 @@ class UpCommand < BaseCommand
   def generate_docker_images(config, nodes_directory)
     @ui.info 'Generating docker images.'
     config.each do |node|
-      unless node[1]['box'].nil?
-        DockerManager.build_image("#{nodes_directory}/#{node[0]}", node[1]['box'])
-      end
+      next if node[1]['box'].nil?
+      DockerManager.build_image("#{nodes_directory}/#{node[0]}", node[1]['box'])
     end
   end
 
@@ -63,28 +65,10 @@ class UpCommand < BaseCommand
   #
   # @return [String] flags that should be passed to Vagrant commands
   def generate_vagrant_run_flags(provider)
-    flags = []
-    if (provider == 'aws') || (provider == 'docker')
-      flags << VAGRANT_NO_PARALLEL
-    end
-    flags.join(' ')
-  end
-
-  # Execute the command, log stdout and stderr
-  #
-  # @param command [String] command to run
-  #
-  # @return [Process::Status] of the run command
-  def run_command_and_log(command)
-    @ui.info "Invoking command: #{command}"
-    Open3.popen3(command) do |_stdin, stdout, stderr, wthr|
-      stdout.each_line do |line|
-        @ui.info line
-      end
-      stderr.each_line do |line|
-        @ui.error line
-      end
-      wthr.value
+    if %w[aws docker].include?(provider)
+      VAGRANT_NO_PARALLEL
+    else
+      ''
     end
   end
 

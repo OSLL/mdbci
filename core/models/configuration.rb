@@ -52,6 +52,11 @@ class Configuration
     end.keys
   end
 
+  # Provide a path to the network settings configuration file.
+  def network_settings_file
+    "#{@path}_network_settings"
+  end
+
   private
 
   # Read node provider specified in the configuration.

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative 'command_result'
+require 'models/command_result'
 require_relative 'logger_helper'
 
 # Module provides methods to test the execution of shell-commands.
@@ -45,6 +45,18 @@ module ShellHelper
   def mdbci_check_command(command)
     result = mdbci_run_command(command)
     raise "Unable to execute command: #{result}" unless result.success?
+    result
+  end
+
+  # Run arbitrary command.
+  #
+  # @param command [String] command to run.
+  # @param options [Hash] options to pass to open3 command.
+  # @return [CommandResult] result of running the command.
+  def run_command(command, options = {})
+    logger.info("Running command '#{command}'")
+    result = CommandResult.for_command(command, options)
+    logger.debug(result.to_s)
     result
   end
 
