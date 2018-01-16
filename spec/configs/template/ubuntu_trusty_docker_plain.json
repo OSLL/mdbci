@@ -1,0 +1,7 @@
+{
+  "node" :
+  {
+    "hostname" : "mdbcinode",
+    "box" : "ubuntu_trusty_docker"
+  }
+}
