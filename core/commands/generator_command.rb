@@ -6,7 +6,7 @@ require 'securerandom'
 require 'socket'
 require 'erb'
 
-require_relative '../core/out'
+require_relative '../out'
 
 
 class Generator

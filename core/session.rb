@@ -4,7 +4,7 @@ require 'fileutils'
 require 'uri'
 require 'open3'
 
-require_relative 'generator'
+
 require_relative 'network'
 require_relative 'boxes_manager'
 require_relative 'repo_manager'
@@ -15,6 +15,7 @@ require_relative 'clone'
 require_relative 'commands/up_command'
 require_relative 'commands/snapshot_command'
 require_relative 'commands/destroy_command'
+require_relative 'commands/generator_command'
 require_relative 'constants'
 
 class Session

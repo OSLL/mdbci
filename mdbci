@@ -3,7 +3,6 @@
 require 'getoptlong'
 
 require_relative 'core/help'
-require_relative 'core/generator'
 require_relative 'core/session'
 require_relative 'core/node_product'
 require_relative 'core/out'

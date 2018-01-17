@@ -1,7 +1,5 @@
-require 'rspec'
-require_relative '../spec_helper'
-require_relative '../../core/generator'
-require_relative '../../core/session'
+require 'commands/generator_command'
+require 'session'
 
 describe "Generator" do
 
@@ -141,6 +139,54 @@ describe "Generator" do
 
   end
 
+  context '.getVmDef' do
+    it "should return string with '\tconfig.ssh.pty = true' in it" do
+      Generator.getVmDef('TEST', 'TEST','TEST' , 'TEST', 'true', 'TEST', 'TEST', 'TEST').should include 'config.ssh.pty = true'
+    end
 
+    it "should return string without '\tconfig.ssh.pty = true' in it" do
+      Generator.getVmDef('TEST', 'TEST','TEST' , 'TEST', 'false', 'TEST', 'TEST', 'TEST').should_not include 'config.ssh.pty = true'
+    end
+  end
 
+  context '.getQemudef' do
+    it "should return string with '\tconfig.ssh.pty = true' in it" do
+      Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'TEST', 'true', '1024', 'TEST', false).should include 'config.ssh.pty = true'
+    end
+
+    it "should return string with '\tconfig.ssh.pty = false' in it" do
+      Generator.getQemuDef('TEST', 'TEST','TEST' , 'TEST', 'TEST', 'false', '1024', 'TEST', false).should include 'config.ssh.pty = false'
+    end
+  end
+
+  context '.getDockerDef' do
+    it "should return string with '\tconfig.ssh.pty = true' in it" do
+      Generator.getDockerDef('TEST', 'TEST','true' , 'TEST', 'TEST', 'TEST', 'TEST', 'TEST', 'TEST').should_not include 'config.ssh.pty = true'
+    end
+
+    it "should return string without '\tconfig.ssh.pty = true' in it" do
+      Generator.getDockerDef('TEST', 'TEST','false' , 'TEST', 'TEST', 'TEST', 'TEST', 'TEST', 'TEST').should_not include 'config.ssh.pty = true'
+    end
+  end
+
+  context '.getAWSVmDef' do
+    it "should return string without '\tconfig.ssh.pty = true' in it" do
+      Generator.getAWSVmDef('TEST', 'TEST','TEST' , 'TEST', 'true', 'TEST', 'TEST', 'TEST', 'TEST').should include 'config.ssh.pty = true'
+    end
+
+    it "should return string without '\tconfig.ssh.pty = true' in it" do
+      Generator.getAWSVmDef('TEST', 'TEST','TEST' , 'TEST', 'false', 'TEST', 'TEST', 'TEST', 'TEST').should_not include 'config.ssh.pty = true'
+    end
+  end
+
+  context '.generateAwsTag' do
+    it 'execute bash command without output' do
+      tags = Generator.generateAwsTag({
+                                        'hostname' => 'test',
+                                        'username' => 'test',
+                                        'full_config_path' => 'test'
+                                      })
+      tags.should eql "{ \"hostname\" => \"test\", \"username\" => \"test\", \"full_config_path\" => \"test\" }"
+    end
+  end
 end
