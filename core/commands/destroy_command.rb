@@ -47,6 +47,8 @@ HELP
     FileUtils.rm_rf(configuration.path)
     @ui.info("Removing network settings file #{configuration.network_settings_file}")
     FileUtils.rm_f(configuration.network_settings_file)
+    @ui.info("Removing template file #{configuration.template_path}")
+    FileUtils.rm_f(configuration.network_settings_file)
   end
 
   # Stop machines specified in the configuration or in a node

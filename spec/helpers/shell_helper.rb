@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'fileutils'
 require 'models/command_result'
 require_relative 'logger_helper'
 
@@ -18,7 +19,9 @@ module ShellHelper
   # @raise [RuntimeError] if the command execution has failed.
   def mdbci_create_configuration(directory, template)
     logger.info("Generating configuration for template #{template}")
-    template_file = "#{TEMPLATE_FOLDER}/#{template}.json"
+    template_source = "#{TEMPLATE_FOLDER}/#{template}.json"
+    template_file = "#{directory}/#{template}.json"
+    FileUtils.cp(template_source, template_file)
     target_directory = "#{directory}/#{template}"
     mdbci_check_command("generate --template #{template_file} #{target_directory}")
     target_directory

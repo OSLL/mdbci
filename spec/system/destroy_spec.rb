@@ -27,10 +27,12 @@ describe 'destroy command', :system do
 
   context 'when given path to the proper configuration' do
     context 'when configuration was not created' do
-      it 'should clean the configuration directory' do
-        config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
+      it 'should remove all configuration files' do
+        template = 'centos_7_libvirt_plain'
+        config = mdbci_create_configuration(@test_dir, template)
         expect(mdbci_run_command("destroy #{config}")).to be_success
         expect(Dir.exist?(config)).to be_falsy
+        expect(File.exist?("#{@test_dir}/{template}.json")).to be_falsey
       end
     end
 
