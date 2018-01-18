@@ -2,8 +2,8 @@ require 'find'
 
 require_relative 'node'
 require_relative 'out'
-#require_relative 'session'
 require_relative 'helper'
+require_relative 'models/configuration'
 
 class Network
 
@@ -287,17 +287,16 @@ COMMAND_HOSTNAME='hostname'
 LIBVITR_IPV6 = "/sbin/ip -6 addr | grep -m1 global | awk -F' ' '{print $2}' | awk -F'/' '{print $1}'"
 DOCKER_IPV6 = "/sbin/ip -6 addr | grep -m1 'scope link' | awk -F' ' '{print $2}' | awk -F'/' '{print $1}'"
 def printConfigurationNetworkInfoToFile(configuration=nil,node='')
-
-  open("#{configuration}_network_config", 'w') do |f|
+  file = "#{configuration}#{Configuration::NETWORK_FILE_SUFFIX}"
+  open(file, 'w') do |f|
     configurationNetworkInfo = collectConfigurationNetworkInfo(configuration,node)
     configurationNetworkInfo.each do |key, value|
       # TODO Add correct array conversion
       f.puts "#{key}=#{value}"
     end
   end
-  $out.info "Full path of #{configuration}_network_config: " + File.expand_path("#{configuration}_network_config")
+  $out.info "Full path of #{file}: " + File.expand_path(file)
   return 0
-
 end
 
 def collectConfigurationNetworkInfo(configuration,node_one='')

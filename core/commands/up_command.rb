@@ -228,7 +228,7 @@ class UpCommand < BaseCommand
     @ui.info 'All nodes were brought up and configured.'
     @ui.info "DIR_PWD=#{working_directory}"
     @ui.info "CONF_PATH=#{config_path}"
-    @ui.info "Generating #{config_path}_network_settings file"
+    @ui.info "Generating #{config_path}#{Configuration::NETWORK_FILE_SUFFIX} file"
     printConfigurationNetworkInfoToFile(config_path, node)
   end
 

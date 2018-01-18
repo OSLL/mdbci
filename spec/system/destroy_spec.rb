@@ -2,6 +2,7 @@
 
 require 'tmpdir'
 require 'fileutils'
+require 'models/configuration'
 
 describe 'destroy command', :system do
   before(:example) do
@@ -34,17 +35,18 @@ describe 'destroy command', :system do
     end
 
     context 'when configuration is running' do
-      it 'should stop vms and remove directory' do
+      it 'should stop vms and remove all files' do
         config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
         mdbci_check_command("up #{config}")
         expect(mdbci_run_command("destroy #{config}")).to be_success
         expect(run_command('virsh list').messages).not_to include('centos_7_libvirt_plain')
         expect(Dir.exist?(config)).to be_falsy
+        expect(File.exist?("#{config}#{Configuration::NETWORK_FILE_SUFFIX}")).to be_falsy
       end
     end
 
     context 'when configuration is stopped' do
-      it 'should stop remove configuration directory' do
+      it 'should remove all files' do
         config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
         mdbci_check_command("up #{config}")
         run_command_in_dir('vagrant halt', config)
@@ -54,7 +56,7 @@ describe 'destroy command', :system do
     end
 
     context 'when destorying a single node' do
-      it 'should not destroy the configuration directory' do
+      it 'should not destroy the configuration files' do
         config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
         expect(mdbci_run_command("destroy #{config}/node")).to be_success
         expect(Dir.exist?(config)).to be_truthy

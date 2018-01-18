@@ -4,6 +4,8 @@
 class Configuration
   attr_reader :path, :provider, :template
 
+  NETWORK_FILE_SUFFIX = '_network_config'
+
   # Checks whether provided path is a directory containing configurations.
   #
   # @param path [String] path that should be checked
@@ -54,7 +56,7 @@ class Configuration
 
   # Provide a path to the network settings configuration file.
   def network_settings_file
-    "#{@path}_network_settings"
+    "#{@path}#{NETWORK_FILE_SUFFIX}"
   end
 
   private
