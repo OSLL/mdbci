@@ -31,7 +31,7 @@ describe 'destroy command', :system do
       config = mdbci_create_configuration(@test_dir, template)
       expect(mdbci_run_command("destroy #{config}")).to be_success
       expect(Dir.exist?(config)).to be_falsy
-      expect(File.exist?("#{@test_dir}/{template}.json")).to be_falsey
+      expect(File.exist?("#{@test_dir}/#{template}.json")).to be_falsey
     end
   end
 
@@ -61,6 +61,16 @@ describe 'destroy command', :system do
       config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
       expect(mdbci_run_command("destroy #{config}/node")).to be_success
       expect(Dir.exist?(config)).to be_truthy
+    end
+  end
+
+  context 'when passing --keep-template parameter' do
+    it 'should not remove the template file' do
+      template = 'centos_7_libvirt_plan'
+      config = mdbci_create_configuration(@test_dir, template)
+      expect(mdbci_run_command("destroy --keep-template")).to be_success
+      expect(Dir.exist?(config)).to be_falsy
+      expect("#{@test_dir}/#{template}.json")
     end
   end
 end
