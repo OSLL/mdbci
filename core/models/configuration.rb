@@ -2,7 +2,9 @@
 
 # Class represents the MDBCI configuration on the hard drive.
 class Configuration
-  attr_reader :path, :provider, :template
+  attr_reader :path, :provider, :template, :template_path
+
+  NETWORK_FILE_SUFFIX = '_network_config'
 
   # Checks whether provided path is a directory containing configurations.
   #
@@ -41,7 +43,8 @@ class Configuration
     raise ArgumentError, "Invalid path to the MDBCI configuration: #{path}" unless self.class.config_directory?(path)
     @path = File.absolute_path(path)
     @provider = read_provider(@path)
-    @template = read_template(@path)
+    @template_path = read_template_path(@path)
+    @template = read_template(@template_path)
   end
 
   # Provide a list of nodes that are defined in the configuration
@@ -54,7 +57,7 @@ class Configuration
 
   # Provide a path to the network settings configuration file.
   def network_settings_file
-    "#{@path}_network_settings"
+    "#{@path}#{NETWORK_FILE_SUFFIX}"
   end
 
   private
@@ -75,19 +78,27 @@ class Configuration
     provider
   end
 
-  # Read template from the specified configuration.
+  # Read template path from the configuration
   #
   # @param config_path [String] path to the configuration.
-  # @returns [Hash] produced by parsing JSON.
-  # @raise [ArgumentError] if there is an error during template configuration.
-  def read_template(config_path)
+  # @returns [String] path to the template path
+  # @raise [ArgumentError] if there is an error during the file read
+  def read_template_path(config_path)
     template_file_name_path = "#{config_path}/template"
     unless File.exist?(template_file_name_path)
       raise ArgumentError, "There is no template configuration specified in #{config_path}."
     end
-    template_path = File.read(template_file_name_path)
+    File.read(template_file_name_path)
+  end
+
+  # Read template from the specified template path
+  #
+  # @param template_path [String] path to the template file
+  # @raise [ArgumentError] if the file does not exist
+  # @return [Hash] data from the template JSON file
+  def read_template(template_path)
     unless File.exist?(template_path)
-      raise ArgumentError, "The template #{template_path} specified in #{template_file_name_path} does not exist."
+      raise ArgumentError, "The template #{template_path} does not exist."
     end
     JSON.parse(File.read(template_path))
   end

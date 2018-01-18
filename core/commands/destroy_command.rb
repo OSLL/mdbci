@@ -29,12 +29,19 @@ class DestroyCommand < BaseCommand
   # Print brief instructions on how to use the command.
   def show_help
     info = <<-HELP
-'destroy' command allows to destroy nodes and accompanying data.
+'destroy' command allows to destroy nodes and configuration data.
 
-You can either destroy a single node: mdbci destroy configuration/node
-Or you can destroy all nodes: mdbci destroy configuration
-In the latter case the command will remove the configuration folder
-and network information file.
+You can either destroy a single node:
+  mdbci destroy configuration/node
+
+Or you can destroy all nodes:
+  mdbci destroy configuration
+
+In the latter case the command will remove the configuration folder,
+the network configuration file and the template. You can prevent
+destroy command from deleting the template file:
+  mdbci destroy configuration --keep_template
+
 HELP
     @ui.out(info)
   end
@@ -42,11 +49,15 @@ HELP
   # Remove all files from the file system that correspond with the configuration.
   #
   # @param configuration [Configuration] that we are deling with.
-  def remove_files(configuration)
+  # @param keep_template [Boolean] whether to remove template or not.
+  def remove_files(configuration, keep_template)
     @ui.info("Removing configuration directory #{configuration.path}")
     FileUtils.rm_rf(configuration.path)
     @ui.info("Removing network settings file #{configuration.network_settings_file}")
     FileUtils.rm_f(configuration.network_settings_file)
+    return if keep_template
+    @ui.info("Removing template file #{configuration.template_path}")
+    FileUtils.rm_f(configuration.template_path)
   end
 
   # Stop machines specified in the configuration or in a node
@@ -68,7 +79,7 @@ HELP
   def execute
     configuration, node = setup_command
     stop_machines(configuration, node)
-    remove_files(configuration) if node.empty?
+    remove_files(configuration, @env.keep_template) if node.empty?
     SUCCESS_RESULT
   end
 end

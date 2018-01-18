@@ -1,0 +1,7 @@
+{
+  "node" :
+  {
+    "hostname" : "mdbcinode",
+    "box" : "suse_13_aws"
+  }
+}
