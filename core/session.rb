@@ -15,7 +15,7 @@ require_relative 'clone'
 require_relative 'commands/up_command'
 require_relative 'commands/snapshot_command'
 require_relative 'commands/destroy_command'
-require_relative 'commands/generator_command'
+require_relative 'commands/generate_command'
 require_relative 'constants'
 
 class Session
@@ -564,7 +564,7 @@ EOF
     @awsConfigOption = aws_config.to_s.empty? ? $mdbci_exec_dir+'/aws-config.yml' : aws_config[1].to_s
     #
     if @nodesProvider != 'mdbci'
-      GeneratorCommand.generate(path, configs, boxes, isOverride, nodesProvider)
+      GenerateCommand.generate(path, configs, boxes, isOverride, nodesProvider)
       $out.info 'Generating config in ' + path
     else
       $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_template'

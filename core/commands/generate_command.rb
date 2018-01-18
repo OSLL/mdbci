@@ -9,7 +9,7 @@ require_relative 'base_command'
 require_relative '../out'
 
 # Command generates
-class GeneratorCommand < BaseCommand
+class GenerateCommand < BaseCommand
 
   def self.quote(string)
     return '"'+string+'"'
