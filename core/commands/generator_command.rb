@@ -5,11 +5,11 @@ require 'pathname'
 require 'securerandom'
 require 'socket'
 require 'erb'
-
+require_relative 'base_command'
 require_relative '../out'
 
-
-class Generator
+# Command generates
+class GeneratorCommand < BaseCommand
 
   def self.quote(string)
     return '"'+string+'"'

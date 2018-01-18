@@ -562,7 +562,7 @@ EOF
     @awsConfigOption = aws_config.to_s.empty? ? $mdbci_exec_dir+'/aws-config.yml' : aws_config[1].to_s
     #
     if @nodesProvider != 'mdbci'
-      Generator.generate(path, configs, boxes, isOverride, nodesProvider)
+      GeneratorCommand.generate(path, configs, boxes, isOverride, nodesProvider)
       $out.info 'Generating config in ' + path
     else
       $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_template'
