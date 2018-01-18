@@ -29,12 +29,19 @@ class DestroyCommand < BaseCommand
   # Print brief instructions on how to use the command.
   def show_help
     info = <<-HELP
-'destroy' command allows to destroy nodes and accompanying data.
+'destroy' command allows to destroy nodes and configuration data.
 
-You can either destroy a single node: mdbci destroy configuration/node
-Or you can destroy all nodes: mdbci destroy configuration
-In the latter case the command will remove the configuration folder
-and network information file.
+You can either destroy a single node:
+  mdbci destroy configuration/node
+
+Or you can destroy all nodes:
+  mdbci destroy configuration
+
+In the latter case the command will remove the configuration folder,
+the network configuration file and the template. You can prevent
+destroy command from deleting the template file:
+  mdbci destroy configuration --keep_template
+
 HELP
     @ui.out(info)
   end
