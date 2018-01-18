@@ -43,6 +43,7 @@ class Session
   attr_accessor :nodeProduct
   attr_accessor :productVersion
   attr_accessor :keyFile
+  attr_accessor :keep_template
   attr_accessor :boxPlatform
   attr_accessor :boxPlatformVersion
   attr_accessor :path_to_nodes
@@ -66,6 +67,7 @@ EOF
     @repoDir = $mdbci_exec_dir + '/repo.d'
     @mdbciNodes = Hash.new
     @templateNodes = Hash.new
+    @keep_template = false
   end
 
 =begin

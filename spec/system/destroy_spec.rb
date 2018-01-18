@@ -65,12 +65,12 @@ describe 'destroy command', :system do
   end
 
   context 'when passing --keep-template parameter' do
-    it 'should not remove the template file' do
-      template = 'centos_7_libvirt_plan'
+    it 'should keep the template file' do
+      template = 'centos_7_libvirt_plain'
       config = mdbci_create_configuration(@test_dir, template)
-      expect(mdbci_run_command("destroy --keep-template")).to be_success
+      expect(mdbci_run_command("destroy --keep-template #{config}")).to be_success
       expect(Dir.exist?(config)).to be_falsy
-      expect("#{@test_dir}/#{template}.json")
+      expect(File.exist?("#{@test_dir}/#{template}.json")).to be_truthy
     end
   end
 end

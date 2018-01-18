@@ -42,11 +42,13 @@ HELP
   # Remove all files from the file system that correspond with the configuration.
   #
   # @param configuration [Configuration] that we are deling with.
-  def remove_files(configuration)
+  # @param keep_template [Boolean] whether to remove template or not.
+  def remove_files(configuration, keep_template)
     @ui.info("Removing configuration directory #{configuration.path}")
     FileUtils.rm_rf(configuration.path)
     @ui.info("Removing network settings file #{configuration.network_settings_file}")
     FileUtils.rm_f(configuration.network_settings_file)
+    return if keep_template
     @ui.info("Removing template file #{configuration.template_path}")
     FileUtils.rm_f(configuration.template_path)
   end
@@ -70,7 +72,7 @@ HELP
   def execute
     configuration, node = setup_command
     stop_machines(configuration, node)
-    remove_files(configuration) if node.empty?
+    remove_files(configuration, @env.keep_template) if node.empty?
     SUCCESS_RESULT
   end
 end
