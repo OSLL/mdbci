@@ -25,44 +25,42 @@ describe 'destroy command', :system do
     end
   end
 
-  context 'when given path to the proper configuration' do
-    context 'when configuration was not created' do
-      it 'should remove all configuration files' do
-        template = 'centos_7_libvirt_plain'
-        config = mdbci_create_configuration(@test_dir, template)
-        expect(mdbci_run_command("destroy #{config}")).to be_success
-        expect(Dir.exist?(config)).to be_falsy
-        expect(File.exist?("#{@test_dir}/{template}.json")).to be_falsey
-      end
+  context 'when configuration was not created' do
+    it 'should remove all configuration files' do
+      template = 'centos_7_libvirt_plain'
+      config = mdbci_create_configuration(@test_dir, template)
+      expect(mdbci_run_command("destroy #{config}")).to be_success
+      expect(Dir.exist?(config)).to be_falsy
+      expect(File.exist?("#{@test_dir}/{template}.json")).to be_falsey
     end
+  end
 
-    context 'when configuration is running' do
-      it 'should stop vms and remove all files' do
-        config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
-        mdbci_check_command("up #{config}")
-        expect(mdbci_run_command("destroy #{config}")).to be_success
-        expect(run_command('virsh list').messages).not_to include('centos_7_libvirt_plain')
-        expect(Dir.exist?(config)).to be_falsy
-        expect(File.exist?("#{config}#{Configuration::NETWORK_FILE_SUFFIX}")).to be_falsy
-      end
+  context 'when configuration is running' do
+    it 'should stop vms and remove all files' do
+      config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
+      mdbci_check_command("up #{config}")
+      expect(mdbci_run_command("destroy #{config}")).to be_success
+      expect(run_command('virsh list').messages).not_to include('centos_7_libvirt_plain')
+      expect(Dir.exist?(config)).to be_falsy
+      expect(File.exist?("#{config}#{Configuration::NETWORK_FILE_SUFFIX}")).to be_falsy
     end
+  end
 
-    context 'when configuration is stopped' do
-      it 'should remove all files' do
-        config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
-        mdbci_check_command("up #{config}")
-        run_command_in_dir('vagrant halt', config)
-        expect(mdbci_run_command("destroy #{config}")).to be_success
-        expect(Dir.exist?(config)).to be_falsy
-      end
+  context 'when configuration is stopped' do
+    it 'should remove all files' do
+      config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
+      mdbci_check_command("up #{config}")
+      run_command_in_dir('vagrant halt', config)
+      expect(mdbci_run_command("destroy #{config}")).to be_success
+      expect(Dir.exist?(config)).to be_falsy
     end
+  end
 
-    context 'when destorying a single node' do
-      it 'should not destroy the configuration files' do
-        config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
-        expect(mdbci_run_command("destroy #{config}/node")).to be_success
-        expect(Dir.exist?(config)).to be_truthy
-      end
+  context 'when destorying a single node' do
+    it 'should not destroy the configuration files' do
+      config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
+      expect(mdbci_run_command("destroy #{config}/node")).to be_success
+      expect(Dir.exist?(config)).to be_truthy
     end
   end
 end
