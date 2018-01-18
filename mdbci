@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'getoptlong'
 
@@ -9,24 +10,24 @@ require_relative 'core/node_product'
 require_relative 'core/out'
 require_relative 'core/exception_handler'
 
-#Reading options
+# Reading options
 opts = GetoptLong.new(
-  ['--attempts','-a',GetoptLong::REQUIRED_ARGUMENT],
+  ['--attempts', '-a', GetoptLong::REQUIRED_ARGUMENT],
   ['--box-name', '-n', GetoptLong::REQUIRED_ARGUMENT],
   ['--boxes', '-b', GetoptLong::REQUIRED_ARGUMENT],
   ['--command', '-c', GetoptLong::REQUIRED_ARGUMENT],
   ['--field', '-f', GetoptLong::REQUIRED_ARGUMENT],
   ['--help', '-h', GetoptLong::NO_ARGUMENT],
   ['--ipv6', GetoptLong::NO_ARGUMENT],
-  ['--key','-k',GetoptLong::REQUIRED_ARGUMENT],
+  ['--key', '-k', GetoptLong::REQUIRED_ARGUMENT],
   ['--node-name', GetoptLong::REQUIRED_ARGUMENT],
   ['--override', '-w', GetoptLong::NO_ARGUMENT],
   ['--path-to-nodes', GetoptLong::REQUIRED_ARGUMENT],
-  ['--platform','-o',GetoptLong::REQUIRED_ARGUMENT],
-  ['--platform-version','-i',GetoptLong::REQUIRED_ARGUMENT],
-  ['--product','-p',GetoptLong::REQUIRED_ARGUMENT],
-  ['--product-version','-v',GetoptLong::REQUIRED_ARGUMENT],
-  ['--repo-dir','-r',GetoptLong::REQUIRED_ARGUMENT],
+  ['--platform', '-o', GetoptLong::REQUIRED_ARGUMENT],
+  ['--platform-version', '-i', GetoptLong::REQUIRED_ARGUMENT],
+  ['--product', '-p', GetoptLong::REQUIRED_ARGUMENT],
+  ['--product-version', '-v', GetoptLong::REQUIRED_ARGUMENT],
+  ['--repo-dir', '-r', GetoptLong::REQUIRED_ARGUMENT],
   ['--silent', '-s', GetoptLong::NO_ARGUMENT],
   ['--snapshot-name', GetoptLong::REQUIRED_ARGUMENT],
   ['--template', '-t', GetoptLong::REQUIRED_ARGUMENT]
@@ -34,115 +35,106 @@ opts = GetoptLong.new(
 
 $mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
 
-$session = Session.new
-$session.configFile='instance.json'
-$session.boxesFile='boxes.json'
-$session.awsConfigFile=$mdbci_exec_dir+ '/aws-config.yml'
+session = Session.new
+$session = session
+session.configFile = 'instance.json'
+session.boxesFile = 'boxes.json'
+session.awsConfigFile = $mdbci_exec_dir + '/aws-config.yml'
 $exception_handler = ExceptionHandler.new
-$session.ipv6 = false
+session.ipv6 = false
 
-$out = Out.new
+out = Out.new
+$out = out
 
 $current_dir = Dir.pwd
-unless (ENV['MDBCI_VM_PATH'].nil?)
-   Dir.chdir ENV['MDBCI_VM_PATH']
-end
+Dir.chdir ENV['MDBCI_VM_PATH'] unless ENV['MDBCI_VM_PATH'].nil?
 $work_dir = Dir.pwd
 
 begin
   opts.each do |opt, arg|
     case opt
-      when '--silent'
-        $session.isSilent = true
+    when '--silent'
+      session.isSilent = true
 
-      when '--template'
-        if arg != ''; $session.configFile = arg; end
-  #      $out.info 'Using template name '+$session.configFile
+    when '--template'
+      session.configFile = arg unless arg.empty?
 
-      when '--boxes'
-        if arg != ''; $session.boxesFile = arg; end
-  #      $out.info 'Using boxes name '+$session.boxesFile
+    when '--boxes'
+      session.boxesFile = arg unless arg.empty?
 
-      when '--box-name'
-        if arg != ''; $session.boxName = arg; end
-  #      $out.info 'Using boxes name '+ $session.boxName
+    when '--box-name'
+      session.boxName = arg unless arg.empty?
 
-      when '--field'
-        if arg != ''; $session.field = arg; end
-  #      $out.info 'Using boxes field '+$session.field
+    when '--field'
+      session.field = arg unless arg.empty?
 
-      when '--help'
-        Help.display
-        exit
+    when '--help'
+      Help.display
+      exit
 
-      when '--override'
-        $session.isOverride = true
+    when '--override'
+      session.isOverride = true
 
-      when '--command'
-        $session.command = arg
+    when '--command'
+      session.command = arg
 
-      when '--repo-dir'
-        $session.repoDir = arg
+    when '--repo-dir'
+      session.repoDir = arg
 
-      when '--attempts'
-        $session.attempts = arg
+    when '--attempts'
+      session.attempts = arg
 
-      when '--product'
-        if arg != ''; $session.nodeProduct = arg; end
+    when '--product'
+      session.nodeProduct = arg unless arg.empty?
 
-      when '--product-version'
-        if arg != ''; $session.productVersion = arg; end
+    when '--product-version'
+      session.productVersion = arg unless arg.empty?
 
-      when '--key'
-        if arg != ''; $session.keyFile = arg; end
-  #      $out.info 'Using keyfile '+$session.keyFile
+    when '--key'
+      session.keyFile = arg unless arg.empty?
 
-      when '--platform'
-        if arg != ''; $session.boxPlatform = arg; end
+    when '--platform'
+      session.boxPlatform = arg unless arg.empty?
 
-      when '--platform-version'
-        if arg != ''; $session.boxPlatformVersion = arg; end
+    when '--platform-version'
+      session.boxPlatformVersion = arg unless arg.empty?
 
-      when '--path-to-nodes'
-        $session.path_to_nodes = arg
+    when '--path-to-nodes'
+      session.path_to_nodes = arg
 
-      when '--node-name'
-        $session.node_name = arg
+    when '--node-name'
+      session.node_name = arg
 
-      when '--snapshot-name'
-        $session.snapshot_name = arg
+    when '--snapshot-name'
+      session.snapshot_name = arg
 
-      when '--ipv6'
-        $session.ipv6 = true
+    when '--ipv6'
+      session.ipv6 = true
 
-      else
-        $out.error 'Option is not supported: '+opt
+    else
+      out.error 'Option is not supported: ' + opt
     end
   end
-  rescue GetoptLong::MissingArgument => error
-    $out.error error.backtrace.join("\n")
-    $out.error error.to_s
-    exit 1
+rescue GetoptLong::MissingArgument => error
+  out.error error.backtrace.join("\n")
+  out.error error.to_s
+  exit 1
 end
-#Hello message
-$out.info 'MariaDb CI CLI'
-$out.info 'mdbci called with: '+ARGV.to_s
 
-=begin
-  run command (create config only for now)
-=end
+# Greeting user
+out.info 'MariaDb CI CLI'
+out.info 'mdbci called with: ' + ARGV.to_s
 
-$session.checkConfig
-$session.loadCollections
+session.checkConfig
+session.loadCollections
 
 # run commands and return 0 for success, 1 for error
-
 begin
-  exit_code = $session.commands
-rescue Exception => error
-  $out.error error.backtrace.join("\n")
-  $out.error error.to_s
-  exit_code =  1
+  exit_code = session.commands
+rescue StandardError => error
+  out.error error.backtrace.join("\n")
+  out.error error.to_s
+  exit_code = 1
 end
 Dir.chdir $current_dir
 exit exit_code
