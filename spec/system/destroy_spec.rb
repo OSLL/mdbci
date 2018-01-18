@@ -43,6 +43,16 @@ describe 'destroy command', :system do
       end
     end
 
+    context 'when configuration is stopped' do
+      it 'should stop remove configuration directory' do
+        config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
+        mdbci_check_command("up #{config}")
+        run_command_in_dir('vagrant halt', config)
+        expect(mdbci_run_command("destroy #{config}")).to be_success
+        expect(Dir.exist?(config)).to be_falsy
+      end
+    end
+
     context 'when destorying a single node' do
       it 'should not destroy the configuration directory' do
         config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
