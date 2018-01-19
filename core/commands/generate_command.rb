@@ -558,48 +558,37 @@ PROVISION
 
     $out.info 'Global cookbook_path = ' + cookbook_path
     $out.info 'Nodes provider = ' + provider
-
     vagrant = File.open(path+'/Vagrantfile', 'w')
-
     if provider == 'docker'
       vagrant.puts 'require \'json\''
     end
-
     vagrant.puts vagrantFileHeader
-
 
     if (!$session.awsConfigOption.to_s.empty? && provider=='aws')
       # Generate AWS Configuration
+      $out.info 'Generating AWS configuration'
       vagrant.puts awsProviderConfigImport($session.awsConfigOption)
       vagrant.puts vagrantConfigHeader
       path_to_keyfile, keypair_name = generateKeypair path
       vagrant.puts awsProviderConfig(path_to_keyfile, keypair_name)
-      config.each do |node|
-        $out.info 'Generate AWS Node definition for ['+node[0]+']'
-        vagrant.puts nodeDefinition(node, boxes, path, cookbook_path)
-      end
-      vagrant.puts vagrantConfigFooter
     else
       # Generate VBox/Qemu Configuration
+      $out.info 'Generating libvirt/VirtualBox/Docker configuration'
       vagrant.puts vagrantConfigHeader
       vagrant.puts providerConfig
-
-      config.each do |node|
-        unless (node[1]['box'].nil?)
-          $out.info 'Generate VBox|Libvirt|Docker Node definition for ['+node[0]+']'
-          vagrant.puts nodeDefinition(node, boxes, path, cookbook_path)
-        end
-      end
-      vagrant.puts vagrantConfigFooter
     end
-
+    config.each do |node|
+      unless (node[1]['box'].nil?)
+        $out.info 'Generating node definition for ['+node[0]+']'
+        vagrant.puts nodeDefinition(node, boxes, path, cookbook_path)
+      end
+    end
+    vagrant.puts vagrantConfigFooter
     vagrant.close
 
     if File.size?(path+'/Vagrantfile').nil? # nil if empty and not exist
       raise 'Generated Vagrantfile is empty! Please check configuration file and regenerate it.'
     end
-
     return 0
   end
-
 end
