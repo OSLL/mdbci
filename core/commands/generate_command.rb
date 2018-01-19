@@ -5,6 +5,7 @@ require 'pathname'
 require 'securerandom'
 require 'socket'
 require 'erb'
+require 'set'
 require_relative 'base_command'
 require_relative '../out'
 
@@ -521,14 +522,36 @@ PROVISION
     return path_to_keyfile, aws_json_credential["KeyName"]
   end
 
+  # Check that all boxes specified in the the template are identical.
+  #
+  # @param nodes [Array] list of nodes specified in template
+  # @param boxes a list of boxes known to the configuration
+  # @raise RuntimeError if there is the error in the configuration.
+  def self.check_provider_equality(nodes, boxes)
+    $out.info 'Checking node provider equality'
+    providers = nodes.map do |node|
+      box = node[1]['box'].to_s
+      if !box.empty?
+        boxes.getBox(box)['provider'].to_s
+      end
+    end
+    if providers.empty?
+      raise 'Unable to detect the provider for all boxes. Please fix the template.'
+    end
+    unique_providers = Set.new(providers)
+    if unique_providers.size != 1
+      raise "There are several node providers defined in the template: #{unique_providers.to_a.join(', ')}.\n"\
+            "You can specify only nodes from one provider in the template."
+    end
+  end
+
   def self.generate(path, config, boxes, override, provider)
-
     #TODO MariaDb Version Validator
-
     checkPath(path, override)
+    check_provider_equality(config, boxes)
 
     cookbook_path = $mdbci_exec_dir + '/recipes/cookbooks/' # default cookbook path
-          $out.info  cookbook_path
+    $out.info  cookbook_path
     unless (config['cookbook_path'].nil?)
       cookbook_path = config['cookbook_path']
     end
@@ -544,19 +567,6 @@ PROVISION
 
     vagrant.puts vagrantFileHeader
 
-    # Check that all boxes have identical provider
-    $out.info 'Check all nodes provider defenitions'
-    providers_array = Array[]
-    config.each do |node|
-      box = node[1]['box'].to_s
-      if !box.empty?
-        provider = boxes.getBox(box)['provider'].to_s
-        providers_array.push(provider)
-      end
-    end
-    if !(providers_array.all? { |e| e == providers_array[0] })
-      raise 'Providers in the configuration file are different! Please correct their names and regenerate again.'
-    end
 
     if (!$session.awsConfigOption.to_s.empty? && provider=='aws')
       # Generate AWS Configuration
