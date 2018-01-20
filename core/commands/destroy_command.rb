@@ -2,6 +2,7 @@
 
 require_relative 'base_command'
 require_relative '../models/configuration'
+require_relative '../models/command_result.rb'
 require_relative '../helpers/shell_commands'
 require 'fileutils'
 
@@ -42,6 +43,7 @@ the network configuration file and the template. You can prevent
 destroy command from deleting the template file:
   mdbci destroy configuration --keep_template
 
+The command also deletes AWS key pair for corresponding configurations.
 HELP
     @ui.out(info)
   end
@@ -76,10 +78,24 @@ HELP
                          'Vagrant was unable to destroy existing nodes')
   end
 
+  # Destroy aws keypair specified in the configuration.
+  #
+  # @param configuration [Configuration] that we operate on.
+  # @raise [RuntimeError] if there was an error during deletion of the key pair.
+  def destroy_aws_keypair(configuration)
+    return unless configuration.aws_keypair_name?
+    @ui.info "Destroying AWS key pair #{configuration.aws_keypair_name}"
+    result = CommandResult.for_command("aws ec2 delete-key-pair --key-name '#{configuration.aws_keypair_name}'")
+    raise "Unable to delete AWS key pair #{configuration.aws_keypair_name}.\n#{result.messages}" unless result.success?
+  end
+
   def execute
     configuration, node = setup_command
     stop_machines(configuration, node)
-    remove_files(configuration, @env.keep_template) if node.empty?
+    if node.empty?
+      remove_files(configuration, @env.keep_template)
+      destroy_aws_keypair(configuration)
+    end
     SUCCESS_RESULT
   end
 end
