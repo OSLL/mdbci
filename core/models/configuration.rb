@@ -2,7 +2,7 @@
 
 # Class represents the MDBCI configuration on the hard drive.
 class Configuration
-  attr_reader :path, :provider, :template, :template_path
+  attr_reader :path, :provider, :template, :template_path, :aws_keypair_name
 
   NETWORK_FILE_SUFFIX = '_network_config'
   AWS_KEYPAIR_NAME = 'maxscale.keypair_name'
@@ -46,6 +46,7 @@ class Configuration
     @provider = read_provider(@path)
     @template_path = read_template_path(@path)
     @template = read_template(@template_path)
+    @aws_keypair_name = read_aws_keypair_name
   end
 
   # Provide a list of nodes that are defined in the configuration
@@ -61,14 +62,20 @@ class Configuration
     "#{@path}#{NETWORK_FILE_SUFFIX}"
   end
 
-  # Read the aws key pair name from the corresponding file
-  def aws_keypair_name
-    keypair_file_path = "#{@path}/#{AWS_KEYPAIR_NAME}"
-    raise 'There is no aws keypair_name file in configuration' unless File.exist?(keypair_file_path)
-    File.read(keypair_file_path).chomp
+  # Check whether configuration has the keypair name or not.
+  def aws_keypair_name?
+    @provider == 'aws' && @aws_keypair_name != ''
   end
 
   private
+
+  # Read the aws key pair name from the corresponding file.
+  # @return [String] name of the keypair or empty string.
+  def read_aws_keypair_name
+    keypair_file_path = "#{@path}/#{AWS_KEYPAIR_NAME}"
+    return '' unless File.exist?(keypair_file_path)
+    File.read(keypair_file_path).chomp
+  end
 
   # Read node provider specified in the configuration.
   #

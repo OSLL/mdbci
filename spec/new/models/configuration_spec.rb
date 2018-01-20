@@ -96,12 +96,46 @@ describe Configuration do
     end
   end
 
+  describe '#aws_keypair_name?' do
+    context 'when there is no keypair file' do
+      it 'should state it' do
+        with_fake_config('aws') do |config_path|
+          config = Configuration.new(config_path)
+          expect(config.aws_keypair_name?).to be_falsy
+        end
+      end
+    end
+
+    context 'when there is an empty keypair file' do
+      it 'should state that there is no such file' do
+        with_fake_config('aws') do |config_path|
+          FileUtils.touch("#{config_path}/#{Configuration::AWS_KEYPAIR_NAME}")
+          config = Configuration.new(config_path)
+          expect(config.aws_keypair_name?).to be_falsy
+        end
+      end
+    end
+
+    context 'when there is a correct keypair file' do
+      it 'should state that there is true' do
+        with_fake_config('aws') do |config_path|
+          keypair_name = 'testing_the_key'
+          File.open("#{config_path}/#{Configuration::AWS_KEYPAIR_NAME}", 'w') do |file|
+            file.write(keypair_name)
+          end
+          config = Configuration.new(config_path)
+          expect(config.aws_keypair_name?).to be_truthy
+        end
+      end
+    end
+  end
+
   describe '#aws_keypair_name' do
-    context 'when there is no such a file' do
-      it 'should raise exception' do
+    context 'when there is no keypair file' do
+      it 'should return empty text' do
         with_fake_config do |config_path|
           config = Configuration.new(config_path)
-          expect { config.aws_keypair_name }.to raise_error(RuntimeError)
+          expect(config.aws_keypair_name).to eq('')
         end
       end
     end
