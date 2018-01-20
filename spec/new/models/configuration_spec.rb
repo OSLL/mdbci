@@ -95,4 +95,28 @@ describe Configuration do
       end
     end
   end
+
+  describe '#aws_keypair_name' do
+    context 'when there is no such a file' do
+      it 'should raise exception' do
+        with_fake_config do |config_path|
+          config = Configuration.new(config_path)
+          expect { config.aws_keypair_name }.to raise_error(RuntimeError)
+        end
+      end
+    end
+
+    context 'wher there is such a file' do
+      it 'should provide file contents' do
+        with_fake_config do |config_path|
+          keypair_name = 'testing_the_key'
+          File.open("#{config_path}/#{Configuration::AWS_KEYPAIR_NAME}", 'w') do |file|
+            file.write(keypair_name)
+          end
+          config = Configuration.new(config_path)
+          expect(config.aws_keypair_name).to eq(keypair_name)
+        end
+      end
+    end
+  end
 end

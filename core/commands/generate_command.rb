@@ -8,6 +8,7 @@ require 'erb'
 require 'set'
 require_relative 'base_command'
 require_relative '../out'
+require_relative '../models/configuration.rb'
 
 # Command generates
 class GenerateCommand < BaseCommand
@@ -519,7 +520,7 @@ PROVISION
     open(path_to_keyfile, 'w') do |f|
       f.write(aws_json_credential["KeyMaterial"])
     end
-    path_to_keypair_file = File.join(File.expand_path(path), 'maxscale.key_name')
+    path_to_keypair_file = File.join(File.expand_path(path), Configuration::AWS_KEYPAIR_NAME)
     open(path_to_keypair_file, 'w') do |f|
       f.write(keypair_name)
     end

@@ -5,6 +5,7 @@ class Configuration
   attr_reader :path, :provider, :template, :template_path
 
   NETWORK_FILE_SUFFIX = '_network_config'
+  AWS_KEYPAIR_NAME = 'maxscale.keypair_name'
 
   # Checks whether provided path is a directory containing configurations.
   #
@@ -60,6 +61,13 @@ class Configuration
     "#{@path}#{NETWORK_FILE_SUFFIX}"
   end
 
+  # Read the aws key pair name from the corresponding file
+  def aws_keypair_name
+    keypair_file_path = "#{@path}/#{AWS_KEYPAIR_NAME}"
+    raise 'There is no aws keypair_name file in configuration' unless File.exist?(keypair_file_path)
+    File.read(keypair_file_path).chomp
+  end
+
   private
 
   # Read node provider specified in the configuration.
@@ -97,9 +105,7 @@ class Configuration
   # @raise [ArgumentError] if the file does not exist
   # @return [Hash] data from the template JSON file
   def read_template(template_path)
-    unless File.exist?(template_path)
-      raise ArgumentError, "The template #{template_path} does not exist."
-    end
+    raise ArgumentError, "The template #{template_path} does not exist." unless File.exist?(template_path)
     JSON.parse(File.read(template_path))
   end
 end
