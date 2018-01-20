@@ -514,12 +514,16 @@ PROVISION
     aws_cmd_output = `aws --profile mdbci ec2 create-key-pair --key-name #{hostname}_#{keypair_name}_#{Time.new.to_i}`
     raise "AWS CLI command exited with non zero exit code: #{$?.exitstatus}" unless $?.success?
     aws_json_credential = JSON.parse(aws_cmd_output)
-    keyfile_name = 'maxscale.pem'
-    path_to_keyfile = File.join(File.expand_path(path), keyfile_name)
+    keypair_name = aws_json_credential["KeyName"]
+    path_to_keyfile = File.join(File.expand_path(path), 'maxscale.pem')
     open(path_to_keyfile, 'w') do |f|
       f.write(aws_json_credential["KeyMaterial"])
     end
-    return path_to_keyfile, aws_json_credential["KeyName"]
+    path_to_keypair_file = File.join(File.expand_path(path), 'maxscale.key_name')
+    open(path_to_keypair_file, 'w') do |f|
+      f.write(keypair_name)
+    end
+    return path_to_keyfile, keypair_name
   end
 
   # Check that all boxes specified in the the template are identical.
