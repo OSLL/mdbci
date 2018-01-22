@@ -89,12 +89,38 @@ HELP
     raise "Unable to delete AWS key pair #{configuration.aws_keypair_name}.\n#{result.messages}" unless result.success?
   end
 
+  # Destroy the node if it was not destroyed by the vagrant.
+  #
+  # @param configuration [Configuration] configuration to use.
+  # @param node [String] node name to destroy.
+  def destroy_machine(configuration, node)
+    case configuration.provider
+    when 'libvirt'
+      destroy_libvirt_domain(configuration, node)
+    else
+      @ui.error("Unknown provider #{configuration.provider}. Can not manually destroy virtual machines.")
+    end
+  end
+
+  # Destroy the libvirt domain.
+  #
+  # @param configuration [Configuration] configuration to use.
+  # @param node [String] node name to destroy.
+  def destroy_libvirt_domain(configuration, node)
+
+  end
+
   def execute
     configuration, node = setup_command
     stop_machines(configuration, node)
     if node.empty?
+      configuration.node_names each do |node_name|
+        destroy_machine(configuration, node_name)
+      end
       remove_files(configuration, @env.keep_template)
       destroy_aws_keypair(configuration)
+    else
+      destroy_machine(configuration, node)
     end
     SUCCESS_RESULT
   end

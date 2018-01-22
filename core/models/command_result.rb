@@ -35,4 +35,8 @@ class CommandResult
   def to_s
     "Command: #{@command}\nExit status: #{@result}\nOutput:\n#{@messages}"
   end
+
+  def inspect
+    to_s
+  end
 end

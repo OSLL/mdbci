@@ -84,4 +84,17 @@ describe 'destroy command', :system do
       expect(result).not_to be_success
     end
   end
+
+  context 'when vagrant was unable to destroy libvirt machine' do
+    it 'should destroy it manually' do
+      template = 'centos_7_libvirt_plain'
+      config = mdbci_create_configuration(@test_dir, template)
+      mdbci_check_command("up #{config}")
+      FileUtils.rm_f("#{config}/Vagrantfile")
+      FileUtils.touch("#{config}/Vagrantfile")
+      libvirt_domain = "#{template}_node"
+      result = run_command("virsh domstats #{libvirt_domain}")
+      expect(result).not_to be_success
+    end
+  end
 end
