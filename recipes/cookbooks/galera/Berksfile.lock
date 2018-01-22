@@ -1,0 +1,15 @@
+DEPENDENCIES
+  galera
+    path: .
+    metadata: true
+  ntp
+    path: ../ntp
+  packages
+    path: ../packages
+
+GRAPH
+  galera (0.0.1)
+    ntp (>= 0.0.0)
+    packages (>= 0.0.0)
+  ntp (0.1.1)
+  packages (0.1.1)

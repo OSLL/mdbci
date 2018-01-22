@@ -1,0 +1,8 @@
+# frozen_string_literal: true
+
+source 'https://supermarket.chef.io'
+
+metadata
+
+cookbook 'ntp', path: '../ntp'
+cookbook 'packages', path: '../packages'
