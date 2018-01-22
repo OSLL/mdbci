@@ -24,6 +24,18 @@ else # debian, suse
   package "netcat"
 end
 
+if (node[:platform_family] == 'centos' || node[:platform_family] == 'rhel') &&
+   node['platform_version'].to_f < 7
+  execute 'install Fedora EPEL repository' do
+    case node['platform_version'].to_f
+    when 6...7
+      command 'rpm -Uvh https://mirror.linux-ia64.org/epel/6/x86_64/epel-release-6-8.noarch.rpm'
+    when 5...6
+      # This is no longer supported
+      command 'rpm -Uvh http://archives.fedoraproject.org/pub/archive/epel/epel-release-latest-5.noarch.rpm'
+    end
+  end
+end
 package "socat"
 
 # Turn off SElinux
