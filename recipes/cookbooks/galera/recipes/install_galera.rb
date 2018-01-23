@@ -3,34 +3,40 @@ require 'shellwords'
 include_recipe "galera::galera_repos"
 include_recipe "ntp::default"
 
+
+
 # Install default packages
 [
-  "rsync", "sudo", "sed", 
-  "coreutils", "util-linux", "curl", "grep", 
+  "rsync", "sudo", "sed",
+  "coreutils", "util-linux", "curl", "grep",
   "findutils", "gawk", "iproute"
 ].each do |pkg|
   package pkg
 end
 case node[:platform_family]
-  when "rhel", "fedora", "centos"
-    package "wget"
-    if node[:platform] == "centos"
-      if node["platform_version"].to_f >= 6.0 
-        execute "add_socat_repo_centos_ge6" do
-          command "wget -P /etc/yum.repos.d http://www.convirture.com/repos/definitions/rhel/6.x/convirt.repo"
-        end
-      else
-        execute "add_socat_repo_centos_le5" do
-          command "wget -P /etc/yum.repos.d http://www.convirture.com/repos/definitions/rhel/5.x/convirt.repo"
-        end
-      end
+when "rhel", "fedora", "centos"
+  if node['platform_version'].to_f < 7
+    package 'nc'
+  else
+    package 'nmap-ncat'
+  end
+else # debian, suse
+  package "netcat"
+end
+
+if (node[:platform_family] == 'centos' || node[:platform_family] == 'rhel') &&
+   node['platform_version'].to_f < 7
+  execute 'install Fedora EPEL repository' do
+    case node['platform_version'].to_f
+    when 6...7
+      command 'rpm -Uvh https://mirror.linux-ia64.org/epel/6/x86_64/epel-release-6-8.noarch.rpm'
+    when 5...6
+      # This is no longer supported
+      command 'rpm -Uvh http://archives.fedoraproject.org/pub/archive/epel/epel-release-latest-5.noarch.rpm'
     end
-    package "nc"
-  else # debian, suse
-    package "netcat"
+  end
 end
 package "socat"
-
 
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
@@ -156,7 +162,7 @@ case node[:platform_family]
         command "yum --assumeyes -c /etc/yum.repos.d/galera.repo install MariaDB-Galera-server"
       end
     end
- 
+
   when "debian"
     if node['galera']['version'] != "5.5" && node['galera']['version'] != "10.0"
       package 'mariadb-server'
@@ -171,7 +177,7 @@ end
 case node[:platform_family]
 
   when "debian", "ubuntu"
-  
+
     createcmd = "mkdir /etc/mysql/my.cnf.d"
     execute "Create cnf_template directory" do
       command createcmd

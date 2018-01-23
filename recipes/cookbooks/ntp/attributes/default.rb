@@ -1,4 +1,4 @@
-case platform
+case node['platform']
 when "ubuntu","debian"
   default[:ntp][:service] = "ntp"
   default[:ntp][:root_group] = "root"
@@ -13,6 +13,4 @@ else
   default[:ntp][:root_group] = "root"
 end
 
-
 default[:ntp][:servers] = ["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org", "3.pool.ntp.org"]
-
