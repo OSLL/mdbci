@@ -50,13 +50,15 @@ class BuildResultsWriter
   end
 
   def write_test_run_table(jenkins_id, start_time, target, box, \
-    product, mariadb_version, test_code_commit_id, maxscale_commit_id, job_name)
+    product, mariadb_version, test_code_commit_id, maxscale_commit_id, job_name, cmake_flags, maxscale_source)
 
     test_runs_query = "INSERT INTO test_run (jenkins_id, "\
     "start_time, target, box, product, mariadb_version, "\
-    "test_code_commit_id, maxscale_commit_id, job_name) "\
+    "test_code_commit_id, maxscale_commit_id, job_name, "\
+    "cmake_flags, maxscale_source) "\
     "VALUES ('#{jenkins_id}', '#{start_time}', '#{target}', '#{box}', '#{product}', "\
-    "'#{mariadb_version}', '#{test_code_commit_id}', '#{maxscale_commit_id}', '#{job_name}')"
+    "'#{mariadb_version}', '#{test_code_commit_id}', '#{maxscale_commit_id}', '#{job_name}', "\
+    "'#{cmake_flags}', '#{maxscale_source}')"
 
     @client.query(test_runs_query)
     id = @client.last_id
@@ -81,6 +83,8 @@ class BuildResultsWriter
     test_code_commit_id = results['maxscale_system_test_commit'] #? what is that ?
     maxscale_commit_id = results['maxscale_commit']
     job_name = results['job_name']
+    cmake_flags = results['cmake_flags']
+    maxscale_source = results['maxscale_source']
     tests = Array.new
     if results.has_key? 'tests'
       results['tests'].each do |test|
@@ -90,8 +94,9 @@ class BuildResultsWriter
 
     # writing testrun results to db
     id = write_test_run_table(jenkins_id, start_time, target, box, \
-    product, mariadb_version, test_code_commit_id, maxscale_commit_id, job_name)
-    
+    product, mariadb_version, test_code_commit_id, maxscale_commit_id, job_name, \
+    cmake_flags, maxscale_source)
+
     # writing tests results to db
     unless results.has_key? ERROR
       tests.each do |test|
@@ -139,7 +144,7 @@ end
 def main
   input_file_path, env_file = parse_options
 
-  begin 
+  begin
     require 'mysql2'
     writer = BuildResultsWriter.new
     writer.write_results_from_input_file(input_file_path)
