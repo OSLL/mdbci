@@ -141,11 +141,11 @@ describe "GenerateCommand" do
 
   context '.getVmDef' do
     it "should return string with '\tconfig.ssh.pty = true' in it" do
-      GenerateCommand.getVmDef('TEST', 'TEST','TEST' , 'TEST', 'true', 'TEST', 'TEST', 'TEST').should include 'config.ssh.pty = true'
+      GenerateCommand.getVmDef('TEST', 'TEST','TEST' , 'TEST', true, 'TEST', 'TEST', 'TEST').should include 'box.ssh.pty = true'
     end
 
     it "should return string without '\tconfig.ssh.pty = true' in it" do
-      GenerateCommand.getVmDef('TEST', 'TEST','TEST' , 'TEST', 'false', 'TEST', 'TEST', 'TEST').should_not include 'config.ssh.pty = true'
+      GenerateCommand.getVmDef('TEST', 'TEST','TEST' , 'TEST', false, 'TEST', 'TEST', 'TEST').should_not include 'box.ssh.pty = true'
     end
   end
 

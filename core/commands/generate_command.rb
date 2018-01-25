@@ -130,35 +130,31 @@ config.omnibus.chef_version = '12.9.38'
       end
       ##--- Chef configuration complete
 PROVISION
-    template.result binding
+    template.result(binding)
   end
 
   # Vagrantfile for Vbox provider
   def self.getVmDef(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
-
-    if template_path
-      templatedef = "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates')
-    else
-      templatedef = ''
-    end
-    # ssh.pty option
-    ssh_pty_option = sshPtyOption(ssh_pty)
-
-    vmdef = "\n#  --> Begin definition for machine: " + name +"\n"\
-            "\n"+'config.vm.define ' + quote(name) +' do |'+ name +"|\n" \
-            + ssh_pty_option + "\n" \
-            + "\t"+name+'.vm.box = ' + quote(boxurl) + "\n" \
-            + "\t"+name+'.vm.hostname = ' + quote(host) + "\n" \
-            + templatedef + "\n"
-    vmdef += generate_provision_block(name, cookbook_path, provisioned)
-
-    if vm_mem
-      vmdef += "\n\t"+'config.vm.provider :virtualbox do |vbox|' + "\n" \
-               "\t\t"+'vbox.customize ["modifyvm", :id, "--memory", ' + quote(vm_mem) +"]\n\tend\n"
-    end
-    vmdef += "\nend #  <-- End of VM definition for machine: " + name +"\n\n"
-
-    return vmdef
+    template = ERB.new <<-VBOX
+      config.vm.define '<%= name %>' do |box|
+        box.vm.box = '<%= boxurl %>'
+        box.vm.hostname = '<%= host %>'
+        <% if ssh_pty %>
+           box.ssh.pty = true
+        <% end %>
+        <% if template_path %>
+           box.vm.synced_folder '<%= template_path %>', '/home/vagrant/cnf_templates'
+        <% end %>
+        <%= generate_provision_block('box', cookbook_path, provisioned) %>
+        box.vm.provider :virtualbox do |vbox|
+          <% if vm_mem %>
+             vbox.memory = <%= vm_mem %>
+          <% end %>
+          vbox.name = "\#{File.basename(File.dirname(__FILE__))}_<%= name %>"
+        end
+      end
+    VBOX
+    return template.result(binding)
   end
 
   # Vagrantfile for Libvirt provider
@@ -459,7 +455,7 @@ PROVISION
       end
       # ssh_pty option
       if !box_params['ssh_pty'].nil?
-        ssh_pty = box_params['ssh_pty']
+        ssh_pty = box_params['ssh_pty'] == 'true'
         $out.info 'config.ssh.pty option is ' + ssh_pty.to_s + ' for a box ' + box.to_s
       end
     end
