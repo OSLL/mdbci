@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS test_results_db; 
+CREATE DATABASE IF NOT EXISTS test_results_db;
 USE test_results_db;
 
 CREATE TABLE test_run (
@@ -12,6 +12,8 @@ CREATE TABLE test_run (
   test_code_commit_id VARCHAR(256),
   maxscale_commit_id VARCHAR(256),
   job_name VARCHAR(256),
+  cmake_flags TEXT DEFAULT "NOT FOUND",
+  maxscale_source VARCHAR(256) DEFAULT "NOT FOUND",
   PRIMARY KEY(id)
 );
 
@@ -21,4 +23,3 @@ CREATE TABLE results (
   result INT,
   FOREIGN KEY (id) REFERENCES test_run(id)
 );
-
