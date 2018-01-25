@@ -535,10 +535,11 @@ PROVISION
   def self.check_provider_equality(nodes, boxes)
     $out.info 'Checking node provider equality'
     providers = nodes.map do |node|
-      box = node[1]['box'].to_s
-      if !box.empty?
-        boxes.getBox(box)['provider'].to_s
-      end
+      node[1]['box'].to_s
+    end.reject do |box|
+      box.empty?
+    end.map do |box|
+      boxes.getBox(box)['provider'].to_s
     end
     if providers.empty?
       raise 'Unable to detect the provider for all boxes. Please fix the template.'
