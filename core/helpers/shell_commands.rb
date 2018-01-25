@@ -42,25 +42,23 @@ module ShellCommands
   end
 
   # Execute the command, log stdout and stderr. If command was not
-  # successfull, then raise RuntimeError.
+  # successfull, then print information to error stream.
   #
   # @param command [String] command to run
   # @param message [String] message to display in case of failure
   # @param options [Hash] options that are passed to the popen3 method
-  # @raise [RuntimeError] if something goes wrong
   def check_command(command, message, options = {})
     result = run_command_and_log(command, options)
-    raise message unless result[:value].success?
+    @ui.error message unless result[:value].success?
     result
   end
 
   # Execute the command in the specified directory, log stdout and stderr.
-  # If command was not successfull, then raise RuntimeError.
+  # If command was not successfull, then print it onto error stream.
   #
   # @param command [String] command to run
   # @param dir [String] directory to run command in
   # @param message [String] message to display in case of failure
-  # @raise [RuntimeError] if something goes wrong
   def check_command_in_dir(command, directory, message)
     check_command(command, message, { chdir: directory })
   end

@@ -40,7 +40,7 @@ describe 'destroy command', :system do
       config = mdbci_create_configuration(@test_dir, 'centos_7_libvirt_plain')
       mdbci_check_command("up #{config}")
       expect(mdbci_run_command("destroy #{config}")).to be_success
-      expect(run_command('virsh list').messages).not_to include('centos_7_libvirt_plain')
+      expect(run_command('virsh list --all').messages).not_to include('centos_7_libvirt_plain')
       expect(Dir.exist?(config)).to be_falsy
       expect(File.exist?("#{config}#{Configuration::NETWORK_FILE_SUFFIX}")).to be_falsy
     end

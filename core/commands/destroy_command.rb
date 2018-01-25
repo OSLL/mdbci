@@ -67,11 +67,6 @@ HELP
   # @param configuration [Configuration] that we operate on
   # @param node [String] node of the name to operate on
   def stop_machines(configuration, node)
-    @ui.info 'Checking that machine is running'
-    result = check_command_in_dir("vagrant status #{node}",
-                                  configuration.path,
-                                  "Vagrant was unable to find #{node}")
-    return unless result[:output] =~ /#{node}\s*running/
     @ui.info 'Destroying the machines using vagrant'
     check_command_in_dir("vagrant destroy -f #{node}",
                          configuration.path,
@@ -115,17 +110,16 @@ HELP
       @ui.info "Libvirt domain #{domain_name} has been destroyed, doing nothing."
       return
     end
-    begin
-      check_command("virsh destroy #{domain_name}", "Unable to destroy domain #{domain_name}")
-      result = check_command("virsh snapshot-list #{domain_name} --tree", "Unable to get list of snapshots for #{domain_name}")
-      result[:output].split('\n').each do |snapshot|
-        next if snapshot.chomp.empty?
-        check_command("virsh snapshot-delete #{domain_name} #{snapshot}", "Unable to delete snapshot #{snapshot} for #{domain_name} domain")
-      end
-      check_command("virsh undefine #{domain_name}", "Unable to undefine domain #{domain_name}")
-    rescue RuntimeError => error
-      @ui.error error.message
+    check_command("virsh destroy #{domain_name}",
+                  "Unable to destroy domain #{domain_name}")
+    result = check_command("virsh snapshot-list #{domain_name} --tree", "Unable to get list of snapshots for #{domain_name}")
+    result[:output].split('\n').each do |snapshot|
+      next if snapshot.chomp.empty?
+      check_command("virsh snapshot-delete #{domain_name} #{snapshot}",
+                    "Unable to delete snapshot #{snapshot} for #{domain_name} domain")
     end
+    check_command("virsh undefine #{domain_name}",
+                  "Unable to undefine domain #{domain_name}")
   end
 
   # Destroy the virtualbox virtual machine.
@@ -139,14 +133,10 @@ HELP
       @ui.info "VirtualBox machine #{vbox_name} has been destroyed, doing notthing"
       return
     end
-    begin
-      check_command("VBoxManage controlvm #{vbox_name} poweroff",
-                   "Unable to shutdown #{vbox_name} machine.")
-      check_command("VBoxManage unregistervm #{vbox_name} -delete",
-                   "Unable to delete #{vbox_name} machine.")
-    rescue RuntimeError => error
-      @ui.error error.message
-    end
+    check_command("VBoxManage controlvm #{vbox_name} poweroff",
+                  "Unable to shutdown #{vbox_name} machine.")
+    check_command("VBoxManage unregistervm #{vbox_name} -delete",
+                  "Unable to delete #{vbox_name} machine.")
   end
 
   def execute
