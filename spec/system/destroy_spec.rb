@@ -92,6 +92,7 @@ describe 'destroy command', :system do
       mdbci_check_command("up #{config}")
       FileUtils.rm_f("#{config}/Vagrantfile")
       FileUtils.touch("#{config}/Vagrantfile")
+      mdbci_check_command("destroy #{config}")
       libvirt_domain = "#{template}_node"
       result = run_command("virsh domstats #{libvirt_domain}")
       expect(result).not_to be_success

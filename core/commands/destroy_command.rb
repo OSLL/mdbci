@@ -107,14 +107,30 @@ HELP
   # @param configuration [Configuration] configuration to use.
   # @param node [String] node name to destroy.
   def destroy_libvirt_domain(configuration, node)
-
+    domain_name = "#{configuration.name}_#{node}".gsub(/[^-a-z0-9_\.]/i, '')
+    result = run_command_and_log("virsh domstats #{domain_name}")
+    if !result[:value].success?
+      @ui.info "Libvirt domain #{domain_name} has been destroyed, doing nothing."
+      return
+    end
+    begin
+      check_command("virsh destroy #{domain_name}", "Unable to destroy domain #{domain_name}")
+      result = check_command("virsh snapshot-list #{domain_name} --tree", "Unable to get list of snapshots for #{domain_name}")
+      result[:output].split('\n').each do |snapshot|
+        next if snapshot.chomp.empty?
+        check_command("virsh snapshot-delete #{domain_name} #{snapshot}", "Unable to delete snapshot #{snapshot} for #{domain_name} domain")
+      end
+      check_command("virsh undefine #{domain_name}", "Unable to undefine domain #{domain_name}")
+    rescue RuntimeError => error
+      @ui.error error.message
+    end
   end
 
   def execute
     configuration, node = setup_command
     stop_machines(configuration, node)
     if node.empty?
-      configuration.node_names each do |node_name|
+      configuration.node_names.each do |node_name|
         destroy_machine(configuration, node_name)
       end
       remove_files(configuration, @env.keep_template)

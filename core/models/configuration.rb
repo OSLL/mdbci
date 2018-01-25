@@ -67,6 +67,11 @@ class Configuration
     @provider == 'aws' && @aws_keypair_name != ''
   end
 
+  # Get the name of the configuration we are working with
+  def name
+    File.basename(@path)
+  end
+
   private
 
   # Read the aws key pair name from the corresponding file.
