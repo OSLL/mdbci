@@ -97,6 +97,8 @@ HELP
     case configuration.provider
     when 'libvirt'
       destroy_libvirt_domain(configuration, node)
+    when 'virtualbox'
+      destroy_virtualbox_machine(configuration, node)
     else
       @ui.error("Unknown provider #{configuration.provider}. Can not manually destroy virtual machines.")
     end
@@ -121,6 +123,27 @@ HELP
         check_command("virsh snapshot-delete #{domain_name} #{snapshot}", "Unable to delete snapshot #{snapshot} for #{domain_name} domain")
       end
       check_command("virsh undefine #{domain_name}", "Unable to undefine domain #{domain_name}")
+    rescue RuntimeError => error
+      @ui.error error.message
+    end
+  end
+
+  # Destroy the virtualbox virtual machine.
+  #
+  # @param configuration [Configuration] configuration to user.
+  # @param node [String] name of node to destroy.
+  def destroy_virtualbox_machine(configuration, node)
+    vbox_name = "#{configuration.name}_node"
+    result = run_command_and_log("VBoxManage showvminfo #{vbox_name}")
+    if !result[:value].success?
+      @ui.info "VirtualBox machine #{vbox_name} has been destroyed, doing notthing"
+      return
+    end
+    begin
+      check_command("VBoxManage controlvm #{vbox_name} poweroff",
+                   "Unable to shutdown #{vbox_name} machine.")
+      check_command("VBoxManage unregistervm #{vbox_name} -delete",
+                   "Unable to delete #{vbox_name} machine.")
     rescue RuntimeError => error
       @ui.error error.message
     end

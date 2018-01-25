@@ -1,0 +1,6 @@
+{
+  "node": {
+    "hostname": "testnode",
+    "box": "centos_6_vbox"
+  }
+}

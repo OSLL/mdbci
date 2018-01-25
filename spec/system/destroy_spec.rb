@@ -98,4 +98,18 @@ describe 'destroy command', :system do
       expect(result).not_to be_success
     end
   end
+
+  context 'when vagrant was unable to destroy VirtualBox machine' do
+    it 'should destroy it manually' do
+      template = 'centos_6_vbox_plain'
+      config = mdbci_create_configuration(@test_dir, template)
+      mdbci_check_command("up #{config}")
+      FileUtils.rm_f("#{config}/Vagrantfile")
+      FileUtils.touch("#{config}/Vagrantfile")
+      mdbci_check_command("destroy #{config}")
+      vbox_name = "#{template}_node"
+      result = run_command("VBoxManage showvminfo #{vbox_name}")
+      expect(result).not_to be_success
+    end
+  end
 end
