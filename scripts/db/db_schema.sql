@@ -1,6 +1,3 @@
-CREATE DATABASE IF NOT EXISTS test_results_db;
-USE test_results_db;
-
 CREATE TABLE test_run (
   id INT AUTO_INCREMENT,
   jenkins_id INT,
@@ -23,3 +20,8 @@ CREATE TABLE results (
   result INT,
   FOREIGN KEY (id) REFERENCES test_run(id)
 );
+
+CREATE TABLE db_metadata (
+  version INT
+);
+INSERT INTO db_metadata (version) VALUES (1);
