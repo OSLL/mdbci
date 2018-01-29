@@ -16,6 +16,7 @@ require_relative 'commands/up_command'
 require_relative 'commands/snapshot_command'
 require_relative 'commands/destroy_command'
 require_relative 'commands/generate_command'
+require_relative 'commands/help_command'
 require_relative 'constants'
 
 class Session
@@ -494,6 +495,9 @@ EOF
       exit_code = destroy.execute
     when 'generate'
       exit_code = generate(ARGV.shift)
+    when 'help'
+      command = HelpCommand.new(ARGV, self, $out)
+      exit_code = command.execute
     when 'install_product'
       exit_code = NodeProduct.installProduct(ARGV.shift)
     when 'public_keys'
@@ -518,7 +522,8 @@ EOF
       exit_code = validate_template
     else
       $out.error 'Unknown mdbci command. Please look help!'
-      Help.display
+      command = HelpCommand.new(ARGV, self, $out)
+      command.execute
     end
     return exit_code
   end
