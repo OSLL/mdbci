@@ -11,7 +11,7 @@ class DestroyCommand < BaseCommand
   include ShellCommands
 
   def self.synopsis
-    'Destroy configuration with all artefacts or a single node'
+    'Destroy configuration with all artefacts or a single node.'
   end
 
   # Method checks the parameters that were passed to the application.

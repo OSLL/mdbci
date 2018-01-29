@@ -10,7 +10,7 @@ class UpCommand < BaseCommand
   include ShellCommands
 
   def self.synopsis
-    'Setup environment as specified in the configuration'
+    'Setup environment as specified in the configuration.'
   end
 
   VAGRANT_NO_PARALLEL = '--no-parallel'

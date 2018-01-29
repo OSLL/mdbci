@@ -3,7 +3,6 @@
 
 require 'getoptlong'
 
-require_relative 'core/help'
 require_relative 'core/session'
 require_relative 'core/node_product'
 require_relative 'core/out'
@@ -16,7 +15,6 @@ opts = GetoptLong.new(
   ['--boxes', '-b', GetoptLong::REQUIRED_ARGUMENT],
   ['--command', '-c', GetoptLong::REQUIRED_ARGUMENT],
   ['--field', '-f', GetoptLong::REQUIRED_ARGUMENT],
-  ['--help', '-h', GetoptLong::NO_ARGUMENT],
   ['--ipv6', GetoptLong::NO_ARGUMENT],
   ['--key', '-k', GetoptLong::REQUIRED_ARGUMENT],
   ['--keep-template', GetoptLong::NO_ARGUMENT],
@@ -67,10 +65,6 @@ begin
 
     when '--field'
       session.field = arg unless arg.empty?
-
-    when '--help'
-      Help.display
-      exit
 
     when '--override'
       session.isOverride = true

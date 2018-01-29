@@ -16,6 +16,7 @@ require_relative 'commands/up_command'
 require_relative 'commands/snapshot_command'
 require_relative 'commands/destroy_command'
 require_relative 'commands/generate_command'
+require_relative 'commands/help_command'
 require_relative 'constants'
 
 class Session
@@ -494,6 +495,9 @@ EOF
       exit_code = destroy.execute
     when 'generate'
       exit_code = generate(ARGV.shift)
+    when 'help'
+      command = HelpCommand.new(ARGV, self, $out)
+      exit_code = command.execute
     when 'install_product'
       exit_code = NodeProduct.installProduct(ARGV.shift)
     when 'public_keys'
@@ -512,12 +516,14 @@ EOF
     when 'sudo'
       exit_code = sudo(ARGV.shift)
     when 'up'
-      exit_code = up(ARGV.shift)
+      command = UpCommand.new([ARGV.shift], self, $out)
+      exit_code = command.execute
     when 'validate_template'
       exit_code = validate_template
     else
       $out.error 'Unknown mdbci command. Please look help!'
-      Help.display
+      command = HelpCommand.new(ARGV, self, $out)
+      command.execute
     end
     return exit_code
   end
@@ -591,12 +597,6 @@ EOF
     end
 
     return 0
-  end
-
-  # Deploy configurations
-  def up(args)
-    command = UpCommand.new([args], self, $out)
-    command.execute
   end
 
   # copy ssh keys to config/node

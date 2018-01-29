@@ -56,7 +56,7 @@ class SnapshotCommand < BaseCommand
   attr_accessor :snapshot_name
 
   def self.synopsis
-    'Manage snapshots of configurations and nodes'
+    'Manage snapshots of configurations and nodes.'
   end
 
   # Parse all arguments and setup the command variables
