@@ -512,7 +512,8 @@ EOF
     when 'sudo'
       exit_code = sudo(ARGV.shift)
     when 'up'
-      exit_code = up(ARGV.shift)
+      command = UpCommand.new([ARGV.shift], self, $out)
+      exit_code = command.execute
     when 'validate_template'
       exit_code = validate_template
     else
@@ -591,12 +592,6 @@ EOF
     end
 
     return 0
-  end
-
-  # Deploy configurations
-  def up(args)
-    command = UpCommand.new([args], self, $out)
-    command.execute
   end
 
   # copy ssh keys to config/node
