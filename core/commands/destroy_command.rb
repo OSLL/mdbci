@@ -11,7 +11,20 @@ class DestroyCommand < BaseCommand
   include ShellCommands
 
   def self.synopsis
-    'Destroy configuration with all artefacts or a node'
+    'Destroy configuration with all artefacts or a single node'
+  end
+
+  # Method checks the parameters that were passed to the application.
+  #
+  # @return [Boolean] whether parameters are good or not.
+  def check_parameters
+    if @args.empty? || @args.first.nil?
+      @ui.error 'Please specify path to the mdbci configuration or configuration/node as a parameter.'
+      show_help
+      false
+    else
+      true
+    end
   end
 
   # Method checks that all required parameters are passed to the command.
@@ -20,10 +33,6 @@ class DestroyCommand < BaseCommand
   # @raise [ArgumentError] if parameters are not valid.
   # @return [Configuration, String] parsed configuration.
   def setup_command
-    if @args.empty? || @args.first.nil?
-      show_help
-      raise ArgumentError, 'Please specify path to the mdbci configuration on configuration/node as a parameter.'
-    end
     Configuration.parse_spec(@args.first)
   end
 
@@ -44,6 +53,9 @@ destroy command from deleting the template file:
   mdbci destroy configuration --keep_template
 
 The command also deletes AWS key pair for corresponding configurations.
+
+After running the vagrant destroy this command also deletes the
+libvirt and VirtualBox boxes using low-level commands.
 HELP
     @ui.out(info)
   end
@@ -140,6 +152,7 @@ HELP
   end
 
   def execute
+    return ARGUMENT_ERROR_RESULT unless check_parameters
     configuration, node = setup_command
     stop_machines(configuration, node)
     if node.empty?
