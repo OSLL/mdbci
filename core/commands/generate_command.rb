@@ -13,6 +13,10 @@ require_relative '../models/configuration.rb'
 # Command generates
 class GenerateCommand < BaseCommand
 
+  def self.synopsis
+    'Generate a configuration based on the template.'
+  end
+
   def self.quote(string)
     return '"'+string+'"'
   end
