@@ -139,7 +139,7 @@ HELP
   # @param configuration [Configuration] configuration to user.
   # @param node [String] name of node to destroy.
   def destroy_virtualbox_machine(configuration, node)
-    vbox_name = "#{configuration.name}_node"
+    vbox_name = "#{configuration.name}_#{node}"
     result = run_command_and_log("VBoxManage showvminfo #{vbox_name}")
     if !result[:value].success?
       @ui.info "VirtualBox machine #{vbox_name} has been destroyed, doing notthing"
