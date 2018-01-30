@@ -85,7 +85,7 @@ begin
       session.productVersion = arg unless arg.empty?
 
     when '--key'
-      session.keyFile = arg unless arg.empty?
+      session.keyFile = File.absolute_path(arg) unless arg.empty?
 
     when '--keep-template'
       session.keep_template = true

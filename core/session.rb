@@ -619,7 +619,7 @@ EOF
           raise "Box empty in node: #{node}" unless !box.empty?
           mdbci_params = $session.boxes.getBox(box)
           #
-          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read($current_dir.to_s+'/'+@keyFile.to_s) }
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(@keyFile) }
           # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
           command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
           cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + $mdbci_exec_dir.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
@@ -642,7 +642,7 @@ EOF
         if !box.empty?
           mdbci_params = $session.boxes.getBox(box)
           #
-          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read($current_dir.to_s+'/'+@keyFile.to_s) }
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(@keyFile) }
           # add to the end of the authorized_keys file in ~/.ssh directory
           command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
           cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + $mdbci_exec_dir.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
@@ -673,7 +673,7 @@ EOF
 
       if args[1].nil? # No node argument, copy keys to all nodes
         network.nodes.each do |node|
-          keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!") { File.read("#{$current_dir.to_s}/#{@keyFile.to_s}") }
+          keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!") { File.read(@keyFile) }
           # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
           cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
           $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
@@ -690,7 +690,7 @@ EOF
         end
 
         #
-        keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!") { File.read("#{$current_dir.to_s}/#{@keyFile.to_s}") }
+        keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!") { File.read(@keyFile) }
         # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
         cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
         $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
