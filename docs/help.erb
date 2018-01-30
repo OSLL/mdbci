@@ -74,6 +74,12 @@ mdbci show versions --platform ubuntu
 
 mdbci show box T/node
 
+mdbci show boxinfo --box-name centos_6_vbox --field box
+
+mdbci show boxinfo --box-name suse_13_aws
+
+mdbci show provider suse_13_aws
+
 mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
 
 mdbci ssh --command "cat script.sh" T/node1
