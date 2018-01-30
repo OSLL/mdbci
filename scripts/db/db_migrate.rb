@@ -1,12 +1,25 @@
+#!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'mysql2'
+if ARGV.length != 2
+  puts <<-EOF
+Usage:
+  db_migrate USER PASSWORD
+  
+  USER: The database username.
+  PASSWORD: The database password.
+  EOF
+  exit 0
+end
+
+USER = ARGV.shift
+PASSWORD = ARGV.shift
 
 HOST = 'localhost'
 PORT = '3306'
-USER = 'test_bot'
-PASSWORD = 'pass'
 DB_NAME = 'test_results_db'
+
+require 'mysql2'
 
 begin
   client = Mysql2::Client.new(
