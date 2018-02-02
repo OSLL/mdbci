@@ -2,3 +2,5 @@
 *.pem
 aws-config.yml
 .kitchen
+*~
+#*#
