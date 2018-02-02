@@ -7,9 +7,9 @@
     "memory_size" : "1024",
     "product" : {
       "name": "mariadb",
-      "version": "10.0",
+      "version": "10.2",
       "cnf_template" : "server1.cnf",
-      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+      "cnf_template_path": "~/MaxScale/maxscale-system-test/mdbci/cnf"
     }
 
   },
@@ -21,9 +21,9 @@
     "memory_size" : "1024",
     "product" : {
       "name": "mariadb",
-      "version": "10.0",
+      "version": "10.2",
       "cnf_template" : "server2.cnf",
-      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+      "cnf_template_path": "~/MaxScale/maxscale-system-test/mdbci/cnf"
     }
   },
 
@@ -34,9 +34,9 @@
     "memory_size" : "1024",
     "product" : {
       "name": "mariadb",
-      "version": "10.0",
+      "version": "10.2",
       "cnf_template" : "server3.cnf",
-      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+      "cnf_template_path": "~/MaxScale/maxscale-system-test/mdbci/cnf"
     }
   },
 
@@ -47,9 +47,9 @@
     "memory_size" : "1024",
     "product" : {
       "name": "mariadb",
-      "version": "10.0",
+      "version": "10.2",
       "cnf_template" : "server4.cnf",
-      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+      "cnf_template_path": "~/MaxScale/maxscale-system-test/mdbci/cnf"
     }
   },
 
@@ -59,10 +59,10 @@
     "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
-      "name": "galera",
-      "version": "5.5",
+      "name": "mariadb",
+      "version": "10.2",
       "cnf_template" : "galera_server1.cnf",
-      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+      "cnf_template_path": "~/MaxScale/maxscale-system-test/mdbci/cnf"
     }
   },
 
@@ -72,10 +72,10 @@
     "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
-      "name": "galera",
-      "version": "5.5",
+      "name": "mariadb",
+      "version": "10.2",
       "cnf_template" : "galera_server2.cnf",
-      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+      "cnf_template_path": "~/MaxScale/maxscale-system-test/mdbci/cnf"
     }
   },
 
@@ -85,10 +85,10 @@
     "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
-      "name": "galera",
-      "version": "5.5",
+      "name": "mariadb",
+      "version": "10.2",
       "cnf_template" : "galera_server3.cnf",
-      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+      "cnf_template_path": "~/MaxScale/maxscale-system-test/mdbci/cnf"
     }
   },
 
@@ -98,10 +98,10 @@
     "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
-      "name": "galera",
-      "version": "5.5",
+      "name": "mariadb",
+      "version": "10.2",
       "cnf_template" : "galera_server4.cnf",
-      "cnf_template_path": "~/build-scripts/test-setup-scripts/cnf"
+      "cnf_template_path": "~/MaxScale/maxscale-system-test/mdbci/cnf"
     }
   },
 
