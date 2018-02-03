@@ -59,7 +59,7 @@
     "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
-      "name": "mariadb",
+      "name": "galera",
       "version": "10.2",
       "cnf_template" : "galera_server1.cnf",
       "cnf_template_path": "~/MaxScale/maxscale-system-test/mdbci/cnf"
@@ -72,7 +72,7 @@
     "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
-      "name": "mariadb",
+      "name": "galera",
       "version": "10.2",
       "cnf_template" : "galera_server2.cnf",
       "cnf_template_path": "~/MaxScale/maxscale-system-test/mdbci/cnf"
@@ -85,7 +85,7 @@
     "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
-      "name": "mariadb",
+      "name": "galera",
       "version": "10.2",
       "cnf_template" : "galera_server3.cnf",
       "cnf_template_path": "~/MaxScale/maxscale-system-test/mdbci/cnf"
@@ -98,7 +98,7 @@
     "box" : "centos_7_libvirt",
     "memory_size" : "1024",
     "product" : {
-      "name": "mariadb",
+      "name": "galera",
       "version": "10.2",
       "cnf_template" : "galera_server4.cnf",
       "cnf_template_path": "~/MaxScale/maxscale-system-test/mdbci/cnf"
