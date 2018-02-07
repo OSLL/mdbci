@@ -11,6 +11,7 @@ CREATE TABLE test_run (
   job_name VARCHAR(256),
   cmake_flags TEXT,
   maxscale_source VARCHAR(256) DEFAULT "NOT FOUND",
+  logs_dir VARCHAR(256) DEFAULT NULL,
   PRIMARY KEY(id)
 );
 
@@ -24,4 +25,4 @@ CREATE TABLE results (
 CREATE TABLE db_metadata (
   version INT
 );
-INSERT INTO db_metadata (version) VALUES (1);
+INSERT INTO db_metadata (version) VALUES (2);
