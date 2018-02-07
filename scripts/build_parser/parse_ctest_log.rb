@@ -75,6 +75,9 @@ MAXSCALE_SOURCE_MR = "maxscale_source"
 CMAKE_FLAGS_HR = "CMake flags"
 CMAKE_FLAGS_MR = "cmake_flags"
 
+LOGS_DIR_HR = "Logs dir"
+LOGS_DIR_MR = "logs_dir"
+
 MAXSCALE_SYSTEM_TEST_COMMIT_HR = "MaxScale system test commit"
 MAXSCALE_SYSTEM_TEST_COMMIT_MR = "maxscale_system_test_commit"
 
@@ -154,6 +157,7 @@ class CTestParser
     @maxscale_commit = nil
     @cmake_flags = nil
     @maxscale_source = nil
+    @logs_dir = nil
     @all_ctest_indexes = nil
     @failed_ctest_indexes = nil
     @all_ctest_arguments = nil
@@ -170,6 +174,7 @@ class CTestParser
     maxscale_commit_regex = /MaxScale\s+.*\d+\.*\d*\.*\d*\s+-\s+(.+)/
     cmake_flags_regex = /CMake flags:\s+(.+)/
     maxscale_source_regex = /Source:\s+(.+)/
+    logs_dir_regex = /^Logs go to \/home\/vagrant\/LOGS\/(.+)$/
     maxscale_version_start_regex = /.*Maxscale_full_version_start:.*/
     maxscale_version_end_regex = /.*Maxscale_full_version_end.*/
     ctest_start_line = 0;
@@ -193,6 +198,9 @@ class CTestParser
       end
       if line =~ maxscale_source_regex and @maxscale_source == nil
         @maxscale_source = line.match(maxscale_source_regex).captures[0].strip
+      end
+      if line =~ logs_dir_regex and @logs_dir == nil
+        @logs_dir = line.match(logs_dir_regex).captures[0].strip
       end
       if line =~ ctest_first_line_regex
         @ctest_executed = true
@@ -332,8 +340,10 @@ class CTestParser
     maxscale_commit = @maxscale_commit ? @maxscale_commit : NOT_FOUND
     maxscale_source = @maxscale_source ? @maxscale_source : NOT_FOUND
     cmake_flags = @cmake_flags ? @cmake_flags : NOT_FOUND
+    logs_dir = @logs_dir ? @logs_dir : NOT_FOUND
     hr_tests.push "#{MAXSCALE_COMMIT_HR}: #{maxscale_commit}"
     hr_tests.push "#{MAXSCALE_SOURCE_HR}: #{maxscale_source}"
+    hr_tests.push "#{LOGS_DIR_HR}: #{logs_dir}"
     hr_tests.push "#{CMAKE_FLAGS_HR}: #{cmake_flags}"
     hr_tests.push "#{MAXSCALE_SYSTEM_TEST_COMMIT_HR}: #{get_test_code_commit}"
     hr_tests = hr_tests + generate_run_test_build_parameters_hr
@@ -350,9 +360,11 @@ class CTestParser
     maxscale_commit = @maxscale_commit ? @maxscale_commit : NOT_FOUND
     maxscale_source = @maxscale_source ? @maxscale_source : NOT_FOUND
     cmake_flags = @cmake_flags ? @cmake_flags : NOT_FOUND
+    logs_dir = @logs_dir ? @logs_dir : NOT_FOUND
     parsed_ctest_data = {MAXSCALE_COMMIT_MR => maxscale_commit,
                          CMAKE_FLAGS_MR => cmake_flags,
-                         MAXSCALE_SOURCE_MR => maxscale_source}.merge(parsed_ctest_data)
+                         MAXSCALE_SOURCE_MR => maxscale_source,
+                         LOGS_DIR_MR => logs_dir}.merge(parsed_ctest_data)
     parsed_ctest_data = {CTEST_ARGUMENTS_MR => generate_ctest_arguments}.merge(parsed_ctest_data)
     parsed_ctest_data = {ERROR => CTEST_NOT_EXECUTED_ERROR}.merge(parsed_ctest_data) unless @ctest_executed
     return JSON.pretty_generate parsed_ctest_data

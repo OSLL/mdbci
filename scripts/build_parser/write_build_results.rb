@@ -50,15 +50,16 @@ class BuildResultsWriter
   end
 
   def write_test_run_table(jenkins_id, start_time, target, box, \
-    product, mariadb_version, test_code_commit_id, maxscale_commit_id, job_name, cmake_flags, maxscale_source)
+    product, mariadb_version, test_code_commit_id, maxscale_commit_id, job_name, cmake_flags, maxscale_source,
+    logs_dir)
 
     test_runs_query = "INSERT INTO test_run (jenkins_id, "\
     "start_time, target, box, product, mariadb_version, "\
     "test_code_commit_id, maxscale_commit_id, job_name, "\
-    "cmake_flags, maxscale_source) "\
+    "cmake_flags, maxscale_source, logs_dir) "\
     "VALUES ('#{jenkins_id}', '#{start_time}', '#{target}', '#{box}', '#{product}', "\
     "'#{mariadb_version}', '#{test_code_commit_id}', '#{maxscale_commit_id}', '#{job_name}', "\
-    "'#{cmake_flags}', '#{maxscale_source}')"
+    "'#{cmake_flags}', '#{maxscale_source}', '#{logs_dir}')"
 
     @client.query(test_runs_query)
     id = @client.last_id
@@ -85,6 +86,7 @@ class BuildResultsWriter
     job_name = results['job_name']
     cmake_flags = results['cmake_flags']
     maxscale_source = results['maxscale_source']
+    logs_dir = results['logs_dir']
     tests = Array.new
     if results.has_key? 'tests'
       results['tests'].each do |test|
@@ -95,7 +97,7 @@ class BuildResultsWriter
     # writing testrun results to db
     id = write_test_run_table(jenkins_id, start_time, target, box, \
     product, mariadb_version, test_code_commit_id, maxscale_commit_id, job_name, \
-    cmake_flags, maxscale_source)
+    cmake_flags, maxscale_source, logs_dir)
 
     # writing tests results to db
     unless results.has_key? ERROR
