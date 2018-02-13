@@ -1,0 +1,19 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    faraday (0.14.0)
+      multipart-post (>= 1.2, < 3)
+    json (2.1.0)
+    multipart-post (2.0.0)
+    mysql2 (0.4.10)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  faraday
+  json
+  mysql2
+
+BUNDLED WITH
+   1.14.3
