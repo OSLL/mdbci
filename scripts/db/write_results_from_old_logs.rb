@@ -112,6 +112,6 @@ Dir.glob("#{LOGS_DIR}/run_test*").select do |fn|
       next
     end
 
-    p "Update TestRun with jenkins_id='#{jenkins_id}'"
+    puts "Update TestRun with jenkins_id=#{jenkins_id}"
   end
 end
