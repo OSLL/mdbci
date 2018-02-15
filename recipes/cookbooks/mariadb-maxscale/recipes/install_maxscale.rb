@@ -101,6 +101,22 @@ when "debian", "ubuntu", "rhel", "fedora", "centos", "suse", "opensuse"
   end
 end # iptables rules
 
+# Install bind-utils/dnsutils for nslookup
+case node[:platform_family]
+when "rhel", "centos"
+  execute "install bind-utils" do
+    command "yum -y install bind-utils"
+  end
+when "debian", "ubuntu"
+  execute "install dnsutils" do
+    command "DEBIAN_FRONTEND=noninteractive apt-get -y install dnsutils"
+  end
+when "suse", "opensuse"
+  execute "install bind-utils" do
+    command "zypper install -y bind-utils"
+  end
+end
+
 # Install packages
 case node[:platform_family]
 when "suse"
