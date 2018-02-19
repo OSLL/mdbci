@@ -15,7 +15,7 @@ end
 
 CONFIG_FILENAME = ARGV.shift
 
-config = Config.new(CONFIG_FILENAME)
+config = Config.new(CONFIG_FILENAME, %i[database report_portal])
 USER = config.user
 PASSWORD = config.password
 PROJECT_NAME = config.project_name

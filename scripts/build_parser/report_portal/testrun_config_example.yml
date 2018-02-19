@@ -1,0 +1,6 @@
+report_portal:
+  url: http://localhost:8080
+  project_name: testresults_2
+  auth_token: "d9461d54-23a4-4099-ad92-24a4e4eee1d5" # Get it from http://localhost:8080/ui/?#user-profile
+  repository_url: https://github.com/mariadb-corporation/MaxScale
+  logs_dir_url: http://max-tst-01.mariadb.com/LOGS

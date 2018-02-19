@@ -6,10 +6,12 @@ class Config
 
   require 'yaml'
 
-  def initialize(config_file_name)
+  def initialize(config_file_name, sections = %i[database report_portal])
     check_config_file(config_file_name)
 
     config = YAML.safe_load(File.read(config_file_name))
+
+    @sections = sections
 
     database_root, report_portal_root = check_config_content(config)
     init_fields(database_root, report_portal_root)
@@ -38,40 +40,32 @@ class Config
   end
 
   def check_config_content(config)
-    database = config['database']
-    rp = config['report_portal']
+    database = @sections.include?(:database) ? config['database'] : {}
+    report_portal = @sections.include?(:report_portal) ? config['report_portal'] : {}
 
-    if database.nil? || rp.nil? ||
-       database['db_name'].nil? || database['user'].nil? ||
-       database['password'].nil? || database['test_run_count_to_import'].nil? ||
-       rp['project_name'].nil? || rp['auth_token'].nil? ||
-       rp['repository_url'].nil? || rp['logs_dir_url'].nil? || rp['url'].nil?
-
+    if check_database_section(database) || check_report_portal_section(report_portal)
       puts "Error: incorrect config.yml file\n"
       print_config_example
       exit 1
     end
-    return database, rp
+
+    return database, report_portal
+  end
+
+  def check_database_section(database)
+    return false unless @sections.include?(:database)
+    database['db_name'].nil? || database['user'].nil? ||
+      database['password'].nil? || database['test_run_count_to_import'].nil?
+  end
+
+  def check_report_portal_section(report_portal)
+    return false unless @sections.include?(:report_portal)
+    report_portal['project_name'].nil? || report_portal['auth_token'].nil? ||
+      report_portal['repository_url'].nil? || report_portal['logs_dir_url'].nil? ||
+      report_portal['url'].nil?
   end
 
   def print_config_example
-    puts <<-EOF
-Please, create config.yml file with the following content:
-
-------------
-database:
-    db_name: <db_name>
-    user: <user_name>
-    password: <password>
-    test_run_count_to_import: 20
-
-report_portal:
-    url: http://localhost:8080
-    project_name: <project_name>
-    auth_token: "8ee428b5-dcc5-4fba-8e4f-462863dbba15" # Get it from http://localhost:8080/ui/?#user-profile
-    repository_url: https://github.com/mariadb-corporation/MaxScale
-    logs_dir_url: http://max-tst-01.mariadb.com/LOGS/
-------------
-    EOF
+    puts 'Please, read the instructions about config-file in the README'
   end
 end

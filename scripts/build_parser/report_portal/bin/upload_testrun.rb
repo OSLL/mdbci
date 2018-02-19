@@ -19,7 +19,7 @@ INPUT_FILE_NAME = ARGV.shift
 CONFIG_FILENAME = ARGV.shift
 
 # ReportPortal options
-config = Config.new(CONFIG_FILENAME)
+config = Config.new(CONFIG_FILENAME, %i[report_portal])
 
 PROJECT_NAME = config.project_name
 AUTH_TOKEN = config.auth_token
