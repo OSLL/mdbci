@@ -50,11 +50,11 @@ class BuildResultsUploader
     launch = upload_launch(test_run)
 
     if results.key?('tests') && !results.key?(ERROR)
-      upload_tests(results['tests'], test_run, launch)
+      max_test_time = upload_tests(results['tests'], test_run, launch)
     end
 
     @report_portal.finish_launch(launch,
-                                 MaxScaleReportPortal.end_time(test_run))
+                                 MaxScaleReportPortal.end_time(test_run, max_test_time))
   end
 
   private
@@ -70,26 +70,32 @@ class BuildResultsUploader
   end
 
   def upload_tests(tests, test_run, launch)
+    max_test_time = 0.0
+
     tests.each do |test|
       test_result = test_result_from_test(test)
       @report_portal.add_root_test_item(
         launch,
         test_result['test'],
         MaxScaleReportPortal.description(REPOSITORY_URL, LOGS_DIR_URL,
-                                         test_run, test_result['test']),
+                                         test_run, test_result),
         [],
         MaxScaleReportPortal.start_time(test_run),
         'TEST',
         MaxScaleReportPortal.test_tags(test_run, test_result),
-        MaxScaleReportPortal.test_result_status(test_result)
+        MaxScaleReportPortal.test_result_status(test_result),
+        MaxScaleReportPortal.end_time(test_run, test['test_time'])
       )
+      max_test_time = test['test_time'].to_f if test['test_time'].to_f > max_test_time
     end
+    max_test_time
   end
 
   def test_result_from_test(test)
     {
       'test' => test['test_name'],
-      'result' => test['test_success'] == 'Failed' ? 1 : 0
+      'result' => test['test_success'] == 'Failed' ? 1 : 0,
+      'test_time' => test['test_time']
     }
   end
 

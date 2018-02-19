@@ -4,7 +4,7 @@
 # Class for log-file parsing
 class LogParser
   attr_reader :cmake_flags, :maxscale_source, :target, :mariadb_version, :box,
-              :logs_dir
+              :logs_dir, :test_results
 
   def parse_ctest_log(log)
     cmake_flags_regex = /CMake flags:\s+(.+)/
@@ -39,6 +39,15 @@ class LogParser
     end
   end
 
+  def parse_test_results(log)
+    test_regex = /(\d+)\/(\d+)\s+Test\s+#(\d+):[\s]+([^\s]+)\s+[\.\*]+([^\d]+)([\d\.]+)/
+
+    @test_results = []
+    log.each_line do |line|
+      @test_results.push(extract_test_result_from_str(line, test_regex)) if line =~ test_regex
+    end
+  end
+
   private
 
   def extract_value_from_str(line, regex)
@@ -47,6 +56,14 @@ class LogParser
     else
       nil
     end
+  end
+
+  def extract_test_result_from_str(line, regex)
+    captures = line.match(regex).captures
+    {
+      'test' => captures[3].strip,
+      'test_time' => captures[5].strip
+    }
   end
 end
 
@@ -95,6 +112,16 @@ Dir.glob("#{LOGS_DIR}/run_test*").select do |fn|
     parser = LogParser.new
     parser.parse_ctest_log(log)
     jenkins_id = build_log.match(/build_log_(\d+)/).captures[0].strip
+
+    # Add information about test_time
+    test_run_row = client.query("SELECT id FROM test_run WHERE jenkins_id='#{jenkins_id}'").first
+    unless test_run_row.nil?
+      test_run_id = test_run_row['id']
+      parser.parse_test_results(log)
+      parser.test_results.each do |test_result|
+        client.query("UPDATE results SET test_time=#{test_result['test_time']} WHERE id=#{test_run_id} AND test='#{test_result['test']}'")
+      end
+    end
 
     # Add information about logs_dir
     client.query("UPDATE test_run SET logs_dir='#{parser.logs_dir}' WHERE jenkins_id='#{jenkins_id}'")

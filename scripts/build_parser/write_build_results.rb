@@ -14,6 +14,7 @@ DB_NAME = 'test_results_db'
 
 # parse_ctest_log.rb keys definition
 TEST_NAME = 'test_name'
+TEST_TIME = 'test_time'
 TEST_SUCCESS = 'test_success'
 FAILED = 'Failed'
 
@@ -67,9 +68,9 @@ class BuildResultsWriter
     return id
   end
 
-  def write_results_table(id, test, result)
-    results_query = "INSERT INTO results (id, test, result) VALUES ('#{id}', "\
-      "'#{test}', '#{result}')"
+  def write_results_table(id, test, result, test_time)
+    results_query = "INSERT INTO results (id, test, result, test_time) VALUES ('#{id}', "\
+      "'#{test}', '#{result}', '#{test_time}')"
     @client.query(results_query)
     puts "Performed insert (results): #{results_query}"
   end
@@ -90,7 +91,9 @@ class BuildResultsWriter
     tests = Array.new
     if results.has_key? 'tests'
       results['tests'].each do |test|
-        tests.push({TEST_NAME => test[TEST_NAME], TEST_SUCCESS => test[TEST_SUCCESS]})
+        tests.push({ TEST_NAME => test[TEST_NAME],
+                     TEST_SUCCESS => test[TEST_SUCCESS],
+                     TEST_TIME => test[TEST_TIME] })
       end
     end
 
@@ -108,7 +111,8 @@ class BuildResultsWriter
         if test[TEST_SUCCESS] == FAILED
           result = 1
         end
-        write_results_table(id, name, result)
+        test_time = test[TEST_TIME]
+        write_results_table(id, name, result, test_time)
       end
     end
   end

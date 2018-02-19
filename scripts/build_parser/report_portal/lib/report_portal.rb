@@ -162,7 +162,7 @@ class ReportPortal
     )
   end
 
-  def add_root_test_item(launch_id, name, description, params, start_time, type, tags = [], status)
+  def add_root_test_item(launch_id, name, description, params, start_time, type, tags = [], status, end_time)
     test_id = get_test_id(launch_id, name)
     unless test_id.nil?
       update_test(test_id, description, tags)
@@ -187,7 +187,7 @@ class ReportPortal
     make_response(
       :put,
       url,
-      'end_time' => start_time,
+      'end_time' => end_time,
       'status' => status
     )
     item_id

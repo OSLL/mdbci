@@ -47,6 +47,7 @@ client.query('SELECT * '\
     MaxScaleReportPortal.launch_tags(test_run)
   )
 
+  max_test_time = 0.0
   client.query('SELECT * '\
                'FROM results '\
                "WHERE id = #{test_run['id']}").each do |test_result|
@@ -54,16 +55,18 @@ client.query('SELECT * '\
       launch,
       test_result['test'],
       MaxScaleReportPortal.description(REPOSITORY_URL, LOGS_DIR_URL,
-                                       test_run, test_result['test']),
+                                       test_run, test_result),
       [],
       MaxScaleReportPortal.start_time(test_run),
       'TEST',
       MaxScaleReportPortal.test_tags(test_run, test_result),
-      MaxScaleReportPortal.test_result_status(test_result)
+      MaxScaleReportPortal.test_result_status(test_result),
+      MaxScaleReportPortal.end_time(test_run, test_result['test_time'])
     )
+    max_test_time = test_result['test_time'].to_f if test_result['test_time'].to_f > max_test_time
   end
 
-  report_portal.finish_launch(launch, MaxScaleReportPortal.end_time(test_run))
+  report_portal.finish_launch(launch, MaxScaleReportPortal.end_time(test_run, max_test_time))
   total_finish_launches += 1
   puts "Number of TestRun added: #{total_finish_launches}/#{TEST_RUN_COUNT}"
 end

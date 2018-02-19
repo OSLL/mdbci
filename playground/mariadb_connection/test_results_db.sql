@@ -15,6 +15,7 @@ CREATE TABLE test_run (
   cmake_flags TEXT,
   maxscale_source VARCHAR(256) DEFAULT "NOT FOUND",
   logs_dir VARCHAR(256) DEFAULT NULL,
+  test_time FLOAT DEFAULT 0,
   PRIMARY KEY(id)
 );
 

@@ -18,7 +18,9 @@ module MaxScaleReportPortal
     "TestRun ##{test_run['jenkins_id']}"
   end
 
-  def self.description(repository_url, logs_dir_url, test_run, test_name = nil)
+  def self.description(repository_url, logs_dir_url, test_run, test_result = {})
+    test_name = test_result['test']
+    test_time = test_result['test_time']
     "**Target:** #{test_run['target']}\n"\
         "**Box:** #{test_run['box']}\n"\
         "**Product:** #{test_run['product']}\n"\
@@ -28,15 +30,17 @@ module MaxScaleReportPortal
         "**Job name:** #{test_run['job_name']}\n"\
         "**CMake flags:** #{test_run['cmake_flags']}\n"\
         "**MaxScale source:** #{test_run['maxscale_source']}\n"\
-        "**Logs directory:** #{logs_markdown_link(logs_dir_url, test_run['logs_dir'], test_name)}"
+        "**Logs directory:** #{logs_markdown_link(logs_dir_url, test_run['logs_dir'], test_name)}\n"\
+        "#{'**Test time:** ' + test_time.to_s unless test_time.nil?}"
   end
 
   def self.start_time(test_run)
     datetime(test_run['start_time'])
   end
 
-  def self.end_time(test_run)
-    start_time(test_run)
+  def self.end_time(test_run, test_time = 0)
+    test_time = test_time.to_f
+    datetime(test_run['start_time'], Rational(test_time, 86400))
   end
 
   def self.launch_tags(test_run)
@@ -61,10 +65,10 @@ module MaxScaleReportPortal
     launch_tags(test_run)
   end
 
-  def self.datetime(str)
+  def self.datetime(str, offset = 0)
     return DateTime.new(2011, 2, 3.5).strftime('%Y-%m-%dT%H:%M:%SZ') if str.nil?
     begin
-      date_res = DateTime.parse(str.to_s).strftime('%Y-%m-%dT%H:%M:%SZ')
+      date_res = (DateTime.parse(str.to_s) + offset).strftime('%Y-%m-%dT%H:%M:%SZ')
     rescue ArgumentError
       return DateTime.new(2001, 2, 3.5).strftime('%Y-%m-%dT%H:%M:%SZ')
     end
