@@ -1,3 +1,9 @@
+# Report portal publication scripts
+
+These scripts log test run results into the ReportPortal installation. Before using them
+you should required dependencies and create configuration file. The following sections describe
+the usage of all scripts in the `bin` subdirectory.
+
 ## upload_all_testruns.rb
 
 Loads information about all test runs.
