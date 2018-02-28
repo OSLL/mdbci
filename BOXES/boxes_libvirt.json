@@ -32,7 +32,7 @@
   },
   "ubuntu_xenial_libvirt": {
     "provider": "libvirt",
-    "box": "tnmt/xenial-alpha1",
+    "box": "generic/ubuntu1604",
     "ssh_pty" : "false",
     "platform": "ubuntu",
     "platform_version": "xenial"
