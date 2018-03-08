@@ -125,7 +125,8 @@
     "user": "ec2-user",
     "default_instance_type": "m1.medium",
     "platform": "rhel",
-    "platform_version": "6"
+    "platform_version": "6",
+    "extra_vagrant_output": "true"
   },
   "rhel_7_aws" : {
     "provider": "aws",

@@ -23,14 +23,13 @@ class UpCommand < BaseCommand
     if @args.empty? || @args.first.nil?
       raise ArgumentError, 'You must specify path to the mdbci configuration as a parameter.'
     end
-    @configuration = @args.first
-
+    @specification = @args.first
     @attempts = if @env.attempts.nil?
                   5
                 else
                   @env.attempts.to_i
                 end
-    self
+    @box_manager = @env.boxes
   end
 
   # Method parses up command configuration and extracts path to the
@@ -38,11 +37,11 @@ class UpCommand < BaseCommand
   #
   # @raise [ArgumentError] if path to the configuration is invalid
   def parse_configuration
-    config, node = Configuration.parse_spec(@configuration)
+    config, node = Configuration.parse_spec(@specification)
     if node.empty?
-      @ui.info "Node #{node} is specified in #{@configuration}"
+      @ui.info "Node #{node} is specified in #{@specification}"
     else
-      @ui.info "Node is not specified in #{@configuration}"
+      @ui.info "Node is not specified in #{@specification}"
     end
     [config, node]
   end
@@ -62,14 +61,17 @@ class UpCommand < BaseCommand
   # Generate flags based upon the configuration
   #
   # @param provider [String] name of the provider to work with
-  #
+  # @param node_name [String] name of the box to use. May be empty if all boxes should be checked.
   # @return [String] flags that should be passed to Vagrant commands
-  def generate_vagrant_run_flags(provider)
-    if %w[aws docker].include?(provider)
-      VAGRANT_NO_PARALLEL
-    else
-      ''
+  def generate_vagrant_run_flags(provider, node_name = '')
+    flags = []
+    box_names = @config.box_names(node_name)
+    box_names.each do |box_name|
+      box = @box_manager.getBox(box_name)
+      flags.push('--debug') if box.key?('extra_vagrant_output')
     end
+    flags.push(VAGRANT_NO_PARALLEL) if %w[aws docker].include?(provider)
+    flags.uniq.join(' ')
   end
 
   # Check whether node is running or not.
@@ -153,6 +155,20 @@ class UpCommand < BaseCommand
     end
   end
 
+  # Bring up whole configuration or a machine up.
+  #
+  # @param provider [String] name of the provider to use.
+  # @param node [String] node name to bring up. It can be empty if we need to bring
+  # the whole configuration up.
+  # @return [Array<String>] list of node names that should be checked
+  def bring_up_machines(provider, node_name = '')
+    vagrant_flags = generate_vagrant_run_flags(provider)
+    @ui.info "Bringing up #{(node_name.empty? ? 'configuration ' : 'node ')} #{@specification}"
+    command = "vagrant up #{vagrant_flags} --provider=#{provider} #{node_name}"
+    @ui.info "Invoking command #{command}"
+    `#{command}`
+  end
+
   # Destroy and then create specified nodes.
   #
   # @param nodes [Array<String>] list of nodes that should be re-created
@@ -161,8 +177,7 @@ class UpCommand < BaseCommand
     nodes.each do |node|
       @ui.info "Destroying '#{node}' node."
       run_command_and_log("vagrant destroy --force #{node}")
-      @ui.info "Creating '#{node}' node."
-      run_command_and_log("vagrant up #{node} --provider=#{provider}")
+      bring_up_machines(provider, node)
     end
   end
 
@@ -185,10 +200,7 @@ class UpCommand < BaseCommand
     generate_docker_images(config.template, '.') if config.provider == 'docker'
     @ui.info 'Destroying existing nodes.'
     run_command_and_log("vagrant destroy --force #{node}")
-
-    vagrant_flags = generate_vagrant_run_flags(config.provider)
-    @ui.info "Bringing up #{(node.empty? ? 'configuration ' : 'node ')} #{@configuration}"
-    run_command_and_log("vagrant up #{vagrant_flags} --provider=#{config.provider} #{node}")
+    bring_up_machines(config.provider)
     nodes_to_check = if node.empty?
                        config.node_names
                      else
@@ -247,16 +259,16 @@ class UpCommand < BaseCommand
   def execute
     begin
       setup_command
-      config, node = parse_configuration
+      @config, node = parse_configuration
     rescue ArgumentError => error
       @ui.warning error.message
       return ARGUMENT_ERROR_RESULT
     end
-    run_in_directory(config.path) do
-      nodes_to_fix = setup_nodes(config, node)
-      return ERROR_RESULT unless fix_nodes(nodes_to_fix, config.provider)
+    run_in_directory(@config.path) do
+      nodes_to_fix = setup_nodes(@config, node)
+      return ERROR_RESULT unless fix_nodes(nodes_to_fix, @config.provider)
     end
-    generate_config_information(Dir.pwd, config.path, node)
+    generate_config_information(Dir.pwd, @config.path, node)
     SUCCESS_RESULT
   end
 end

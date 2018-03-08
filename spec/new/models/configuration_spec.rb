@@ -153,4 +153,36 @@ describe Configuration do
       end
     end
   end
+
+  describe '#box_names' do
+    context 'when no node name is passed' do
+      it 'should return list of all boxes' do
+        with_fake_config('aws', { 'test' => { 'box' => 'test_one' },
+                                  'info' => { 'box' => 'test_two' } }) do |config_path|
+          config = Configuration.new(config_path)
+          expect(config.box_names).to eq(%w[test_one test_two])
+        end
+      end
+    end
+
+    context 'when nodes have same provider' do
+      it 'should return only one provider name' do
+        with_fake_config('aws', { 'test' => { 'box' => 'test' },
+                                  'info' => { 'box' => 'test' }}) do |config_path|
+          config = Configuration.new(config_path)
+          expect(config.box_names).to eq(['test'])
+        end
+      end
+    end
+
+    context 'when node name is passed' do
+      it 'should return box name for the node' do
+        with_fake_config('aws', { 'test' => { 'box' => 'test_box' },
+                                  'info' => { 'box' => 'info_box' }}) do |config_path|
+          config = Configuration.new(config_path)
+          expect(config.box_names('info')).to eq(['info_box'])
+        end
+      end
+    end
+  end
 end

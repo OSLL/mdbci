@@ -72,6 +72,17 @@ class Configuration
     File.basename(@path)
   end
 
+  # Get the names of the boxes specified for this configuration
+  #
+  # @param node_name [String] name of the node to get box name
+  # @return [Array<String>] unique names of the boxes used in the configuration
+  def box_names(node_name = '')
+    return [@template[node_name]['box']] unless node_name.empty?
+    node_names.map do |name|
+      @template[name]['box']
+    end.uniq
+  end
+
   private
 
   # Read the aws key pair name from the corresponding file.

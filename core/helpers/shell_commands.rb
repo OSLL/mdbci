@@ -8,25 +8,36 @@ module ShellCommands
   #
   # @param command [String] command to run
   # @param options [Hash] options that are passed to popen3 command.
+  # @param env [Hash] environment parameters that are passed to popen3 command.
   # @return [Process::Status] of the run command
-  def run_command_and_log(command, options = {})
+  def run_command_and_log(command, options = {}, env = {})
     @ui.info "Invoking command: #{command}"
-    Open3.popen3(command, options) do |stdin, stdout, stderr, wthr|
+    Open3.popen3(env, command, options) do |stdin, stdout, stderr, wthr|
       stdin.close
-      output = []
-      stdout.each_line do |line|
-        @ui.info line
-        output.push line
-      end
-      errors = []
-      stderr.each_line do |line|
-        @ui.error line
-        errors.push line
+      output = ''
+      errors = ''
+      loop do
+        read, _, _ = IO.select([stdout, stderr])
+        read.each do |stream|
+          line = stream.gets.to_s.strip
+          next if line.empty?
+          if stream == stdout
+            @ui.info(line)
+            output += line
+          elsif stream == stderr
+            @ui.error(line)
+            errors += line
+          else
+            @ui.error(line)
+            errors += line
+          end
+        end
+        break if stdout.eof? && stderr.eof?
       end
       {
         value: wthr.value,
-        output: output.join("\n"),
-        errors: errors.join("\n")
+        output: output,
+        errors: errors
       }
     end
   end
