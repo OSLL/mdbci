@@ -106,6 +106,8 @@ HELP
       destroy_libvirt_domain(configuration, node)
     when 'virtualbox'
       destroy_virtualbox_machine(configuration, node)
+    when 'aws'
+      destroy_aws_machine(configuration, node)
     else
       @ui.error("Unknown provider #{configuration.provider}. Can not manually destroy virtual machines.")
     end
@@ -149,6 +151,30 @@ HELP
                   "Unable to shutdown #{vbox_name} machine.")
     check_command("VBoxManage unregistervm #{vbox_name} -delete",
                   "Unable to delete #{vbox_name} machine.")
+  end
+
+  # Destroy the aws virtual machine.
+  #
+  # @param configuration [Configuration] configuration to user.
+  # @param node [String] name of node to destroy.
+  def destroy_aws_machine(configuration, node)
+    aws_box_name = "#{configuration.name}_#{node}"
+    result = run_command_and_log("vagrant global-status | grep #{configuration.name}")
+    if !result[:value].success?
+      @ui.info "AWS machine #{aws_box_name} has been destroyed, doing notthing"
+      return
+    end
+
+    id_path = "#{configuration.path}/.vagrant/machines/#{node}/aws/id"
+
+    unless (File.file?(id_path))
+      @ui.error "Unable to terminate #{aws_box_name} machine."
+      return
+    end
+
+    aws_instance_id = File.read id_path
+    check_command("aws ec2 terminate-instances --instance-ids #{aws_instance_id} --profile mdbci",
+                  "Unable to terminate #{aws_box_name} machine.")
   end
 
   def execute
