@@ -159,27 +159,26 @@ HELP
   # @param node [String] name of node to destroy.
   def destroy_aws_machine(configuration, node)
     aws_box_name = "#{configuration.name}_#{node}"
-    result = run_command_and_log("vagrant global-status | grep #{configuration.name}")
-    if !result[:value].success?
+
+    if @aws_instance_ids.empty? || @aws_instance_ids[node].nil?
+      @ui.error "Unable to terminate #{aws_box_name} machine. Instance id is not exist."
+      return
+    end
+
+    aws_box_state = get_aws_instance_state_by_id(@aws_instance_ids[node])
+    if aws_box_state.nil? || %w[stopping stopped shutting-down terminated].include?(aws_box_state)
       @ui.info "AWS machine #{aws_box_name} has been destroyed, doing notthing"
       return
     end
 
-    id_path = "#{configuration.path}/.vagrant/machines/#{node}/aws/id"
-
-    unless (File.file?(id_path))
-      @ui.error "Unable to terminate #{aws_box_name} machine."
-      return
-    end
-
-    aws_instance_id = File.read id_path
-    check_command("aws ec2 terminate-instances --instance-ids #{aws_instance_id} --profile mdbci",
+    check_command("aws ec2 terminate-instances --instance-ids #{@aws_instance_ids[node]} --profile mdbci",
                   "Unable to terminate #{aws_box_name} machine.")
   end
 
   def execute
     return ARGUMENT_ERROR_RESULT unless check_parameters
     configuration, node = setup_command
+    remember_aws_instance_id(configuration, node)
     stop_machines(configuration, node)
     if node.empty?
       configuration.node_names.each do |node_name|
@@ -191,5 +190,46 @@ HELP
       destroy_machine(configuration, node)
     end
     SUCCESS_RESULT
+  end
+
+  private
+
+  def remember_aws_instance_id(configuration, node)
+    return if configuration.provider != 'aws'
+
+    @aws_instance_ids = {}
+    if node.empty?
+      configuration.node_names.each do |node_name|
+        @aws_instance_ids[node_name] = get_aws_instance_id_by_node_name(configuration, node_name)
+      end
+    else
+      @aws_instance_ids[node] = get_aws_instance_id_by_node_name(configuration, node)
+    end
+  end
+
+  def get_aws_instance_id_by_node_name(configuration, node_name)
+    aws_instance_id_path = "#{configuration.path}/.vagrant/machines/#{node_name}/aws/id"
+    return nil unless File.file?(aws_instance_id_path)
+    return File.read(aws_instance_id_path)
+  end
+
+  def get_aws_instance_state_by_id(instance_id)
+    return nil if instance_id.nil?
+    instances_description = run_command_and_log('aws ec2 describe-instances --profile mdbci')[:output]
+    instances_array = JSON.parse(instances_description).to_h
+
+    instance = nil
+    instances_array['Reservations'].each do |reservation|
+      reservation['Instances'].each do |current_instance|
+        if current_instance['InstanceId'] == instance_id
+          instance = current_instance
+          break
+        end
+      end
+      break unless instance.nil?
+    end
+
+    return nil if instance.nil?
+    return instance['State']['Name']
   end
 end
