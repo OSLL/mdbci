@@ -90,11 +90,11 @@ class ReportPortal
     JSON.parse(response.body.to_s).to_hash['id']
   end
 
-  def get_launch_id(name)
+  def get_launch_id(id_tag)
     url = "#{@host}/#{@project_name}/launch"
     response = make_get_response(
       url,
-      'filter.eq.name' => name
+      'filter.eq.tags' => id_tag
     )
     launch = JSON.parse(response.body.to_s).to_hash['content'].first
     return nil if launch.nil?
@@ -133,8 +133,8 @@ class ReportPortal
     )
   end
 
-  def start_launch(name, mode, description, start_time, tags = [])
-    launch_id = get_launch_id(name)
+  def start_launch(name, mode, description, start_time, tags = [], id_tag)
+    launch_id = get_launch_id(id_tag)
     unless launch_id.nil?
       update_launch(launch_id, description, tags)
       return launch_id

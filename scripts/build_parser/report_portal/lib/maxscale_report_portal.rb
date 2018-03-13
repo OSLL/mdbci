@@ -14,24 +14,29 @@ module MaxScaleReportPortal
     url
   end
 
-  def self.launch_name(test_run)
-    "TestRun ##{test_run['jenkins_id']}"
+  def self.launch_name(_test_run)
+    'TestRun'
+  end
+
+  def self.jenkins_id_tag(jenkins_id)
+    "jenkins_id:#{jenkins_id}"
   end
 
   def self.description(repository_url, logs_dir_url, test_run, test_result = {})
     test_name = test_result['test']
     test_time = test_result['test_time']
-    "**Target:** #{test_run['target']}\n"\
-        "**Box:** #{test_run['box']}\n"\
-        "**Product:** #{test_run['product']}\n"\
-        "**MariaDB version:** #{test_run['mariadb_version']}\n"\
-        "**MaxScale commit:** #{commit_markdown_link(repository_url, test_run['maxscale_commit_id'])}\n"\
-        "**Test code commit:** #{test_run['test_code_commit_id']}\n"\
-        "**Job name:** #{test_run['job_name']}\n"\
-        "**CMake flags:** #{test_run['cmake_flags']}\n"\
-        "**MaxScale source:** #{test_run['maxscale_source']}\n"\
-        "**Logs directory:** #{logs_markdown_link(logs_dir_url, test_run['logs_dir'], test_name)}\n"\
-        "#{'**Test time:** ' + test_time.to_s unless test_time.nil?}"
+    "**Jenkins id:** #{test_run['jenkins_id']}\n"\
+      "**Target:** #{test_run['target']}\n"\
+      "**Box:** #{test_run['box']}\n"\
+      "**Product:** #{test_run['product']}\n"\
+      "**MariaDB version:** #{test_run['mariadb_version']}\n"\
+      "**MaxScale commit:** #{commit_markdown_link(repository_url, test_run['maxscale_commit_id'])}\n"\
+      "**Test code commit:** #{test_run['test_code_commit_id']}\n"\
+      "**Job name:** #{test_run['job_name']}\n"\
+      "**CMake flags:** #{test_run['cmake_flags']}\n"\
+      "**MaxScale source:** #{test_run['maxscale_source']}\n"\
+      "**Logs directory:** #{logs_markdown_link(logs_dir_url, test_run['logs_dir'], test_name)}\n"\
+      "#{'**Test time:** ' + test_time.to_s unless test_time.nil?}"
   end
 
   def self.start_time(test_run)
@@ -45,6 +50,7 @@ module MaxScaleReportPortal
 
   def self.launch_tags(test_run)
     [
+      jenkins_id_tag(test_run['jenkins_id']),
       test_run['box'],
       test_run['product'],
       "ver:#{test_run['mariadb_version']}",

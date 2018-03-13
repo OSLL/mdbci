@@ -44,7 +44,8 @@ client.query('SELECT * '\
     'DEFAULT',
     MaxScaleReportPortal.description(REPOSITORY_URL, LOGS_DIR_URL, test_run),
     MaxScaleReportPortal.start_time(test_run),
-    MaxScaleReportPortal.launch_tags(test_run)
+    MaxScaleReportPortal.launch_tags(test_run),
+    MaxScaleReportPortal.jenkins_id_tag(test_run['jenkins_id'])
   )
 
   max_test_time = 0.0
