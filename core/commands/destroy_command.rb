@@ -10,6 +10,8 @@ require 'fileutils'
 class DestroyCommand < BaseCommand
   include ShellCommands
 
+  INSTANCE_NOT_FOUND = 'instance-not-found'
+
   def self.synopsis
     'Destroy configuration with all artefacts or a single node.'
   end
@@ -166,7 +168,7 @@ HELP
     end
 
     aws_box_state = get_aws_instance_state_by_id(@aws_instance_ids[node])
-    if aws_box_state.nil? || %w[stopping stopped shutting-down terminated].include?(aws_box_state)
+    if aws_box_state == INSTANCE_NOT_FOUND || %w[stopping stopped shutting-down terminated].include?(aws_box_state)
       @ui.info "AWS machine #{aws_box_name} has been destroyed, doing notthing"
       return
     end
@@ -194,42 +196,49 @@ HELP
 
   private
 
+  # Remember the instance id of aws virtual machine.
+  #
+  # @param configuration [Configuration] configuration to user.
+  # @param node [String] name of node to remember.
   def remember_aws_instance_id(configuration, node)
     return if configuration.provider != 'aws'
-
-    @aws_instance_ids = {}
-    if node.empty?
-      configuration.node_names.each do |node_name|
-        @aws_instance_ids[node_name] = get_aws_instance_id_by_node_name(configuration, node_name)
+    node_names =
+      if node.empty?
+        configuration.node_names
+      else
+        [node]
       end
-    else
-      @aws_instance_ids[node] = get_aws_instance_id_by_node_name(configuration, node)
-    end
+    @aws_instance_ids = node_names.map do |node_name|
+      [node_name, get_aws_instance_id_by_node_name(configuration, node_name)]
+    end.to_h
   end
 
-  def get_aws_instance_id_by_node_name(configuration, node_name)
-    aws_instance_id_path = "#{configuration.path}/.vagrant/machines/#{node_name}/aws/id"
+  # Read the instance id of aws virtual machine from local vagrant directory.
+  #
+  # @param configuration [Configuration] configuration to user.
+  # @param node [String] name of node to read.
+  def get_aws_instance_id_by_node_name(configuration, node)
+    aws_instance_id_path = "#{configuration.path}/.vagrant/machines/#{node}/aws/id"
     return nil unless File.file?(aws_instance_id_path)
-    return File.read(aws_instance_id_path)
+    File.read(aws_instance_id_path)
   end
 
+  # Get the state of aws virtual machine instance from aws instances description by id.
+  #
+  # @param instance_id [String] aws virtual machine instance id.
   def get_aws_instance_state_by_id(instance_id)
     return nil if instance_id.nil?
     instances_description = run_command_and_log('aws ec2 describe-instances --profile mdbci')[:output]
     instances_array = JSON.parse(instances_description).to_h
-
     instance = nil
-    instances_array['Reservations'].each do |reservation|
-      reservation['Instances'].each do |current_instance|
-        if current_instance['InstanceId'] == instance_id
-          instance = current_instance
-          break
+    instances_array['Reservations'].find do |reservation|
+      instance =
+        reservation['Instances'].find do |current_instance|
+          current_instance['InstanceId'] == instance_id
         end
-      end
-      break unless instance.nil?
+      !instance.nil?
     end
-
-    return nil if instance.nil?
-    return instance['State']['Name']
+    return INSTANCE_NOT_FOUND if instance.nil?
+    instance['State']['Name']
   end
 end
