@@ -17,3 +17,9 @@ Metrics/BlockLength:
   ExcludedMethods:
     - describe
     - context
+
+Style/NegatedIf:
+  Enabled: false
+
+Layout/IndentHeredoc:
+  Enabled: false
