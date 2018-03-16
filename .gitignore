@@ -4,3 +4,4 @@ aws-config.yml
 .kitchen
 *~
 #*#
+vms/
