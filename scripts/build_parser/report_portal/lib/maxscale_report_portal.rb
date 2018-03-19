@@ -59,6 +59,17 @@ module MaxScaleReportPortal
     ] + tags_from_target(test_run['target'])
   end
 
+  def self.id_tags(test_run)
+    [
+      jenkins_id_tag(test_run['jenkins_id']),
+      test_run['box'],
+      test_run['product'],
+      "ver:#{test_run['mariadb_version']}",
+      "maxscale:#{test_run['maxscale_source']}",
+      "target:#{test_run['target']}"
+    ]
+  end
+
   def self.tags_from_target(target)
     if !target.nil? && target.include?('daily')
       ['daily']

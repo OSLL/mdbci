@@ -38,14 +38,15 @@ puts "START\n------\n"
 client.query('SELECT * '\
              'FROM test_run '\
              'ORDER BY UNIX_TIMESTAMP(start_time) '\
-             "DESC LIMIT #{TEST_RUN_COUNT}").each do |test_run|
+             "LIMIT #{TEST_RUN_COUNT}").each do |test_run|
   launch = report_portal.start_launch(
     MaxScaleReportPortal.launch_name(test_run),
     'DEFAULT',
     MaxScaleReportPortal.description(REPOSITORY_URL, LOGS_DIR_URL, test_run),
     MaxScaleReportPortal.start_time(test_run),
     MaxScaleReportPortal.launch_tags(test_run),
-    MaxScaleReportPortal.jenkins_id_tag(test_run['jenkins_id'])
+    MaxScaleReportPortal.jenkins_id_tag(test_run['jenkins_id']),
+    MaxScaleReportPortal.id_tags(test_run)
   )
 
   max_test_time = 0.0
