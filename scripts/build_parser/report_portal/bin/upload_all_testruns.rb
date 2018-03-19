@@ -33,6 +33,10 @@ client = Mysql2::Client.new(username: USER, password: PASSWORD,
 report_portal = ReportPortal.new(REPORT_PORTAL_URL, PROJECT_NAME, AUTH_TOKEN)
 report_portal.create_project
 
+if TEST_RUN_COUNT.nil?
+  TEST_RUN_COUNT = client.query('SELECT COUNT(*) as count FROM test_run').first['count']
+end
+
 total_finish_launches = 0
 puts "START\n------\n"
 client.query('SELECT * '\
