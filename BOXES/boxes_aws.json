@@ -27,7 +27,7 @@
     "provider": "aws",
     "ami": "ami-5da23a2a",
     "user": "ubuntu",
-    "default_instance_type": "t1.micro",
+    "default_instance_type": "m1.medium",
     "platform": "ubuntu",
     "platform_version": "trusty"
   },
@@ -35,7 +35,7 @@
     "provider": "aws",
     "ami": "ami-008a5373",
     "user": "ubuntu",
-    "default_instance_type": "t1.micro",
+    "default_instance_type": "m1.medium",
     "platform": "ubuntu",
     "platform_version": "precise"
   },
@@ -51,7 +51,7 @@
     "provider": "aws",
     "ami": "ami-1c2e8b6b",
     "user": "ec2-user",
-    "default_instance_type": "t1.micro",
+    "default_instance_type": "m1.medium",
     "platform": "centos",
     "platform_version": "7"
   },
@@ -67,23 +67,15 @@
     "provider": "aws",
     "ami": "ami-2a04a85d",
     "user": "ec2-user",
-    "default_instance_type": "t2.micro",
+    "default_instance_type": "m1.medium",
     "platform": "centos",
     "platform_version": "6"
-  },
-  "centos_5_aws" : {
-    "provider": "aws",
-    "ami": "ami-6038cf17",
-    "user": "root",
-    "default_instance_type": "t1.micro",
-    "platform": "centos",
-    "platform_version": "5"
   },
   "debian_jessie_aws" : {
     "provider": "aws",
     "ami": "ami-2899dd5f",
     "user": "admin",
-    "default_instance_type": "t1.micro",
+    "default_instance_type": "m1.medium",
     "platform": "debian",
     "platform_version": "jessie"
   },
@@ -91,7 +83,7 @@
     "provider": "aws",
     "ami": "ami-879e4ff0",
     "user": "admin",
-    "default_instance_type": "t1.micro",
+    "default_instance_type": "m1.medium",
     "platform": "debian",
     "platform_version": "squeeze"
   },
@@ -99,7 +91,7 @@
     "provider": "aws",
     "ami": "ami-e7e66a90",
     "user": "admin",
-    "default_instance_type": "t1.micro",
+    "default_instance_type": "m1.medium",
     "platform": "debian",
     "platform_version": "wheezy"
   },
@@ -110,14 +102,6 @@
     "default_instance_type": "m3.medium",
     "platform": "debian",
     "platform_version": "stretch"
-  },
-  "rhel_5_aws" : {
-    "provider": "aws",
-    "ami": "ami-2e1c5b59",
-    "user": "ec2-user",
-    "default_instance_type": "t1.micro",
-    "platform": "rhel",
-    "platform_version": "5"
   },
   "rhel_6_aws" : {
     "provider": "aws",
@@ -154,9 +138,9 @@
   },
   "suse_13_aws" : {
     "provider": "aws",
-    "ami": "ami-1260d365",
+    "ami": "ami-068cc47f",
     "user": "ec2-user",
-    "default_instance_type": "t1.micro",
+    "default_instance_type": "m1.medium",
     "platform": "suse",
     "platform_version": "13"
   },
