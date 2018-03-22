@@ -11,7 +11,8 @@
 
 # install additional packages for all platform
 %w(net-tools psmisc).each do |pkg|
-  package pkg
+  package pkg do
+    retries 2
+    retry_delay 10
+  end
 end
-
-

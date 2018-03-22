@@ -1,0 +1,16 @@
+---
+driver:
+  name: vagrant
+
+provisioner:
+  name: chef_solo
+  always_update_cookbooks: true
+
+platforms:
+  - name: ubuntu-16.04
+  - name: opensuse-13.2
+
+suites:
+  - name: configure_apt
+    run_list:
+      - recipe[ntp::default]
