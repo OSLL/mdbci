@@ -55,7 +55,7 @@ class Config
   def check_database_section(database)
     return false unless @sections.include?(:database)
     database['db_name'].nil? || database['user'].nil? ||
-      database['password'].nil? || database['test_run_count_to_import'].nil?
+      database['password'].nil?
   end
 
   def check_report_portal_section(report_portal)

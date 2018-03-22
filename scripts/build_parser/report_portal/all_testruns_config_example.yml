@@ -2,7 +2,7 @@ database:
   db_name: test_results_db
   user: root
   password: "0000"
-  test_run_count_to_import: 20
+  test_run_count_to_import: 20 # Optional
 
 report_portal:
   url: http://localhost:8080
