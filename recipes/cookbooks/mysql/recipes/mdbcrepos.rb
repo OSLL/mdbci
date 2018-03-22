@@ -3,7 +3,10 @@ include_recipe 'packages::configure_apt'
 #
 # install default packages
 [ "net-tools", "psmisc" ].each do |pkg|
-  package pkg
+  package pkg do
+    retries 2
+    retry_delay 10
+  end
 end
 #
 case node[:platform_family]
