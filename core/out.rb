@@ -1,39 +1,35 @@
-require_relative  '../core/session'
+# frozen_string_literal: true
 
+# Class provides means to produce output to the application
 class Out
-
-  #TODO: define Log Level related behavior
-
-  attr_reader :INFO
-  attr_reader :WARNING
-  attr_reader :ERROR
-
-  def initialize
-    @INFO = ' INFO:  '
-    @WARNING = ' WARN:  '
-    @ERROR = 'ERROR:  '
+  # @param configuration [Session] configuration object that can silence the output
+  def initialize(configuration)
+    @configuration = configuration
+    @stream = $stdout
+    @stream.sync = true
   end
 
   def out(string)
-    puts string
+    return if string.nil?
+    @stream.puts(string)
   end
 
   def info(string)
-    if !$session.isSilent && !string.nil?
-      puts @INFO + string
-    end
+    print_line('INFO', string)
   end
 
   def warning(string)
-    if !$session.isSilent && !string.nil?
-      puts @WARNING + string
-    end
+    print_line('WARNING', string)
   end
 
   def error(string)
-    if !$session.isSilent && !string.nil?
-      puts @ERROR + string
-    end
+    print_line('ERROR', string)
   end
 
+  private
+
+  def print_line(level, string)
+    return if @configuration.isSilent || string.nil?
+    @stream.puts("#{level}: #{string}")
+  end
 end

@@ -41,7 +41,7 @@ session.awsConfigFile = $mdbci_exec_dir + '/aws-config.yml'
 $exception_handler = ExceptionHandler.new
 session.ipv6 = false
 
-out = Out.new
+out = Out.new(session)
 $out = out
 
 $current_dir = Dir.pwd
