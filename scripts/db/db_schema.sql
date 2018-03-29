@@ -20,6 +20,7 @@ CREATE TABLE results (
   id INT,
   test VARCHAR(256),
   result INT,
+  core_dump_path VARCHAR(500),
   FOREIGN KEY (id) REFERENCES test_run(id)
 );
 
@@ -78,4 +79,4 @@ CREATE TABLE sysbench_results (
 CREATE TABLE db_metadata (
   version INT
 );
-INSERT INTO db_metadata (version) VALUES (4);
+INSERT INTO db_metadata (version) VALUES (5);
