@@ -15,11 +15,15 @@ NEW_LINE_SYSBENCH_COUNT = 3
 SYSBENCH_RESULTS_RAW = 'SYSBENCH_RESULTS_RAW'
 
 MAXSCALE_COMMIT_REGEX = /MaxScale\s+.*\d+\.*\d*\.*\d*\s+-\s+(.+)/
+MAXSCALE_SOURCE_REGEX = /installing maxscale-(.*) from maxscale repository/
+SYSBENCH_VERSION_REGEX = /sysbench (.*):  multi-threaded system evaluation benchmark/
 
 BUILD_PARAMS = 'build_params'
 BENCHMARK_RESULTS = 'benchmark_results'
 
 $maxscale_commit = nil
+$maxscale_source = nil
+$test_tool_version = nil
 
 def parse_cmd_args
   opts = GetoptLong.new(
@@ -75,6 +79,12 @@ def extract_sysbench_results_raw(input_file)
       line = line.force_encoding("ISO-8859-1").encode("UTF-8")
       if line =~ MAXSCALE_COMMIT_REGEX and $maxscale_commit == nil
         $maxscale_commit = line.match(MAXSCALE_COMMIT_REGEX).captures[0]
+      end
+      if line =~ MAXSCALE_SOURCE_REGEX and $maxscale_source.nil?
+        $maxscale_source = line.match(MAXSCALE_SOURCE_REGEX).captures[0]
+      end
+      if line =~ SYSBENCH_VERSION_REGEX and $test_tool_version.nil?
+        $test_tool_version = line.match(SYSBENCH_VERSION_REGEX).captures[0]
       end
       if line == SYSBENCH_BLOCK_START
         puts "Found start of sysbench block"
@@ -162,7 +172,7 @@ def split_slash_keys(hash)
       hash[base_key+sub_keys[i]] = sub_values[i]
     end
   end
- 
+
   return hash
 end
 
@@ -176,7 +186,7 @@ def remove_slashes_from_keys(hash)
     new_key = key.gsub('/', '_')
     hash[new_key] = hash.delete key
   end
- 
+
   return hash
 
 end
@@ -213,7 +223,9 @@ def get_build_params_hash
       'test_tool' => 'sysbench',
       'target' => ENV['target'] || 'NOT FOUND',
       'maxscale_commit_id' => $maxscale_commit || 'NOT FOUND',
-      'maxscale_cnf' => cnf_path
+      'maxscale_cnf' => cnf_path,
+      'maxscale_source' => $maxscale_source || 'NOT FOUND',
+      'test_tool_version' => $test_tool_version || 'NOT FOUND'
   }
 end
 
