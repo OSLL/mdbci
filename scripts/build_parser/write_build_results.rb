@@ -77,6 +77,7 @@ class BuildResultsWriter
 
   def find_core_dump_path(run_test_dir, test_name)
     dir = "/home/vagrant/LOGS/#{run_test_dir}/LOGS/#{test_name}"
+    return '' unless File.directory?(dir)
     result = `find #{dir} | grep core | sed -e 's|/[^/]*$|/*|g'`
     return '' if result.nil? || result.empty?
     core_dump_path_regex = /.*\/run_test[^\/.+]+(\/.+)/
