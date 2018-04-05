@@ -67,14 +67,15 @@ class LogParser
   end
 end
 
-if ARGV.length != 3
+if ARGV.length < 3
   puts <<-EOF
   Usage:
-    load_logs USER PASSWORD LOGS_DIR
+    load_logs USER PASSWORD LOGS_DIR MODE
 
     USER: The database username.
     PASSWORD: The database password.
     LOGS_DIR: The directory with logs.
+    MODE: {all, coredump}. (Default: all)
     EOF
   exit 0
 end
@@ -82,6 +83,11 @@ end
 USER = ARGV.shift
 PASSWORD = ARGV.shift
 LOGS_DIR = ARGV.shift.chomp('"').reverse.chomp('"').reverse
+if ARGV.length >= 1
+  MODE = ARGV.shift
+else
+  MODE = 'all'
+end
 
 HOST = 'localhost'
 PORT = '3306'
@@ -105,40 +111,60 @@ end
 Dir.glob("#{LOGS_DIR}/run_test*").select do |fn|
   next unless File.directory?(fn)
 
-  Dir.glob("#{fn}/build_log*") do |build_log|
-    log = File.read build_log
-    log = log.encode('UTF-16be', :invalid => :replace).encode('UTF-8')
+  if (MODE == 'all')
+    Dir.glob("#{fn}/build_log*") do |build_log|
+      log = File.read build_log
+      log = log.encode('UTF-16be', :invalid => :replace).encode('UTF-8')
 
-    parser = LogParser.new
-    parser.parse_ctest_log(log)
-    jenkins_id = build_log.match(/build_log_(\d+)/).captures[0].strip
+      parser = LogParser.new
+      parser.parse_ctest_log(log)
+      jenkins_id = build_log.match(/build_log_(\d+)/).captures[0].strip
 
-    # Add information about test_time
-    test_run_row = client.query("SELECT id FROM test_run WHERE jenkins_id='#{jenkins_id}'").first
-    unless test_run_row.nil?
-      test_run_id = test_run_row['id']
-      parser.parse_test_results(log)
-      parser.test_results.each do |test_result|
-        client.query("UPDATE results SET test_time=#{test_result['test_time']} WHERE id=#{test_run_id} AND test='#{test_result['test']}'")
+      # Add information about test_time
+      test_run_row = client.query("SELECT id FROM test_run WHERE jenkins_id='#{jenkins_id}'").first
+      unless test_run_row.nil?
+        test_run_id = test_run_row['id']
+        parser.parse_test_results(log)
+        parser.test_results.each do |test_result|
+          client.query("UPDATE results SET test_time=#{test_result['test_time']} WHERE id=#{test_run_id} AND test='#{test_result['test']}'")
+        end
       end
+
+      # Add information about logs_dir
+      client.query("UPDATE test_run SET logs_dir='#{parser.logs_dir}' WHERE jenkins_id='#{jenkins_id}'")
+
+      # Add information about maxscale_source and cmake_flags
+      build_count = client.query("SELECT COUNT(*) as count FROM test_run WHERE jenkins_id='#{jenkins_id}'").first['count']
+      if build_count == 1
+        client.query("UPDATE test_run SET maxscale_source='#{parser.maxscale_source}', cmake_flags='#{parser.cmake_flags}' "\
+        "WHERE jenkins_id='#{jenkins_id}'")
+      elsif build_count > 1
+        client.query("UPDATE test_run SET maxscale_source='#{parser.maxscale_source}', cmake_flags='#{parser.cmake_flags}' "\
+        "WHERE box='#{parser.box}' AND target='#{parser.target}' AND mariadb_version='#{parser.mariadb_version}' "\
+        "AND jenkins_id='#{jenkins_id}'")
+      else
+        next
+      end
+      puts "Update TestRun with jenkins_id=#{jenkins_id}"
     end
+  end
 
-    # Add information about logs_dir
-    client.query("UPDATE test_run SET logs_dir='#{parser.logs_dir}' WHERE jenkins_id='#{jenkins_id}'")
+  if (MODE == 'all') || (MODE == 'coredump')
+    # Add information about core_dump_path
+    coredumps = `find #{fn} | grep core | sed -e 's|/[^/]*$|/*|g'`.split("\n")
+    coredumps.each do |line|
+      regex = /.*\/run_test-(\d+)\/LOGS\/([^\/.+]+)\/*/
+      next if !(line =~ regex)
+      jenkins_id = line.match(regex).captures[0]
+      test_name = line.match(regex).captures[1]
 
-    # Add information about maxscale_source and cmake_flags
-    build_count = client.query("SELECT COUNT(*) as count FROM test_run WHERE jenkins_id='#{jenkins_id}'").first['count']
-    if build_count == 1
-      client.query("UPDATE test_run SET maxscale_source='#{parser.maxscale_source}', cmake_flags='#{parser.cmake_flags}' "\
-      "WHERE jenkins_id='#{jenkins_id}'")
-    elsif build_count > 1
-      client.query("UPDATE test_run SET maxscale_source='#{parser.maxscale_source}', cmake_flags='#{parser.cmake_flags}' "\
-      "WHERE box='#{parser.box}' AND target='#{parser.target}' AND mariadb_version='#{parser.mariadb_version}' "\
-      "AND jenkins_id='#{jenkins_id}'")
-    else
-      next
+      coredump_path_regex = /.*\/run_test-\d+(.+)/
+      coredump_path = line.match(coredump_path_regex).captures[0]
+
+      query = "UPDATE results SET core_dump_path = '#{coredump_path}'"\
+        "WHERE id IN (SELECT id FROM test_run WHERE jenkins_id=#{jenkins_id}) AND test = '#{test_name}'"
+      client.query(query)
+      puts "Add core_dump_path to Test Result with jenkins_id=#{jenkins_id}"
     end
-
-    puts "Update TestRun with jenkins_id=#{jenkins_id}"
   end
 end
