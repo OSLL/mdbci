@@ -68,11 +68,20 @@ class BuildResultsWriter
     return id
   end
 
-  def write_results_table(id, test, result, test_time)
-    results_query = "INSERT INTO results (id, test, result, test_time) VALUES ('#{id}', "\
-      "'#{test}', '#{result}', '#{test_time}')"
+  def write_results_table(id, test, result, test_time, core_dump_path)
+    results_query = "INSERT INTO results (id, test, result, test_time, core_dump_path) VALUES ('#{id}', "\
+      "'#{test}', '#{result}', '#{test_time}', '#{core_dump_path}')"
     @client.query(results_query)
     puts "Performed insert (results): #{results_query}"
+  end
+
+  def find_core_dump_path(run_test_dir, test_name)
+    dir = "/home/vagrant/LOGS/#{run_test_dir}/LOGS/#{test_name}"
+    return '' unless File.directory?(dir)
+    result = `find #{dir} | grep core | sed -e 's|/[^/]*$|/*|g'`
+    return '' if result.nil? || result.empty?
+    core_dump_path_regex = /.*\/run_test[^\/.+]+(\/.+)/
+    result.match(core_dump_path_regex).captures[0]
   end
 
   def write_build_results_to_db(results)
@@ -112,7 +121,8 @@ class BuildResultsWriter
           result = 1
         end
         test_time = test[TEST_TIME]
-        write_results_table(id, name, result, test_time)
+        core_dump_path = find_core_dump_path(logs_dir, name)
+        write_results_table(id, name, result, test_time, core_dump_path)
       end
     end
   end

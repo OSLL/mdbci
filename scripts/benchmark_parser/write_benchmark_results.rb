@@ -34,6 +34,8 @@ TEST_TOOL = "test_tool"
 TARGET = "target"
 MAXSCALE_COMMIT_ID = "maxscale_commit_id"
 MAXSCALE_CNF = "maxscale_cnf"
+TEST_TOOL_VERSION = 'test_tool_version'
+MAXSCALE_SOURCE = 'maxscale_source'
 
 OLTP_TEST_STATISTICS_QUERIES_PERFORMED_READ = "OLTP_test_statistics_queries_performed_read"
 OLTP_TEST_STATISTICS_QUERIES_PERFORMED_WRITE = "OLTP_test_statistics_queries_performed_write"
@@ -114,21 +116,22 @@ end
 def write_to_performance_test_run(client, build_params)
   puts "write_to_performance_test_run"
 
- 
+
   mdbci_template_content = File.read(build_params[MDBCI_TEMPLATE])
   # Submit entry
   performance_test_run_query = "INSERT INTO performance_test_run (jenkins_id, "\
   "start_time, box, product, mariadb_version, "\
   "test_code_commit_id, job_name, machine_count, sysbench_params, "\
-  "test_tool, product_under_test, mdbci_template) "\
+  "test_tool, product_under_test, mdbci_template, test_tool_version) "\
   "VALUES ('#{build_params[JENKINS_ID]}', '#{build_params[START_TIME]}', "\
   "'#{build_params[BOX]}', '#{build_params[PRODUCT]}', "\
   "'#{build_params[MARIADB_VERSION]}', '#{build_params[TEST_CODE_COMMIT_ID]}', "\
-  "'#{build_params[JOB_NAME]}', #{build_params[MACHINE_COUNT]}, "\
+  "'#{build_params[JOB_NAME]}', '#{build_params[MACHINE_COUNT]}', "\
   "'#{build_params[SYSBENCH_PARAMS]}', '#{build_params[TEST_TOOL]}', "\
-  "'#{build_params[PRODUCT_UNDER_TEST]}', '#{mdbci_template_content}')"
+  "'#{build_params[PRODUCT_UNDER_TEST]}', '#{mdbci_template_content}', "\
+  "'#{build_params[TEST_TOOL_VERSION]}')"
 
-  puts performance_test_run_query  
+  puts performance_test_run_query
   client.query(performance_test_run_query)
   test_run_id = client.last_id
 
@@ -149,9 +152,9 @@ def write_to_maxscale_parameters(client, build_params, test_run_id)
   puts "write_to_maxscale_parameters"
   maxscale_cnf_content = File.read(build_params[MAXSCALE_CNF])
   maxscale_parameters_query = "INSERT INTO maxscale_parameters "\
-  "(id, target, maxscale_commit_id, maxscale_cnf) VALUES ("\
-  "#{test_run_id}, '#{build_params[TARGET]}', '#{build_params[MAXSCALE_COMMIT_ID]}', "\
-  "'#{maxscale_cnf_content}')"
+  "(id, target, maxscale_commit_id, maxscale_cnf, maxscale_source) VALUES ("\
+  "'#{test_run_id}', '#{build_params[TARGET]}', '#{build_params[MAXSCALE_COMMIT_ID]}', "\
+  "'#{maxscale_cnf_content}', '#{build_params[MAXSCALE_SOURCE]}')"
 
   puts maxscale_parameters_query
   client.query(maxscale_parameters_query)
@@ -161,7 +164,7 @@ def write_to_benchmark_results(client, test_tool, benchmark_results, test_run_id
   puts "write_to_benchmark_results #{test_tool}"
   if test_tool == BENCHMARK_SYSBENCH
     write_to_sysbench_results(client, benchmark_results, test_run_id)
-  end 
+  end
 end
 
 def write_to_sysbench_results(client, benchmark_results, test_run_id)
@@ -187,27 +190,27 @@ def write_to_sysbench_results(client, benchmark_results, test_run_id)
   "Threads_fairness_events_stddev, "\
   "Threads_fairness_execution_time_avg, "\
   "Threads_fairness_execution_time_stddev) VALUES ("\
-  "#{test_run_id}, "\
-  "#{benchmark_results[OLTP_TEST_STATISTICS_QUERIES_PERFORMED_READ]}, "\
-  "#{benchmark_results[OLTP_TEST_STATISTICS_QUERIES_PERFORMED_WRITE]}, "\
-  "#{benchmark_results[OLTP_TEST_STATISTICS_QUERIES_PERFORMED_OTHER]}, "\
-  "#{benchmark_results[OLTP_TEST_STATISTICS_QUERIES_PERFORMED_TOTAL]}, "\
-  "#{benchmark_results[OLTP_TEST_STATISTICS_TRANSACTIONS]}, "\
-  "#{benchmark_results[OLTP_TEST_STATISTICS_READ_WRITE_REQUESTS]}, "\
-  "#{benchmark_results[OLTP_TEST_STATISTICS_OTHER_OPERATIONS]}, "\
-  "#{benchmark_results[OLTP_TEST_STATISTICS_IGNORED_ERRORS]}, "\
-  "#{benchmark_results[OLTP_TEST_STATISTICS_RECONNECTS]}, "\
-  "#{benchmark_results[GENERAL_STATISTICS_TOTAL_TIME]}, "\
-  "#{benchmark_results[GENERAL_STATISTICS_TOTAL_NUMBER_OF_EVENTS]}, "\
-  "#{benchmark_results[GENERAL_STATISTICS_TOTAL_TIME_TAKEN_BY_EVENT_EXECUTION]}, "\
-  "#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_MIN]}, "\
-  "#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_AVG]}, "\
-  "#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_MAX]}, "\
-  "#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_APPROX__95_PERCENTILE]}, "\
-  "#{benchmark_results[THREADS_FAIRNESS_EVENTS_AVG]}, "\
-  "#{benchmark_results[THREADS_FAIRNESS_EVENTS_STDDEV]}, "\
-  "#{benchmark_results[THREADS_FAIRNESS_EXECUTION_TIME_AVG]}, "\
-  "#{benchmark_results[THREADS_FAIRNESS_EXECUTION_TIME_STDDEV]} )"
+  "'#{test_run_id}', "\
+  "'#{benchmark_results[OLTP_TEST_STATISTICS_QUERIES_PERFORMED_READ]}', "\
+  "'#{benchmark_results[OLTP_TEST_STATISTICS_QUERIES_PERFORMED_WRITE]}', "\
+  "'#{benchmark_results[OLTP_TEST_STATISTICS_QUERIES_PERFORMED_OTHER]}', "\
+  "'#{benchmark_results[OLTP_TEST_STATISTICS_QUERIES_PERFORMED_TOTAL]}', "\
+  "'#{benchmark_results[OLTP_TEST_STATISTICS_TRANSACTIONS]}', "\
+  "'#{benchmark_results[OLTP_TEST_STATISTICS_READ_WRITE_REQUESTS]}', "\
+  "'#{benchmark_results[OLTP_TEST_STATISTICS_OTHER_OPERATIONS]}', "\
+  "'#{benchmark_results[OLTP_TEST_STATISTICS_IGNORED_ERRORS]}', "\
+  "'#{benchmark_results[OLTP_TEST_STATISTICS_RECONNECTS]}', "\
+  "'#{benchmark_results[GENERAL_STATISTICS_TOTAL_TIME]}', "\
+  "'#{benchmark_results[GENERAL_STATISTICS_TOTAL_NUMBER_OF_EVENTS]}', "\
+  "'#{benchmark_results[GENERAL_STATISTICS_TOTAL_TIME_TAKEN_BY_EVENT_EXECUTION]}', "\
+  "'#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_MIN]}', "\
+  "'#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_AVG]}', "\
+  "'#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_MAX]}', "\
+  "'#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_APPROX__95_PERCENTILE]}', "\
+  "'#{benchmark_results[THREADS_FAIRNESS_EVENTS_AVG]}', "\
+  "'#{benchmark_results[THREADS_FAIRNESS_EVENTS_STDDEV]}', "\
+  "'#{benchmark_results[THREADS_FAIRNESS_EXECUTION_TIME_AVG]}', "\
+  "'#{benchmark_results[THREADS_FAIRNESS_EXECUTION_TIME_STDDEV]}' )"
 
   puts sysbench_results_query
   client.query(sysbench_results_query)
@@ -216,17 +219,17 @@ end
 def write_results_to_db(hash)
   puts "write_results_to_db #{hash}"
   build_params = hash[BUILD_PARAMS]
-  benchmark_results = hash[BENCHMARK_RESULTS]  
+  benchmark_results = hash[BENCHMARK_RESULTS]
 
-  db_write_status = DB_WRITE_STATUS_SUCCESS 
-  begin 
+  db_write_status = DB_WRITE_STATUS_SUCCESS
+  begin
     client = Mysql2::Client.new(:default_file => "#{DEFAULT_FILE}",  \
       :database => "#{DB_NAME}")
     test_run_id = write_to_performance_test_run(client, build_params)
     write_to_product_parameters(client, build_params, test_run_id)
     write_to_benchmark_results(client, build_params[TEST_TOOL], benchmark_results, test_run_id)
   rescue => e
-    db_write_status = "Error during writing to DB, #{e.message}" 
+    db_write_status = "Error during writing to DB, #{e.message}"
     puts db_write_status
   end
   return db_write_status
@@ -254,7 +257,7 @@ def main
   options = parse_cmd_args
   hash = parse_json_file(options[:input_file])
   validate_hash(hash)
-  
+
   db_write_status = write_results_to_db(hash)
   write_db_result_to_env_file(db_write_status, options[:env_file])
 
