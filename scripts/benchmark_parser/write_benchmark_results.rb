@@ -37,22 +37,42 @@ MAXSCALE_CNF = "maxscale_cnf"
 TEST_TOOL_VERSION = 'test_tool_version'
 MAXSCALE_SOURCE = 'maxscale_source'
 
-OLTP_TEST_STATISTICS_QUERIES_PERFORMED_READ = "OLTP_test_statistics_queries_performed_read"
-OLTP_TEST_STATISTICS_QUERIES_PERFORMED_WRITE = "OLTP_test_statistics_queries_performed_write"
-OLTP_TEST_STATISTICS_QUERIES_PERFORMED_OTHER = "OLTP_test_statistics_queries_performed_other"
-OLTP_TEST_STATISTICS_QUERIES_PERFORMED_TOTAL = "OLTP_test_statistics_queries_performed_total"
-OLTP_TEST_STATISTICS_TRANSACTIONS = "OLTP_test_statistics_transactions"
-OLTP_TEST_STATISTICS_READ_WRITE_REQUESTS = "OLTP_test_statistics_read_write_requests"
-OLTP_TEST_STATISTICS_OTHER_OPERATIONS = "OLTP_test_statistics_other_operations"
-OLTP_TEST_STATISTICS_IGNORED_ERRORS = "OLTP_test_statistics_ignored_errors"
-OLTP_TEST_STATISTICS_RECONNECTS = "OLTP_test_statistics_reconnects"
+# OLTP_TEST_STATISTICS_QUERIES_PERFORMED_READ = "OLTP_test_statistics_queries_performed_read"
+# OLTP_TEST_STATISTICS_QUERIES_PERFORMED_WRITE = "OLTP_test_statistics_queries_performed_write"
+# OLTP_TEST_STATISTICS_QUERIES_PERFORMED_OTHER = "OLTP_test_statistics_queries_performed_other"
+# OLTP_TEST_STATISTICS_QUERIES_PERFORMED_TOTAL = "OLTP_test_statistics_queries_performed_total"
+# OLTP_TEST_STATISTICS_TRANSACTIONS = "OLTP_test_statistics_transactions"
+# OLTP_TEST_STATISTICS_READ_WRITE_REQUESTS = "OLTP_test_statistics_read_write_requests"
+# OLTP_TEST_STATISTICS_OTHER_OPERATIONS = "OLTP_test_statistics_other_operations"
+# OLTP_TEST_STATISTICS_IGNORED_ERRORS = "OLTP_test_statistics_ignored_errors"
+# OLTP_TEST_STATISTICS_RECONNECTS = "OLTP_test_statistics_reconnects"
+# GENERAL_STATISTICS_TOTAL_TIME = "General_statistics_total_time"
+# GENERAL_STATISTICS_TOTAL_NUMBER_OF_EVENTS = "General_statistics_total_number_of_events"
+# GENERAL_STATISTICS_TOTAL_TIME_TAKEN_BY_EVENT_EXECUTION = "General_statistics_total_time_taken_by_event_execution"
+# GENERAL_STATISTICS_RESPONSE_TIME_MIN = "General_statistics_response_time_min"
+# GENERAL_STATISTICS_RESPONSE_TIME_AVG = "General_statistics_response_time_avg"
+# GENERAL_STATISTICS_RESPONSE_TIME_MAX = "General_statistics_response_time_max"
+# GENERAL_STATISTICS_RESPONSE_TIME_APPROX__95_PERCENTILE = "General_statistics_response_time_approx__95_percentile"
+# THREADS_FAIRNESS_EVENTS_AVG = "Threads_fairness_events_avg"
+# THREADS_FAIRNESS_EVENTS_STDDEV = "Threads_fairness_events_stddev"
+# THREADS_FAIRNESS_EXECUTION_TIME_AVG = "Threads_fairness_execution_time_avg"
+# THREADS_FAIRNESS_EXECUTION_TIME_STDDEV = "Threads_fairness_execution_time_stddev"
+
+SQL_STATISTICS_QUERIES_PERFORMED_READ = "SQL_statistics_queries_performed_read"
+SQL_STATISTICS_QUERIES_PERFORMED_WRITE = "SQL_statistics_queries_performed_write"
+SQL_STATISTICS_QUERIES_PERFORMED_OTHER = "SQL_statistics_queries_performed_other"
+SQL_STATISTICS_QUERIES_PERFORMED_TOTAL = "SQL_statistics_queries_performed_total"
+SQL_STATISTICS_TRANSACTIONS = "SQL_statistics_transactions"
+SQL_STATISTICS_QUERIES = "SQL_statistics_queries"
+SQL_STATISTICS_IGNORED_ERRORS = "SQL_statistics_ignored_errors"
+SQL_STATISTICS_RECONNECTS = "SQL_statistics_reconnects"
 GENERAL_STATISTICS_TOTAL_TIME = "General_statistics_total_time"
 GENERAL_STATISTICS_TOTAL_NUMBER_OF_EVENTS = "General_statistics_total_number_of_events"
-GENERAL_STATISTICS_TOTAL_TIME_TAKEN_BY_EVENT_EXECUTION = "General_statistics_total_time_taken_by_event_execution"
-GENERAL_STATISTICS_RESPONSE_TIME_MIN = "General_statistics_response_time_min"
-GENERAL_STATISTICS_RESPONSE_TIME_AVG = "General_statistics_response_time_avg"
-GENERAL_STATISTICS_RESPONSE_TIME_MAX = "General_statistics_response_time_max"
-GENERAL_STATISTICS_RESPONSE_TIME_APPROX__95_PERCENTILE = "General_statistics_response_time_approx__95_percentile"
+LATENCY_MS_MIN = "Latency_(ms)_min"
+LATENCY_MS_AVG = "Latency_(ms)_avg"
+LATENCY_MS_MAX = "Latency_(ms)_max"
+LATENCY_MS_95TH_PERCENTILE = "Latency_(ms)_95th_percentile"
+LATENCY_MS_SUM = "Latency_(ms)_sum"
 THREADS_FAIRNESS_EVENTS_AVG = "Threads_fairness_events_avg"
 THREADS_FAIRNESS_EVENTS_STDDEV = "Threads_fairness_events_stddev"
 THREADS_FAIRNESS_EXECUTION_TIME_AVG = "Threads_fairness_execution_time_avg"
@@ -117,7 +137,11 @@ def write_to_performance_test_run(client, build_params)
   puts "write_to_performance_test_run"
 
 
-  mdbci_template_content = File.read(build_params[MDBCI_TEMPLATE])
+  if File.file?(build_params[MDBCI_TEMPLATE])
+    mdbci_template_content = File.read(build_params[MDBCI_TEMPLATE])
+  else
+    mdbci_template_content = ''
+  end
   # Submit entry
   performance_test_run_query = "INSERT INTO performance_test_run (jenkins_id, "\
   "start_time, box, product, mariadb_version, "\
@@ -150,7 +174,11 @@ end
 
 def write_to_maxscale_parameters(client, build_params, test_run_id)
   puts "write_to_maxscale_parameters"
-  maxscale_cnf_content = File.read(build_params[MAXSCALE_CNF])
+  if File.file?(build_params[MAXSCALE_CNF])
+    maxscale_cnf_content = File.read(build_params[MAXSCALE_CNF])
+  else
+    maxscale_cnf_content = ''
+  end
   maxscale_parameters_query = "INSERT INTO maxscale_parameters "\
   "(id, target, maxscale_commit_id, maxscale_cnf, maxscale_source) VALUES ("\
   "'#{test_run_id}', '#{build_params[TARGET]}', '#{build_params[MAXSCALE_COMMIT_ID]}', "\
@@ -191,22 +219,22 @@ def write_to_sysbench_results(client, benchmark_results, test_run_id)
   "Threads_fairness_execution_time_avg, "\
   "Threads_fairness_execution_time_stddev) VALUES ("\
   "'#{test_run_id}', "\
-  "'#{benchmark_results[OLTP_TEST_STATISTICS_QUERIES_PERFORMED_READ]}', "\
-  "'#{benchmark_results[OLTP_TEST_STATISTICS_QUERIES_PERFORMED_WRITE]}', "\
-  "'#{benchmark_results[OLTP_TEST_STATISTICS_QUERIES_PERFORMED_OTHER]}', "\
-  "'#{benchmark_results[OLTP_TEST_STATISTICS_QUERIES_PERFORMED_TOTAL]}', "\
-  "'#{benchmark_results[OLTP_TEST_STATISTICS_TRANSACTIONS]}', "\
-  "'#{benchmark_results[OLTP_TEST_STATISTICS_READ_WRITE_REQUESTS]}', "\
-  "'#{benchmark_results[OLTP_TEST_STATISTICS_OTHER_OPERATIONS]}', "\
-  "'#{benchmark_results[OLTP_TEST_STATISTICS_IGNORED_ERRORS]}', "\
-  "'#{benchmark_results[OLTP_TEST_STATISTICS_RECONNECTS]}', "\
+  "'#{benchmark_results[SQL_STATISTICS_QUERIES_PERFORMED_READ]}', "\
+  "'#{benchmark_results[SQL_STATISTICS_QUERIES_PERFORMED_WRITE]}', "\
+  "'#{benchmark_results[SQL_STATISTICS_QUERIES_PERFORMED_OTHER]}', "\
+  "'#{benchmark_results[SQL_STATISTICS_QUERIES_PERFORMED_TOTAL]}', "\
+  "'#{benchmark_results[SQL_STATISTICS_TRANSACTIONS]}', "\
+  "NULL, "\
+  "NULL, "\
+  "'#{benchmark_results[SQL_STATISTICS_IGNORED_ERRORS]}', "\
+  "'#{benchmark_results[SQL_STATISTICS_RECONNECTS]}', "\
   "'#{benchmark_results[GENERAL_STATISTICS_TOTAL_TIME]}', "\
   "'#{benchmark_results[GENERAL_STATISTICS_TOTAL_NUMBER_OF_EVENTS]}', "\
-  "'#{benchmark_results[GENERAL_STATISTICS_TOTAL_TIME_TAKEN_BY_EVENT_EXECUTION]}', "\
-  "'#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_MIN]}', "\
-  "'#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_AVG]}', "\
-  "'#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_MAX]}', "\
-  "'#{benchmark_results[GENERAL_STATISTICS_RESPONSE_TIME_APPROX__95_PERCENTILE]}', "\
+  "NULL, "\
+  "'#{benchmark_results[LATENCY_MS_MIN]}', "\
+  "'#{benchmark_results[LATENCY_MS_AVG]}', "\
+  "'#{benchmark_results[LATENCY_MS_MAX]}', "\
+  "'#{benchmark_results[LATENCY_MS_95TH_PERCENTILE]}', "\
   "'#{benchmark_results[THREADS_FAIRNESS_EVENTS_AVG]}', "\
   "'#{benchmark_results[THREADS_FAIRNESS_EVENTS_STDDEV]}', "\
   "'#{benchmark_results[THREADS_FAIRNESS_EXECUTION_TIME_AVG]}', "\

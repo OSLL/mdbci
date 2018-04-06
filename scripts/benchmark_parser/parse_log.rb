@@ -10,13 +10,15 @@ ENV_FILE_OPTION = '--env-file'
 SILENT_OPTION = '--silent'
 HELP_OPTION = '--help'
 
-SYSBENCH_BLOCK_START = "OLTP test statistics:\n"
-NEW_LINE_SYSBENCH_COUNT = 3
+SYSBENCH_BLOCK_START = "SQL statistics:\n"
+# NEW_LINE_SYSBENCH_COUNT = 3
+SYSBENCH_BLOCK_LINE_REGEX = /.*ssh:(.*\n)/
+SYSBENCH_BLOCK_LAST_LINE = 'execution time (avg/stddev)'
 SYSBENCH_RESULTS_RAW = 'SYSBENCH_RESULTS_RAW'
 
-MAXSCALE_COMMIT_REGEX = /MaxScale\s+.*\d+\.*\d*\.*\d*\s+-\s+(.+)/
-MAXSCALE_SOURCE_REGEX = /installing maxscale-(.*) from maxscale repository/
-SYSBENCH_VERSION_REGEX = /sysbench (.*):  multi-threaded system evaluation benchmark/
+# MAXSCALE_COMMIT_REGEX = /MaxScale\s+.*\d+\.*\d*\.*\d*\s+-\s+(.+)/
+MAXSCALE_SOURCE_REGEX = /MaxScale version: maxscale-(.*)/
+SYSBENCH_VERSION_REGEX = /DEBUG: ssh: sysbench (.*) \(/
 
 BUILD_PARAMS = 'build_params'
 BENCHMARK_RESULTS = 'benchmark_results'
@@ -77,27 +79,27 @@ def extract_sysbench_results_raw(input_file)
   File.open(input_file, "r") do |f|
     f.each_line do |line|
       line = line.force_encoding("ISO-8859-1").encode("UTF-8")
-      if line =~ MAXSCALE_COMMIT_REGEX and $maxscale_commit == nil
-        $maxscale_commit = line.match(MAXSCALE_COMMIT_REGEX).captures[0]
-      end
+      # if line =~ MAXSCALE_COMMIT_REGEX and $maxscale_commit == nil
+      #   $maxscale_commit = line.match(MAXSCALE_COMMIT_REGEX).captures[0]
+      # end
       if line =~ MAXSCALE_SOURCE_REGEX and $maxscale_source.nil?
         $maxscale_source = line.match(MAXSCALE_SOURCE_REGEX).captures[0]
       end
       if line =~ SYSBENCH_VERSION_REGEX and $test_tool_version.nil?
         $test_tool_version = line.match(SYSBENCH_VERSION_REGEX).captures[0]
       end
-      if line == SYSBENCH_BLOCK_START
+      if line.include?(SYSBENCH_BLOCK_START)
         puts "Found start of sysbench block"
         sysbench_block_found = true
       end
 
       if sysbench_block_found
-        sysbench_results_raw += line
-        if line == "\n"
-          new_line_count+=1
+        if line =~ SYSBENCH_BLOCK_LINE_REGEX
+          line = line.match(SYSBENCH_BLOCK_LINE_REGEX).captures[0]
         end
+        sysbench_results_raw += line
 
-        if new_line_count == NEW_LINE_SYSBENCH_COUNT
+        if line.include?(SYSBENCH_BLOCK_LAST_LINE)
           puts "Read all sysbench_results_raw"
           return sysbench_results_raw
         end
