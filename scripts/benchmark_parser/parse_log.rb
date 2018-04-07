@@ -231,6 +231,21 @@ def get_build_params_hash
   }
 end
 
+# Update the hash with values extracted from the build log
+CONFIG_PARAMS = {
+  'MariaDB version' => 'mariadb_version',
+  'MaxScale configuration' => 'maxscale_cnf',
+}
+def update_build_params_hash_with_build_log(hash, log_path)
+  File.readlines(log_path).each do |line|
+    CONFIG_PARAMS.each do |pattern, key|
+      data = line.match(/\s*#{pattern}\s*:\s*(.*)\s*/)
+      next unless data
+      hash[key] = data[1].strip
+    end
+  end
+end
+
 def write_hash_to_json(hash, output_file)
   File.open(output_file,"w") do |f|
     f.write(hash.to_json)
@@ -246,7 +261,9 @@ def main
   hash = split_slash_keys(hash)
   hash = clean_values(hash)
   hash = remove_slashes_from_keys(hash)
-  result = { BUILD_PARAMS => get_build_params_hash, BENCHMARK_RESULTS => hash}
+  build_params_hash = get_build_params_hash
+  update_build_params_hash_with_build_log(build_params_hash, options[:input_file])
+  result = { BUILD_PARAMS => build_params_hash, BENCHMARK_RESULTS => hash}
   write_hash_to_json(result, options[:output_file])
 
   puts "Parsing completed!"
