@@ -76,11 +76,11 @@ class BuildResultsWriter
   end
 
   def find_core_dump_path(run_test_dir, test_name)
+    core_dump_path_regex = /.*\/run_test[^\/.+]+(\/.+)/
     dir = "/home/vagrant/LOGS/#{run_test_dir}/LOGS/#{test_name}"
     return '' unless File.directory?(dir)
     result = `find #{dir} | grep core | sed -e 's|/[^/]*$|/*|g'`
-    return '' if result.nil? || result.empty?
-    core_dump_path_regex = /.*\/run_test[^\/.+]+(\/.+)/
+    return '' if result.nil? || result.empty? || !(result =~ core_dump_path_regex)
     result.match(core_dump_path_regex).captures[0]
   end
 
