@@ -233,13 +233,15 @@ end
 
 # Update the hash with values extracted from the build log
 CONFIG_PARAMS = {
-  'MariaDB version' => 'mariadb_version',
-  'MaxScale configuration' => 'maxscale_cnf',
+  'MariaDB version:' => 'mariadb_version',
+  'MaxScale configuration:' => 'maxscale_cnf',
+  'Source:' => 'maxscale_source',
+  'MaxScale .* -' => 'maxscale_commit_id',
 }
 def update_build_params_hash_with_build_log(hash, log_path)
   File.readlines(log_path).each do |line|
     CONFIG_PARAMS.each do |pattern, key|
-      data = line.match(/\s*#{pattern}\s*:\s*(.*)\s*/)
+      data = line.match(/\s*#{pattern}\s*(.*)\s*/)
       next unless data
       hash[key] = data[1].strip
     end
