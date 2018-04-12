@@ -7,7 +7,8 @@ require 'tmpdir'
 require 'json'
 require 'fileutils'
 
-# The class is one-shot entity that is able to
+# The class is one-shot entity that creates temporary directory and creates
+# MDBCI repository configuration for all supported distributions.
 class ColumnstoreRepoParser
   attr_reader :directory
   REPO_PAGE = 'https://downloads.mariadb.com/ColumnStore/'
@@ -55,10 +56,11 @@ class ColumnstoreRepoParser
     }
   }
   def create_repo(release, system, type)
+    puts "Creating repository configuration for #{system} and columnstore #{release} release"
     system_type = SYSTEMS[type]
     subpath = system_type[:path]
     repos = get_links("#{release}/#{subpath}").select do |link|
-      link.content.include?(system)
+      link.content.include?(system) && !link.content.include?('.')
     end.each_with_object([]) do |link, repositories|
       repo_link = "#{release}/#{subpath}/#{link[:href]}".gsub(/\/\//, '/')
       get_links(system_type[:release_path].call(repo_link)).each do |release_link|
@@ -83,6 +85,7 @@ class ColumnstoreRepoParser
       puts "Configuring release #{release}"
       create_repo(release, 'centos', :rhel)
       create_repo(release, 'sles', :rhel)
+      create_repo(release, 'rhel', :rhel)
       create_repo(release, 'debian', :debian)
       create_repo(release, 'ubuntu', :debian)
     end
