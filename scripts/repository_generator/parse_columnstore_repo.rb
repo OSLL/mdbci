@@ -46,7 +46,7 @@ class ColumnstoreRepoParser
       path: 'repo',
       key: DEBIAN_REPO_KEY,
       release_path: -> (repo_link) { "#{repo_link}/dists" },
-      repo_path: -> (repo_link, release_name) { "#{REPO_PAGE}#{repo_link} #{release_name} main" }
+      repo_path: -> (repo_link, release_name) { "#{REPO_PAGE}#{repo_link}" }
     },
     rhel: {
       path: 'yum',
@@ -85,7 +85,6 @@ class ColumnstoreRepoParser
       puts "Configuring release #{release}"
       create_repo(release, 'centos', :rhel)
       create_repo(release, 'sles', :rhel)
-      create_repo(release, 'rhel', :rhel)
       create_repo(release, 'debian', :debian)
       create_repo(release, 'ubuntu', :debian)
     end
