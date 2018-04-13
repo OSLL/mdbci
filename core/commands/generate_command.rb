@@ -79,7 +79,7 @@ config.vm.boot_timeout = 60
 ####################################
 Vagrant.configure(2) do |config|
 
-config.omnibus.chef_version = '12.9.38'
+config.omnibus.chef_version = '14.0.190'
     EOF
   end
 
@@ -117,7 +117,7 @@ config.omnibus.chef_version = '12.9.38'
   def self.generate_provision_block(name, cookbook_path, provisioned)
     template = ERB.new <<-PROVISION
       ##--- Install chef on this machine with manual setup ---
-      #{name}.vm.provision 'shell', inline: 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v 12.9.38'
+      #{name}.vm.provision 'shell', inline: 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v 14.0.190'
 
       ##--- Chef configuration ----
       #{name}.vm.provision 'chef_solo' do |chef|
