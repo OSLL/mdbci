@@ -79,7 +79,7 @@ config.vm.boot_timeout = 60
 ####################################
 Vagrant.configure(2) do |config|
 
-config.omnibus.chef_version = '12.9.38'
+config.omnibus.chef_version = '14.0.190'
     EOF
   end
 
@@ -117,7 +117,7 @@ config.omnibus.chef_version = '12.9.38'
   def self.generate_provision_block(name, cookbook_path, provisioned)
     template = ERB.new <<-PROVISION
       ##--- Install chef on this machine with manual setup ---
-      #{name}.vm.provision 'shell', inline: 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v 12.9.38'
+      #{name}.vm.provision 'shell', inline: 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v 14.0.190'
 
       ##--- Chef configuration ----
       #{name}.vm.provision 'chef_solo' do |chef|
@@ -275,7 +275,6 @@ PROVISION
 
   #  Vagrantfile for AWS provider
   def self.getAWSVmDef(cookbook_path, name, boxurl, user, ssh_pty, instance_type, template_path, provisioned, tags)
-
     if template_path
       mountdef = "\t" + name + ".vm.synced_folder " + quote(template_path) + ", " + quote("/home/vagrant/cnf_templates") + ", type: " + quote("rsync")
     else
@@ -283,7 +282,6 @@ PROVISION
     end
     # ssh.pty option
     ssh_pty_option = sshPtyOption(ssh_pty)
-
     awsdef = "\n#  --> Begin definition for machine: " + name +"\n"\
            + "config.vm.define :"+ name +" do |" + name + "|\n" \
            + ssh_pty_option + "\n" \
@@ -295,60 +293,46 @@ PROVISION
            + "\tend\n" \
            + mountdef + "\n"
     awsdef += generate_provision_block(name, cookbook_path, provisioned)
-
     awsdef +="\nend #  <-- End AWS definition for machine: " + name +"\n\n"
-
     return awsdef
   end
 
-
-  def self.getRoleDef(name, product, box)
-
-    errorMock = "#NONE, due invalid repo name \n"
-    role = Hash.new
-    productConfig = Hash.new
-    product_name = nil
-    repoName = nil
+  # Generate the rode description for the specified node
+  # @param name [String] internal name of the machine specified in the template
+  # @param product [Hash] parameters of the product to configure
+  # @param box information about the box
+  # @return [String] pretty formated role description in JSON format
+  def self.get_role_description(name, product, box)
+    error_text = "#NONE, due invalid repo name \n"
+    role = {}
+    product_config = {}
     repo = nil
-
     if !product['repo'].nil?
-
-      repoName = product['repo']
-
-      $out.info "Repo name: "+repoName
-
-      unless $session.repos.knownRepo?(repoName)
-        $out.warning 'Unknown key for repo '+repoName+' will be skipped'
-        return errorMock
+      repo_name = product['repo']
+      $out.info("Repo name: #{repo_name}")
+      unless $session.repos.knownRepo?(repo_name)
+        $out.warning("Unknown key for repo #{repoName} will be skipped")
+        return error_text
       end
-
-      $out.info 'Repo specified ['+repoName.to_s+'] (CORRECT), other product params will be ignored'
-      repo = $session.repos.getRepo(repoName)
-
-      product_name = $session.repos.productName(repoName)
+      $out.info("Repo specified [#{repo_name}] (CORRECT), other product params will be ignored")
+      repo = $session.repos.getRepo(repo_name)
+      product_name = $session.repos.productName(repo_name)
     else
       product_name = product['name']
     end
-
-    # TODO: implement support of multiple recipes in role file
     if product_name != 'packages'
-      recipe_name = $session.repos.recipeName(product_name)
-
-      $out.info 'Recipe '+recipe_name.to_s
-
+      recipe_name = $session.repos.recipe_name(product_name)
       if repo.nil?
         repo = $session.repos.findRepo(product_name, product, box)
       end
-
       if repo.nil?
-        return errorMock
+        return error_text
       end
-
-      config = Hash.new
-      # edit recipe attributes in role
-      config['version'] = repo['version']
-      config['repo'] = repo['repo']
-      config['repo_key'] = repo['repo_key']
+      config = {
+        'version' => repo['version'],
+        'repo' => repo['repo'],
+        'repo_key' => repo['repo_key']
+      }
       if !product['cnf_template'].nil? && !product['cnf_template_path'].nil?
         config['cnf_template'] = product['cnf_template']
         config['cnf_template_path'] = product['cnf_template_path']
@@ -356,60 +340,24 @@ PROVISION
       if !product['node_name'].nil?
         config['node_name'] = product['node_name']
       end
-      productConfig[product_name] = config
-
-      role['name'] = name
-      role['default_attributes'] = {}
-      role['override_attributes'] = productConfig
-      role['json_class'] = 'Chef::Role'
-      role['description'] = 'MariaDb instance install and run'
-      role['chef_type'] = 'role'
-      role['run_list'] = ['recipe['+recipe_name+']']
-    else
-      recipe_name = $session.repos.recipeName(product_name)
-      $out.info 'Recipe '+recipe_name.to_s
-
-      role['name'] = name
-      role['default_attributes'] = {}
-      role['override_attributes'] = {}
-      role['json_class'] = 'Chef::Role'
-      role['description'] = 'packages recipe for all nodes'
-      role['chef_type'] = 'role'
-      role['run_list'] = ['recipe['+recipe_name+']']
+      product_config[product_name] = config
     end
-
-    roledef = JSON.pretty_generate(role)
-
-    return roledef
-
-    #todo uncomment
-    if false
-
-      # TODO: form string for several box recipes for maridb, maxscale, mysql
-
-      roledef = '{ '+"\n"+' "name" :' + quote(name)+",\n"+ \
-        <<-EOF
-        "default_attributes": { },
-      EOF
-
-      roledef += " #{quote('override_attributes')}: { #{quote(package)}: #{mdbversion} },\n"
-
-      roledef += <<-EOF
-        "json_class": "Chef::Role",
-        "description": "MariaDb instance install and run",
-        "chef_type": "role",
-      EOF
-      roledef += quote('run_list') + ": [ " + quote("recipe[" + recipe_name + "]") + " ]\n"
-      roledef += "}"
-    end
-
+    $out.info("Recipe #{recipe_name}")
+    role['name'] = name
+    role['default_attributes'] = {}
+    role['override_attributes'] = product_config
+    role['json_class'] = 'Chef::Role'
+    role['description'] = ''
+    role['chef_type'] = 'role'
+    role['run_list'] = ["recipe[#{recipe_name}]"]
+    JSON.pretty_generate(role)
   end
 
   def self.checkPath(path, override)
     if Dir.exist?(path) && !override
       $out.error 'Folder already exists: ' + path
       $out.error 'Please specify another name or delete'
-      exit -1
+      exit(-1)
     end
     FileUtils.rm_rf(path)
     Dir.mkdir(path)
@@ -502,7 +450,7 @@ PROVISION
     # box with mariadb, maxscale provision - create role
     if provisioned
       $out.info 'Machine '+name+' is provisioned by '+product.to_s
-      role = getRoleDef(name, product, box)
+      role = get_role_description(name, product, box)
       IO.write(roleFileName(path, name), role)
     end
 
