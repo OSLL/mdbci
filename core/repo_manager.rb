@@ -5,35 +5,31 @@ class RepoManager
   attr_accessor :repos
   attr_accessor :recipes  # product => recipe
 
+  PRODUCT_TO_RECIPE_MAP = {
+    'mariadb' => 'mdbc',
+    'maxscale' => 'mscale',
+    'mysql' => 'galera',
+    'packages' => 'packages',
+    'columnstore' => 'mariadb_columnstore'
+  }
+
   def initialize(path)
     @repos= Hash.new
-    @recipes = Hash.new
-
     lookup(path)
-
-    @recipes['mariadb']='mdbc'
-    @recipes['maxscale']='mscale'
-    @recipes['mysql']='mysql'
-    @recipes['galera']='galera'
-    @recipes['packages']='packages'
   end
 
-  def recipeName(product)
-    @recipes[product]
+  def recipe_name(product)
+    PRODUCT_TO_RECIPE_MAP[product]
   end
 
   def findRepo(name, product, box)
-
     $out.info 'Looking for repo'
-
     version = (product['version'].nil? ? 'default' : product['version']);
     platform = $session.boxes.platformKey(box)
     repokey = name+'@'+version+'+'+ platform
-
     repo = @repos[repokey]
     $out.info 'Repo key is '+repokey + ' ... ' + (repo.nil? ? 'NOT_FOUND' : 'FOUND')
-
-    return repo;
+    return repo
   end
 
   def show
