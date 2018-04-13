@@ -1,4 +1,1 @@
-#
-# Cookbook:: mariadb_columnstore
-# Recipe:: default
-#
+install.rb
