@@ -14,9 +14,9 @@ platforms:
   - name: centos-7
 
 suites:
-  - name: default
+  - name: install
     run_list:
-      - recipe[mariadb_columnstore::default]
+      - recipe[mariadb_columnstore::install]
   - name: configure_repository
     run_list:
       - recipe[mariadb_columnstore::configure_repository]

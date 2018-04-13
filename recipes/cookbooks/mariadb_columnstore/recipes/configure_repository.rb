@@ -1,3 +1,8 @@
+#
+# Cookbook:: mariadb_columnstore
+# Recipe:: configure_repository
+#
+
 # install default packages
 [ "net-tools", "psmisc" ].each do |pkg|
   package pkg
@@ -6,7 +11,7 @@ end
 # This hash is defined here only to ease testing purposes
 default_repos = {
   'debian' => {
-    repo: 'https://downloads.mariadb.com/ColumnStore/1.1.3/repo/debian8',
+    repo: 'https://downloads.mariadb.com/ColumnStore/1.1.3/repo/debian9',
     key: 'AD0DEAFDA41F5C14'
   },
   'ubuntu' => {
@@ -44,15 +49,16 @@ when 'debian'
   end
   apt_repository 'columnstore' do
     uri repository_url
-    key repository_key
+    trusted true
+#    key repository_key # Keys can not be found anywhere
     keyserver 'keyserver.ubuntu.com'
     components ['main']
-    action :create
+    action :add
   end
 when 'rhel', 'sles'
   yum_repository 'columnstore' do
     baseurl repository_url
     gpgkey repository_key
-    action :create
+    action :add
   end
 end
