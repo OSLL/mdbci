@@ -58,13 +58,10 @@ CREATE TABLE sysbench_results (
   OLTP_test_statistics_queries_performed_other FLOAT,
   OLTP_test_statistics_queries_performed_total FLOAT,
   OLTP_test_statistics_transactions FLOAT,
-  OLTP_test_statistics_read_write_requests FLOAT,
-  OLTP_test_statistics_other_operations FLOAT,
   OLTP_test_statistics_ignored_errors FLOAT,
   OLTP_test_statistics_reconnects FLOAT,
   General_statistics_total_time FLOAT,
   General_statistics_total_number_of_events FLOAT,
-  General_statistics_total_time_taken_by_event_execution FLOAT,
   General_statistics_response_time_min FLOAT,
   General_statistics_response_time_avg FLOAT,
   General_statistics_response_time_max FLOAT,
@@ -79,4 +76,4 @@ CREATE TABLE sysbench_results (
 CREATE TABLE db_metadata (
   version INT
 );
-INSERT INTO db_metadata (version) VALUES (5);
+INSERT INTO db_metadata (version) VALUES (6);

@@ -203,13 +203,10 @@ def write_to_sysbench_results(client, benchmark_results, test_run_id)
   "OLTP_test_statistics_queries_performed_other, "\
   "OLTP_test_statistics_queries_performed_total, "\
   "OLTP_test_statistics_transactions, "\
-  "OLTP_test_statistics_read_write_requests, "\
-  "OLTP_test_statistics_other_operations, "\
   "OLTP_test_statistics_ignored_errors, "\
   "OLTP_test_statistics_reconnects, "\
   "General_statistics_total_time, "\
   "General_statistics_total_number_of_events, "\
-  "General_statistics_total_time_taken_by_event_execution, "\
   "General_statistics_response_time_min, "\
   "General_statistics_response_time_avg, "\
   "General_statistics_response_time_max, "\
@@ -224,13 +221,10 @@ def write_to_sysbench_results(client, benchmark_results, test_run_id)
   "'#{benchmark_results[SQL_STATISTICS_QUERIES_PERFORMED_OTHER]}', "\
   "'#{benchmark_results[SQL_STATISTICS_QUERIES_PERFORMED_TOTAL]}', "\
   "'#{benchmark_results[SQL_STATISTICS_TRANSACTIONS]}', "\
-  "NULL, "\
-  "NULL, "\
   "'#{benchmark_results[SQL_STATISTICS_IGNORED_ERRORS]}', "\
   "'#{benchmark_results[SQL_STATISTICS_RECONNECTS]}', "\
   "'#{benchmark_results[GENERAL_STATISTICS_TOTAL_TIME]}', "\
   "'#{benchmark_results[GENERAL_STATISTICS_TOTAL_NUMBER_OF_EVENTS]}', "\
-  "NULL, "\
   "'#{benchmark_results[LATENCY_MS_MIN]}', "\
   "'#{benchmark_results[LATENCY_MS_AVG]}', "\
   "'#{benchmark_results[LATENCY_MS_MAX]}', "\
