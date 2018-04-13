@@ -46,8 +46,8 @@ describe 'clone.rb' do
 
   before :all do
     $mdbci_exec_dir = File.absolute_path('.')
-    $out = Out.new
     $session = Session.new
+    $out = Out.new($session)
     FileUtils.cp PATH_TO_TEMPLATE, PATH_TO_COPIED_TEMPLATE
   end
 

@@ -8,13 +8,11 @@ EMPTY_FOLDER = 'spec/unit/test_empty_folder'
 VALID_OLD_PATH = 'spec/test_machine_configurations/7144_test_machine'
 EXISTING_NEW_PATH = 'spec/unit/test_empty_folder'
 
-
 describe 'Clone' do
-
   before :all do
     $mdbci_exec_dir = File.absolute_path('.')
-    $out = Out.new
     $session = Session.new
+    $out = Out.new($session)
   end
 
   it '#clone should exit with non-zero code if path to old config is not existing' do
@@ -37,5 +35,4 @@ describe 'Clone' do
     Clone.new.copy_old_config_to_new(VALID_OLD_PATH, VALID_NEW_PATH)
     FileUtils.rm_rf(VALID_NEW_PATH)
   end
-
 end

@@ -24,14 +24,13 @@ describe 'BoxesManager' do
 
   before :all do
     $mdbci_exec_dir = File.absolute_path('.')
-    $out = Out.new
     $session = Session.new
+    $out = Out.new($session)
     $session.isSilent = true
     $session.mdbciDir = Dir.pwd
     $exception_handler = ExceptionHandler.new
     boxesPath = './BOXES'
     $session.boxes = BoxesManager.new boxesPath
-    reposPath = './repo.d'
   end
 
   it '#getBoxByConfig return json with box definition' do

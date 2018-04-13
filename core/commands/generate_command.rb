@@ -125,7 +125,7 @@ PROVISION
   end
 
   # Vagrantfile for Vbox provider
-  def self.get_vm_definition(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
+  def self.get_virtualbox_definition(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
     template = ERB.new <<-VBOX
       config.vm.define '<%= name %>' do |box|
         box.vm.box = '<%= boxurl %>'

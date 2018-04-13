@@ -9,8 +9,8 @@ require_relative '../../core/out'
 describe 'BoxesManager' do
   it 'lookup and add boxes' do
     $mdbci_exec_dir = File.absolute_path('.')
-    $out = Out.new
     $session = Session.new
+    $out = Out.new($session)
     $session.isSilent = true
     $session.mdbciDir = Dir.pwd
     $exception_handler = ExceptionHandler.new
