@@ -7,7 +7,7 @@ require 'net/scp'
 # Class allows to configure a specified machine using the chef-solo,
 # MDBCI coockbooks and roles.
 class MachineConfigurator
-  def initialize(logger, root_path = File.expand_path('../../../chef-repository', __FILE__))
+  def initialize(logger, root_path = File.expand_path('../../../recipes', __FILE__))
     @log = logger
     @root_path = root_path
   end
@@ -23,7 +23,7 @@ class MachineConfigurator
   # Upload chef scripts onto the machine and configure it using specified role. The method is able to transfer
   # extra files into the provision directory making runtime configuration of Chef scripts possible.
   # @param extra_files [Array<Array<String>>] pairs of source and target paths.
-  def configure(machine, config_name, extra_files = [], sudo_password = '', chef_version = '13.8.0')
+  def configure(machine, config_name, extra_files = [], sudo_password = '', chef_version = '14.0.202')
     @log.info("Configuring machine #{machine['network']} with #{config_name}")
     within_ssh_session(machine) do |connection|
       install_chef_on_server(connection, sudo_password, chef_version)
@@ -38,6 +38,8 @@ class MachineConfigurator
   # @param machine [Hash] information about machine to connect
   def within_ssh_session(machine)
     options = Net::SSH.configuration_for(machine['network'], true)
+    options[:auth_methods] = ['publickey', 'none']
+    options[:verify_host_key] = false
     options[:keys] = [machine['keyfile']]
     Net::SSH.start(machine['network'], machine['whoami'], options) do |ssh|
       yield ssh
@@ -118,11 +120,12 @@ class MachineConfigurator
     @log.info('Copying chef files to the server.')
     sudo_exec(connection, sudo_password, "rm -rf #{remote_dir}")
     ssh_exec(connection, "mkdir -p #{remote_dir}")
-    %w[configs vendor-cookbooks roles solo.rb]
+    %w[configs cookbooks roles solo.rb]
       .map { |name| ["#{@root_path}/#{name}", name] }
       .select { |path, _| File.exist?(path) }
       .concat(extra_files)
       .each do |source, target|
+      @log.debug("Uploading #{source} to #{target}")
       upload_file(connection, source, "#{remote_dir}/#{target}")
     end
   end
