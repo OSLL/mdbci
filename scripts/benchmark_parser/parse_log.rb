@@ -19,6 +19,7 @@ SYSBENCH_RESULTS_RAW = 'SYSBENCH_RESULTS_RAW'
 # MAXSCALE_COMMIT_REGEX = /MaxScale\s+.*\d+\.*\d*\.*\d*\s+-\s+(.+)/
 MAXSCALE_SOURCE_REGEX = /MaxScale version: maxscale-(.*)/
 SYSBENCH_VERSION_REGEX = /DEBUG: ssh: sysbench (.*) \(/
+SYSBENCH_THREADS_REGEX = /Number of threads: (\d*)/
 
 BUILD_PARAMS = 'build_params'
 BENCHMARK_RESULTS = 'benchmark_results'
@@ -26,6 +27,7 @@ BENCHMARK_RESULTS = 'benchmark_results'
 $maxscale_commit = nil
 $maxscale_source = nil
 $test_tool_version = nil
+$sysbench_threads = nil
 
 def parse_cmd_args
   opts = GetoptLong.new(
@@ -87,6 +89,9 @@ def extract_sysbench_results_raw(input_file)
       end
       if line =~ SYSBENCH_VERSION_REGEX and $test_tool_version.nil?
         $test_tool_version = line.match(SYSBENCH_VERSION_REGEX).captures[0]
+      end
+      if line =~ SYSBENCH_THREADS_REGEX and $sysbench_threads.nil?
+        $sysbench_threads = line.match(SYSBENCH_THREADS_REGEX).captures[0]
       end
       if line.include?(SYSBENCH_BLOCK_START)
         puts "Found start of sysbench block"
@@ -227,7 +232,8 @@ def get_build_params_hash
       'maxscale_commit_id' => $maxscale_commit || 'NOT FOUND',
       'maxscale_cnf' => cnf_path,
       'maxscale_source' => $maxscale_source || 'NOT FOUND',
-      'test_tool_version' => $test_tool_version || 'NOT FOUND'
+      'test_tool_version' => $test_tool_version || 'NOT FOUND',
+      'sysbench_threads' => $sysbench_threads
   }
 end
 

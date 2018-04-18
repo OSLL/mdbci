@@ -36,6 +36,7 @@ MAXSCALE_COMMIT_ID = "maxscale_commit_id"
 MAXSCALE_CNF = "maxscale_cnf"
 TEST_TOOL_VERSION = 'test_tool_version'
 MAXSCALE_SOURCE = 'maxscale_source'
+SYSBENCH_THREADS = 'sysbench_threads'
 
 # OLTP_TEST_STATISTICS_QUERIES_PERFORMED_READ = "OLTP_test_statistics_queries_performed_read"
 # OLTP_TEST_STATISTICS_QUERIES_PERFORMED_WRITE = "OLTP_test_statistics_queries_performed_write"
@@ -146,14 +147,14 @@ def write_to_performance_test_run(client, build_params)
   performance_test_run_query = "INSERT INTO performance_test_run (jenkins_id, "\
   "start_time, box, product, mariadb_version, "\
   "test_code_commit_id, job_name, machine_count, sysbench_params, "\
-  "test_tool, product_under_test, mdbci_template, test_tool_version) "\
+  "test_tool, product_under_test, mdbci_template, test_tool_version, sysbench_threads) "\
   "VALUES ('#{build_params[JENKINS_ID]}', '#{build_params[START_TIME]}', "\
   "'#{build_params[BOX]}', '#{build_params[PRODUCT]}', "\
   "'#{build_params[MARIADB_VERSION]}', '#{build_params[TEST_CODE_COMMIT_ID]}', "\
   "'#{build_params[JOB_NAME]}', '#{build_params[MACHINE_COUNT]}', "\
   "'#{build_params[SYSBENCH_PARAMS]}', '#{build_params[TEST_TOOL]}', "\
   "'#{build_params[PRODUCT_UNDER_TEST]}', '#{mdbci_template_content}', "\
-  "'#{build_params[TEST_TOOL_VERSION]}')"
+  "'#{build_params[TEST_TOOL_VERSION]}', '#{build_params[SYSBENCH_THREADS]}')"
 
   puts performance_test_run_query
   client.query(performance_test_run_query)
@@ -180,9 +181,9 @@ def write_to_maxscale_parameters(client, build_params, test_run_id)
     maxscale_cnf_content = ''
   end
   maxscale_parameters_query = "INSERT INTO maxscale_parameters "\
-  "(id, target, maxscale_commit_id, maxscale_cnf, maxscale_source) VALUES ("\
+  "(id, target, maxscale_commit_id, maxscale_cnf, maxscale_source, maxscale_cnf_file_name) VALUES ("\
   "'#{test_run_id}', '#{build_params[TARGET]}', '#{build_params[MAXSCALE_COMMIT_ID]}', "\
-  "'#{maxscale_cnf_content}', '#{build_params[MAXSCALE_SOURCE]}')"
+  "'#{maxscale_cnf_content}', '#{build_params[MAXSCALE_SOURCE]}', '#{build_params[MAXSCALE_CNF]}')"
 
   puts maxscale_parameters_query
   client.query(maxscale_parameters_query)

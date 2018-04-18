@@ -39,6 +39,7 @@ CREATE TABLE performance_test_run (
   test_tool VARCHAR(256),
   product_under_test VARCHAR(256),
   test_tool_version VARCHAR(256),
+  sysbench_threads INT,
   PRIMARY KEY(id)
 );
 
@@ -48,6 +49,7 @@ CREATE TABLE maxscale_parameters (
   maxscale_commit_id VARCHAR(256),
   maxscale_cnf LONGTEXT,
   maxscale_source VARCHAR(256),
+  maxscale_cnf_file_name VARCHAR(500),
   FOREIGN KEY (id) REFERENCES performance_test_run(id)
 );
 
@@ -76,4 +78,4 @@ CREATE TABLE sysbench_results (
 CREATE TABLE db_metadata (
   version INT
 );
-INSERT INTO db_metadata (version) VALUES (6);
+INSERT INTO db_metadata (version) VALUES (7);
