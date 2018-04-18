@@ -86,6 +86,10 @@ end
     "#{path}/#{role}.json"
   end
 
+  def self.node_config_file_name(path, role)
+    "#{path}/#{role}-config.json"
+  end
+
   def self.ssh_pty_option(ssh_pty)
     if %w[true false].include?(ssh_pty)
       "config.ssh.pty = #{ssh_pty}"
@@ -322,7 +326,9 @@ PROVISION
     role['json_class'] = 'Chef::Role'
     role['description'] = ''
     role['chef_type'] = 'role'
-    role['run_list'] = ["recipe[#{recipe_name}]"]
+    role['run_list'] = ['recipe[mdbci_provision_mark::remove_mark]',
+                        "recipe[#{recipe_name}]",
+                        'recipe[mdbci_provision_mark::default]']
     JSON.pretty_generate(role)
   end
 
@@ -416,6 +422,10 @@ PROVISION
       $out.info 'Machine '+name+' is provisioned by '+product.to_s
       role = get_role_description(name, product, box)
       IO.write(role_file_name(path, name), role)
+      IO.write(node_config_file_name(path, name),
+               JSON.pretty_generate({
+                                      'run_list' => ["role[#{name}]"]
+                                    }))
     end
     return machine
   end
