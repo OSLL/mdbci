@@ -300,10 +300,8 @@ def printConfigurationNetworkInfoToFile(configuration=nil,node='')
 end
 
 def collectConfigurationNetworkInfo(configuration,node_one='')
-
   raise 'configuration name is required' if configuration.nil?
   raise 'configuration does not exist' unless Dir.exist? configuration
-
   configurationNetworkInfo = Hash.new
   if node_one.empty?
     nodes = get_nodes(configuration)
@@ -327,4 +325,20 @@ def collectConfigurationNetworkInfo(configuration,node_one='')
     end
   end
   return configurationNetworkInfo
+end
+
+# Connect to all created nodes, get their network configuration
+# @param configuration [Configuration] object that describes configuration we are working with
+# @return [Hash] node to network configuration
+def get_node_network_config_info(configuration)
+  configuration.node_names.each_with_object({}) do |node_name, network_config|
+    node_path = "#{configuration.path}/#{node_name}"
+    network_config[node_name] = {
+      'network' => Network.getNetwork(node_path)[0]['ip'],
+      'keyfile' => Network.getKeyFile(node_path)[0]['key'],
+      'private_ip' => Network.getIP(node_path)[0]['ip'],
+      'whoami' => $session.getSSH(node_path, COMMAND_WHOAMI)[0].strip,
+      'hostname' => $session.getSSH(node_path, COMMAND_WHOAMI)[0].strip
+    }
+  end
 end
