@@ -3,7 +3,7 @@
 require_relative 'base_command'
 require_relative '../docker_manager'
 require_relative '../models/configuration'
-require_relative '../helpers/shell_commands'
+require_relative '../services/shell_commands'
 
 # The command sets up the environment specified in the configuration file.
 class UpCommand < BaseCommand
