@@ -14,6 +14,10 @@ class Out
     @stream.puts(string)
   end
 
+  def debug(string)
+    print_line('DEBUG', string)
+  end
+
   def info(string)
     print_line('INFO', string)
   end
