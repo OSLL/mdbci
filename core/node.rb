@@ -1,6 +1,7 @@
 require 'scanf'
 require 'yaml'
 require 'ipaddress'
+require 'socket'
 
 require_relative  '../core/out'
 
@@ -43,30 +44,25 @@ class Node
   def getInterfaceBoxIp(node_name, iface)
     exit_code = 1
     $out.info('getInterfaceBoxIp attempt')
-    cmd = 'vagrant ssh '+node_name+' -c "/sbin/ifconfig '+iface+' | grep \"inet \" "'
-    vagrant_out = `#{cmd}`
+    vagrant_out = `vagrant ssh-config #{node_name} | grep HostName`.strip
     $out.info(vagrant_out)
     $out.info($?.exitstatus.to_s)
     exit_code = $?.exitstatus
-
-    # parse ifconfig output
-    ip = vagrant_out.scanf("inet %s")
-    # del addr: from ip
-    ip_addr = ip[0].to_s.sub('addr:','')
-    # check ip with a IP RegExp
-    IPAddress.valid?(ip_addr.to_s) ? $out.info('Node IP '+ip_addr.to_s+' is valid!') : $out.info('Node IP '+ip_addr.to_s+' is not valid!')
-    @ip = ip_addr.nil? ? '127.0.0.1' : ip_addr
-
-    return exit_code
+    hostname = vagrant_out.split(/\s+/)[1]
+    begin
+      @ip = IPSocket.getaddress(hostname)
+    rescue
+      $out.error("Unable to determine IP address for #{node}")
+      return -1
+    end
+    exit_code
   end
 
   def getIp(provider, is_private)
     exit_code = 1
-
     if provider.nil?
       raise $out.error "Can not identify configuration for provider #{provider.to_s}"
     end
-
     case provider
       when '(virtualbox)'
         exit_code = getInterfaceBoxIp(@name, "eth1")
@@ -92,13 +88,10 @@ class Node
       else
         $out.warning('WARNING: Unknown machine type!')
     end
-
     !@ip.to_s.empty? ? $out.info('IP:'+@ip.to_s) : $out.warning('IP address is not received!')
-
     if exit_code != 0
       raise $out.error "vagrant ssh get IP command returned non-zero exit code: (#{$?.exitstatus})"
     end
-
     return exit_code
   end
 
