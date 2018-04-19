@@ -176,8 +176,13 @@ class UpCommand < BaseCommand
   def configure(node)
     @network_configs[node] = get_node_network_config(node, @config, @env)
     solo_config = "#{node}-config.json"
+    role_file = GenerateCommand.role_file_name(@config.path, node)
+    unless File.exist?(role_file)
+      @ui.info("Machine '#{node}' should not be configured. Skipping")
+      return true
+    end
     extra_files = [
-      [GenerateCommand.role_file_name(@config.path, node), "roles/#{node}.json"],
+      [role_file, "roles/#{node}.json"],
       [GenerateCommand.node_config_file_name(@config.path, node), "configs/#{solo_config}"]
     ]
     @machine_configurator.configure(@network_configs[node], solo_config, extra_files)
