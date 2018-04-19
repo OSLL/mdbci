@@ -98,36 +98,6 @@ end
     end
   end
 
-  # Generate chef provision block for the VM
-  #
-  # @param name [String] name of the virtual machine
-  # @param cookbook_path [String] path to the cookbooks to use
-  # @param provisioned [Boolean] some bogus boolean variable
-  #
-  # @return [String] provision block for the VM
-  def self.generate_provision_block(name, cookbook_path, provisioned)
-    template = ERB.new <<-PROVISION
-      ##--- Install chef on this machine with manual setup ---
-      #{name}.vm.provision 'shell', inline: 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v 12.10.24'
-
-      ##--- Chef configuration ----
-      #{name}.vm.provision 'chef_solo' do |chef|
-        chef.cookbooks_path = '#{cookbook_path}'
-        chef.add_recipe 'mdbci_provision_mark::remove_mark'
-        <% if provisioned %>
-        chef.roles_path = '.'
-        chef.add_role '#{name}'
-        <% else %>
-        chef.add_recipe 'packages'
-        <% end %>
-        chef.add_recipe 'mdbci_provision_mark'
-        chef.synced_folder_type = 'rsync'
-      end
-      ##--- Chef configuration complete
-PROVISION
-    template.result(binding)
-  end
-
   # Vagrantfile for Vbox provider
   def self.get_virtualbox_definition(cookbook_path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
     template = ERB.new <<-VBOX
