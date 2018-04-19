@@ -38,23 +38,26 @@ class MachineConfigurator
   # @param machine [Hash] information about machine to connect
   def within_ssh_session(machine)
     options = Net::SSH.configuration_for(machine['network'], true)
-    options[:auth_methods] = ['publickey', 'none']
+    options[:auth_methods] = %w[publickey none]
     options[:verify_host_key] = false
     options[:keys] = [machine['keyfile']]
+    options[:send_env] = []
     Net::SSH.start(machine['network'], machine['whoami'], options) do |ssh|
       yield ssh
     end
   end
 
-  # rubocop:disable Metrics/MethodLength
   def sudo_exec(connection, sudo_password, command)
-    @log.info("Running 'sudo -S #{command}' on the remote server.")
+    ssh_exec(connection, "sudo -S #{command}", sudo_password)
+  end
+
+  # rubocop:disable Metrics/MethodLength
+  def ssh_exec(connection, command, sudo_password = '')
+    @log.info("Running '#{command}' on the remote server")
     output = ''
     connection.open_channel do |channel, _success|
       channel.on_data do |_, data|
-        data.split("\n").map(&:chomp)
-            .select { |line| line =~ /\p{Graph}+$/ }
-            .each { |line| @log.debug("ssh: #{line}") }
+        log_printable_lines(data)
         output += "#{data}\n"
       end
       channel.on_extended_data do |ch, _, data|
@@ -64,27 +67,6 @@ class MachineConfigurator
         else
           @log.debug("ssh error: #{data}")
         end
-      end
-      channel.exec("sudo -S #{command}")
-      channel.wait
-    end.wait
-    output
-  end
-  # rubocop:enable Metrics/MethodLength
-
-  # rubocop:disable Metrics/MethodLength
-  def ssh_exec(connection, command)
-    @log.info("Running '#{command}' on the remote server")
-    output = ''
-    connection.open_channel do |channel, _success|
-      channel.on_data do |_, data|
-        data.split("\n").map(&:chomp)
-            .select { |line| line =~ /\p{Graph}+/ }
-            .each { |line| @log.debug("ssh: #{line}") }
-        output += "#{data}\n"
-      end
-      channel.on_extended_data do |_, _, data|
-        @log.debug("ssh error: #{data}")
       end
       channel.exec(command)
       channel.wait
@@ -103,6 +85,14 @@ class MachineConfigurator
   end
 
   private
+
+  def log_printable_lines(lines)
+    lines.split("\n").map(&:chomp)
+         .select { |line| line =~ /\p{Graph}+/ }
+         .each do |line|
+      @log.debug("ssh: #{line}")
+    end
+  end
 
   def install_chef_on_server(connection, sudo_password, chef_version)
     @log.info("Installing Chef #{chef_version} on the server.")
