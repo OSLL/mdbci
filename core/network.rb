@@ -118,7 +118,7 @@ class Network
       cmd = "vagrant ssh-config #{node_arg} | grep IdentityFile"
       vagrant_out = `#{cmd}`
       raise "Command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
-      tempHash = { 'key' => vagrant_out.split(' ')[1] }
+      tempHash = { 'key' => vagrant_out.split(' ')[1].sub(/^"/, '').sub(/"$/, '') }
       result.push(tempHash)
       Dir.chdir pwd
     end
