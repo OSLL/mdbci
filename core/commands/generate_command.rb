@@ -108,7 +108,7 @@ end
   def self.generate_provision_block(name, cookbook_path, provisioned)
     template = ERB.new <<-PROVISION
       ##--- Install chef on this machine with manual setup ---
-      #{name}.vm.provision 'shell', inline: 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v 14.0.190'
+      #{name}.vm.provision 'shell', inline: 'curl -L https://omnitruck.chef.io/install.sh | sudo bash -s -- -v 12.10.24'
 
       ##--- Chef configuration ----
       #{name}.vm.provision 'chef_solo' do |chef|
