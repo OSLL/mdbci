@@ -11,8 +11,8 @@ require_relative '../../core/exception_handler'
 describe 'Session' do
   before :all do
     $mdbci_exec_dir = File.absolute_path('.')
-    $out = Out.new
     $session = Session.new
+    $out = Out.new($session)
     @session = $session
     @session.isSilent = true
     @session.mdbciDir = Dir.pwd
@@ -108,6 +108,12 @@ describe 'Session' do
       allow(fake_box_manager).to receive(:each).and_yield(*boxes[0]).and_yield(*boxes[0])
       found_versions = @session.getBoxesPlatformVersions(platform, fake_box_manager)
       expect(found_versions).to eq(versions)
+    end
+  end
+
+  context '#sudo' do
+    it 'should exit with non-zero code for aws/vbox nodes nodes (no such machine exists)' do
+      lambda{$session.sudo('TEST_MACHINE')}.should raise_error(RuntimeError)
     end
   end
 end

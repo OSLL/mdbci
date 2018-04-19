@@ -12,8 +12,7 @@ describe 'NodeProduct' do
     $mdbci_exec_dir = File.absolute_path('.')
     $session = Session.new
     $session.isSilent = true
-    $out = Out.new
-
+    $out = Out.new($session)
     $session.repoDir = './repo.d'
     $session.repos = RepoManager.new($session.repoDir)
   end

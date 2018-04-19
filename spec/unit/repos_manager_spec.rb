@@ -9,8 +9,8 @@ describe 'RepoManager' do
   context '.repos' do
     it "Check repos loading..." do
       $mdbci_exec_dir = File.absolute_path('.')
-      $out = Out.new
       $session = Session.new
+      $out = Out.new($session)
       $session.isSilent = true
       $session.mdbciDir = Dir.pwd
       $exception_handler = ExceptionHandler.new
@@ -18,7 +18,7 @@ describe 'RepoManager' do
       $session.boxes = BoxesManager.new boxesPath
       reposPath = './repo.d'
       $session.repos = RepoManager.new reposPath
-      $session.repos.repos.size().should eq(752)
+      $session.repos.repos.size().should be > 0
     end
   end
 end

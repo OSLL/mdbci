@@ -29,13 +29,11 @@ def generate_config(provider)
 EOF
 end
 
-
 describe 'Helper functions' do
-
   before :all do
     $mdbci_exec_dir = File.absolute_path('.')
-    $out = Out.new
     $session = Session.new
+    $out = Out.new($session)
   end
 
   it 'execute bash command without output' do
@@ -67,8 +65,8 @@ describe nil do
     id_path = "#{config}/.vagrant/machines/node0/#{provider}"
 
     before :all do
-      $out = Out.new
       $session = Session.new
+      $out = Out.new($session)
       File.open(template, 'w') { |file| file.write generate_config(provider) }
       execute_bash("./mdbci --override --template #{template} generate #{config}")
       FileUtils.mkdir_p id_path

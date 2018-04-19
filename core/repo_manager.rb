@@ -6,11 +6,12 @@ class RepoManager
   attr_accessor :recipes  # product => recipe
 
   PRODUCT_TO_RECIPE_MAP = {
-    'mariadb' => 'mdbc',
-    'maxscale' => 'mscale',
-    'mysql' => 'galera',
+    'mariadb' => 'mariadb::install_community',
+    'maxscale' => 'mariadb-maxscale::install_maxscale',
+    'mysql' => 'mysql::install_community',
     'packages' => 'packages',
-    'columnstore' => 'mariadb_columnstore'
+    'columnstore' => 'mariadb_columnstore',
+    'galera' => 'galera'
   }
 
   def initialize(path)

@@ -3,7 +3,9 @@
 require_relative 'base_command'
 require_relative '../docker_manager'
 require_relative '../models/configuration'
-require_relative '../helpers/shell_commands'
+require_relative '../services/shell_commands'
+require_relative '../services/machine_configurator'
+require_relative 'generate_command'
 
 # The command sets up the environment specified in the configuration file.
 class UpCommand < BaseCommand
@@ -30,6 +32,8 @@ class UpCommand < BaseCommand
                   @env.attempts.to_i
                 end
     @box_manager = @env.boxes
+    @network_configs = {}
+    @machine_configurator = MachineConfigurator.new(@ui)
   end
 
   # Method parses up command configuration and extracts path to the
@@ -130,6 +134,15 @@ class UpCommand < BaseCommand
     end
   end
 
+  # Split list of nodes between running and halt ones
+  # @param nodes [Array<String] name of nodes to check
+  # @return [Array<String>, Array<String>] nodes that are running and those that are not
+  def running_and_halt_nodes(nodes)
+    nodes.partition do |node|
+      node_running?(node)
+    end
+  end
+
   # Check that all specified nodes are configured and brought up.
   # Return list of nodes that needs to be re-created or re-provisioned.
   #
@@ -148,17 +161,32 @@ class UpCommand < BaseCommand
     [recreate, reconfigure]
   end
 
-  # Try to reconfigure the specified nodes. If the operation was not
-  # successfull, return them as a list of nodes to be reproduced.
-  #
-  # @param nodes [Array<String>] list of node names to be reconfigureed.
-  # @return [Array<String>] list of nodes that were not reconfigureed.
-  def reconfigure(nodes)
+  # Configure nodes using the chef-solo and their respected role
+  # @param nodes [Array<String>] names of nodes that should be configured
+  # @return [Array<String>] list of nodes that we not successfully configured
+  def configure_nodes(nodes)
     nodes.reject do |node|
-      @ui.info "Trying to configure node '#{node}'."
-      run_command_and_log("vagrant provision #{node}")
-      node_provisioned?(node)
+      configure(node)
     end
+  end
+
+  # Configure single node using the chef-solo respected role
+  # @param nde[String] name of the node
+  # @return [Boolean] whether we were successfull or not
+  def configure(node)
+    @network_configs[node] = get_node_network_config(node, @config, @env)
+    solo_config = "#{node}-config.json"
+    role_file = GenerateCommand.role_file_name(@config.path, node)
+    unless File.exist?(role_file)
+      @ui.info("Machine '#{node}' should not be configured. Skipping")
+      return true
+    end
+    extra_files = [
+      [role_file, "roles/#{node}.json"],
+      [GenerateCommand.node_config_file_name(@config.path, node), "configs/#{solo_config}"]
+    ]
+    @machine_configurator.configure(@network_configs[node], solo_config, extra_files)
+    node_provisioned?(node)
   end
 
   # Bring up whole configuration or a machine up.
@@ -192,8 +220,9 @@ class UpCommand < BaseCommand
   # @param nodes_to_check [Array<String>] list of nodes to check
   # @return [Array<String>] list of nodes that are still misconfigured.
   def check_and_configure_nodes(nodes_to_check)
-    halt_nodes, unconfigured_nodes = check_nodes(nodes_to_check)
-    halt_nodes.concat(reconfigure(unconfigured_nodes))
+    running_nodes, halt_nodes = running_and_halt_nodes(nodes_to_check)
+    unconfigured_nodes = configure_nodes(running_nodes)
+    halt_nodes.concat(configure_nodes(unconfigured_nodes))
   end
 
   # Destroy all existing nodes and setup configuration
@@ -242,11 +271,18 @@ class UpCommand < BaseCommand
   # @param config_path [String] path to the configuration
   # @param node [String] name of the node that was brought up
   def generate_config_information(working_directory, config_path, node = '')
+    network_config_path = "#{config_path}#{Configuration::NETWORK_FILE_SUFFIX}"
     @ui.info 'All nodes were brought up and configured.'
     @ui.info "DIR_PWD=#{working_directory}"
     @ui.info "CONF_PATH=#{config_path}"
-    @ui.info "Generating #{config_path}#{Configuration::NETWORK_FILE_SUFFIX} file"
-    printConfigurationNetworkInfoToFile(config_path, node)
+    @ui.info "Generating #{network_config_path} file"
+    File.open(network_config_path, 'w') do |file|
+      @network_configs.each_pair do |node_name, config|
+        config.each_pair do |key, value|
+          file.puts("#{node_name}_#{key}=#{value}")
+        end
+      end
+    end
   end
 
   # Switch to the working directory, so all Vagrant commands will

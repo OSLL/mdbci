@@ -118,7 +118,7 @@ class Network
       cmd = "vagrant ssh-config #{node_arg} | grep IdentityFile"
       vagrant_out = `#{cmd}`
       raise "Command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
-      tempHash = { 'key' => vagrant_out.split(' ')[1] }
+      tempHash = { 'key' => vagrant_out.split(' ')[1].sub(/^"/, '').sub(/"$/, '') }
       result.push(tempHash)
       Dir.chdir pwd
     end
@@ -280,6 +280,13 @@ class Network
     return result
   end
 
+  # Get the name of the user to use to connect via SSH.
+  # @param node [String] name of the node to get information
+  # @return [String] name of the user
+  def self.get_ssh_user_name(node)
+    vagrant_out = `vagrant ssh-config #{node} | grep User`.strip
+    vagrant_out.split(/\s+/)[1]
+  end
 end
 
 COMMAND_WHOAMI='whoami'
@@ -300,10 +307,8 @@ def printConfigurationNetworkInfoToFile(configuration=nil,node='')
 end
 
 def collectConfigurationNetworkInfo(configuration,node_one='')
-
   raise 'configuration name is required' if configuration.nil?
   raise 'configuration does not exist' unless Dir.exist? configuration
-
   configurationNetworkInfo = Hash.new
   if node_one.empty?
     nodes = get_nodes(configuration)
@@ -327,4 +332,32 @@ def collectConfigurationNetworkInfo(configuration,node_one='')
     end
   end
   return configurationNetworkInfo
+end
+
+# The following methods should be rewritten to limit the use of vagrant ssh interface
+
+# Connect to all created nodes, get their network configuration
+# @param configuration [Configuration] object that describes configuration we are working with
+# @param session [Session] session object that provides methods to execute ssh commands
+# @return [Hash] node to network configuration
+def get_nodes_network_config_info(configuration, session)
+  configuration.node_names.each_with_object({}) do |node_name, network_config|
+    network_config[node_name] = get_node_network_config(node_name, configuration, session)
+  end
+end
+
+# Get information about the network configuration of the particular node
+# @param node [String] name of the node to get information about
+# @param configuration [Configuration] mdbci configuration
+# @param session [Session] session object that allows to run commands on remote machine
+# @return [Hash] node
+def get_node_network_config(node, configuration, session)
+  node_path = "#{configuration.path}/#{node}"
+  {
+    'network' => Network.getNetwork(node_path)[0]['ip'],
+    'keyfile' => Network.getKeyFile(node_path)[0]['key'],
+    'private_ip' => Network.getIP(node_path)[0]['ip'],
+    'whoami' => Network.get_ssh_user_name(node),
+    'hostname' => session.getSSH(node_path, COMMAND_HOSTNAME)[0].strip
+  }
 end

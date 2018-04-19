@@ -3,7 +3,7 @@
 require_relative 'base_command'
 require_relative '../models/configuration'
 require_relative '../models/command_result.rb'
-require_relative '../helpers/shell_commands'
+require_relative '../services/shell_commands'
 require 'fileutils'
 
 # Command allows to destroy the whole configuration or a specific node.
