@@ -41,7 +41,6 @@ class MachineConfigurator
     options[:auth_methods] = %w[publickey none]
     options[:verify_host_key] = false
     options[:keys] = [machine['keyfile']]
-    options[:send_env] = []
     Net::SSH.start(machine['network'], machine['whoami'], options) do |ssh|
       yield ssh
     end
