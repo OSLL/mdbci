@@ -57,8 +57,9 @@ class MachineConfigurator
     output = ''
     connection.open_channel do |channel, _success|
       channel.on_data do |_, data|
-        log_printable_lines(data)
-        output += "#{data}\n"
+        converted_data = data.force_encoding('UTF-8')
+        log_printable_lines(converted_data)
+        output += "#{converted_data}\n"
       end
       channel.on_extended_data do |ch, _, data|
         if data =~ /^\[sudo\] password for /
