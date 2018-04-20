@@ -4,6 +4,8 @@ require 'getoptlong'
 require 'json'
 require 'mysql2'
 
+MAXSCALE_THREADS_REGEX = /threads=(\d*)/
+
 # Db parameters
 DEFAULT_FILE = '/home/vagrant/build_parser_db_password'
 DB_NAME = 'test_results_db'
@@ -177,13 +179,16 @@ def write_to_maxscale_parameters(client, build_params, test_run_id)
   puts "write_to_maxscale_parameters"
   if File.file?(build_params[MAXSCALE_CNF])
     maxscale_cnf_content = File.read(build_params[MAXSCALE_CNF])
+    if maxscale_cnf_content =~ MAXSCALE_THREADS_REGEX
+      maxscale_threads = maxscale_cnf_content.match(MAXSCALE_THREADS_REGEX).captures[0]
+    end
   else
     maxscale_cnf_content = ''
   end
   maxscale_parameters_query = "INSERT INTO maxscale_parameters "\
-  "(id, target, maxscale_commit_id, maxscale_cnf, maxscale_source, maxscale_cnf_file_name) VALUES ("\
+  "(id, target, maxscale_commit_id, maxscale_cnf, maxscale_source, maxscale_cnf_file_name, maxscale_threads) VALUES ("\
   "'#{test_run_id}', '#{build_params[TARGET]}', '#{build_params[MAXSCALE_COMMIT_ID]}', "\
-  "'#{maxscale_cnf_content}', '#{build_params[MAXSCALE_SOURCE]}', '#{build_params[MAXSCALE_CNF]}')"
+  "'#{maxscale_cnf_content}', '#{build_params[MAXSCALE_SOURCE]}', '#{build_params[MAXSCALE_CNF]}', #{maxscale_threads || 'NULL'})"
 
   puts maxscale_parameters_query
   client.query(maxscale_parameters_query)

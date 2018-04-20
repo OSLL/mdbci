@@ -50,6 +50,7 @@ CREATE TABLE maxscale_parameters (
   maxscale_cnf LONGTEXT,
   maxscale_source VARCHAR(256),
   maxscale_cnf_file_name VARCHAR(500),
+  maxscale_threads INT,
   FOREIGN KEY (id) REFERENCES performance_test_run(id)
 );
 
@@ -78,4 +79,4 @@ CREATE TABLE sysbench_results (
 CREATE TABLE db_metadata (
   version INT
 );
-INSERT INTO db_metadata (version) VALUES (7);
+INSERT INTO db_metadata (version) VALUES (8);

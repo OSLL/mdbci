@@ -17,7 +17,8 @@ SYSBENCH_BLOCK_LAST_LINE = 'execution time (avg/stddev)'
 SYSBENCH_RESULTS_RAW = 'SYSBENCH_RESULTS_RAW'
 
 # MAXSCALE_COMMIT_REGEX = /MaxScale\s+.*\d+\.*\d*\.*\d*\s+-\s+(.+)/
-MAXSCALE_SOURCE_REGEX = /MaxScale version: maxscale-(.*)/
+MAXSCALE_SOURCE_REGEX = /MaxScale version: maxscale-(.*)\n/
+MAXSCALE_CONFIG_FILE_PATH_REGEX = /MaxScale configuration: (.*)/
 SYSBENCH_VERSION_REGEX = /DEBUG: ssh: sysbench (.*) \(/
 SYSBENCH_THREADS_REGEX = /Number of threads: (\d*)/
 
@@ -26,6 +27,7 @@ BENCHMARK_RESULTS = 'benchmark_results'
 
 $maxscale_commit = nil
 $maxscale_source = nil
+$maxscale_config_file_path = nil
 $test_tool_version = nil
 $sysbench_threads = nil
 
@@ -92,6 +94,9 @@ def extract_sysbench_results_raw(input_file)
       end
       if line =~ SYSBENCH_THREADS_REGEX and $sysbench_threads.nil?
         $sysbench_threads = line.match(SYSBENCH_THREADS_REGEX).captures[0]
+      end
+      if line =~ MAXSCALE_CONFIG_FILE_PATH_REGEX and $maxscale_config_file_path.nil?
+        $maxscale_config_file_path = line.match(MAXSCALE_CONFIG_FILE_PATH_REGEX).captures[0]
       end
       if line.include?(SYSBENCH_BLOCK_START)
         puts "Found start of sysbench block"
@@ -214,7 +219,11 @@ end
 
 def get_build_params_hash
   template_path = ENV['name'] ? "#{ENV['HOME']}/mdbci/#{ENV['name']}.json" : 'NOT FOUND'
-  cnf_path = File.exist?('maxscale.cnf') ? "#{Dir.pwd}/maxscale.cnf" : 'NOT FOUND'
+  if !$maxscale_config_file_path.nil? && File.exist?($maxscale_config_file_path)
+    cnf_path = $maxscale_config_file_path
+  else
+    cnf_path = 'NOT FOUND'
+  end
   return {
       'jenkins_id' => ENV['BUILD_NUMBER'] || 'NOT FOUND',
       'start_time' => ENV['BUILD_TIMESTAMP'] || 'NOT FOUND',
