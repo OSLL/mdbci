@@ -88,7 +88,7 @@ class MachineConfigurator
 
   def log_printable_lines(lines)
     lines.split("\n").map(&:chomp)
-         .select { |line| line =~ /\p{Graph}+/ }
+         .select { |line| line =~ /\p{Graph}+/mu }
          .each do |line|
       @log.debug("ssh: #{line}")
     end
