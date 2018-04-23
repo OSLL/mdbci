@@ -11,6 +11,12 @@
     "platform": "debian",
     "platform_version": "jessie"
   },
+  "debian_stretch_libvirt": {
+    "provider": "libvirt",
+    "box": "generic/debian9",
+    "platform": "debian",
+    "platform_version": "stretch"
+  },
   "ubuntu_trusty_libvirt": {
     "provider": "libvirt",
     "box": "baremettle/ubuntu-14.04",
@@ -62,5 +68,11 @@
     "platform": "opensuse",
     "box": "webhippie/opensuse-13.2",
     "platform_version": "13"
+  },
+  "sles_12_libvirt" : {
+    "provider": "libvirt",
+    "box": "suse/sles12sp1",
+    "platform": "sles",
+    "platform_version": "12"
   }
 }
