@@ -71,7 +71,7 @@
   },
   "sles_12_libvirt" : {
     "provider": "libvirt",
-    "box": "suse/sles12sp1",
+    "box": "elastic/sles-12-x86_64",
     "platform": "sles",
     "platform_version": "12"
   }
