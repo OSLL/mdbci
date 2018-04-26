@@ -4,6 +4,8 @@ require 'getoptlong'
 require 'json'
 require 'mysql2'
 
+MAXSCALE_THREADS_REGEX = /threads=(\d*)/
+
 # Db parameters
 DEFAULT_FILE = '/home/vagrant/build_parser_db_password'
 DB_NAME = 'test_results_db'
@@ -36,6 +38,7 @@ MAXSCALE_COMMIT_ID = "maxscale_commit_id"
 MAXSCALE_CNF = "maxscale_cnf"
 TEST_TOOL_VERSION = 'test_tool_version'
 MAXSCALE_SOURCE = 'maxscale_source'
+SYSBENCH_THREADS = 'sysbench_threads'
 
 # OLTP_TEST_STATISTICS_QUERIES_PERFORMED_READ = "OLTP_test_statistics_queries_performed_read"
 # OLTP_TEST_STATISTICS_QUERIES_PERFORMED_WRITE = "OLTP_test_statistics_queries_performed_write"
@@ -146,14 +149,14 @@ def write_to_performance_test_run(client, build_params)
   performance_test_run_query = "INSERT INTO performance_test_run (jenkins_id, "\
   "start_time, box, product, mariadb_version, "\
   "test_code_commit_id, job_name, machine_count, sysbench_params, "\
-  "test_tool, product_under_test, mdbci_template, test_tool_version) "\
+  "test_tool, product_under_test, mdbci_template, test_tool_version, sysbench_threads) "\
   "VALUES ('#{build_params[JENKINS_ID]}', '#{build_params[START_TIME]}', "\
   "'#{build_params[BOX]}', '#{build_params[PRODUCT]}', "\
   "'#{build_params[MARIADB_VERSION]}', '#{build_params[TEST_CODE_COMMIT_ID]}', "\
   "'#{build_params[JOB_NAME]}', '#{build_params[MACHINE_COUNT]}', "\
   "'#{build_params[SYSBENCH_PARAMS]}', '#{build_params[TEST_TOOL]}', "\
   "'#{build_params[PRODUCT_UNDER_TEST]}', '#{mdbci_template_content}', "\
-  "'#{build_params[TEST_TOOL_VERSION]}')"
+  "'#{build_params[TEST_TOOL_VERSION]}', '#{build_params[SYSBENCH_THREADS]}')"
 
   puts performance_test_run_query
   client.query(performance_test_run_query)
@@ -176,13 +179,16 @@ def write_to_maxscale_parameters(client, build_params, test_run_id)
   puts "write_to_maxscale_parameters"
   if File.file?(build_params[MAXSCALE_CNF])
     maxscale_cnf_content = File.read(build_params[MAXSCALE_CNF])
+    if maxscale_cnf_content =~ MAXSCALE_THREADS_REGEX
+      maxscale_threads = maxscale_cnf_content.match(MAXSCALE_THREADS_REGEX).captures[0]
+    end
   else
     maxscale_cnf_content = ''
   end
   maxscale_parameters_query = "INSERT INTO maxscale_parameters "\
-  "(id, target, maxscale_commit_id, maxscale_cnf, maxscale_source) VALUES ("\
+  "(id, target, maxscale_commit_id, maxscale_cnf, maxscale_source, maxscale_cnf_file_name, maxscale_threads) VALUES ("\
   "'#{test_run_id}', '#{build_params[TARGET]}', '#{build_params[MAXSCALE_COMMIT_ID]}', "\
-  "'#{maxscale_cnf_content}', '#{build_params[MAXSCALE_SOURCE]}')"
+  "'#{maxscale_cnf_content}', '#{build_params[MAXSCALE_SOURCE]}', '#{build_params[MAXSCALE_CNF]}', #{maxscale_threads || 'NULL'})"
 
   puts maxscale_parameters_query
   client.query(maxscale_parameters_query)
@@ -203,13 +209,10 @@ def write_to_sysbench_results(client, benchmark_results, test_run_id)
   "OLTP_test_statistics_queries_performed_other, "\
   "OLTP_test_statistics_queries_performed_total, "\
   "OLTP_test_statistics_transactions, "\
-  "OLTP_test_statistics_read_write_requests, "\
-  "OLTP_test_statistics_other_operations, "\
   "OLTP_test_statistics_ignored_errors, "\
   "OLTP_test_statistics_reconnects, "\
   "General_statistics_total_time, "\
   "General_statistics_total_number_of_events, "\
-  "General_statistics_total_time_taken_by_event_execution, "\
   "General_statistics_response_time_min, "\
   "General_statistics_response_time_avg, "\
   "General_statistics_response_time_max, "\
@@ -224,13 +227,10 @@ def write_to_sysbench_results(client, benchmark_results, test_run_id)
   "'#{benchmark_results[SQL_STATISTICS_QUERIES_PERFORMED_OTHER]}', "\
   "'#{benchmark_results[SQL_STATISTICS_QUERIES_PERFORMED_TOTAL]}', "\
   "'#{benchmark_results[SQL_STATISTICS_TRANSACTIONS]}', "\
-  "NULL, "\
-  "NULL, "\
   "'#{benchmark_results[SQL_STATISTICS_IGNORED_ERRORS]}', "\
   "'#{benchmark_results[SQL_STATISTICS_RECONNECTS]}', "\
   "'#{benchmark_results[GENERAL_STATISTICS_TOTAL_TIME]}', "\
   "'#{benchmark_results[GENERAL_STATISTICS_TOTAL_NUMBER_OF_EVENTS]}', "\
-  "NULL, "\
   "'#{benchmark_results[LATENCY_MS_MIN]}', "\
   "'#{benchmark_results[LATENCY_MS_AVG]}', "\
   "'#{benchmark_results[LATENCY_MS_MAX]}', "\
