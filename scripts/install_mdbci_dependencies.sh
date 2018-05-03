@@ -1,6 +1,7 @@
 #!/bin/bash
 # This script installs MDBCI dependencies and sets them up
-# as required by the tool.
+# as required by the tool. This scirpt only supports
+# debian and ubuntu distributives.
 
 # Get the location of the script and go into that directory.
 script_dir=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
@@ -9,16 +10,16 @@ cd $script_dir
 # Determine distribution and set up distribution-specific variables
 distr=`awk -F= '/^ID=/{print $2}' /etc/os-release`
 if [ $distr = debian ] ; then
-    distr_codename=`awk -F"[()]" '/^VERSION=/{print $2}' /etc/os-release`
-    libvirt_packages="libvirt-daemon-system libvirt-clients virtinst"
-    libvirt_group=libvirt
+  distr_codename=`awk -F"[()]" '/^VERSION=/{print $2}' /etc/os-release`
+  libvirt_packages="libvirt-daemon-system libvirt-clients virtinst"
+  libvirt_group=( libvirt libvirt-qemu )
 elif [ $distr = ubuntu ] ; then
-    distr_codename=`awk -F= '/^UBUNTU_CODENAME=/{print $2}' /etc/os-release`
-    libvirt_packages="libvirt-bin virtinst"
-    libvirt_group=libvirtd
+  distr_codename=`awk -F= '/^UBUNTU_CODENAME=/{print $2}' /etc/os-release`
+  libvirt_packages="libvirt-bin virtinst"
+  libvirt_group=( libvirtd )
 else
-    echo Unsupported Linux distribution: $distr
-    exit 1
+  echo Unsupported Linux distribution: $distr
+  exit 1
 fi
 
 # Function executes the passed command. If it is not successfull, then
@@ -59,24 +60,27 @@ failOnError sudo apt-get install -y ruby \
                                     libvirt-dev \
                                     zlib1g-dev
 # Install ruby gems used by the mdbci
-failOnError sudo gem install ipaddress
-failOnError sudo gem install json-schema -v 2.6.2
+failOnError sudo gem install ipaddress -v 0.8.3
+failOnError sudo gem install json-schema -v 2.8.0
+failOnError sudo gem install net-ssh -v 4.2.0
+failOnError sudo gem install net-scp -v 1.2.1
 # Install the Vagrant and plugins used by the mdbci
-if [[ $(vagrant --version) != "Vagrant 1.8.1" ]]; then
-        failOnError wget https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.deb
-        failOnError sudo dpkg -i vagrant_1.8.1_x86_64.deb
-        failOnError rm vagrant_1.8.1_x86_64.deb
+if [[ $(vagrant --version) != "Vagrant 2.0.4" ]]; then
+  failOnError wget https://releases.hashicorp.com/vagrant/2.0.4/vagrant_2.0.4_x86_64.deb
+  failOnError sudo dpkg -i vagrant_2.0.4_x86_64.deb
+  failOnError rm vagrant_2.0.4_x86_64.deb
 fi
 failOnError vagrant plugin install vagrant-aws --plugin-version 0.7.2
-failOnError vagrant plugin install vagrant-libvirt --plugin-version 0.0.33
-failOnError vagrant plugin install vagrant-mutate --plugin-version 1.2.0
-failOnError vagrant plugin install vagrant-omnibus --plugin-version 1.5.0
+failOnError vagrant plugin install vagrant-libvirt --plugin-version 0.0.43
 failOnError vagrant box add --force dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
 
 # Install libvirt and tools to controll it including virsh, virt-clone
 failOnError sudo apt install -y qemu-kvm $libvirt_packages
 # Allow user to manage libvirt daemon
-failOnError sudo adduser $USER $libvirt_group
+for group in $libvirt_group
+do
+  failOnError sudo adduser $USER $group
+done
 
 # Configure libvirt daemon images path
 warnOnError sudo virsh pool-destroy default
@@ -102,7 +106,6 @@ failOnError sudo apt-get update
 failOnError sudo apt-get install "docker-engine=1.11.0-0~$distr_codename" -y --allow-downgrades
 failOnError sudo groupadd -f docker
 failOnError sudo usermod -aG docker $USER
-
 
 # After that user shoud logout and login
 # exec su $USER
