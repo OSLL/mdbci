@@ -1,0 +1,83 @@
+community:
+  repo:
+    rpm:
+      path: http://yum.mariadb.org/
+      key: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    deb:
+      path: http://mirror.netinch.com/pub/mariadb/repo/
+      key: "0xcbcb082a1bb943db"
+  platforms: [centos, debian, opensuse, rhel, sles, ubuntu]
+columnstore:
+  repo:
+    rpm:
+      path: https://downloads.mariadb.com/ColumnStore/
+      key: https://downloads.mariadb.com/ColumnStore/MariaDB-ColumnStore.gpg.key
+    deb:
+      path: https://downloads.mariadb.com/ColumnStore/
+      key: "AD0DEAFDA41F5C14"
+  platforms: [centos, debian, sles, ubuntu]
+galera:
+  repo:
+    rpm:
+      path: http://yum.mariadb.org/
+      key: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    deb:
+      path: http://mirror.netinch.com/pub/mariadb/repo/
+      key: "0xcbcb082a1bb943db"
+  platforms: [centos, debian, opensuse, rhel, sles, ubuntu]
+maxscale_ci:
+  repo:
+    rpm:
+      path: http://max-tst-01.mariadb.com/ci-repository/##ci##/mariadb-maxscale/
+      key: https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY
+      ci_default: develop
+    deb:
+      path: http://max-tst-01.mariadb.com/ci-repository/##ci##/mariadb-maxscale/
+      key: "135659e928c12247"
+      ci_default: develop
+  platforms: [centos, debian, opensuse, rhel, sles, ubuntu]
+maxscale_release:
+  repo:
+    rpm:
+      path: https://downloads.mariadb.com/MaxScale/
+      key: https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY
+      old_key: https://downloads.mariadb.com/MaxScale/old_key.public
+      old_key_versions: ["1.1", "1.2", "1.2-debug", "1.2.1", "1.2.1-debug", "1.3.0", "1.3.0-beta", "1.3.0-beta-debug",
+                         "1.3.0-debug", "1.4", "1.4.0", "1.4.0-debug", "1.4.1", "1.4.1-debug", "1.4.2", "1.4.2-debug",
+                         "1.4.3", "1.4.4", "1.4.4-debug", "1.4.5", "1.4.5-debug", "2.0", "2.0.0", "2.0.0-debug",
+                         "2.0.1", "2.0.1-debug", "2.0.1-oct27", "2.0.2", "2.0.2-debug", "2.0.3", "2.0.3-debug",
+                         "2.0.4", "2.0.4-debug", "2.0.5", "2.0.5-debug", "2.0.6", "2.1", "2.1.0", "2.1.0-debug",
+                         "2.1.1", "2.1.1-debug", "2.1.2", "2.1.2-debug", "2.1.3", "2.1.4", "2.1.4-debug", "2.1.5",
+                         "2.1.5-1", "2.1.5-debug", "2.1.6", "2.1.6-debug", "2.1.7", "2.1.7-debug", "2.1.8", "2.1.8-debug",
+                         "2.1.9", "2.1.9-debug", "2.2.0"]
+    deb:
+      path: https://downloads.mariadb.com/MaxScale/
+      key: "135659e928c12247"
+      old_key: "70E4618A8167EE24"
+      old_key_versions: ["1.1", "1.2", "1.2-debug", "1.2.1", "1.2.1-debug", "1.3.0", "1.3.0-beta", "1.3.0-beta-debug",
+                         "1.3.0-debug", "1.4", "1.4.0", "1.4.0-debug", "1.4.1", "1.4.1-debug", "1.4.2", "1.4.2-debug",
+                         "1.4.3", "1.4.4", "1.4.4-debug", "1.4.5", "1.4.5-debug", "2.0", "2.0.0", "2.0.0-debug",
+                         "2.0.1", "2.0.1-debug", "2.0.1-oct27", "2.0.2", "2.0.2-debug", "2.0.3", "2.0.3-debug",
+                         "2.0.4", "2.0.4-debug", "2.0.5", "2.0.5-debug", "2.0.6", "2.1", "2.1.0", "2.1.0-debug",
+                         "2.1.1", "2.1.1-debug", "2.1.2", "2.1.2-debug", "2.1.3", "2.1.4", "2.1.4-debug", "2.1.5",
+                         "2.1.5-1", "2.1.5-debug", "2.1.6", "2.1.6-debug", "2.1.7", "2.1.7-debug", "2.1.8", "2.1.8-debug",
+                         "2.1.9", "2.1.9-debug", "2.2.0"]
+  platforms: [centos, debian, opensuse, rhel, sles, ubuntu]
+mdbe:
+  repo:
+    rpm:
+      path: http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/
+      key: https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY
+    deb:
+      path: http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/
+      key: https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY
+  platforms: [centos, debian, opensuse, rhel, sles, ubuntu]
+mysql:
+  repo:
+    rpm:
+      path: http://repo.mysql.com/yum/
+      key: http://repo.mysql.com/RPM-GPG-KEY-mysql
+    deb:
+      path: http://repo.mysql.com/apt/
+      key: http://repo.mysql.com/RPM-GPG-KEY-mysql
+  platforms: [centos, rhel, sles, debian, ubuntu]
