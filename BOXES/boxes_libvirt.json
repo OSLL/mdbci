@@ -43,6 +43,13 @@
     "platform": "ubuntu",
     "platform_version": "xenial"
   },
+  "ubuntu_bionic_libvirt": {
+    "provider": "libvirt",
+    "box": "SharkLinux/Bionic",
+    "ssh_pty" : "false",
+    "platform": "ubuntu",
+    "platform_version": "bionic"
+  },
   "centos_7_libvirt": {
     "provider": "libvirt",
     "box": "centos/7",
