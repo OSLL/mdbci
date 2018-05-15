@@ -45,7 +45,7 @@
   },
   "ubuntu_bionic_libvirt": {
     "provider": "libvirt",
-    "box": "SharkLinux/Bionic",
+    "box": "d3atiq/ubuntu-18.04-server",
     "ssh_pty" : "false",
     "platform": "ubuntu",
     "platform_version": "bionic"
