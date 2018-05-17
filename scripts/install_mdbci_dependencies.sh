@@ -1,7 +1,8 @@
 #!/bin/bash
 # This script installs MDBCI dependencies and sets them up
 # as required by the tool. This scirpt only supports
-# debian and ubuntu distributives.
+# Debian and Ubuntu distributives. If the distributive can
+# not be determined, the rules for Ubuntu will apply.
 
 # Get the location of the script and go into that directory.
 script_dir=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
@@ -13,13 +14,13 @@ if [ $distr = debian ] ; then
   distr_codename=`awk -F"[()]" '/^VERSION=/{print $2}' /etc/os-release`
   libvirt_packages="libvirt-daemon-system libvirt-clients virtinst"
   libvirt_group=( libvirt libvirt-qemu )
-elif [ $distr = ubuntu ] ; then
+else
+  if [ $distr != ubuntu ] ; then
+    echo "--> Can not determine you distributive: $distr, rules for Ubuntu will apply"
+  fi
   distr_codename=`awk -F= '/^UBUNTU_CODENAME=/{print $2}' /etc/os-release`
   libvirt_packages="libvirt-bin virtinst"
   libvirt_group=( libvirtd )
-else
-  echo Unsupported Linux distribution: $distr
-  exit 1
 fi
 
 # Function executes the passed command. If it is not successfull, then
