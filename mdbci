@@ -3,10 +3,6 @@
 
 require 'getoptlong'
 
-require_relative 'core/session'
-require_relative 'core/node_product'
-require_relative 'core/out'
-require_relative 'core/exception_handler'
 
 # Reading options
 opts = GetoptLong.new(
@@ -31,7 +27,13 @@ opts = GetoptLong.new(
   ['--template', '-t', GetoptLong::REQUIRED_ARGUMENT]
 )
 
-$mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
+$mdbci_exec_dir = File.expand_path(File.dirname(File.realpath(__FILE__)))
+$LOAD_PATH.unshift($mdbci_exec_dir) unless $LOAD_PATH.include?($mdbci_exec_dir)
+
+require 'core/session'
+require 'core/node_product'
+require 'core/out'
+require 'core/exception_handler'
 
 session = Session.new
 $session = session
@@ -44,7 +46,6 @@ session.ipv6 = false
 out = Out.new(session)
 $out = out
 
-$current_dir = Dir.pwd
 Dir.chdir ENV['MDBCI_VM_PATH'] unless ENV['MDBCI_VM_PATH'].nil?
 $work_dir = Dir.pwd
 
