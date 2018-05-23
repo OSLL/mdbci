@@ -30,11 +30,9 @@ maxscale_ci:
     rpm:
       path: http://max-tst-01.mariadb.com/ci-repository/##ci##/mariadb-maxscale/
       key: https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY
-      ci_default: develop
     deb:
       path: http://max-tst-01.mariadb.com/ci-repository/##ci##/mariadb-maxscale/
       key: "135659e928c12247"
-      ci_default: develop
   platforms: [centos, debian, opensuse, rhel, sles, ubuntu]
 maxscale_release:
   repo:

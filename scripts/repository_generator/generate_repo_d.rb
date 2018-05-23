@@ -6,17 +6,18 @@ require 'pp'
 require 'tmpdir'
 require 'json'
 require 'fileutils'
+require 'logger'
 
 require_relative 'config'
 
 class GenerateRepoD
   attr_reader :directory
-  DEFAULT_PRODUCTS = %w[columnstore community galera maxscale_ci mdbe mysql]
+  DEFAULT_PRODUCTS = %w[columnstore community galera maxscale_release maxscale_ci mdbe mysql]
   PRODUCTS_DIR_NAMES = {
     'columnstore': 'columnstore',
     'community': 'community',
     'galera': 'galera',
-    'maxscale_ci': 'maxscale',
+    'maxscale_ci': 'maxscale_ci',
     'maxscale_release': 'maxscale',
     'mdbe': 'mdbe',
     'mysql': 'mysql'
@@ -24,13 +25,20 @@ class GenerateRepoD
 
   def initialize
     @directory = Dir.mktmpdir
+    @products_results = {}
+    @logger = Logger.new('generate_repo_d.log', 'monthly')
     puts "Creating configuration in #{@directory}"
+    @logger.info "Creating configuration in #{@directory}"
   end
 
   # Get links on the specified page
   def get_links(repo_page, path = '/')
     uri = "#{repo_page}/#{path}"
-    doc = Nokogiri::HTML(open(uri))
+    begin
+      doc = Nokogiri::HTML(open(uri))
+    rescue OpenURI::HTTPError => e
+      raise OpenURI::HTTPError.new(e.message + ", uri: #{uri}", e.io)
+    end
     doc.css('a')
   end
 
@@ -54,6 +62,7 @@ class GenerateRepoD
 
   def create_repo(repo_page, systems, release_info, system, type, product, lambdas = {})
     puts "Creating repository configuration for #{system} and #{product} #{release_info[:name]} release"
+    @logger.info "Creating repository configuration for #{system} and #{product} #{release_info[:name]} release"
     system_type = systems[type]
     subpath = system_type[:path]
     repos = get_links(repo_page, "#{release_info[:path]}/#{subpath}").select do |link|
@@ -142,6 +151,7 @@ class GenerateRepoD
 
   def create_repo_for_platforms(platforms, product, release_info, system_info, system_type, systems)
     puts "Configuring #{product} release #{release_info[:name]}"
+    @logger.info "Configuring #{product} release #{release_info[:name]}"
     platforms.each do |system_name|
       next if system_type != system_type_by_system_name(system_name)
       send("create_repo_#{product}".to_sym,
@@ -294,7 +304,8 @@ class GenerateRepoD
   end
 
   def parse_maxscale_ci(config)
-    ci = @maxscale_ci || config['repo']['deb']['ci_default']
+    raise ArgumentError.new('Parameter maxscale_ci not specified') if @maxscale_ci.nil?
+    ci = @maxscale_ci
     deb_repo_page = config['repo']['deb']['path'].sub('##ci##', ci)
     rpm_repo_page = config['repo']['rpm']['path'].sub('##ci##', ci)
 
@@ -381,10 +392,12 @@ class GenerateRepoD
     product = 'mysql'
 
     puts 'Configuring mysql for debian systems'
+    @logger.info 'Configuring mysql for debian systems'
     config['platforms'].each do |system_name|
       next if system_type_by_system_name(system_name) != :debian
 
       puts "Creating repository configuration for #{system_name}"
+      @logger.info "Creating repository configuration for #{system_name}"
       repos = get_links(repo_page).select do |link|
         link.content =~ /^#{system_name}(\/?)$/
       end.each_with_object([]) do |link, repositories|
@@ -463,19 +476,34 @@ class GenerateRepoD
     @maxscale_ci = maxscale_ci
     @config = Config::parse(config_file)
     products.each do |product|
+      product_name = PRODUCTS_DIR_NAMES[product] || PRODUCTS_DIR_NAMES[product.to_sym]
+      @products_results[product] = false
       FileUtils.rm_rf("#{@directory}/.", secure: true)
       begin
         send("parse_#{product}".to_sym, @config[product])
       rescue Exception => e
-        puts "ERROR: #{product} was not generated"
-        puts e
+        puts "ERROR: #{product} was not generated. Try again or open the folder with the "\
+             "incorrectly generated repository #{@directory}/#{product_name}"
+        puts e.message
+        @logger.error "#{product} was not generated."
+        @logger.error e.message
         next
       end
-      product_name = PRODUCTS_DIR_NAMES[product] || PRODUCTS_DIR_NAMES[product.to_sym]
       next if product_name.nil?
+      @products_results[product] = true
       FileUtils.mkdir_p("#{dest}/#{product_name}")
       FileUtils.rm_rf("#{dest}/#{product_name}/.", secure: true)
       FileUtils.cp_r("#{@directory}/.", "#{dest}/#{product_name}")
+    end
+    print_summary
+  end
+
+  def print_summary
+    puts "\n--------\nSUMMARY:\n"
+    @logger.info "\n--------\nSUMMARY:\n"
+    @products_results.each do |product, result|
+      puts "  #{product}: #{result ? '+' : '-'}"
+      @logger.info "  #{product}: #{result ? '+' : '-'}"
     end
   end
 end
@@ -487,20 +515,27 @@ Usage:
 
   CONFIG_FILE: The config file path.
   DESTINATION_PATH: The destination path.
-  PRODUCT (optional): Generate the repository for the specified product.
-  PRODUCT_ARG (optional): Only for maxscale_ci - $ci (example: develop).
+  PRODUCT: Generate the repository for the specified product. Use ALL for generate the repository for all products.
+  PRODUCT_ARG: For maxscale_ci - $ci (example: develop).
 
 Examples:
-  Generate repo.d for all products: `generate_repo_d ./config_template.yaml ~/mdbci/repo.d`
-  Generate repod.d for maxscale_ci and default $ci: `generate_repo_d ./config_template.yaml ~/mdbci/repo.d maxscale_ci`
+  Generate repo.d for all products: `generate_repo_d ./config_template.yaml ~/mdbci/repo.d ALL develop`
+  Generate repod.d for maxscale_release: `generate_repo_d ./config_template.yaml ~/mdbci/repo.d maxscale_release`
   Generate repod.d for maxscale_ci and specified $ci: `generate_repo_d ./config_template.yaml ~/mdbci/repo.d maxscale_ci develop`
+  Generate repod.d for mysql: `generate_repo_d ./config_template.yaml ~/mdbci/repo.d mysql`
   EOF
   exit 0
 end
 
 CONFIG_FILE = ARGV.shift
 DESTINATION_PATH = ARGV.shift
-PRODUCTS = ARGV.first.nil? ? GenerateRepoD::DEFAULT_PRODUCTS : [ARGV.shift]
+products_arg =ARGV.shift
+PRODUCTS = (products_arg == 'ALL' ? GenerateRepoD::DEFAULT_PRODUCTS : [products_arg])
 PRODUCT_ARG = ARGV.shift
+
+if PRODUCTS.include?('maxscale_ci') && (PRODUCT_ARG.nil? || (PRODUCT_ARG.nil? && PRODUCT_ARG.empty?))
+  puts 'ERROR: Parameter maxscale_ci not specified'
+  exit 1
+end
 
 GenerateRepoD.new.generate(CONFIG_FILE, PRODUCTS, DESTINATION_PATH, PRODUCT_ARG) if $0 == __FILE__
