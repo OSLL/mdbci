@@ -59,7 +59,7 @@ class GenerateRepoD
   end
 
   def dir_link?(link)
-    link.content =~ /\/$/ || link[:href] =~ /^(?!((http|https):\/\/|\.{2}|\/|\?)).*\/$/
+    link.content =~ %r{\/$} || link[:href] =~ /^(?!((http|https):\/\/|\.{2}|\/|\?)).*\/$/
   end
 
   def create_repo(repo_page, systems, release_info, system, type, product, lambdas = {})
@@ -70,10 +70,10 @@ class GenerateRepoD
       if !lambdas[:repo_link_detector].nil?
         lambdas[:repo_link_detector].call(link)
       else
-        link.content =~ /^#{system}(\/?)$/
+        link.content =~ %r{^#{system}(\/?)$}
       end
     end.each_with_object([]) do |link, repositories|
-      repo_link = "#{release_info[:path]}/#{subpath}/#{link[:href]}".gsub(/\/\//, '/')
+      repo_link = "#{release_info[:path]}/#{subpath}/#{link[:href]}".gsub(%r{\/\/}, '/')
       add_repo_from_platform_dir(product, release_info[:name], repo_link, repo_page, repositories, system, system_type)
     end
 
@@ -110,7 +110,7 @@ class GenerateRepoD
         key: ->(_version) { config['repo']['deb']['key'] },
         release_path: ->(repo_link) { "#{repo_link}/dists" },
         release_name: ->(release) { release },
-        repo_path: ->(repo_link, release_name) {
+        repo_path: lambda { |repo_link, release_name|
           "#{config['repo']['deb']['path']}#{repo_link} #{release_name} main"
         }
       },
@@ -120,7 +120,7 @@ class GenerateRepoD
         key: ->(_version) { config['repo']['rpm']['key'] },
         release_path: ->(repo_link) { repo_link },
         release_name: ->(release) { release },
-        repo_path: ->(repo_link, release_name) {
+        repo_path: lambda { |repo_link, release_name|
           "#{config['repo']['rpm']['path']}#{repo_link}/#{release_name}/x86_64"
         }
       }
@@ -140,7 +140,7 @@ class GenerateRepoD
           lambdas[:viable_release_detector].call(system_type, system_info, link, links)
         else
           config['platforms'].map do |system_name|
-            links.grep(/^#{system_name}(\/?)$/).any?
+            links.grep(%r{^#{system_name}(\/?)$}).any?
           end.any?
         end
       end.each do |release|
@@ -175,7 +175,7 @@ class GenerateRepoD
       system,
       type,
       'columnstore',
-      repo_link_detector: ->(link) {
+      repo_link_detector: lambda { |link|
         link.content.include?(system) && !link.content.include?('.')
       }
     )
@@ -197,7 +197,7 @@ class GenerateRepoD
       system,
       type,
       'maxscale',
-      result_handler: ->(repos) {
+      result_handler: lambda { |repos|
         repos.each do |repo|
           platform = repo[:platform]
           platform_version = repo[:platform_version]
@@ -215,7 +215,7 @@ class GenerateRepoD
       system,
       type,
       'maxscale',
-      result_handler: ->(repos) {
+      result_handler: lambda { |repos|
         repos.each do |repo|
           platform = repo[:platform]
           platform_version = repo[:platform_version]
@@ -237,9 +237,9 @@ class GenerateRepoD
       system,
       type,
       'mysql',
-      repo_link_detector: ->(link) {
-        (%w[centos rhel].include?(system) && !(link.content =~ /^el(\/?)$/).nil?) ||
-          (system == 'sles' && !(link.content =~ /^sles(\/?)$/).nil?)
+      repo_link_detector: lambda { |link|
+        (%w[centos rhel].include?(system) && !(link.content =~ %r{^el(\/?)$}).nil?) ||
+          (system == 'sles' && !(link.content =~ %r{^sles(\/?)$}).nil?)
       }
     )
   end
@@ -252,7 +252,7 @@ class GenerateRepoD
     systems = {
       debian: {
         path: 'repo',
-        repo_path: -> (repo_link, _release_name) { "#{config['repo']['deb']['path']}#{repo_link}" }
+        repo_path: ->(repo_link, _release_name) { "#{config['repo']['deb']['path']}#{repo_link}" }
       },
       rhel: {
         path: 'yum'
@@ -263,8 +263,8 @@ class GenerateRepoD
       config,
       'columnstore',
       {
-        viable_release_detector: ->(_system_type, _system_info, _link, links) {
-          links.grep(/^yum(\/?)$/).any? && links.grep(/^repo(\/?)$/).any?
+        viable_release_detector: lambda { |_system_type, _system_info, _link, links|
+          links.grep(%r{^yum(\/?)$}).any? && links.grep(%r{^repo(\/?)$}).any?
         }
       },
       systems
@@ -279,13 +279,13 @@ class GenerateRepoD
     systems = {
       debian: {
         path: 'repo',
-        repo_path: ->(repo_link, release_name) {
+        repo_path: lambda { |repo_link, release_name|
           "#{config['repo']['deb']['path']}#{repo_link} #{release_name} main"
         }
       },
       rhel: {
         path: 'yum',
-        repo_path: ->(repo_link, release_name) {
+        repo_path: lambda { |repo_link, release_name|
           "#{config['repo']['rpm']['path']}#{repo_link}/#{release_name}"
         }
       }
@@ -295,8 +295,8 @@ class GenerateRepoD
       config,
       'mdbe',
       {
-        viable_release_detector: ->(_system_type, _system_info, _link, links) {
-          links.grep(/^yum(\/?)$/).any? && links.grep(/^repo(\/?)$/).any?
+        viable_release_detector: lambda { |_system_type, _system_info, _link, links|
+          links.grep(%r{^yum(\/?)$}).any? && links.grep(%r{^repo(\/?)$}).any?
         }
       },
       systems
@@ -304,7 +304,7 @@ class GenerateRepoD
   end
 
   def parse_maxscale_ci(config)
-    raise ArgumentError.new('Parameter maxscale_ci not specified') if @maxscale_ci.nil?
+    raise ArgumentError, 'Parameter maxscale_ci not specified' if @maxscale_ci.nil?
     ci = @maxscale_ci
     deb_repo_page = config['repo']['deb']['path'].sub('##ci##', ci)
     rpm_repo_page = config['repo']['rpm']['path'].sub('##ci##', ci)
@@ -313,14 +313,14 @@ class GenerateRepoD
       debian: {
         path: '',
         repo_page: deb_repo_page,
-        repo_path: ->(repo_link, release_name) {
+        repo_path: lambda { |repo_link, release_name|
           "#{deb_repo_page}#{repo_link} #{release_name} main"
         }
       },
       rhel: {
         path: '',
         repo_page: rpm_repo_page,
-        repo_path: ->(repo_link, release_name) {
+        repo_path: lambda { |repo_link, release_name|
           "#{rpm_repo_page}#{repo_link}/#{release_name}/$basearch"
         }
       }
@@ -331,10 +331,7 @@ class GenerateRepoD
       'maxscale_ci',
       {},
       systems,
-      {
-        name: 'default',
-        path: ''
-      }
+      { name: 'default', path: '' }
     )
   end
 
@@ -342,7 +339,7 @@ class GenerateRepoD
     systems = {
       debian: {
         path: '',
-        key: ->(version) {
+        key: lambda { |version|
           if config['repo']['deb']['old_key_versions'].include?(version)
             config['repo']['deb']['old_key']
           else
@@ -352,14 +349,14 @@ class GenerateRepoD
       },
       rhel: {
         path: '',
-        key: ->(version) {
+        key: lambda { |version|
           if config['repo']['rpm']['old_key_versions'].include?(version)
             config['repo']['rpm']['old_key']
           else
             config['repo']['rpm']['key']
           end
         },
-        repo_path: ->(repo_link, release_name) {
+        repo_path: lambda { |repo_link, release_name|
           "#{config['repo']['rpm']['path']}#{repo_link}/#{release_name}/$basearch"
         }
       }
@@ -374,14 +371,14 @@ class GenerateRepoD
   end
 
   def parse_mysql_debian_systems(config)
-    release_regexp = /^mysql-(\d+\.?\d+(-[^\/]*)?)(\/?)$/
+    release_regexp = %r{^mysql-(\d+\.?\d+(-[^\/]*)?)(\/?)$}
     debian = {
       path: '',
       repo_page: config['repo']['deb']['path'],
       key: ->(_version) { config['repo']['deb']['key'] },
       release_path: ->(repo_link) { "#{repo_link}/dists" },
       release_name: ->(release) { release },
-      repo_path: ->(system, release_name, version) {
+      repo_path: lambda {| system, release_name, version|
         "deb #{config['repo']['deb']['path']}#{system} #{release_name} mysql-#{version}"
       }
     }
@@ -397,9 +394,9 @@ class GenerateRepoD
 
       @logger.info "Creating repository configuration for #{system_name}"
       repos = get_links(repo_page).select do |link|
-        link.content =~ /^#{system_name}(\/?)$/
+        link.content =~ %r{^#{system_name}(\/?)$}
       end.each_with_object([]) do |link, repositories|
-        repo_link = "#{subpath}/#{link[:href]}".gsub(/\/\//, '/')
+        repo_link = "#{subpath}/#{link[:href]}".gsub(%r{\/\/}, '/')
 
         get_links(repo_page, release_path.call(repo_link)).select do |repo_inner_link|
           dir_link?(repo_inner_link)
@@ -434,13 +431,13 @@ class GenerateRepoD
   end
 
   def parse_mysql(config)
-    rpm_release_regexp = /^mysql-(\d+\.?\d+)-community(\/?)$/
+    rpm_release_regexp = %r{^mysql-(\d+\.?\d+)-community(\/?)$}
 
     systems = {
       rhel: {
         path: '',
         release_name: ->(release) { release.match(rpm_release_regexp).captures.first },
-        repo_path: ->(repo_link, release_name) {
+        repo_path: lambda { |repo_link, release_name|
           "#{config['repo']['rpm']['path']}#{repo_link}/#{release_name}/x86_64"
         }
       }
@@ -450,7 +447,7 @@ class GenerateRepoD
       config,
       'mysql',
       {
-        viable_release_detector: ->(system_type, _system_info, link, _links) {
+        viable_release_detector: lambda { |system_type, _system_info, link, _links|
           system_type != :debian && !(link.content =~ rpm_release_regexp).nil?
         }
       },
@@ -461,30 +458,28 @@ class GenerateRepoD
 
   def system_type_by_system_name(system_name)
     case system_name
-      when 'centos', 'sles', 'rhel', 'opensuse'
-        :rhel
-      when 'debian', 'ubuntu'
-        :debian
-      else
-        nil
+    when 'centos', 'sles', 'rhel', 'opensuse'
+      :rhel
+    when 'debian', 'ubuntu'
+      :debian
     end
   end
 
   def generate(config_file, products, dest, attempts, maxscale_ci = nil)
     @maxscale_ci = maxscale_ci
     @attempts = attempts
-    @config = Config::parse(config_file)
+    @config = Config.parse(config_file)
 
     products.each { |product| @products_results[product] = false }
 
     @attempts.to_i.times do
-      @products_results.select { |_key, value| !value }.each_key do |product|
+      @products_results.reject { |_key, value| value }.each_key do |product|
         puts "Generate repo for #{product}"
         product_name = PRODUCTS_DIR_NAMES[product] || PRODUCTS_DIR_NAMES[product.to_sym]
         FileUtils.rm_rf("#{@directory}/.", secure: true)
         begin
           send("parse_#{product}".to_sym, @config[product])
-        rescue Exception => e
+        rescue StandardError => e
           puts "ERROR: #{product} was not generated. Try again."
           puts e.message
           @logger.error "#{product} was not generated."
@@ -497,7 +492,7 @@ class GenerateRepoD
         FileUtils.rm_rf("#{dest}/#{product_name}/.", secure: true)
         FileUtils.cp_r("#{@directory}/.", "#{dest}/#{product_name}")
       end
-      break if @products_results.select { |_key, value| !value }.empty?
+      break if @products_results.reject { |_key, value| value }.empty?
     end
     print_summary
   end
@@ -520,7 +515,7 @@ options = {
   attempts: 3
 }
 
-parser = OptionParser.new do|opts|
+parser = OptionParser.new do |opts|
   opts.banner = 'Usage: generate_repo_d.rb [options]'
   opts.on('-c', '--config config', 'The config file path') do |config_file|
     options[:config_file] = config_file
@@ -581,7 +576,7 @@ if PRODUCTS.include?('maxscale_ci') && (MAXSCALE_CI.nil? || (!MAXSCALE_CI.nil? &
   exit 1
 end
 
-exit unless $0 == __FILE__
+exit unless $PROGRAM_NAME == __FILE__
 GenerateRepoD.new.generate(CONFIG_FILE,
                            PRODUCTS,
                            DESTINATION_PATH,
