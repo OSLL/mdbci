@@ -10,9 +10,9 @@ require 'fileutils'
 require 'logger'
 
 require_relative 'config'
+require_relative 'base_command'
 
-class GenerateRepoD
-  attr_reader :directory
+class GenerateProductRepositoriesCommand < BaseCommand
   DEFAULT_PRODUCTS = %w[columnstore community galera maxscale_release maxscale_ci mdbe mysql]
   DEFAULT_DEST_PATH = File.expand_path('~/.config/mdbci/repo.d')
   PRODUCTS_DIR_NAMES = {

@@ -3,6 +3,7 @@
 source 'https://rubygems.org'
 
 gem 'bundler'
+gem 'nokogiri'
 gem 'ipaddress'
 gem 'json-schema', '= 2.6.2'
 gem 'net-ssh'
