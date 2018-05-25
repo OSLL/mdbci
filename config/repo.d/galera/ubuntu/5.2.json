@@ -1,0 +1,58 @@
+[
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.2/ubuntu/ hardy main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "hardy",
+    "platform": "ubuntu",
+    "product": "galera",
+    "version": "5.2"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.2/ubuntu/ lucid main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "lucid",
+    "platform": "ubuntu",
+    "product": "galera",
+    "version": "5.2"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.2/ubuntu/ maverick main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "maverick",
+    "platform": "ubuntu",
+    "product": "galera",
+    "version": "5.2"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.2/ubuntu/ natty main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "natty",
+    "platform": "ubuntu",
+    "product": "galera",
+    "version": "5.2"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.2/ubuntu/ oneiric main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "oneiric",
+    "platform": "ubuntu",
+    "product": "galera",
+    "version": "5.2"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.2/ubuntu/ precise main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "precise",
+    "platform": "ubuntu",
+    "product": "galera",
+    "version": "5.2"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.2/ubuntu/ quantal main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "quantal",
+    "platform": "ubuntu",
+    "product": "galera",
+    "version": "5.2"
+  }
+]

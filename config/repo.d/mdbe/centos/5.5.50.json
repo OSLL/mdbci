@@ -1,0 +1,74 @@
+[
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.50/yum/centos/5",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "5",
+    "platform": "centos",
+    "product": "mdbe",
+    "version": "5.5.50"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.50/yum/centos/5Client",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "5Client",
+    "platform": "centos",
+    "product": "mdbe",
+    "version": "5.5.50"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.50/yum/centos/5Server",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "5Server",
+    "platform": "centos",
+    "product": "mdbe",
+    "version": "5.5.50"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.50/yum/centos/6",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "6",
+    "platform": "centos",
+    "product": "mdbe",
+    "version": "5.5.50"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.50/yum/centos/6Client",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "6Client",
+    "platform": "centos",
+    "product": "mdbe",
+    "version": "5.5.50"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.50/yum/centos/6Server",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "6Server",
+    "platform": "centos",
+    "product": "mdbe",
+    "version": "5.5.50"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.50/yum/centos/7",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "7",
+    "platform": "centos",
+    "product": "mdbe",
+    "version": "5.5.50"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.50/yum/centos/7Client",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "7Client",
+    "platform": "centos",
+    "product": "mdbe",
+    "version": "5.5.50"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.50/yum/centos/7Server",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "7Server",
+    "platform": "centos",
+    "product": "mdbe",
+    "version": "5.5.50"
+  }
+]

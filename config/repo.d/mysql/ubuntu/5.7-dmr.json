@@ -1,0 +1,34 @@
+[
+  {
+    "repo": "deb http://repo.mysql.com/apt/ubuntu precise mysql-5.7-dmr",
+    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
+    "platform_version": "precise",
+    "platform": "ubuntu",
+    "product": "mysql",
+    "version": "5.7-dmr"
+  },
+  {
+    "repo": "deb http://repo.mysql.com/apt/ubuntu trusty mysql-5.7-dmr",
+    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
+    "platform_version": "trusty",
+    "platform": "ubuntu",
+    "product": "mysql",
+    "version": "5.7-dmr"
+  },
+  {
+    "repo": "deb http://repo.mysql.com/apt/ubuntu utopic mysql-5.7-dmr",
+    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
+    "platform_version": "utopic",
+    "platform": "ubuntu",
+    "product": "mysql",
+    "version": "5.7-dmr"
+  },
+  {
+    "repo": "deb http://repo.mysql.com/apt/ubuntu vivid mysql-5.7-dmr",
+    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
+    "platform_version": "vivid",
+    "platform": "ubuntu",
+    "product": "mysql",
+    "version": "5.7-dmr"
+  }
+]

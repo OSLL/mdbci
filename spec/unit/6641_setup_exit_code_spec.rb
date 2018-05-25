@@ -18,7 +18,7 @@ describe 'Session' do
     $exception_handler = ExceptionHandler.new
     $session.boxes_dir = 'spec/configs/boxes/'
     $session.boxes = BoxesManager.new $session.boxes_dir
-    reposPath = './repo.d'
+    reposPath = './config/repo.d'
     $session.repos = RepoManager.new reposPath
     box_should_be_removed = `vagrant box list | grep 'baremettle/ubuntu-14.04'`.empty?
   end

@@ -1,0 +1,8 @@
+{
+  "repo": "https://downloads.mariadb.com/MaxScale/2.1.15-debug/centos/6server/$basearch",
+  "repo_key": "https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY",
+  "platform_version": "6server",
+  "platform": "centos",
+  "product": "maxscale",
+  "version": "default"
+}

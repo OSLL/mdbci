@@ -1,0 +1,8 @@
+{
+  "repo": "https://downloads.mariadb.com/MaxScale/2.1.12-debug/debian jessie main",
+  "repo_key": "135659e928c12247",
+  "platform_version": "jessie",
+  "platform": "debian",
+  "product": "maxscale",
+  "version": "default"
+}

@@ -1,0 +1,34 @@
+[
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.0.17-pgo/repo/ubuntu lucid main",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "lucid",
+    "platform": "ubuntu",
+    "product": "mdbe",
+    "version": "10.0.17-pgo"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.0.17-pgo/repo/ubuntu precise main",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "precise",
+    "platform": "ubuntu",
+    "product": "mdbe",
+    "version": "10.0.17-pgo"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.0.17-pgo/repo/ubuntu trusty main",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "trusty",
+    "platform": "ubuntu",
+    "product": "mdbe",
+    "version": "10.0.17-pgo"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.0.17-pgo/repo/ubuntu utopic main",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "utopic",
+    "platform": "ubuntu",
+    "product": "mdbe",
+    "version": "10.0.17-pgo"
+  }
+]

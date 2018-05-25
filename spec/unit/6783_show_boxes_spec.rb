@@ -18,7 +18,7 @@ describe 'Session.showBoxes' do
     $exception_handler = ExceptionHandler.new
     boxesPath = './BOXES'
     $session.boxes = BoxesManager.new boxesPath
-    reposPath = './repo.d'
+    reposPath = './config/repo.d'
     $session.repos = RepoManager.new reposPath
     $session.command = 'ls'
   end

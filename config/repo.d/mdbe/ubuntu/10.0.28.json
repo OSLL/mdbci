@@ -1,0 +1,42 @@
+[
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.0.28/repo/ubuntu jessie main",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "jessie",
+    "platform": "ubuntu",
+    "product": "mdbe",
+    "version": "10.0.28"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.0.28/repo/ubuntu precise main",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "precise",
+    "platform": "ubuntu",
+    "product": "mdbe",
+    "version": "10.0.28"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.0.28/repo/ubuntu trusty main",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "trusty",
+    "platform": "ubuntu",
+    "product": "mdbe",
+    "version": "10.0.28"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.0.28/repo/ubuntu wheezy main",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "wheezy",
+    "platform": "ubuntu",
+    "product": "mdbe",
+    "version": "10.0.28"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.0.28/repo/ubuntu xenial main",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "xenial",
+    "platform": "ubuntu",
+    "product": "mdbe",
+    "version": "10.0.28"
+  }
+]

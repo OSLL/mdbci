@@ -1,0 +1,34 @@
+[
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.49/repo/debian jessie main",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "jessie",
+    "platform": "debian",
+    "product": "mdbe",
+    "version": "5.5.49"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.49/repo/debian precise main",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "precise",
+    "platform": "debian",
+    "product": "mdbe",
+    "version": "5.5.49"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.49/repo/debian trusty main",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "trusty",
+    "platform": "debian",
+    "product": "mdbe",
+    "version": "5.5.49"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.49/repo/debian wheezy main",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "wheezy",
+    "platform": "debian",
+    "product": "mdbe",
+    "version": "5.5.49"
+  }
+]

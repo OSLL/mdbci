@@ -1,0 +1,50 @@
+[
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/bb-10.3-release/ubuntu/ artful main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "artful",
+    "platform": "ubuntu",
+    "product": "galera",
+    "version": "bb-10.3-release"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/bb-10.3-release/ubuntu/ bionic main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "bionic",
+    "platform": "ubuntu",
+    "product": "galera",
+    "version": "bb-10.3-release"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/bb-10.3-release/ubuntu/ trusty main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "trusty",
+    "platform": "ubuntu",
+    "product": "galera",
+    "version": "bb-10.3-release"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/bb-10.3-release/ubuntu/ xenial main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "xenial",
+    "platform": "ubuntu",
+    "product": "galera",
+    "version": "bb-10.3-release"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/bb-10.3-release/ubuntu/ yakkety main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "yakkety",
+    "platform": "ubuntu",
+    "product": "galera",
+    "version": "bb-10.3-release"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/bb-10.3-release/ubuntu/ zesty main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "zesty",
+    "platform": "ubuntu",
+    "product": "galera",
+    "version": "bb-10.3-release"
+  }
+]

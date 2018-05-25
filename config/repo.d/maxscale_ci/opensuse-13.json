@@ -1,0 +1,8 @@
+{
+  "repo": "http://max-tst-01.mariadb.com/ci-repository/develop/mariadb-maxscale//opensuse//13/$basearch",
+  "repo_key": "https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY",
+  "platform_version": "13",
+  "platform": "opensuse",
+  "product": "maxscale",
+  "version": "default"
+}

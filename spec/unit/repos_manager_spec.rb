@@ -16,7 +16,7 @@ describe 'RepoManager' do
       $exception_handler = ExceptionHandler.new
       boxesPath = './BOXES'
       $session.boxes = BoxesManager.new boxesPath
-      reposPath = './repo.d'
+      reposPath = './config/repo.d'
       $session.repos = RepoManager.new reposPath
       $session.repos.repos.size().should be > 0
     end

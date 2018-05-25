@@ -1,0 +1,18 @@
+[
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.0.12/repo/debian squeeze main",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "squeeze",
+    "platform": "debian",
+    "product": "mdbe",
+    "version": "10.0.12"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.0.12/repo/debian wheezy main",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "wheezy",
+    "platform": "debian",
+    "product": "mdbe",
+    "version": "10.0.12"
+  }
+]

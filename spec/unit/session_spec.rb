@@ -18,7 +18,7 @@ describe 'Session' do
     @session.mdbciDir = Dir.pwd
     $exception_handler = ExceptionHandler.new
     @session.boxes = BoxesManager.new './BOXES'
-    @session.repos = RepoManager.new './repo.d'
+    @session.repos = RepoManager.new './config/repo.d'
   end
 
   context '.configurationFiles' do

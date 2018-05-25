@@ -1,0 +1,26 @@
+[
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.3/debian/ lenny main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "lenny",
+    "platform": "debian",
+    "product": "galera",
+    "version": "5.3"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.3/debian/ squeeze main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "squeeze",
+    "platform": "debian",
+    "product": "galera",
+    "version": "5.3"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.3/debian/ wheezy main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "wheezy",
+    "platform": "debian",
+    "product": "galera",
+    "version": "5.3"
+  }
+]

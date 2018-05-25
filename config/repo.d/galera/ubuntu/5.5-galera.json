@@ -1,0 +1,18 @@
+[
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.5-galera/ubuntu/ precise main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "precise",
+    "platform": "ubuntu",
+    "product": "galera",
+    "version": "5.5-galera"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.5-galera/ubuntu/ trusty main",
+    "repo_key": "0xcbcb082a1bb943db",
+    "platform_version": "trusty",
+    "platform": "ubuntu",
+    "product": "galera",
+    "version": "5.5-galera"
+  }
+]

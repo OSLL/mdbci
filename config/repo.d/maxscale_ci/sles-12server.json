@@ -1,0 +1,8 @@
+{
+  "repo": "http://max-tst-01.mariadb.com/ci-repository/develop/mariadb-maxscale//sles//12server/$basearch",
+  "repo_key": "https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY",
+  "platform_version": "12server",
+  "platform": "sles",
+  "product": "maxscale",
+  "version": "default"
+}

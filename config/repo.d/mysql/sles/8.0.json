@@ -1,0 +1,10 @@
+[
+  {
+    "repo": "http://repo.mysql.com/yum/mysql-8.0-community/sles//12/x86_64",
+    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
+    "platform_version": "12",
+    "platform": "sles",
+    "product": "mysql",
+    "version": "8.0"
+  }
+]

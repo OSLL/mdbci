@@ -1,0 +1,8 @@
+{
+  "repo": "https://downloads.mariadb.com/MaxScale/2.1.7/ubuntu trusty main",
+  "repo_key": "70E4618A8167EE24",
+  "platform_version": "trusty",
+  "platform": "ubuntu",
+  "product": "maxscale",
+  "version": "default"
+}

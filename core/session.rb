@@ -88,7 +88,7 @@ EOF
       File.join(@mdbci_dir, 'config')
     ]
     @boxes_dir = File.join(@mdbci_dir, 'BOXES') unless @boxes_dir
-    @repo_dir = File.join(@mdbci_dir, 'repo.d') unless @repo_dir
+    @repo_dir = find_configuration('repo.d') unless @repo_dir
   end
 
   # Method initializes services that depend on the parsed configuration

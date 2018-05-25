@@ -1,0 +1,8 @@
+{
+  "repo": "https://downloads.mariadb.com/MaxScale/2.1.5/opensuse/13server/$basearch",
+  "repo_key": "https://downloads.mariadb.com/MaxScale/old_key.public",
+  "platform_version": "13server",
+  "platform": "opensuse",
+  "product": "maxscale",
+  "version": "default"
+}

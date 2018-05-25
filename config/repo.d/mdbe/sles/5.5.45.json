@@ -1,0 +1,18 @@
+[
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.45/yum/sles/11",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "11",
+    "platform": "sles",
+    "product": "mdbe",
+    "version": "5.5.45"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5.45/yum/sles/12",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform_version": "12",
+    "platform": "sles",
+    "product": "mdbe",
+    "version": "5.5.45"
+  }
+]

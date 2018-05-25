@@ -1,0 +1,10 @@
+[
+  {
+    "repo": "http://yum.mariadb.org/5.5.56/sles//12/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "12",
+    "platform": "sles",
+    "product": "mariadb",
+    "version": "5.5.56"
+  }
+]

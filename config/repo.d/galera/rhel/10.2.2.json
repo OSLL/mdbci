@@ -1,0 +1,258 @@
+[
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//5/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "5",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//5.0/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "5.0",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//5.1/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "5.1",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//5.10/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "5.10",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//5.11/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "5.11",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//5.2/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "5.2",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//5.3/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "5.3",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//5.4/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "5.4",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//5.5/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "5.5",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//5.6/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "5.6",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//5.7/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "5.7",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//5.8/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "5.8",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//5.9/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "5.9",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//5Client/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "5Client",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//5Server/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "5Server",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//6/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "6",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//6.0/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "6.0",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//6.1/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "6.1",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//6.2/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "6.2",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//6.3/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "6.3",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//6.4/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "6.4",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//6.5/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "6.5",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//6.6/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "6.6",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//6.7/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "6.7",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//6.8/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "6.8",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//6Client/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "6Client",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//6Server/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "6Server",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//7/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "7",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//7.0/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "7.0",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//7.1/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "7.1",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//7Client/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "7Client",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.2.2/rhel//7Server/x86_64",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform_version": "7Server",
+    "platform": "rhel",
+    "product": "galera",
+    "version": "10.2.2"
+  }
+]

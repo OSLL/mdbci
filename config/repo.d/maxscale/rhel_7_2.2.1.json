@@ -1,0 +1,8 @@
+{
+  "repo": "https://downloads.mariadb.com/MaxScale/2.2.1/rhel/7/$basearch",
+  "repo_key": "https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY",
+  "platform_version": "7",
+  "platform": "rhel",
+  "product": "maxscale",
+  "version": "default"
+}
