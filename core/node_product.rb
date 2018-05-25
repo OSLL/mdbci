@@ -1,7 +1,6 @@
 require 'scanf'
 require 'yaml'
 require 'shellwords'
-require 'json'
 
 require_relative  '../core/out'
 
@@ -245,7 +244,7 @@ class NodeProduct
   def self.installProduct(args)
     pwd = Dir.pwd
     # Loading file with product packages to every system
-    products = JSON.parse(File.read($mdbci_exec_dir+'/products.json'))
+    products = YAML.parse(File.read($session.find_configuration('products.yaml')))
     raise 'Configuration name is required' if args.nil?
     args = args.split('/')
     # mdbci box
