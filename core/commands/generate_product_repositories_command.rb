@@ -299,7 +299,7 @@ EOF
       release,
       system,
       type,
-      'maxscale',
+      'maxscale_ci',
       result_handler: lambda { |repos|
         repos.each do |repo|
           platform = repo[:platform]
@@ -602,7 +602,7 @@ EOF
   def print_summary(products_with_errors)
     info_and_log("\n--------\nSUMMARY:\n")
     @products.sort.each do |product|
-      result = products_with_errors.include?(product) ? '+' : '-'
+      result = products_with_errors.include?(product) ? '-' : '+'
       info_and_log("  #{product}: #{result}")
     end
   end

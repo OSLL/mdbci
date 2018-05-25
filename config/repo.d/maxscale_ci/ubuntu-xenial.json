@@ -3,6 +3,6 @@
   "repo_key": "135659e928c12247",
   "platform_version": "xenial",
   "platform": "ubuntu",
-  "product": "maxscale",
+  "product": "maxscale_ci",
   "version": "default"
 }

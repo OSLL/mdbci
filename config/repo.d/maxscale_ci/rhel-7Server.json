@@ -3,6 +3,6 @@
   "repo_key": "https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY",
   "platform_version": "7Server",
   "platform": "rhel",
-  "product": "maxscale",
+  "product": "maxscale_ci",
   "version": "default"
 }
