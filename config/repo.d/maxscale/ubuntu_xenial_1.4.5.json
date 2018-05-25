@@ -4,5 +4,5 @@
   "platform_version": "xenial",
   "platform": "ubuntu",
   "product": "maxscale",
-  "version": "default"
+  "version": "1.4.5"
 }

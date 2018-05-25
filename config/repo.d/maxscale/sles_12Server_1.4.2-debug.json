@@ -4,5 +4,5 @@
   "platform_version": "12Server",
   "platform": "sles",
   "product": "maxscale",
-  "version": "default"
+  "version": "1.4.2-debug"
 }

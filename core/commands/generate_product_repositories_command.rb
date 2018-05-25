@@ -108,7 +108,8 @@ EOF
     @config = YAML.load(File.read(config_path))
     @products = if @env.nodeProduct
                   unless PRODUCTS_DIR_NAMES.keys.include?(@env.nodeProduct)
-                    show_error_and_help("Unknown product #{@env.nodeProduct}")
+                    show_error_and_help("Unknown product #{@env.nodeProduct}.\n" +
+                                        "Known products: #{PRODUCT_DIR_NAMES.keys.join(', ')}")
                     return false
                   end
                   [@env.nodeProduct]
@@ -323,8 +324,6 @@ EOF
           platform = repo[:platform]
           platform_version = repo[:platform_version]
           version = repo[:version]
-
-          repo[:version] = 'default'
           repo[:key] =
           File.write("#{@directory}/#{platform}_#{platform_version}_#{version}.json", JSON.pretty_generate(repo))
         end
@@ -588,7 +587,7 @@ EOF
         info_and_log("Copying generated configuration for #{product} to the repository.")
         product_name = PRODUCTS_DIR_NAMES[product]
         FileUtils.mkdir_p("#{@destination}/#{product_name}")
-        FileUtils.rm_rf("#{@destination}/#{product_name}/.", secure: true)
+        FileUtils.rm_rf("#{@destination}/#{product_name}", secure: true)
         FileUtils.cp_r("#{@directory}/.", "#{@destination}/#{product_name}")
         true
       end

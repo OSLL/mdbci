@@ -4,5 +4,5 @@
   "platform_version": "stretch",
   "platform": "debian",
   "product": "maxscale",
-  "version": "default"
+  "version": "latest"
 }

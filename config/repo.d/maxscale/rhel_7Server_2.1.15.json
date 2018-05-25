@@ -4,5 +4,5 @@
   "platform_version": "7Server",
   "platform": "rhel",
   "product": "maxscale",
-  "version": "default"
+  "version": "2.1.15"
 }

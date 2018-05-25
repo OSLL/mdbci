@@ -4,5 +4,5 @@
   "platform_version": "7",
   "platform": "rhel",
   "product": "maxscale",
-  "version": "default"
+  "version": "2.1.2"
 }

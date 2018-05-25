@@ -4,5 +4,5 @@
   "platform_version": "13server",
   "platform": "opensuse",
   "product": "maxscale",
-  "version": "default"
+  "version": "1.4.4"
 }

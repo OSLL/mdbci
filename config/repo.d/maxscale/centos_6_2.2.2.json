@@ -4,5 +4,5 @@
   "platform_version": "6",
   "platform": "centos",
   "product": "maxscale",
-  "version": "default"
+  "version": "2.2.2"
 }

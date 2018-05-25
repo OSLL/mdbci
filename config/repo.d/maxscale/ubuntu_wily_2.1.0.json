@@ -4,5 +4,5 @@
   "platform_version": "wily",
   "platform": "ubuntu",
   "product": "maxscale",
-  "version": "default"
+  "version": "2.1.0"
 }

@@ -4,5 +4,5 @@
   "platform_version": "jessie",
   "platform": "debian",
   "product": "maxscale",
-  "version": "default"
+  "version": "2.1.16"
 }

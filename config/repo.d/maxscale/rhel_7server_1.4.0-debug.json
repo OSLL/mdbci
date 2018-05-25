@@ -4,5 +4,5 @@
   "platform_version": "7server",
   "platform": "rhel",
   "product": "maxscale",
-  "version": "default"
+  "version": "1.4.0-debug"
 }
