@@ -19,7 +19,7 @@ class GenerateProductRepositoriesCommand < BaseCommand
     'community' => 'community',
     'galera' => 'galera',
     'maxscale_ci' => 'maxscale_ci',
-    'maxscale_release' => 'maxscale',
+    'maxscale' => 'maxscale',
     'mdbe' => 'mdbe',
     'mysql' => 'mysql'
   }
