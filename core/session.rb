@@ -3,6 +3,7 @@ require 'json'
 require 'fileutils'
 require 'uri'
 require 'open3'
+require 'xdg'
 
 
 require_relative 'network'
@@ -16,6 +17,7 @@ require_relative 'commands/up_command'
 require_relative 'commands/snapshot_command'
 require_relative 'commands/destroy_command'
 require_relative 'commands/generate_command'
+require_relative 'commands/generate_product_repositories_command'
 require_relative 'commands/help_command'
 require_relative 'constants'
 
@@ -23,6 +25,7 @@ class Session
 
   attr_accessor :boxes
   attr_accessor :configs
+  attr_accessor :configuration_file
   attr_accessor :versions
   attr_accessor :configFile
   attr_accessor :boxesFile
@@ -35,13 +38,17 @@ class Session
   attr_accessor :isSilent
   attr_accessor :command
   attr_accessor :repos
-  attr_accessor :repoDir
+  attr_accessor :repo_dir
   attr_accessor :mdbciNodes # mdbci nodes
   attr_accessor :templateNodes
   attr_accessor :nodesProvider # current configuration provider
   attr_accessor :attempts
-  attr_accessor :boxesDir
+  attr_accessor :boxes_dir
   attr_accessor :mdbciDir
+  attr_accessor :mdbci_dir
+  attr_accessor :maxscale_ci
+  attr_accessor :starting_dir
+  attr_accessor :working_dir
   attr_accessor :nodeProduct
   attr_accessor :productVersion
   attr_accessor :keyFile
@@ -65,37 +72,65 @@ EOF
   OUTPUT_NODE_NAME_REGEX = "==>\s+(.*):{1}"
 
   def initialize
-    @boxesDir = $mdbci_exec_dir + '/BOXES'
-    @repoDir = $mdbci_exec_dir + '/repo.d'
-    @mdbciNodes = Hash.new
-    @templateNodes = Hash.new
+    @mdbciNodes = {}
+    @templateNodes = {}
     @keep_template = false
   end
 
-=begin
-     Load collections from json files:
-      - boxes.json
-      - template.json
-      - aws-config.yml
-      - versions.json
-=end
+  # Fill in paths based on the provided configuration if they were
+  # not setup via external configuration
+  def fill_paths
+    @mdbci_dir = __dir__ unless @mdbci_dir
+    @working_dir = Dir.pwd unless @working_dir
+    @starting_dir = @working_dir unless @starting_dir
+    @configuration_directories = [
+      File.join(XDG['CONFIG_HOME'].to_s, 'mdbci'),
+      File.join(@mdbci_dir, 'config')
+    ]
+    @boxes_dir = File.join(@mdbci_dir, 'BOXES') unless @boxes_dir
+    @repo_dir = File.join(@mdbci_dir, 'repo.d') unless @repo_dir
+  end
 
-  def loadCollections
-
-    @mdbciDir = Dir.pwd
-    unless (ENV['MDBCI_VM_PATH'].nil?)
-      @mdbciDir = ENV['MDBCI_VM_PATH']
-    end
-
-    $out.info 'Load Boxes from '+$session.boxesDir
-    @boxes = BoxesManager.new($session.boxesDir)
-
-    $out.info 'Load AWS config from ' + @awsConfigFile
+  # Method initializes services that depend on the parsed configuration
+  def initialize_services
+    fill_paths
+    $out.info "Load Boxes from #{@boxes_dir}"
+    @boxes = BoxesManager.new(@boxes_dir)
+    $out.info "Load AWS config from #{@awsConfigFile}"
     @awsConfig = $exception_handler.handle('AWS configuration file not found') { YAML.load_file(@awsConfigFile)['aws'] }
+    $out.info "Load Repos from #{@repo_dir}"
+    @repos = RepoManager.new(@repo_dir)
+  end
 
-    $out.info 'Load Repos from '+$session.repoDir
-    @repos = RepoManager.new($session.repoDir)
+  # Search for a configuration file in all known configuration locations that include
+  # XDG['CONFIG'] directories and mdbci/config directory.
+  # @param [String] name of the file or directory to locate in the configuration.
+  # @return [String] absolute path to the found resource in one of the directories.
+  # @raise [RuntimeError] if unable to find the specified configuration resource.
+  def find_configuration(name)
+    @configuration_directories.each do |directory|
+      full_path = File.join(directory, name)
+      return full_path if File.exist?(full_path)
+    end
+    raise "Unable to find configuration '#{name}' in the following directories: #{@configuration_directories.join(', ')}"
+  end
 
+  # Get the path to the user configuration directory
+  # @param [String] name of the resource in the configuration directory
+  # @return [String] full path to the resource
+  def configuration_path(name = '')
+    configuration_dir = File.join(XDG['CONFIG_HOME'].to_s, 'mdbci')
+    FileUtils.mkdir_p(configuration_dir)
+    File.join(configuration_dir, name)
+  end
+
+  # Get the path to the user data directory
+  # @param [String] name of the resource in data directory
+  # @param [String] full path to the data resource
+  def data_path(name = '')
+    data_dir = File.join(XDG['DATA_HOME'].to_s, 'mdbci')
+    FileUtils.mkdir_p(data_dir)
+    File.join(data_dir, name)
   end
 
   def setup(what)
@@ -103,8 +138,8 @@ EOF
     case what
       when 'boxes'
         $out.info 'Adding boxes to vagrant'
-        raise "cannot adding boxes: directory not exist" unless Dir.exists?($session.boxesDir)
-        raise "cannot adding boxes: boxes are not found in #{$session.boxesDir}" unless File.directory?($session.boxesDir)
+        raise "cannot adding boxes: directory not exist" unless Dir.exists?($session.boxes_dir)
+        raise "cannot adding boxes: boxes are not found in #{$session.boxes_dir}" unless File.directory?($session.boxes_dir)
         @boxes.boxesManager.each do |key, value|
           next if value['provider'] == "aws" # skip 'aws' block
           # TODO: add aws dummy box
@@ -131,12 +166,6 @@ EOF
     end
 
     return 0
-  end
-
-  def checkConfig
-    #TODO #6267
-    $out.info 'Checking this machine configuration requirments'
-    $out.info '.....NOT IMPLEMENTED YET'
   end
 
   def sudo(args)
@@ -495,6 +524,9 @@ EOF
       exit_code = destroy.execute
     when 'generate'
       exit_code = generate(ARGV.shift)
+    when 'generate-product-repositories'
+      command = GenerateProductRepositoriesCommand.new(ARGV, self, $out)
+      exit_code = command.execute
     when 'help'
       command = HelpCommand.new(ARGV, self, $out)
       exit_code = command.execute
@@ -539,7 +571,7 @@ EOF
       box = node['box'].to_s
       raise "box in " + node.to_s + " is not found" if box.empty?
       box_params = @boxes.getBox(box)
-      raise "Box #{box} from node #{node[0]} not found in #{$session.boxesDir}!" if box_params.nil?
+      raise "Box #{box} from node #{node[0]} not found in #{$session.boxes_dir}!" if box_params.nil?
       @nodesProvider = box_params["provider"].to_s
     end
   end

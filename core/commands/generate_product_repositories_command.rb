@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'open-uri'
 require 'optparse'
@@ -9,28 +9,131 @@ require 'json'
 require 'fileutils'
 require 'logger'
 
-require_relative 'config'
 require_relative 'base_command'
 
+# The command generates the repository configuration
 class GenerateProductRepositoriesCommand < BaseCommand
-  DEFAULT_PRODUCTS = %w[columnstore community galera maxscale_release maxscale_ci mdbe mysql]
-  DEFAULT_DEST_PATH = File.expand_path('~/.config/mdbci/repo.d')
+  CONFIGURATION_FILE = 'generate_repository_config.yaml'
   PRODUCTS_DIR_NAMES = {
-    'columnstore': 'columnstore',
-    'community': 'community',
-    'galera': 'galera',
-    'maxscale_ci': 'maxscale_ci',
-    'maxscale_release': 'maxscale',
-    'mdbe': 'mdbe',
-    'mysql': 'mysql'
+    'columnstore' => 'columnstore',
+    'community' => 'community',
+    'galera' => 'galera',
+    'maxscale_ci' => 'maxscale_ci',
+    'maxscale_release' => 'maxscale',
+    'mdbe' => 'mdbe',
+    'mysql' => 'mysql'
   }
+  COMMAND_NAME = 'generate-product-repositories'
 
-  def initialize
-    @directory = Dir.mktmpdir
-    @products_results = {}
-    @logger = Logger.new('generate_repo_d.log', 'monthly')
-    puts "Creating configuration in #{@directory}"
-    @logger.info "Creating configuration in #{@directory}"
+  def self.synopsis
+    'Generate product repository configuration for all known products'
+  end
+
+  # Show error message and help on how to use the command
+  # @param [String] error_message text to display as en error.
+  def show_error_and_help(error_message = '')
+    if error_message
+      error_and_log('There was an error during the command run.')
+      error_and_log(error_message)
+    end
+    show_help
+  end
+
+  def show_help
+  info = <<-EOF
+
+'#{COMMAND_NAME} [REPOSITORY PATH]' creates product repository configuration.
+
+Supported options:
+
+--maxscale-ci name of the repository on the MaxScale CI server to add to MaxScale CI product configuration. Required if generating configuration for MaxScale CI server.
+--configuration-file path to the configuration file to use during generation. Optional.
+--product name of the product to generate repository configuration for. Optional.
+--attempts number of attempts to try to get data from the remote repository. Default is 3 attempts.
+
+In order to generate repo.d for all products using the default configuration.
+
+  mdbci #{COMMAND_NAME} --maxscale-ci develop
+
+You can create custom configuration file and use it during the repository creation:
+
+  mdbci #{COMMAND_NAME} --maxscale-ci develop --configuration-file ~/mdbci/config/generate_repository_config.yaml
+
+In order to specify the target directory pass it as the first parameter to the script.
+
+  mdbci #{COMMAND_NAME} --maxscale-ci develop ~/mdbci/repo.d
+
+In orded to generate configuration for a specific product use --product option.
+
+  mdbci #{COMMAND_NAME} --product mdbe
+
+In order to specify the number of retries for repository configuration use --attempts option.
+
+  mdbci generate-product-repositories --product columnstore --attempts 5
+EOF
+  @ui.out(info)
+  end
+
+  def initialize(args, env, ui)
+    super(args, env, ui)
+    path = @env.data_path('generate_product_repository.log')
+    @ui.info("Writing log file to #{path}")
+    @logger = Logger.new(File.new(path, 'w'), 'weekly')
+  end
+
+  # Send info message to both user output and logger facility
+  def info_and_log(message)
+    @ui.info(message)
+    @logger.info(message)
+  end
+
+  # Send error message to both direct output and logger facility
+  def error_and_log(message)
+    @ui.error(message)
+    @logger.error(message)
+  end
+
+  # Use data provided via constructor to configure the command.
+  def configure_command
+    config_path = if @env.configuration_file
+                    @env.configuration_file
+                  else
+                    @env.find_configuration(CONFIGURATION_FILE)
+                  end
+    unless File.exist?(config_path)
+      show_error_and_help("Unable to find configuration file: '#{config_path}'.")
+      return false
+    end
+    info_and_log("Configuring repositories using configuration: '#{config_path}'.")
+    @config = YAML.load(File.read(config_path))
+    @products = if @env.nodeProduct
+                  unless PRODUCTS_DIR_NAMES.keys.include?(@env.nodeProduct)
+                    show_error_and_help("Unknown product #{@env.nodeProduct}")
+                    return false
+                  end
+                  [@env.nodeProduct]
+                else
+                  PRODUCTS_DIR_NAMES.keys
+                end
+    info_and_log("Configuring repositories for products: #{@products.join(', ')}.")
+    @attempts = if @env.attempts
+                  @env.attempts.to_i
+                else
+                  3
+                end
+    info_and_log("The configuration will be attempted #{@attempts} times.")
+    @destination = if @args.empty?
+                     @env.configuration_path('repo.d')
+                   else
+                     @args.first
+                   end
+    info_and_log("Repository configuration will be written to '#{@destination}'.")
+    @maxscale_ci = @env.maxscale_ci
+    if @products.include?('maxscale_ci') && @maxscale_ci.nil?
+      show_error_and_help('Please specify name of the CI repository to use for MaxScale CI repository configuration')
+      return false
+    end
+    return true
   end
 
   # Get links on the specified page
@@ -80,8 +183,8 @@ class GenerateProductRepositoriesCommand < BaseCommand
     lambdas[:result_handler].call(repos) unless lambdas[:result_handler].nil?
 
     return if repos.empty? || !lambdas[:result_handler].nil?
-    FileUtils.mkdir_p("#{directory}/#{system}")
-    File.write("#{directory}/#{system}/#{release_info[:name]}.json", JSON.pretty_generate(repos))
+    FileUtils.mkdir_p("#{@directory}/#{system}")
+    File.write("#{@directory}/#{system}/#{release_info[:name]}.json", JSON.pretty_generate(repos))
   end
 
   def add_repo_from_platform_dir(product, release, repo_link, repo_page, repositories, system, system_type)
@@ -201,7 +304,7 @@ class GenerateProductRepositoriesCommand < BaseCommand
         repos.each do |repo|
           platform = repo[:platform]
           platform_version = repo[:platform_version]
-          File.write("#{directory}/#{platform}-#{platform_version}.json", JSON.pretty_generate(repo))
+          File.write("#{@directory}/#{platform}-#{platform_version}.json", JSON.pretty_generate(repo))
         end
       }
     )
@@ -223,7 +326,7 @@ class GenerateProductRepositoriesCommand < BaseCommand
 
           repo[:version] = 'default'
           repo[:key] =
-          File.write("#{directory}/#{platform}_#{platform_version}_#{version}.json", JSON.pretty_generate(repo))
+          File.write("#{@directory}/#{platform}_#{platform_version}_#{version}.json", JSON.pretty_generate(repo))
         end
       }
     )
@@ -378,7 +481,7 @@ class GenerateProductRepositoriesCommand < BaseCommand
       key: ->(_version) { config['repo']['deb']['key'] },
       release_path: ->(repo_link) { "#{repo_link}/dists" },
       release_name: ->(release) { release },
-      repo_path: lambda {| system, release_name, version|
+      repo_path: lambda { |system, release_name, version|
         "deb #{config['repo']['deb']['path']}#{system} #{release_name} mysql-#{version}"
       }
     }
@@ -421,9 +524,9 @@ class GenerateProductRepositoriesCommand < BaseCommand
 
       break if repos.empty?
       repos.map { |repo| repo[:version] }.uniq.each do |version|
-        FileUtils.mkdir_p("#{directory}/#{system_name}")
+        FileUtils.mkdir_p("#{@directory}/#{system_name}")
         File.write(
-          "#{directory}/#{system_name}/#{version}.json",
+          "#{@directory}/#{system_name}/#{version}.json",
           JSON.pretty_generate(repos.select { |repo| repo[:version] == version })
         )
       end
@@ -465,120 +568,42 @@ class GenerateProductRepositoriesCommand < BaseCommand
     end
   end
 
-  def generate(config_file, products, dest, attempts, maxscale_ci = nil)
-    @maxscale_ci = maxscale_ci
-    @attempts = attempts
-    @config = Config.parse(config_file)
-
-    products.each { |product| @products_results[product] = false }
-
-    @attempts.to_i.times do
-      @products_results.reject { |_key, value| value }.each_key do |product|
-        puts "Generate repo for #{product}"
-        product_name = PRODUCTS_DIR_NAMES[product] || PRODUCTS_DIR_NAMES[product.to_sym]
+  def execute
+    return ARGUMENT_ERROR_RESULT unless configure_command
+    @directory = Dir.mktmpdir(COMMAND_NAME)
+    info_and_log("Writing intermediate results to #{@directory}")
+    remainning_products = @products.dup
+    @attempts.times do
+      remainning_products = remainning_products.reject do |product|
+        info_and_log("Generating repository configuration for #{product}")
         FileUtils.rm_rf("#{@directory}/.", secure: true)
         begin
           send("parse_#{product}".to_sym, @config[product])
         rescue StandardError => e
-          puts "ERROR: #{product} was not generated. Try again."
-          puts e.message
-          @logger.error "#{product} was not generated."
-          @logger.error e.message
+          error_and_log("#{product} was not generated. Try again.")
+          error_and_log(e.message)
+          error_and_log(e.backtrace.reverse.join("\n"))
           next
         end
-        next if product_name.nil?
-        @products_results[product] = true
-        FileUtils.mkdir_p("#{dest}/#{product_name}", verbose: true)
-        FileUtils.rm_rf("#{dest}/#{product_name}/.", secure: true)
-        FileUtils.cp_r("#{@directory}/.", "#{dest}/#{product_name}")
+        info_and_log("Copying generated configuration for #{product} to the repository.")
+        product_name = PRODUCTS_DIR_NAMES[product]
+        FileUtils.mkdir_p("#{@destination}/#{product_name}")
+        FileUtils.rm_rf("#{@destination}/#{product_name}/.", secure: true)
+        FileUtils.cp_r("#{@directory}/.", "#{@destination}/#{product_name}")
+        true
       end
-      break if @products_results.reject { |_key, value| value }.empty?
+      break if remainning_products.empty?
     end
-    print_summary
+    print_summary(remainning_products)
+    FileUtils.rm_rf(@directory)
+    SUCCESS_RESULT
   end
 
-  def print_summary
-    puts "\n--------\nSUMMARY:\n"
-    @logger.info "\n--------\nSUMMARY:\n"
-    @products_results.each do |product, result|
-      puts "  #{product}: #{result ? '+' : '-'}"
-      @logger.info "  #{product}: #{result ? '+' : '-'}"
+  def print_summary(products_with_errors)
+    info_and_log("\n--------\nSUMMARY:\n")
+    @products.sort.each do |product|
+      result = products_with_errors.include?(product) ? '+' : '-'
+      info_and_log("  #{product}: #{result}")
     end
   end
 end
-
-options = {
-  config_file: nil,
-  destination_path: GenerateRepoD::DEFAULT_DEST_PATH,
-  product: nil,
-  ci: nil,
-  attempts: 3
-}
-
-parser = OptionParser.new do |opts|
-  opts.banner = 'Usage: generate_repo_d.rb [options]'
-  opts.on('-c', '--config config', 'The config file path') do |config_file|
-    options[:config_file] = config_file
-  end
-
-  opts.on('-d',
-          '--dest destination_path',
-          "(optional, default: #{GenerateRepoD::DEFAULT_DEST_PATH}) The destination path") do |destination_path|
-    options[:destination_path] = destination_path
-  end
-
-  opts.on('-p',
-          '--product product',
-          'Generate the repository for the specified product.'\
-          ' Use ALL for generate the repository for all products') do |product|
-    options[:product] = product
-  end
-
-  opts.on('-m', '--ci ci', 'For maxscale_ci - $ci (example: develop)') do |ci|
-    options[:ci] = ci
-  end
-
-  opts.on('-a', '--attempts attempts_number', 'Number of retries in case of error') do |attempts|
-    options[:attempts] = attempts
-  end
-
-  opts.on('-h', '--help', 'Displays Help') do
-    puts opts
-    puts <<-EOF
-
-Examples:
-  Generate repo.d for all products: `generate_repo_d -c ./config_template.yaml -d ~/mdbci/repo.d -p ALL -m develop`
-  Generate repod.d for maxscale_release: `generate_repo_d -c ./config_template.yaml -d ~/mdbci/repo.d -p maxscale_release`
-  Generate repod.d for maxscale_ci and specified $ci: `generate_repo_d -c ./config_template.yaml -d ~/mdbci/repo.d -p maxscale_ci -m develop`
-  Generate repod.d for mysql with number of retries in case of error = 5: `generate_repo_d -c ./config_template.yaml -d ~/mdbci/repo.d -p mysql -a 5`
-    EOF
-    exit
-  end
-end
-
-parser.parse!
-
-CONFIG_FILE = options[:config_file]
-DESTINATION_PATH = options[:destination_path]
-PRODUCTS = (options[:product] == 'ALL' ? GenerateRepoD::DEFAULT_PRODUCTS : [options[:product]])
-MAXSCALE_CI = options[:ci]
-ATTEMPTS = options[:attempts]
-
-if CONFIG_FILE.nil? || PRODUCTS.nil? || PRODUCTS.empty?
-  puts 'ERROR: Parameters config_file or product not specified'
-  puts 'Run `generate_repo_d.rb -h` for help'
-  exit 1
-end
-
-if PRODUCTS.include?('maxscale_ci') && (MAXSCALE_CI.nil? || (!MAXSCALE_CI.nil? && MAXSCALE_CI.empty?))
-  puts 'ERROR: Parameter maxscale_ci not specified'
-  puts 'Run `generate_repo_d.rb -h` for help'
-  exit 1
-end
-
-exit unless $PROGRAM_NAME == __FILE__
-GenerateRepoD.new.generate(CONFIG_FILE,
-                           PRODUCTS,
-                           DESTINATION_PATH,
-                           ATTEMPTS,
-                           MAXSCALE_CI)
