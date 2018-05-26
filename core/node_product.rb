@@ -173,7 +173,8 @@ class NodeProduct
     platform = full_platform.split('^')
     $out.info 'Setup '+$session.nodeProduct.to_s+' repo on '+platform[0].to_s
     if platform[0] == 'ubuntu' || platform[0] == 'debian'
-      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+repo['repo_key'].to_s+' && '\
+      cmd_install_repo = 'vagrant ssh '+node_name+' -c "sudo apt-get install -y --force-yes dirmngr &&'\
+                       + 'sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+repo['repo_key'].to_s+' && '\
                        + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\
                        + 'sudo echo -e \'deb '+repo['repo'].to_s+'\' | sudo tee -a /etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\
                        + 'sudo apt-get update"'
@@ -194,7 +195,8 @@ class NodeProduct
     platform = full_platform.split('^')
     $out.info 'Setup '+$session.nodeProduct.to_s+' repo on '+platform[0].to_s
     if platform[0] == 'ubuntu' || platform[0] == 'debian'
-      cmd_install_repo = 'sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+repo['repo_key'].to_s+' && '\
+      cmd_install_repo = 'sudo apt-get install -y --force-yes dirmngr && '\
+                       + 'sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com '+repo['repo_key'].to_s+' && '\
                        + 'sudo dd if=/dev/null of=/etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\
                        + 'sudo echo -e \'deb '+repo['repo'].to_s+'\' | sudo tee -a /etc/apt/sources.list.d/'+$session.nodeProduct.to_s+'.list && '\
                        + 'sudo apt-get update'
