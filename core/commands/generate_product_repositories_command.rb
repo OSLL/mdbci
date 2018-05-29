@@ -311,7 +311,7 @@ EOF
     )
   end
 
-  def create_repo_maxscale_release(repo_page, systems, release, system, type)
+  def create_repo_maxscale(repo_page, systems, release, system, type)
     create_repo(
       repo_page,
       systems,
@@ -437,7 +437,7 @@ EOF
     )
   end
 
-  def parse_maxscale_release(config)
+  def parse_maxscale(config)
     systems = {
       debian: {
         path: '',
@@ -466,7 +466,7 @@ EOF
 
     parse_product(
       config,
-      'maxscale_release',
+      'maxscale',
       {},
       systems
     )

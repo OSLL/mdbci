@@ -34,7 +34,7 @@ maxscale_ci:
       path: http://max-tst-01.mariadb.com/ci-repository/##ci##/mariadb-maxscale/
       key: "135659e928c12247"
   platforms: [centos, debian, opensuse, rhel, sles, ubuntu]
-maxscale_release:
+maxscale:
   repo:
     rpm:
       path: https://downloads.mariadb.com/MaxScale/
