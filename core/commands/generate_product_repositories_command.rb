@@ -22,7 +22,7 @@ class GenerateProductRepositoriesCommand < BaseCommand
     'maxscale' => 'maxscale',
     'mdbe' => 'mdbe',
     'mysql' => 'mysql'
-  }
+  }.freeze
   COMMAND_NAME = 'generate-product-repositories'
 
   def self.synopsis
@@ -40,7 +40,7 @@ class GenerateProductRepositoriesCommand < BaseCommand
   end
 
   def show_help
-  info = <<-EOF
+    info = <<-HELP
 
 '#{COMMAND_NAME} [REPOSITORY PATH]' creates product repository configuration.
 
@@ -70,8 +70,8 @@ In orded to generate configuration for a specific product use --product option.
 In order to specify the number of retries for repository configuration use --attempts option.
 
   mdbci generate-product-repositories --product columnstore --attempts 5
-EOF
-  @ui.out(info)
+HELP
+    @ui.out(info)
   end
 
   def initialize(args, env, ui)
@@ -105,10 +105,10 @@ EOF
       return false
     end
     info_and_log("Configuring repositories using configuration: '#{config_path}'.")
-    @config = YAML.load(File.read(config_path))
+    @config = YAML.safe_load(File.read(config_path))
     @products = if @env.nodeProduct
                   unless PRODUCTS_DIR_NAMES.keys.include?(@env.nodeProduct)
-                    show_error_and_help("Unknown product #{@env.nodeProduct}.\n" +
+                    show_error_and_help("Unknown product #{@env.nodeProduct}.\n"\
                                         "Known products: #{PRODUCT_DIR_NAMES.keys.join(', ')}")
                     return false
                   end
@@ -134,7 +134,7 @@ EOF
       show_error_and_help('Please specify name of the CI repository to use for MaxScale CI repository configuration')
       return false
     end
-    return true
+    true
   end
 
   # Get links on the specified page
@@ -155,7 +155,7 @@ EOF
       dir_link?(link)
     end.select do |link|
       links = get_links(repo_page, link[:href])
-                .map { |sublink| sublink.content }
+              .map(&:content)
       yield(link, links)
     end.map(&:content).map do |text|
       text.delete('/')
@@ -181,7 +181,7 @@ EOF
       add_repo_from_platform_dir(product, release_info[:name], repo_link, repo_page, repositories, system, system_type)
     end
 
-    lambdas[:result_handler].call(repos) unless lambdas[:result_handler].nil?
+    lambdas[:result_handler]&.call(repos)
 
     return if repos.empty? || !lambdas[:result_handler].nil?
     FileUtils.mkdir_p("#{@directory}/#{system}")
@@ -325,7 +325,7 @@ EOF
           platform_version = repo[:platform_version]
           version = repo[:version]
           repo[:key] =
-          File.write("#{@directory}/#{platform}_#{platform_version}_#{version}.json", JSON.pretty_generate(repo))
+            File.write("#{@directory}/#{platform}_#{platform_version}_#{version}.json", JSON.pretty_generate(repo))
         end
       }
     )
@@ -433,7 +433,7 @@ EOF
       'maxscale_ci',
       {},
       systems,
-      { name: 'default', path: '' }
+      name: 'default', path: ''
     )
   end
 
