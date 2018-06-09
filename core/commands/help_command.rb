@@ -5,6 +5,7 @@ require_relative 'destroy_command'
 require_relative 'generate_command'
 require_relative 'snapshot_command'
 require_relative 'up_command'
+require_relative 'generate_product_repositories_command'
 
 # Command provides a documentation to the user on how to use the mdbci tool.
 class HelpCommand < BaseCommand
@@ -19,6 +20,7 @@ class HelpCommand < BaseCommand
     'clone' => 'Clone existing configuration into a new one.',
     'destroy' => DestroyCommand.synopsis,
     'generate' => GenerateCommand.synopsis,
+    'generate-product-repositories' => GenerateProductRepositoriesCommand.synopsis,
     'help' => HelpCommand.synopsis,
     'install_product' => 'Install a product onto the configuration node.',
     'public_keys' => 'Copy ssh keys to configured nodes.',
