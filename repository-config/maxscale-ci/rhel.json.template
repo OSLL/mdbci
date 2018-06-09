@@ -1,0 +1,10 @@
+[
+{
+   "product":		"maxscale",
+   "version":		"default",
+   "repo":		"${ci_url}/$ci/mariadb-maxscale/rhel/${platform_version}/\$basearch",
+   "repo_key":		"${rpm_repo_key}",
+   "platform":		"rhel",
+   "platform_version":	"${platform_version}"
+}
+]

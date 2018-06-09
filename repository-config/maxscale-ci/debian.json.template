@@ -1,0 +1,10 @@
+[
+{
+   "product":		"maxscale",
+   "version":           "default",
+   "repo":		"${ci_url}/$ci/mariadb-maxscale/debian ${platform_version} main ",
+   "repo_key":		"${deb_repo_key}",
+   "platform":		"debian",
+   "platform_version":	"${platform_version}"
+}
+]
