@@ -4,13 +4,7 @@ require 'fileutils'
 require 'uri'
 require 'open3'
 
-
-require_relative 'network'
 require_relative 'boxes_manager'
-require_relative 'repo_manager'
-require_relative 'out'
-require_relative 'docker_manager'
-require_relative 'helper'
 require_relative 'clone'
 require_relative 'commands/up_command'
 require_relative 'commands/snapshot_command'
@@ -18,9 +12,17 @@ require_relative 'commands/destroy_command'
 require_relative 'commands/generate_command'
 require_relative 'commands/help_command'
 require_relative 'constants'
+require_relative 'docker_manager'
+require_relative 'helper'
+require_relative 'models/tool_configuration'
+require_relative 'network'
+require_relative 'out'
+require_relative 'repo_manager'
+require_relative 'services/aws_service'
 
+# Currently it is the GOD object that contains configuration and manages the commands that should be run.
+# These responsibilites should be split between several classes.
 class Session
-
   attr_accessor :boxes
   attr_accessor :configs
   attr_accessor :versions
@@ -28,9 +30,6 @@ class Session
   attr_accessor :boxesFile
   attr_accessor :boxName
   attr_accessor :field
-  attr_accessor :awsConfig # aws-config parameters
-  attr_accessor :awsConfigFile # aws-config.yml file
-  attr_accessor :awsConfigOption # path to aws-config.yml in template file
   attr_accessor :isOverride
   attr_accessor :isSilent
   attr_accessor :command
@@ -52,6 +51,8 @@ class Session
   attr_accessor :node_name
   attr_accessor :snapshot_name
   attr_accessor :ipv6
+  attr_reader :aws_client
+  attr_reader :tool_config
 
   PLATFORM = 'platform'
   VAGRANT_NO_PARALLEL = '--no-parallel'
@@ -81,25 +82,20 @@ EOF
 =end
 
   def loadCollections
-
     @mdbciDir = Dir.pwd
-    unless (ENV['MDBCI_VM_PATH'].nil?)
-      @mdbciDir = ENV['MDBCI_VM_PATH']
-    end
-
-    $out.info 'Load Boxes from '+$session.boxesDir
+    $out.info("Loading boxes definition from #{$session.boxesDir}")
     @boxes = BoxesManager.new($session.boxesDir)
 
-    $out.info 'Load AWS config from ' + @awsConfigFile
-    @awsConfig = $exception_handler.handle('AWS configuration file not found') { YAML.load_file(@awsConfigFile)['aws'] }
+    $out.info('Loading MDBCI configuration file')
+    @tool_config = ToolConfiguration.load
 
-    $out.info 'Load Repos from '+$session.repoDir
+    $out.info("Load application repositories from #{$session.repoDir}")
     @repos = RepoManager.new($session.repoDir)
 
+    @aws_service = AwsService.new(@tool_config['aws'])
   end
 
   def setup(what)
-    possibly_failed_command = ''
     case what
       when 'boxes'
         $out.info 'Adding boxes to vagrant'
@@ -129,7 +125,6 @@ EOF
       else
         raise "Cannot setup #{what}"
     end
-
     return 0
   end
 
@@ -565,10 +560,6 @@ EOF
     raise 'Template configuration file is empty!' if @configs.nil?
 
     LoadNodesProvider configs
-    #
-    aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
-    @awsConfigOption = aws_config.to_s.empty? ? $mdbci_exec_dir+'/aws-config.yml' : aws_config[1].to_s
-    #
     if @nodesProvider != 'mdbci'
       GenerateCommand.generate(path, configs, boxes, isOverride, nodesProvider)
       $out.info 'Generating config in ' + path

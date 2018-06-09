@@ -72,12 +72,12 @@ class Node
         exit_code = getInterfaceBoxIp(@name, "eth0")
       when '(aws)'
         if curlCheck
-          if is_private
-            cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["private_ip_service"]+'"'
-          else
-            cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["public_ip_service"]+'"'
-          end
-          vagrant_out = `#{cmd}`
+          remote_command = if is_private
+                             'curl http://169.254.169.254/latest/meta-data/local-ipv4'
+                           else
+                             'curl http://169.254.169.254/latest/meta-data/public-ipv4'
+                           end
+          vagrant_out = `vagrant ssh #{@name} -c '#{remote_command}'`
           exit_code = $?.exitstatus
           ip = vagrant_out.scanf('%s')
           # get ip from command output

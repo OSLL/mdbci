@@ -36,6 +36,7 @@ class DestroyCommand < BaseCommand
   # @return [Configuration, String] parsed configuration.
   def setup_command
     Configuration.parse_spec(@args.first)
+    @aws_service = @env.aws_service
   end
 
   # Print brief instructions on how to use the command.
@@ -90,12 +91,10 @@ HELP
   # Destroy aws keypair specified in the configuration.
   #
   # @param configuration [Configuration] that we operate on.
-  # @raise [RuntimeError] if there was an error during deletion of the key pair.
   def destroy_aws_keypair(configuration)
     return unless configuration.aws_keypair_name?
     @ui.info "Destroying AWS key pair #{configuration.aws_keypair_name}"
-    result = CommandResult.for_command("aws ec2 delete-key-pair --key-name '#{configuration.aws_keypair_name}'")
-    raise "Unable to delete AWS key pair #{configuration.aws_keypair_name}.\n#{result.messages}" unless result.success?
+    @aws_service.delete_key_pair(configuration.aws_keypair_name)
   end
 
   # Destroy the node if it was not destroyed by the vagrant.
