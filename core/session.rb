@@ -77,7 +77,6 @@ EOF
      Load collections from json files:
       - boxes.json
       - template.json
-      - aws-config.yml
       - versions.json
 =end
 

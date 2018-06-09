@@ -39,7 +39,6 @@ session = Session.new
 $session = session
 session.configFile = 'instance.json'
 session.boxesFile = 'boxes.json'
-session.awsConfigFile = $mdbci_exec_dir + '/aws-config.yml'
 $exception_handler = ExceptionHandler.new
 session.ipv6 = false
 

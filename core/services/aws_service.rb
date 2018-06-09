@@ -6,7 +6,7 @@ class AwsService
   def initialize(aws_config)
     @client = Aws::EC2::Client.new(
       access_key_id: aws_config['access_key_id'],
-      secret_acess_key: aws_config['secret_access_key'],
+      secret_access_key: aws_config['secret_access_key'],
       region: aws_config['region']
     )
   end
