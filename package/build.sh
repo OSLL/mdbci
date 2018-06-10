@@ -25,7 +25,7 @@ mkdir -p "$BUILD_DIR"
 # Copy all files that should be distributed to the build directory
 MDBCI_BUILD_DIR="$BUILD_DIR/mdbci"
 mkdir -p "$MDBCI_BUILD_DIR"
-for file in BOXES core Gemfile Gemfile.lock mdbci products.json recipes repo.d
+for file in BOXES core docs Gemfile Gemfile.lock mdbci products.json recipes repo.d
 do
   cp -r "../$file" "$MDBCI_BUILD_DIR/"
 done
