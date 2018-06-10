@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'aws-sdk-ec2'
 require 'socket'
 
@@ -26,5 +28,23 @@ class AwsService
   # @param [String] name of the key pair to delete
   def delete_key_pair(name)
     @client.delete_key_pair(key_name: name)
+  end
+
+  # Check whether instance with the specified id running or not.
+  # @param [String] instance_id to check
+  # @return [Boolean] true if it is running
+  def instance_running?(instance_id)
+    response = @client.describe_instance_status(instance_ids: [instance_id])
+    response.instance_statuses.any? do |status|
+      status.instance_id == instance_id &&
+        %w[pending running].include?(status.instance_state.name)
+    end
+  end
+
+  # Terminate instance specified by the unique identifier
+  # @param [String] instance_id to terminate
+  def terminate_instance(instance_id)
+    @client.terminate_instances(instance_ids: [instance_id])
+    nil
   end
 end

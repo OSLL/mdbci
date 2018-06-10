@@ -40,7 +40,7 @@ HEADER
       aws.keypair_name = "#{keypair_name}"
       override.ssh.private_key_path = "#{pemfile_path}"
       aws.region = "#{aws_config['region']}"
-      aws.security_groups = "#{aws_config['security_groups']}"
+      aws.security_groups = #{aws_config['security_groups']}
       aws.access_key_id = "#{aws_config['access_key_id']}"
       aws.secret_access_key = "#{aws_config['secret_access_key']}"
       aws.user_data = "#!/bin/bash\nsed -i -e 's/^Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers"
@@ -392,7 +392,7 @@ end
     return machine
   end
 
-  def self.generate_keypair(path)
+  def self.generate_key_pair(path)
     full_path = File.expand_path(path)
     key_pair = $session.aws_service.generate_key_pair(full_path)
     path_to_keyfile = File.join(full_path, 'maxscale.pem')
@@ -446,7 +446,7 @@ end
       # Generate AWS Configuration
       $out.info 'Generating AWS configuration'
       vagrant.puts vagrant_config_header
-      path_to_keyfile, keypair_name = generateKeypair path
+      path_to_keyfile, keypair_name = generate_key_pair path
       vagrant.puts aws_provider_config($session.tool_config['aws'], path_to_keyfile, keypair_name)
     else
       # Generate VBox/Qemu Configuration

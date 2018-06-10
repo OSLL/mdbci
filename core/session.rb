@@ -51,7 +51,7 @@ class Session
   attr_accessor :node_name
   attr_accessor :snapshot_name
   attr_accessor :ipv6
-  attr_reader :aws_client
+  attr_reader :aws_service
   attr_reader :tool_config
 
   PLATFORM = 'platform'
