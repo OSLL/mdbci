@@ -115,34 +115,29 @@ end # save iptables rules
 
 # copy server.cnf to my.cnf.d/ dir
 case node[:platform_family]
-
-  when "debian", "ubuntu"
-
-    createcmd = "mkdir -p /etc/mysql/my.cnf.d/"
-    execute "Create cnf_template directory" do
-      command createcmd
-    end
-
-    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/mysql/my.cnf.d/'
-    execute "Copy server.cnf to cnf_template directory" do
-      command copycmd
-    end
-
-  when "rhel", "fedora", "centos", "opensuse"
-
-    createcmd = 'mkdir -p /etc/my.cnf.d/'
-    execute "Create cnf_template directory" do
-      command createcmd
-    end
-
-    # /etc/my.cnf.d -- dir for *.cnf files
-    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mariadb']['cnf_template'] + ' /etc/my.cnf.d/'
-    execute "Copy server.cnf to cnf_template directory" do
-      command copycmd
-    end
-
+when 'debian', 'ubuntu'
+  db_config_dir = '/etc/mysql/my.cnf.d/'
+when 'rhel', 'fedora', 'centos', 'opensuse'
+  db_config_dir = '/etc/my.cnf.d/'
 end
 
+directory db_config_dir do
+  owner 'root'
+  group 'root'
+  recursive true
+  mode '0755'
+  action :create
+end
+
+execute 'Copy server.cnf to cnf_template directory' do
+  command "cp /home/vagrant/cnf_templates/#{node['mariadb']['cnf_template']} #{db_config_dir}"
+end
+
+file "#{db_config_dir}/#{node['mariadb']['cnf_template']}" do
+  owner 'root'
+  group 'root'
+  mode '0600'
+end
 
 # Install packages
 case node[:platform_family]
