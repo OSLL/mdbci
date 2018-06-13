@@ -5,7 +5,7 @@ community:
       key: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
     deb:
       path: http://mirror.netinch.com/pub/mariadb/repo/
-      key: 0xF1656F24C74CD1D8
+      key: "0xF1656F24C74CD1D8"
   platforms: [centos, debian, opensuse, rhel, sles, ubuntu]
 columnstore:
   repo:
@@ -14,7 +14,7 @@ columnstore:
       key: https://downloads.mariadb.com/ColumnStore/MariaDB-ColumnStore.gpg.key
     deb:
       path: https://downloads.mariadb.com/ColumnStore/
-      key: AD0DEAFDA41F5C14
+      key: "AD0DEAFDA41F5C14"
   platforms: [centos, debian, sles, ubuntu]
 galera:
   repo:
@@ -23,7 +23,7 @@ galera:
       key: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
     deb:
       path: http://mirror.netinch.com/pub/mariadb/repo/
-      key: 0xF1656F24C74CD1D8
+      key: "0xF1656F24C74CD1D8"
   platforms: [centos, debian, opensuse, rhel, sles, ubuntu]
 maxscale_ci:
   repo:
@@ -32,7 +32,7 @@ maxscale_ci:
       key: https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY
     deb:
       path: http://max-tst-01.mariadb.com/ci-repository/##ci##/mariadb-maxscale/
-      key: 135659e928c12247
+      key: "135659e928c12247"
   platforms: [centos, debian, opensuse, rhel, sles, ubuntu]
 maxscale:
   repo:
@@ -50,8 +50,8 @@ maxscale:
                          "2.1.9", "2.1.9-debug", "2.2.0"]
     deb:
       path: https://downloads.mariadb.com/MaxScale/
-      key: 135659e928c12247
-      old_key: 70E4618A8167EE24
+      key: "135659e928c12247"
+      old_key: "70E4618A8167EE24"
       old_key_versions: ["1.1", "1.2", "1.2-debug", "1.2.1", "1.2.1-debug", "1.3.0", "1.3.0-beta", "1.3.0-beta-debug",
                          "1.3.0-debug", "1.4", "1.4.0", "1.4.0-debug", "1.4.1", "1.4.1-debug", "1.4.2", "1.4.2-debug",
                          "1.4.3", "1.4.4", "1.4.4-debug", "1.4.5", "1.4.5-debug", "2.0", "2.0.0", "2.0.0-debug",
