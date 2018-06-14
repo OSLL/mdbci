@@ -13,7 +13,7 @@ case node[:platform_family]
   when "debian", "ubuntu", "mint"
   # Add repo key
   execute "Key add" do
-    command "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xce1a3dd5e3c94f49"
+    command "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com #{node['mysql']['repo_key']}"
   end
   # release_name = '$(lsb_release -cs)'
   system 'echo MySQL version: ' + node['mysql']['version']
