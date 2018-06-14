@@ -93,6 +93,12 @@ HELP
     @logger.error(message)
   end
 
+  # Send iformation about the error to the error stream
+  def error_and_log_error(error)
+    error_and_log(error.message)
+    error_and_log(error.backtrace.reverse.join("\n"))
+  end
+
   # Use data provided via constructor to configure the command.
   def configure_command
     config_path = if @env.configuration_file
@@ -140,24 +146,28 @@ HELP
   # Get links on the specified page
   def get_links(repo_page, path = '/')
     uri = "#{repo_page}/#{path}"
-    begin
-      doc = Nokogiri::HTML(open(uri))
-    rescue OpenURI::HTTPError => e
-      raise OpenURI::HTTPError.new(e.message + ", uri: #{uri}", e.io)
-    end
+    doc = Nokogiri::HTML(open(uri))
     doc.css('a')
   end
 
   # This method goes through the main page and finds releases that should be added to
   # the repository
   def find_viable_releases(repo_page)
-    get_links(repo_page, '/').select do |link|
+    possible_releases = get_links(repo_page, '/').select do |link|
       dir_link?(link)
-    end.select do |link|
-      links = get_links(repo_page, link[:href])
-              .map(&:content)
-      yield(link, links)
-    end.map(&:content).map do |text|
+    end
+    checked_releases = possible_releases.select do |link|
+      begin
+        links = get_links(repo_page, link[:href])
+                  .map(&:content)
+        yield(link, links)
+      rescue StandardError => error
+        error_and_log("Unable to get list of links for #{repo_page}/#{link[:href]}")
+        error_and_log_error(error)
+        false
+      end
+    end
+    checked_releases.map(&:content).map do |text|
       text.delete('/')
     end
   end
@@ -578,10 +588,9 @@ HELP
         FileUtils.rm_rf("#{@directory}/.", secure: true)
         begin
           send("parse_#{product}".to_sym, @config[product])
-        rescue StandardError => e
+        rescue StandardError => error
           error_and_log("#{product} was not generated. Try again.")
-          error_and_log(e.message)
-          error_and_log(e.backtrace.reverse.join("\n"))
+          error_and_log_error(error)
           next
         end
         info_and_log("Copying generated configuration for #{product} to the repository.")
