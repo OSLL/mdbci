@@ -77,5 +77,5 @@ mysql:
       key: http://repo.mysql.com/RPM-GPG-KEY-mysql
     deb:
       path: http://repo.mysql.com/apt/
-      key: http://repo.mysql.com/RPM-GPG-KEY-mysql
+      key: "5072E1F5"
   platforms: [centos, rhel, sles, debian, ubuntu]
