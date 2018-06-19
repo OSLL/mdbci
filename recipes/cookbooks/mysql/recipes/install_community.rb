@@ -66,7 +66,7 @@ end
 file "#{db_config_dir}/#{node['mysql']['cnf_template']}" do
   owner 'root'
   group 'root'
-  mode '0600'
+  mode '0644'
 end
 
 execute 'Add my.cnf.d directory to the base mysql configuration file' do

@@ -1,42 +1,40 @@
 include_recipe 'packages::configure_apt'
 
-#
-# install default packages
-[ "net-tools", "psmisc" ].each do |pkg|
+# Install default packages
+%w( net-tools psmisc ).each do |pkg|
   package pkg do
     retries 2
     retry_delay 10
   end
 end
-#
+
+# Configure repository
 case node[:platform_family]
-  when "debian", "ubuntu", "mint"
+when "debian", "ubuntu", "mint"
   # Add repo key
   execute "Key add" do
-    command "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com #{node['mysql']['repo_key']}"
+    command "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 5072E1F5"
   end
-  # release_name = '$(lsb_release -cs)'
-  system 'echo MySQL version: ' + node['mysql']['version']
-  system 'echo MySQL repo: ' + node['mysql']['repo']
-  system 'echo MySQL repo key: ' + node['mysql']['repo_key']
-  system 'echo MDBCI plain repo recipe'
 
-  # Add repo
-  addrepocmd = 'echo "'+ node['mysql']['repo']+' "> /etc/apt/sources.list.d/mysql.list'
-  execute "Repository add" do
-    command addrepocmd
+  file '/etc/apt/sources.list.d/mysql.list' do
+    content node['mysql']['repo']
+    owner 'root'
+    group 'root'
+    mode '0644'
+    action :create
   end
-  execute "update" do
+
+  execute "Update repository cache" do
     command "apt-get update"
   end
 
-  when "rhel", "fedora", "centos"
+when "rhel", "fedora", "centos"
   template "/etc/yum.repos.d/mysql.repo" do
     source "mdbci.mysql.rhel.erb"
     action :create
   end
 
-  when "suse"
+when "suse"
   template "/etc/zypp/repos.d/mysql.repo" do
     source "mdbci.mysql.suse.erb"
     action :create
@@ -46,5 +44,4 @@ case node[:platform_family]
   execute "Change suse on sles repository" do
     command "cat /etc/zypp/repos.d/mysql.repo | sed s/suse/$(" + release_name + ")/g > /etc/zypp/repos.d/mysql.repo"
   end
-
 end
