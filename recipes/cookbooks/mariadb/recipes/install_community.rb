@@ -157,10 +157,10 @@ end
 file "#{db_config_dir}/#{node['mariadb']['cnf_template']}" do
   owner 'root'
   group 'root'
-  mode '0600'
+  mode '0644'
 end
 
-if node['mairadb']['version'] == '5.1'
+if node['mariadb']['version'] == '5.1'
   execute 'Add my.cnf.d directory for old MySQL version' do
     command <<-COMMAND
     echo "\n[client-server]\n!includedir #{db_config_dir}" >> #{db_base_config}

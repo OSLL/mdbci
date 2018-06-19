@@ -1,48 +1,40 @@
 include_recipe 'packages::configure_apt'
 
-#
-# Default packages
-#
-[ "net-tools", "psmisc" ].each do |pkg|
+# Install default packages
+%w( net-tools psmisc ).each do |pkg|
   package pkg do
     retries 2
     retry_delay 10
   end
 end
-#
-#
-#
-case node[:platform_family]
-  when "debian", "ubuntu", "mint"
-  release_name = '$(lsb_release -cs)'
-  system "echo MariaDB version: #{node['mariadb']['version']}"
-  system "echo MariaDB repo: #{node['mariadb']['repo']}"
-  system "echo MariaDB repo key: #{node['mariadb']['repo_key']}"
-  system 'echo MDBCI plain repo recipe'
 
+# Configure repository
+case node[:platform_family]
+when "debian", "ubuntu", "mint"
   # Add repo key
   execute "Key add" do
     command "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com #{node['mariadb']['repo_key']}"
   end
 
-  #6373 to be removed command 'echo "deb ' + node['mariadb']['repo'] + '/' + node['mariadb']['version'] + '/' + node[:platform] + ' ' + release_name + ' main" > /etc/apt/sources.list.d/mariadb.list'
-  addrepocmd = "echo 'deb #{node['mariadb']['repo']}' > /etc/apt/sources.list.d/mariadb.list"
-
-  # Add repo
-  execute "Repository add" do
-    command addrepocmd
+  file '/etc/apt/sources.list.d/mariadb.list' do
+    content "deb #{node['mariadb']['repo']}"
+    owner 'root'
+    group 'root'
+    mode '0644'
+    action :create
   end
-  execute "update" do
+
+  execute "Update repository cache" do
     command "apt-get update"
   end
 
-  when "rhel", "fedora", "centos"
+when "rhel", "fedora", "centos"
   template "/etc/yum.repos.d/mariadb.repo" do
     source "mdbci.mariadb.rhel.erb"
     action :create
   end
 
-  when "suse"
+when "suse"
   template "/etc/zypp/repos.d/mariadb.repo" do
     source "mdbci.mariadb.suse.erb"
     action :create
