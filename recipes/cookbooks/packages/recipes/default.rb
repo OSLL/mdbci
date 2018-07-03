@@ -7,10 +7,10 @@
 # All rights reserved - Do Not Redistribute
 #
 
-# TODO - move here all packages based on product (galera, maxscale)
+include_recipe 'packages::configure_apt'
 
 # install additional packages for all platform
-%w(net-tools psmisc).each do |pkg|
+%w(net-tools psmisc curl).each do |pkg|
   package pkg do
     retries 2
     retry_delay 10
