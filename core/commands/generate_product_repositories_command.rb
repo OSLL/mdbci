@@ -350,21 +350,6 @@ HELP
     )
   end
 
-  def create_repo_mysql(repo_page, systems, release, system, type)
-    create_repo(
-      repo_page,
-      systems,
-      release,
-      system,
-      type,
-      'mysql',
-      repo_link_detector: lambda { |link|
-        (%w[centos rhel].include?(system) && !(link.content =~ %r{^el(\/?)$}).nil?) ||
-          (system == 'sles' && !(link.content =~ %r{^sles(\/?)$}).nil?)
-      }
-    )
-  end
-
   def parse_community(config)
     parse_product(config, 'community')
   end
@@ -489,92 +474,6 @@ HELP
       {},
       systems
     )
-  end
-
-  def parse_mysql_debian_systems(config)
-    release_regexp = %r{^mysql-(\d+\.?\d+(-[^\/]*)?)(\/?)$}
-    debian = {
-      path: '',
-      repo_page: config['repo']['deb']['path'],
-      key: ->(_version) { config['repo']['deb']['key'] },
-      release_path: ->(repo_link) { "#{repo_link}/dists" },
-      release_name: ->(release) { release },
-      repo_path: lambda { |system, release_name, version|
-        "deb #{config['repo']['deb']['path']}#{system} #{release_name} mysql-#{version}"
-      }
-    }
-
-    repo_page = debian[:repo_page]
-    subpath = debian[:path]
-    release_path = debian[:release_path]
-    product = 'mysql'
-
-    @logger.info 'Configuring mysql for debian systems'
-    config['platforms'].each do |system_name|
-      next if system_type_by_system_name(system_name) != :debian
-
-      @logger.info "Creating repository configuration for #{system_name}"
-      repos = get_links(repo_page).select do |link|
-        link.content =~ %r{^#{system_name}(\/?)$}
-      end.each_with_object([]) do |link, repositories|
-        repo_link = "#{subpath}/#{link[:href]}".gsub(%r{\/\/}, '/')
-
-        get_links(repo_page, release_path.call(repo_link)).select do |repo_inner_link|
-          dir_link?(repo_inner_link)
-        end.each do |release_link|
-          release_name = release_link.content.delete('/')
-          get_links(repo_page, "#{release_path.call(repo_link)}/#{release_name}").each do |release_inner_link|
-            next if (release_inner_link.content =~ release_regexp).nil?
-            version = release_inner_link.content.match(release_regexp).captures.first
-            repo_path = debian[:repo_path].call(system_name, release_name, version)
-            repositories << {
-              repo: repo_path,
-              repo_key: debian[:key].call(release_name),
-              platform_version: release_name,
-              platform: system_name,
-              product: product,
-              version: version
-            }
-          end
-        end
-        repositories
-      end
-
-      break if repos.empty?
-      repos.map { |repo| repo[:version] }.uniq.each do |version|
-        FileUtils.mkdir_p("#{@directory}/#{system_name}")
-        File.write(
-          "#{@directory}/#{system_name}/#{version}.json",
-          JSON.pretty_generate(repos.select { |repo| repo[:version] == version })
-        )
-      end
-    end
-  end
-
-  def parse_mysql_old(config)
-    rpm_release_regexp = %r{^mysql-(\d+\.?\d+)-community(\/?)$}
-
-    systems = {
-      rhel: {
-        path: '',
-        release_name: ->(release) { release.match(rpm_release_regexp).captures.first },
-        repo_path: lambda { |repo_link, release_name|
-          "#{config['repo']['rpm']['path']}#{repo_link}/#{release_name}/x86_64"
-        }
-      }
-    }
-
-    parse_product(
-      config,
-      'mysql',
-      {
-        viable_release_detector: lambda { |system_type, _system_info, link, _links|
-          system_type != :debian && !(link.content =~ rpm_release_regexp).nil?
-        }
-      },
-      systems
-    )
-    parse_mysql_debian_systems(config)
   end
 
   def system_type_by_system_name(system_name)
