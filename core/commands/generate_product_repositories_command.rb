@@ -150,6 +150,15 @@ HELP
     doc.css('a')
   end
 
+  # Links that look like directories from the list of all links
+  # @param url [String] path to the site to be checked
+  # @return [Array] possible link locations
+  def get_directory_links(url)
+    get_links(url).select do |link|
+      dir_link?(link)
+    end
+  end
+
   # This method goes through the main page and finds releases that should be added to
   # the repository
   def find_viable_releases(repo_page)
@@ -542,7 +551,7 @@ HELP
     end
   end
 
-  def parse_mysql(config)
+  def parse_mysql_old(config)
     rpm_release_regexp = %r{^mysql-(\d+\.?\d+)-community(\/?)$}
 
     systems = {
@@ -574,6 +583,175 @@ HELP
       :rhel
     when 'debian', 'ubuntu'
       :debian
+    end
+  end
+
+  def parse_mysql(config)
+    releases = []
+    releases.concat(parse_mysql_rpm_repository(config['repo']['rpm']))
+    releases.concat(parse_mysql_deb_repository(config['repo']['deb']))
+    write_repository(releases)
+  end
+
+  def parse_mysql_deb_repository(config)
+    parse_repository(
+      config['path'], config['key'], 'mysql',
+      append_url(%w[debian ubuntu], :platform, save_path = true),
+      append_url(%w[dists]),
+      save_as_field(:platform_version),
+      extract_field(:version, %r{^mysql-(\d+\.?\d+(-[^\/]*)?)(\/?)$}),
+      lambda do |release, links|
+        release[:repo] = "deb #{release[:repo_url]} #{release[:platform]} mysql-#{release[:version]}"
+        release
+      end
+    )
+  end
+
+  # Method parses MySQL repositories that correspond to the following scheme:
+  # http://repo.mysql.com/yum/mysql-8.0-community/el/7/x86_64/
+  def parse_mysql_rpm_repository(config)
+    parse_repository(
+      config['path'], config['key'], 'mysql',
+      extract_field(:version, %r{^mysql-(\d+\.?\d+)-community(\/?)$}),
+      split_rpm_platforms(),
+      save_as_field(:platform_version),
+      append_url(%w(x86_64), :repo)
+    )
+  end
+
+
+  STORED_KEYS = :repo, :repo_key, :platform, :platform_version, :product, :version
+  # Write all information about releases to the JSON documents
+  def write_repository(releases)
+    platforms = releases.map { |release| release[:platform] }.uniq
+    platforms.each do |platform|
+      FileUtils.mkdir_p("#{@directory}/#{platform}")
+      releases_by_version = Hash.new { |hash, key| hash[key] = [] }
+      releases.each do |release|
+        next if release[:platform] != platform
+        stored_release = {}
+        STORED_KEYS.each do |key|
+          stored_release[key] = release[key]
+        end
+        releases_by_version[release[:version]] << stored_release
+      end
+      releases_by_version.each_pair do |version, version_releases|
+        File.write("#{@directory}/#{platform}/#{version}.json",
+                   JSON.pretty_generate(version_releases))
+      end
+    end
+  end
+
+  # Parse the repository and provide required configurations
+  def parse_repository(base_url, key, product, *steps)
+    # Recursively go through the site and apply steps on each level
+    result = steps.reduce([{url: base_url}]) do |releases, step|
+      releases.each_with_object([]) do |release, next_releases|
+        begin
+          links = get_directory_links(release[:url])
+        rescue OpenURI::HTTPError => error
+          error_and_log("Unable to get information from link '#{release[:url]}', message: '#{error.message}'")
+          next
+        end
+        next_releases.concat(apply_step_to_links(step, links, release))
+      end
+    end
+    # Add repository key and product to all releases
+    result.each do |release|
+      release[:repo_key] = key
+      release[:product] = product
+    end
+  end
+
+  # Helper method that applies the specified step to the current release
+  # @param step [Lambda] the executable lambda that should be applied here
+  # @param links [Array] the list of elements got from the page
+  # @param release [Hash] information about the release collected so far
+  def apply_step_to_links(step, links, release)
+    # Delegate creation of next releases to the lambda
+    next_releases = step.call(release, links)
+    next_releases = [next_releases] unless next_releases.kind_of?(Array)
+    # Merge processing results into a new array
+    next_releases.map do |next_release|
+      result = release.merge(next_release)
+      if result.has_key?(:link)
+        result[:url] = "#{release[:url]}#{next_release[:link][:href]}"
+        result.delete(:link)
+      end
+      result
+    end
+  end
+
+  # Filter all links via regular expressions and then place captured first element as version
+  # @param field [Symbol] name of the field to write result to
+  # @param rexexp [RegExp] expression that should have first group designated to field extraction
+  def extract_field(field, regexp)
+    lambda do |release, links|
+      possible_releases = links.select do |link|
+        link.content =~ regexp
+      end
+      possible_releases.map do |link|
+        {
+          link: link,
+          field => link.content.match(regexp).captures.first
+        }
+      end
+    end
+  end
+
+  RPM_PLATFORMS = {
+    'el' => %w[centos rhel],
+    'sles' => %w[sles]
+  }
+  def split_rpm_platforms()
+    lambda do |release, links|
+      link_names = links.map { |link| link.content.delete('/') }
+      releases = []
+      RPM_PLATFORMS.each_pair do |keyword, platforms|
+        next unless link_names.include?(keyword)
+        platforms.each do |platform|
+          releases << {
+            url: "#{release[:url]}#{keyword}/",
+            platform: platform
+          }
+        end
+      end
+      releases
+    end
+  end
+
+  # Save all values that present in current level as field contents
+  # @param field [Symbol] field to save data to
+  def save_as_field(field)
+    lambda do |release, links|
+      links.map do |link|
+        {
+          link: link,
+          field => link.content.delete('/')
+        }
+      end
+    end
+  end
+
+  # Append URL to the current search path, possibly saving it to the key
+  # and saving it to repo_url for future use
+  # @param paths [Array<String>] array of paths that should be checked for presence
+  # @param key [Symbol] field to save data to
+  # @param save_path [Boolean] whether to save path to :repo_url field or not
+  def append_url(paths, key=nil, save_path=false)
+    lambda do |release, links|
+      link_names = links.map { |link| link.content.delete('/') }
+      repositories = []
+      paths.each do |path|
+        next unless link_names.include?(path)
+        repository = {
+          url: "#{release[:url]}#{path}/"
+        }
+        repository[:repo_url] = "#{release[:url]}#{path}" if save_path
+        repository[key] = path if key
+        repositories << repository
+      end
+      repositories
     end
   end
 
