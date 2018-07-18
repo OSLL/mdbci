@@ -485,7 +485,6 @@ HELP
     end
   end
 
-
   def parse_columnstore(config)
     releases = []
     releases.concat(parse_columnstore_rpm_repository(config['repo']['rpm']))
@@ -650,7 +649,7 @@ HELP
   RPM_PLATFORMS = {
     'el' => %w[centos rhel],
     'sles' => %w[sles],
-    'centos' => %w[centos],
+    'centos' => %w[centos]
   }.freeze
   def split_rpm_platforms
     lambda do |release, links|
