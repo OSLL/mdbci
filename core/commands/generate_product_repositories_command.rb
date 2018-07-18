@@ -286,10 +286,6 @@ HELP
     end
   end
 
-  def create_repo_mdbe(repo_page, systems, release, system, type)
-    create_repo(repo_page, systems, release, system, type, 'mdbe')
-  end
-
   def create_repo_maxscale_ci(repo_page, systems, release, system, type)
     create_repo(
       repo_page,
@@ -325,34 +321,6 @@ HELP
             File.write("#{@directory}/#{platform}_#{platform_version}_#{version}.json", JSON.pretty_generate(repo))
         end
       }
-    )
-  end
-
-  def parse_mdbe(config)
-    systems = {
-      debian: {
-        path: 'repo',
-        repo_path: lambda { |repo_link, release_name|
-          "#{config['repo']['deb']['path']}#{repo_link} #{release_name} main"
-        }
-      },
-      rhel: {
-        path: 'yum',
-        repo_path: lambda { |repo_link, release_name|
-          "#{config['repo']['rpm']['path']}#{repo_link}/#{release_name}"
-        }
-      }
-    }
-
-    parse_product(
-      config,
-      'mdbe',
-      {
-        viable_release_detector: lambda { |_system_type, _system_info, _link, links|
-          links.grep(%r{^yum(\/?)$}).any? && links.grep(%r{^repo(\/?)$}).any?
-        }
-      },
-      systems
     )
   end
 
@@ -430,6 +398,43 @@ HELP
     when 'debian', 'ubuntu'
       :debian
     end
+  end
+
+  def parse_mdbe(config)
+    releases = []
+    releases.concat(parse_mdbe_rpm_repository(config['repo']['rpm']))
+    releases.concat(parse_mdbe_deb_repository(config['repo']['deb']))
+    write_repository(releases)
+  end
+
+  def parse_mdbe_rpm_repository(config)
+    parse_repository(
+      config['path'], config['key'], 'mdbe',
+      extract_field(:version, %r{^(\p{Digit}+\.\p{Digit}+)\/?$}),
+      append_url(%w[yum]),
+      save_as_field(:platform),
+      extract_field(:platform_version, %r{^(\p{Digit}+)\/?$}),
+      append_url(%w[x86_64]),
+      lambda do |release, _|
+        release[:repo] = release[:url]
+        release
+      end
+    )
+  end
+
+  def parse_mdbe_deb_repository(config)
+    parse_repository(
+      config['path'], config['key'], 'mdbe',
+      extract_field(:version, %r{^(\p{Digit}+\.\p{Digit}+)\/?$}),
+      append_url(%w[repo]),
+      append_url(%w[debian ubuntu], :platform, true),
+      append_url(%w[dists]),
+      save_as_field(:platform_version),
+      lambda do |release, _|
+        release[:repo] = "#{release[:repo_url]} #{release[:platform_version]} main"
+        release
+      end
+    )
   end
 
   def parse_galera(config)

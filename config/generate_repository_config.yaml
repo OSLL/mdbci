@@ -68,7 +68,7 @@ mdbe:
       key: https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY
     deb:
       path: http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/
-      key: https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY
+      key: "0xF1656F24C74CD1D8"
   platforms: [centos, debian, opensuse, rhel, sles, ubuntu]
 mysql:
   repo:
