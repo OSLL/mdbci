@@ -286,10 +286,6 @@ HELP
     end
   end
 
-  def create_repo_community(repo_page, systems, release, system, type)
-    create_repo(repo_page, systems, release, system, type, 'mariadb')
-  end
-
   def create_repo_galera(repo_page, systems, release, system, type)
     create_repo(repo_page, systems, release, system, type, 'galera')
   end
@@ -334,10 +330,6 @@ HELP
         end
       }
     )
-  end
-
-  def parse_community_old(config)
-    parse_product(config, 'community')
   end
 
   def parse_galera(config)
