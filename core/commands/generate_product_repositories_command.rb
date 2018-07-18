@@ -290,20 +290,6 @@ HELP
     create_repo(repo_page, systems, release, system, type, 'mariadb')
   end
 
-  def create_repo_columnstore(repo_page, systems, release, system, type)
-    create_repo(
-      repo_page,
-      systems,
-      release,
-      system,
-      type,
-      'columnstore',
-      repo_link_detector: lambda { |link|
-        link.content.include?(system) && !link.content.include?('.')
-      }
-    )
-  end
-
   def create_repo_galera(repo_page, systems, release, system, type)
     create_repo(repo_page, systems, release, system, type, 'galera')
   end
@@ -352,29 +338,6 @@ HELP
 
   def parse_community(config)
     parse_product(config, 'community')
-  end
-
-  def parse_columnstore_old(config)
-    systems = {
-      debian: {
-        path: 'repo',
-        repo_path: ->(repo_link, _release_name) { "#{config['repo']['deb']['path']}#{repo_link}" }
-      },
-      rhel: {
-        path: 'yum'
-      }
-    }
-
-    parse_product(
-      config,
-      'columnstore',
-      {
-        viable_release_detector: lambda { |_system_type, _system_info, _link, links|
-          links.grep(%r{^yum(\/?)$}).any? && links.grep(%r{^repo(\/?)$}).any?
-        }
-      },
-      systems
-    )
   end
 
   def parse_galera(config)
