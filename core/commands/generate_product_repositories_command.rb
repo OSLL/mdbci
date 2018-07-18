@@ -514,7 +514,11 @@ HELP
       extract_field(:version, %r{^mysql-(\d+\.?\d+)-community(\/?)$}),
       split_rpm_platforms,
       save_as_field(:platform_version),
-      append_url(%w[x86_64], :repo)
+      append_url(%w[x86_64], :repo),
+      lambda do |release, _|
+        release[:repo] = release[:url]
+        release
+      end
     )
   end
 
