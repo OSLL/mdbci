@@ -304,26 +304,6 @@ HELP
     )
   end
 
-  def create_repo_maxscale(repo_page, systems, release, system, type)
-    create_repo(
-      repo_page,
-      systems,
-      release,
-      system,
-      type,
-      'maxscale',
-      result_handler: lambda { |repos|
-        repos.each do |repo|
-          platform = repo[:platform]
-          platform_version = repo[:platform_version]
-          version = repo[:version]
-          repo[:key] =
-            File.write("#{@directory}/#{platform}_#{platform_version}_#{version}.json", JSON.pretty_generate(repo))
-        end
-      }
-    )
-  end
-
   def parse_maxscale_ci(config)
     raise ArgumentError, 'Parameter maxscale_ci not specified' if @maxscale_ci.nil?
     ci = @maxscale_ci
@@ -356,41 +336,6 @@ HELP
     )
   end
 
-  def parse_maxscale(config)
-    systems = {
-      debian: {
-        path: '',
-        key: lambda { |version|
-          if config['repo']['deb']['old_key_versions'].include?(version)
-            config['repo']['deb']['old_key']
-          else
-            config['repo']['deb']['key']
-          end
-        }
-      },
-      rhel: {
-        path: '',
-        key: lambda { |version|
-          if config['repo']['rpm']['old_key_versions'].include?(version)
-            config['repo']['rpm']['old_key']
-          else
-            config['repo']['rpm']['key']
-          end
-        },
-        repo_path: lambda { |repo_link, release_name|
-          "#{config['repo']['rpm']['path']}#{repo_link}/#{release_name}/$basearch"
-        }
-      }
-    }
-
-    parse_product(
-      config,
-      'maxscale',
-      {},
-      systems
-    )
-  end
-
   def system_type_by_system_name(system_name)
     case system_name
     when 'centos', 'sles', 'rhel', 'opensuse'
@@ -398,6 +343,41 @@ HELP
     when 'debian', 'ubuntu'
       :debian
     end
+  end
+
+  def parse_maxscale(config)
+    releases = []
+    releases.concat(parse_maxscale_rpm_repository(config['repo']['rpm']))
+    releases.concat(parse_maxscale_deb_repository(config['repo']['deb']))
+    write_repository(releases)
+  end
+
+  def parse_maxscale_rpm_repository(config)
+    parse_repository(
+      config['path'], config['key'], 'maxscale',
+      save_as_field(:version),
+      split_rpm_platforms,
+      extract_field(:platform_version, %r{^(\p{Digit}+)\/?$}),
+      append_url(%w[x86_64]),
+      lambda do |release, _|
+        release[:repo] = release[:url]
+        release
+      end
+    )
+  end
+
+  def parse_maxscale_deb_repository(config)
+    parse_repository(
+      config['path'], config['key'], 'maxscale',
+      save_as_field(:version),
+      append_url(%w[debian ubuntu], :platform, true),
+      append_url(%w[dists]),
+      save_as_field(:platform_version),
+      lambda do |release, _|
+        release[:repo] = "#{release[:repo_url]} #{release[:platform_version]} main"
+        release
+      end
+    )
   end
 
   def parse_mdbe(config)
@@ -645,7 +625,8 @@ HELP
   RPM_PLATFORMS = {
     'el' => %w[centos rhel],
     'sles' => %w[sles],
-    'centos' => %w[centos]
+    'centos' => %w[centos],
+    'rhel' => %w[rhel]
   }.freeze
   def split_rpm_platforms
     lambda do |release, links|
