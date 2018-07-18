@@ -336,7 +336,7 @@ HELP
     )
   end
 
-  def parse_community(config)
+  def parse_community_old(config)
     parse_product(config, 'community')
   end
 
@@ -446,6 +446,41 @@ HELP
     when 'debian', 'ubuntu'
       :debian
     end
+  end
+
+  def parse_community(config)
+    releases = []
+    releases.concat(parse_community_rpm_repository(config['repo']['rpm']))
+    releases.concat(parse_community_deb_repository(config['repo']['deb']))
+    write_repository(releases)
+  end
+
+  def parse_community_rpm_repository(config)
+    parse_repository(
+      config['path'], config['key'], 'community',
+      extract_field(:version, %r{^(\p{Digit}+\.\p{Digit}+)\/?$}),
+      append_url(%w[centos rhel sles], :platform),
+      extract_field(:platform_version, %r{^(\p{Digit}+)\/?$}),
+      append_url(%w[x86_64]),
+      lambda do |release, _|
+        release[:repo] = release[:url]
+        release
+      end
+    )
+  end
+
+  def parse_community_deb_repository(config)
+    parse_repository(
+      config['path'], config['key'], 'community',
+      extract_field(:version, %r{^(\p{Digit}+\.\p{Digit}+)\/?$}),
+      save_as_field(:platform, true),
+      append_url(%w[dists]),
+      save_as_field(:platform_version),
+      lambda do |release, _|
+        release[:repo] = "#{release[:repo_url]} #{release[:platform_version]} main"
+        release
+      end
+    )
   end
 
   def parse_columnstore(config)
@@ -633,13 +668,16 @@ HELP
 
   # Save all values that present in current level as field contents
   # @param field [Symbol] field to save data to
-  def save_as_field(field)
-    lambda do |_, links|
+  # @param save_path [Boolean] whether to save path to :repo_url field or not
+  def save_as_field(field, save_path = false)
+    lambda do |release, links|
       links.map do |link|
-        {
+        result = {
           link: link,
           field => link.content.delete('/')
         }
+        result[:repo_url] = "#{release[:url]}#{link[:href]}" if save_path
+        result
       end
     end
   end
