@@ -354,7 +354,7 @@ HELP
     parse_product(config, 'community')
   end
 
-  def parse_columnstore(config)
+  def parse_columnstore_old(config)
     systems = {
       debian: {
         path: 'repo',
@@ -485,6 +485,44 @@ HELP
     end
   end
 
+
+  def parse_columnstore(config)
+    releases = []
+    releases.concat(parse_columnstore_rpm_repository(config['repo']['rpm']))
+    releases.concat(parse_columnstore_deb_repository(config['repo']['deb']))
+    write_repository(releases)
+  end
+
+  def parse_columnstore_rpm_repository(config)
+    parse_repository(
+      config['path'], config['key'], 'columnstore',
+      save_as_field(:version),
+      append_url(%w[yum]),
+      split_rpm_platforms,
+      save_as_field(:platform_version),
+      append_url(%w[x86_64]),
+      lambda do |release, _|
+        release[:repo] = release[:url]
+        release
+      end
+    )
+  end
+
+  def parse_columnstore_deb_repository(config)
+    parse_repository(
+      config['path'], config['key'], 'columnstore',
+      save_as_field(:version),
+      append_url(%w[repo]),
+      extract_field(:platform, %r{^(\p{Alpha}+)\p{Digit}+\/?$}, true),
+      append_url(%w[dists]),
+      save_as_field(:platform_version),
+      lambda do |release, _|
+        release[:repo] = release[:repo_url]
+        release
+      end
+    )
+  end
+
   def parse_mysql(config)
     releases = []
     releases.concat(parse_mysql_rpm_repository(config['repo']['rpm']))
@@ -584,6 +622,7 @@ HELP
         result[:url] = "#{release[:url]}#{next_release[:link][:href]}"
         result.delete(:link)
       end
+      result[:url] += '/' unless result[:url].end_with?('/')
       result
     end
   end
@@ -591,23 +630,27 @@ HELP
   # Filter all links via regular expressions and then place captured first element as version
   # @param field [Symbol] name of the field to write result to
   # @param rexexp [RegExp] expression that should have first group designated to field extraction
-  def extract_field(field, regexp)
-    lambda do |_, links|
+  # @param save_path [Boolean] whether to save current path to the release or not
+  def extract_field(field, regexp, save_path = false)
+    lambda do |release, links|
       possible_releases = links.select do |link|
         link.content =~ regexp
       end
       possible_releases.map do |link|
-        {
+        result = {
           link: link,
           field => link.content.match(regexp).captures.first
         }
+        result[:repo_url] = "#{release[:url]}#{link[:href]}" if save_path
+        result
       end
     end
   end
 
   RPM_PLATFORMS = {
     'el' => %w[centos rhel],
-    'sles' => %w[sles]
+    'sles' => %w[sles],
+    'centos' => %w[centos],
   }.freeze
   def split_rpm_platforms
     lambda do |release, links|
