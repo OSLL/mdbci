@@ -286,10 +286,6 @@ HELP
     end
   end
 
-  def create_repo_galera(repo_page, systems, release, system, type)
-    create_repo(repo_page, systems, release, system, type, 'galera')
-  end
-
   def create_repo_mdbe(repo_page, systems, release, system, type)
     create_repo(repo_page, systems, release, system, type, 'mdbe')
   end
@@ -330,10 +326,6 @@ HELP
         end
       }
     )
-  end
-
-  def parse_galera(config)
-    parse_product(config, 'galera')
   end
 
   def parse_mdbe(config)
@@ -440,17 +432,26 @@ HELP
     end
   end
 
-  def parse_community(config)
+  def parse_galera(config)
     releases = []
-    releases.concat(parse_community_rpm_repository(config['repo']['rpm']))
-    releases.concat(parse_community_deb_repository(config['repo']['deb']))
+    version_regexp = %r{^(\p{Digit}+\.\p{Digit}+)\-galera\/?$}
+    releases.concat(parse_mariadb_rpm_repository(config['repo']['rpm'], 'community', version_regexp))
+    releases.concat(parse_mariadb_deb_repository(config['repo']['deb'], 'community', version_regexp))
     write_repository(releases)
   end
 
-  def parse_community_rpm_repository(config)
+  def parse_community(config)
+    releases = []
+    version_regexp = %r{^(\p{Digit}+\.\p{Digit}+)\/?$}
+    releases.concat(parse_mariadb_rpm_repository(config['repo']['rpm'], 'community', version_regexp))
+    releases.concat(parse_mariadb_deb_repository(config['repo']['deb'], 'community', version_regexp))
+    write_repository(releases)
+  end
+
+  def parse_mariadb_rpm_repository(config, product, version_regexp)
     parse_repository(
-      config['path'], config['key'], 'community',
-      extract_field(:version, %r{^(\p{Digit}+\.\p{Digit}+)\/?$}),
+      config['path'], config['key'], product,
+      extract_field(:version, version_regexp),
       append_url(%w[centos rhel sles], :platform),
       extract_field(:platform_version, %r{^(\p{Digit}+)\/?$}),
       append_url(%w[x86_64]),
@@ -461,10 +462,10 @@ HELP
     )
   end
 
-  def parse_community_deb_repository(config)
+  def parse_mariadb_deb_repository(config, product, version_regexp)
     parse_repository(
-      config['path'], config['key'], 'community',
-      extract_field(:version, %r{^(\p{Digit}+\.\p{Digit}+)\/?$}),
+      config['path'], config['key'], product,
+      extract_field(:version, version_regexp),
       save_as_field(:platform, true),
       append_url(%w[dists]),
       save_as_field(:platform_version),
