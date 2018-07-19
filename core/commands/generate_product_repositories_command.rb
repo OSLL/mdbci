@@ -145,7 +145,8 @@ HELP
 
   # Get links on the specified page
   def get_links(repo_page, path = '/')
-    uri = "#{repo_page}/#{path}"
+    uri = "#{repo_page}/#{path}".gsub(/([^:])\/+/, '\1/')
+    @logger.info("Loading URLs '#{uri}'")
     doc = Nokogiri::HTML(open(uri))
     doc.css('a')
   end
@@ -304,7 +305,7 @@ HELP
     )
   end
 
-  def parse_maxscale_ci(config)
+  def parse_maxscale_ci_old(config)
     raise ArgumentError, 'Parameter maxscale_ci not specified' if @maxscale_ci.nil?
     ci = @maxscale_ci
     deb_repo_page = config['repo']['deb']['path'].sub('##ci##', ci)
@@ -343,6 +344,43 @@ HELP
     when 'debian', 'ubuntu'
       :debian
     end
+  end
+
+  def parse_maxscale_ci(config)
+    releases = []
+    releases.concat(parse_maxscale_ci_rpm_repository(config['repo']['rpm']))
+    releases.concat(parse_maxscale_ci_deb_repository(config['repo']['deb']))
+    write_repository(releases)
+  end
+
+  def parse_maxscale_ci_rpm_repository(config)
+    parse_repository(
+      config['path'], config['key'], 'maxscale',
+      save_as_field(:version),
+      append_url(%w[mariadb-maxscale]),
+      split_rpm_platforms,
+      extract_field(:platform_version, %r{^(\p{Digit}+)\/?$}),
+      append_url(%w[x86_64]),
+      lambda do |release, _|
+        release[:repo] = release[:url]
+        release
+      end
+    )
+  end
+
+  def parse_maxscale_ci_deb_repository(config)
+    parse_repository(
+      config['path'], config['key'], 'maxscale',
+      save_as_field(:version),
+      append_url(%w[mariadb-maxscale]),
+      append_url(%w[debian ubuntu], :platform, true),
+      append_url(%w[dists]),
+      save_as_field(:platform_version),
+      lambda do |release, _|
+        release[:repo] = "#{release[:repo_url]} #{release[:platform_version]} main"
+        release
+      end
+    )
   end
 
   def parse_maxscale(config)

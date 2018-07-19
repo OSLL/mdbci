@@ -28,10 +28,10 @@ galera:
 maxscale_ci:
   repo:
     rpm:
-      path: http://max-tst-01.mariadb.com/ci-repository/##ci##/mariadb-maxscale/
+      path: http://max-tst-01.mariadb.com/ci-repository/
       key: https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY
     deb:
-      path: http://max-tst-01.mariadb.com/ci-repository/##ci##/mariadb-maxscale/
+      path: http://max-tst-01.mariadb.com/ci-repository/
       key: "135659e928c12247"
   platforms: [centos, debian, opensuse, rhel, sles, ubuntu]
 maxscale:
