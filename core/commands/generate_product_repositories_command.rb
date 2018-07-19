@@ -143,207 +143,24 @@ HELP
     true
   end
 
-  # Get links on the specified page
-  def get_links(repo_page, path = '/')
-    uri = "#{repo_page}/#{path}".gsub(/([^:])\/+/, '\1/')
-    @logger.info("Loading URLs '#{uri}'")
-    doc = Nokogiri::HTML(open(uri))
-    doc.css('a')
-  end
-
   # Links that look like directories from the list of all links
   # @param url [String] path to the site to be checked
   # @return [Array] possible link locations
   def get_directory_links(url)
-    get_links(url).select do |link|
+    uri = url.gsub(/([^:])\/+/, '\1/')
+    @logger.info("Loading URLs '#{uri}'")
+    doc = Nokogiri::HTML(open(uri))
+    all_links = doc.css('a')
+    all_links.select do |link|
       dir_link?(link)
     end
   end
 
-  # This method goes through the main page and finds releases that should be added to
-  # the repository
-  def find_viable_releases(repo_page)
-    possible_releases = get_links(repo_page, '/').select do |link|
-      dir_link?(link)
-    end
-    checked_releases = possible_releases.select do |link|
-      begin
-        links = get_links(repo_page, link[:href])
-                  .map(&:content)
-        yield(link, links)
-      rescue StandardError => error
-        error_and_log("Unable to get list of links for #{repo_page}/#{link[:href]}")
-        error_and_log_error(error)
-        false
-      end
-    end
-    checked_releases.map(&:content).map do |text|
-      text.delete('/')
-    end
-  end
-
+  # Check that passed link is possibly a directory or not
+  # @param link link to check
+  # @return [Boolean] whether link is directory or not
   def dir_link?(link)
     link.content =~ %r{\/$} || link[:href] =~ /^(?!((http|https):\/\/|\.{2}|\/|\?)).*\/$/
-  end
-
-  def create_repo(repo_page, systems, release_info, system, type, product, lambdas = {})
-    @logger.info "Creating repository configuration for #{system} and #{product} #{release_info[:name]} release"
-    system_type = systems[type]
-    subpath = system_type[:path]
-    repos = get_links(repo_page, "#{release_info[:path]}/#{subpath}").select do |link|
-      if !lambdas[:repo_link_detector].nil?
-        lambdas[:repo_link_detector].call(link)
-      else
-        link.content =~ %r{^#{system}(\/?)$}
-      end
-    end.each_with_object([]) do |link, repositories|
-      repo_link = "#{release_info[:path]}/#{subpath}/#{link[:href]}".gsub(%r{\/\/}, '/')
-      add_repo_from_platform_dir(product, release_info[:name], repo_link, repo_page, repositories, system, system_type)
-    end
-
-    lambdas[:result_handler]&.call(repos)
-
-    return if repos.empty? || !lambdas[:result_handler].nil?
-    FileUtils.mkdir_p("#{@directory}/#{system}")
-    File.write("#{@directory}/#{system}/#{release_info[:name]}.json", JSON.pretty_generate(repos))
-  end
-
-  def add_repo_from_platform_dir(product, release, repo_link, repo_page, repositories, system, system_type)
-    get_links(repo_page, system_type[:release_path].call(repo_link)).select do |link|
-      dir_link?(link)
-    end.each do |release_link|
-      release_name = release_link.content.delete('/')
-      repo_path = system_type[:repo_path].call(repo_link, release_name)
-      repositories << {
-        repo: repo_path,
-        repo_key: system_type[:key].call(release),
-        platform_version: release_name,
-        platform: system,
-        product: product,
-        version: release
-      }
-    end
-    repositories
-  end
-
-  def parse_product(config, product, lambdas = {}, systems_info = {}, release_info = {})
-    systems = {
-      debian: {
-        path: '',
-        repo_page: config['repo']['deb']['path'],
-        key: ->(_version) { config['repo']['deb']['key'] },
-        release_path: ->(repo_link) { "#{repo_link}/dists" },
-        release_name: ->(release) { release },
-        repo_path: lambda { |repo_link, release_name|
-          "#{config['repo']['deb']['path']}#{repo_link} #{release_name} main"
-        }
-      },
-      rhel: {
-        path: '',
-        repo_page: config['repo']['rpm']['path'],
-        key: ->(_version) { config['repo']['rpm']['key'] },
-        release_path: ->(repo_link) { repo_link },
-        release_name: ->(release) { release },
-        repo_path: lambda { |repo_link, release_name|
-          "#{config['repo']['rpm']['path']}#{repo_link}/#{release_name}/x86_64"
-        }
-      }
-    }
-    systems.each_key do |system_type|
-      systems[system_type].merge!(systems_info[system_type]) unless systems_info[system_type].nil?
-    end
-
-    systems.each do |system_type, system_info|
-      if !release_info.nil? && !release_info[:path].nil? && !release_info[:name].nil?
-        create_repo_for_platforms(config['platforms'], product, release_info, system_info, system_type, systems)
-        next
-      end
-
-      find_viable_releases(system_info[:repo_page]) do |link, links|
-        if !lambdas[:viable_release_detector].nil?
-          lambdas[:viable_release_detector].call(system_type, system_info, link, links)
-        else
-          config['platforms'].map do |system_name|
-            links.grep(%r{^#{system_name}(\/?)$}).any?
-          end.any?
-        end
-      end.each do |release|
-        current_release_info = { path: release, name: system_info[:release_name].call(release) }
-        create_repo_for_platforms(config['platforms'], product, current_release_info, system_info, system_type, systems)
-      end
-    end
-  end
-
-  def create_repo_for_platforms(platforms, product, release_info, system_info, system_type, systems)
-    @logger.info "Configuring #{product} release #{release_info[:name]}"
-    platforms.each do |system_name|
-      next if system_type != system_type_by_system_name(system_name)
-      send("create_repo_#{product}".to_sym,
-           system_info[:repo_page],
-           systems,
-           release_info,
-           system_name,
-           system_type)
-    end
-  end
-
-  def create_repo_maxscale_ci(repo_page, systems, release, system, type)
-    create_repo(
-      repo_page,
-      systems,
-      release,
-      system,
-      type,
-      'maxscale_ci',
-      result_handler: lambda { |repos|
-        repos.each do |repo|
-          platform = repo[:platform]
-          platform_version = repo[:platform_version]
-          File.write("#{@directory}/#{platform}-#{platform_version}.json", JSON.pretty_generate(repo))
-        end
-      }
-    )
-  end
-
-  def parse_maxscale_ci_old(config)
-    raise ArgumentError, 'Parameter maxscale_ci not specified' if @maxscale_ci.nil?
-    ci = @maxscale_ci
-    deb_repo_page = config['repo']['deb']['path'].sub('##ci##', ci)
-    rpm_repo_page = config['repo']['rpm']['path'].sub('##ci##', ci)
-
-    systems = {
-      debian: {
-        path: '',
-        repo_page: deb_repo_page,
-        repo_path: lambda { |repo_link, release_name|
-          "#{deb_repo_page}#{repo_link} #{release_name} main"
-        }
-      },
-      rhel: {
-        path: '',
-        repo_page: rpm_repo_page,
-        repo_path: lambda { |repo_link, release_name|
-          "#{rpm_repo_page}#{repo_link}/#{release_name}/$basearch"
-        }
-      }
-    }
-
-    parse_product(
-      config,
-      'maxscale_ci',
-      {},
-      systems,
-      name: 'default', path: ''
-    )
-  end
-
-  def system_type_by_system_name(system_name)
-    case system_name
-    when 'centos', 'sles', 'rhel', 'opensuse'
-      :rhel
-    when 'debian', 'ubuntu'
-      :debian
-    end
   end
 
   def parse_maxscale_ci(config)
