@@ -39,6 +39,7 @@ class GenerateProductRepositoriesCommand < BaseCommand
     show_help
   end
 
+  # rubocop:disable Metrics/MethodLength
   def show_help
     info = <<-HELP
 
@@ -70,12 +71,13 @@ In orded to generate configuration for a specific product use --product option.
 In order to specify the number of retries for repository configuration use --attempts option.
 
   mdbci generate-product-repositories --product columnstore --attempts 5
-HELP
+    HELP
     @ui.out(info)
   end
+  # rubocop:enable Metrics/MethodLength
 
-  def initialize(args, env, ui)
-    super(args, env, ui)
+  def initialize(args, env, default_logger)
+    super(args, env, default_logger)
     path = @env.data_path('generate_product_repository.log')
     @ui.info("Writing log file to #{path}")
     @logger = Logger.new(File.new(path, 'w'), 'weekly')
@@ -99,55 +101,65 @@ HELP
     error_and_log(error.backtrace.reverse.join("\n"))
   end
 
-  # Use data provided via constructor to configure the command.
-  def configure_command
-    config_path = if @env.configuration_file
-                    @env.configuration_file
-                  else
-                    @env.find_configuration(CONFIGURATION_FILE)
-                  end
+  def load_configuration_file
+    config_path = @env.configuration_file || @env.find_configuration(CONFIGURATION_FILE)
     unless File.exist?(config_path)
       show_error_and_help("Unable to find configuration file: '#{config_path}'.")
       return false
     end
     info_and_log("Configuring repositories using configuration: '#{config_path}'.")
     @config = YAML.safe_load(File.read(config_path))
-    @products = if @env.nodeProduct
-                  unless PRODUCTS_DIR_NAMES.keys.include?(@env.nodeProduct)
-                    show_error_and_help("Unknown product #{@env.nodeProduct}.\n"\
-                                        "Known products: #{PRODUCT_DIR_NAMES.keys.join(', ')}")
-                    return false
-                  end
-                  [@env.nodeProduct]
-                else
-                  PRODUCTS_DIR_NAMES.keys
-                end
+  end
+
+  def determine_products_to_parse
+    if @env.nodeProduct
+      unless PRODUCTS_DIR_NAMES.key?(@env.nodeProduct)
+        show_error_and_help("Unknown product #{@env.nodeProduct}.\n"\
+                            "Known products: #{PRODUCT_DIR_NAMES.keys.join(', ')}")
+        return false
+      end
+      @products = [@env.nodeProduct]
+    else
+      @products = PRODUCTS_DIR_NAMES.keys
+    end
     info_and_log("Configuring repositories for products: #{@products.join(', ')}.")
+    true
+  end
+
+  def determine_number_of_attempts
     @attempts = if @env.attempts
                   @env.attempts.to_i
                 else
                   3
                 end
     info_and_log("The configuration will be attempted #{@attempts} times.")
+  end
+
+  def setup_destination_directory
     @destination = if @args.empty?
                      @env.configuration_path('repo.d')
                    else
                      @args.first
                    end
     info_and_log("Repository configuration will be written to '#{@destination}'.")
+  end
+
+  # Use data provided via constructor to configure the command.
+  def configure_command
+    load_configuration_file
+    return false unless determine_products_to_parse
+    determine_number_of_attempts
+    setup_destination_directory
     @maxscale_ci = @env.maxscale_ci
-    if @products.include?('maxscale_ci') && @maxscale_ci.nil?
-      show_error_and_help('Please specify name of the CI repository to use for MaxScale CI repository configuration')
-      return false
-    end
     true
   end
 
   # Links that look like directories from the list of all links
   # @param url [String] path to the site to be checked
   # @return [Array] possible link locations
+  # rubocop:disable Security/Open
   def get_directory_links(url)
-    uri = url.gsub(/([^:])\/+/, '\1/')
+    uri = url.gsub(%r{([^:])\/+}, '\1/')
     @logger.info("Loading URLs '#{uri}'")
     doc = Nokogiri::HTML(open(uri))
     all_links = doc.css('a')
@@ -155,12 +167,13 @@ HELP
       dir_link?(link)
     end
   end
+  # rubocop:enable Security/Open
 
   # Check that passed link is possibly a directory or not
   # @param link link to check
   # @return [Boolean] whether link is directory or not
   def dir_link?(link)
-    link.content =~ %r{\/$} || link[:href] =~ /^(?!((http|https):\/\/|\.{2}|\/|\?)).*\/$/
+    link.content =~ %r{\/$} || link[:href] =~ %r{^(?!((http|https):\/\/|\.{2}|\/|\?)).*\/$}
   end
 
   def parse_maxscale_ci(config)
@@ -538,6 +551,36 @@ HELP
     end
   end
 
+  # Create repository
+  def create_repository(product)
+    info_and_log("Generating repository configuration for #{product}")
+    FileUtils.rm_rf("#{@directory}/.", secure: true)
+    begin
+      send("parse_#{product}".to_sym, @config[product])
+    rescue StandardError => error
+      error_and_log("#{product} was not generated. Try again.")
+      error_and_log_error(error)
+      return false
+    end
+    info_and_log("Copying generated configuration for #{product} to the repository.")
+    product_name = PRODUCTS_DIR_NAMES[product]
+    FileUtils.mkdir_p("#{@destination}/#{product_name}")
+    FileUtils.rm_rf("#{@destination}/#{product_name}", secure: true)
+    FileUtils.cp_r("#{@directory}/.", "#{@destination}/#{product_name}")
+    true
+  end
+
+  # Print summary information about the created products
+  # @param products_with_errors [Array<String>] product names that were not generated
+  def print_summary(products_with_errors)
+    info_and_log("\n--------\nSUMMARY:\n")
+    @products.sort.each do |product|
+      result = products_with_errors.include?(product) ? '-' : '+'
+      info_and_log("  #{product}: #{result}")
+    end
+  end
+
+  # Starting point of the application
   def execute
     return ARGUMENT_ERROR_RESULT unless configure_command
     @directory = Dir.mktmpdir(COMMAND_NAME)
@@ -545,34 +588,12 @@ HELP
     remainning_products = @products.dup
     @attempts.times do
       remainning_products = remainning_products.reject do |product|
-        info_and_log("Generating repository configuration for #{product}")
-        FileUtils.rm_rf("#{@directory}/.", secure: true)
-        begin
-          send("parse_#{product}".to_sym, @config[product])
-        rescue StandardError => error
-          error_and_log("#{product} was not generated. Try again.")
-          error_and_log_error(error)
-          next
-        end
-        info_and_log("Copying generated configuration for #{product} to the repository.")
-        product_name = PRODUCTS_DIR_NAMES[product]
-        FileUtils.mkdir_p("#{@destination}/#{product_name}")
-        FileUtils.rm_rf("#{@destination}/#{product_name}", secure: true)
-        FileUtils.cp_r("#{@directory}/.", "#{@destination}/#{product_name}")
-        true
+        create_repository(product)
       end
       break if remainning_products.empty?
     end
     print_summary(remainning_products)
     FileUtils.rm_rf(@directory)
     SUCCESS_RESULT
-  end
-
-  def print_summary(products_with_errors)
-    info_and_log("\n--------\nSUMMARY:\n")
-    @products.sort.each do |product|
-      result = products_with_errors.include?(product) ? '-' : '+'
-      info_and_log("  #{product}: #{result}")
-    end
   end
 end
