@@ -185,7 +185,7 @@ In order to specify the number of retries for repository configuration use --att
 
   def parse_maxscale_ci_rpm_repository(config)
     parse_repository(
-      config['path'], config['key'], 'maxscale',
+      config['path'], config['key'], 'maxscale_ci',
       save_as_field(:version),
       append_url(%w[mariadb-maxscale]),
       split_rpm_platforms,
@@ -200,7 +200,7 @@ In order to specify the number of retries for repository configuration use --att
 
   def parse_maxscale_ci_deb_repository(config)
     parse_repository(
-      config['path'], config['key'], 'maxscale',
+      config['path'], config['key'], 'maxscale_ci',
       save_as_field(:version),
       append_url(%w[mariadb-maxscale]),
       append_url(%w[debian ubuntu], :platform, true),
