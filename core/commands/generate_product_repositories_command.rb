@@ -8,6 +8,7 @@ require 'tmpdir'
 require 'json'
 require 'fileutils'
 require 'logger'
+require 'workers'
 
 require_relative 'base_command'
 
@@ -151,6 +152,7 @@ In order to specify the number of retries for repository configuration use --att
     determine_number_of_attempts
     setup_destination_directory
     @maxscale_ci = @env.maxscale_ci
+    Workers.pool.resize(10)
     true
   end
 
@@ -433,15 +435,16 @@ In order to specify the number of retries for repository configuration use --att
   def parse_repository(base_url, key, product, *steps)
     # Recursively go through the site and apply steps on each level
     result = steps.reduce([{ url: base_url }]) do |releases, step|
-      releases.each_with_object([]) do |release, next_releases|
+      next_releases = Workers.map(releases) do |release|
         begin
           links = get_directory_links(release[:url])
-        rescue OpenURI::HTTPError => error
+        rescue OpenURI::HTTPError, SocketError => error
           error_and_log("Unable to get information from link '#{release[:url]}', message: '#{error.message}'")
           next
         end
-        next_releases.concat(apply_step_to_links(step, links, release))
+        apply_step_to_links(step, links, release)
       end
+      next_releases.flatten.reject(&:nil?)
     end
     # Add repository key and product to all releases
     result.each do |release|

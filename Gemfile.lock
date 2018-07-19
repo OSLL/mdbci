@@ -51,6 +51,7 @@ GEM
       unicode-display_width (~> 1.0, >= 1.0.1)
     ruby-progressbar (1.9.0)
     unicode-display_width (1.4.0)
+    workers (0.6.1)
     xdg (2.2.3)
     yard (0.9.15)
 
@@ -69,6 +70,7 @@ DEPENDENCIES
   rake
   rspec
   rubocop
+  workers
   xdg
 
 BUNDLED WITH
