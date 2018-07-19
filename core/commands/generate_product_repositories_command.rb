@@ -438,7 +438,7 @@ In order to specify the number of retries for repository configuration use --att
       next_releases = Workers.map(releases) do |release|
         begin
           links = get_directory_links(release[:url])
-        rescue OpenURI::HTTPError, SocketError => error
+        rescue OpenURI::HTTPError, SocketError, Net::OpenTimeout => error
           error_and_log("Unable to get information from link '#{release[:url]}', message: '#{error.message}'")
           next
         end
