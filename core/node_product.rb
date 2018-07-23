@@ -215,38 +215,29 @@ class NodeProduct
   #
   # Install product command. Supported: MySQL, MariaDB, MariaDB-Galera, Maxscale
 
-  # Returns packages to install or nil
+  # Searches the product configuration and returns the list of packages to install or nil
+  # @param platform [String] name of the determined platform
+  # @param products [Hash] product configuration table
+  # @return [String] pagkages or nil if search did not succeed
   def NodeProduct.validateProduct(platform, products)
-    products.keys.any? do |k|
+    product_to_install = $session.nodeProduct
+    product_version = $session.productVersion
 
-      if platform.include? k
-        # If platform exists in products list
-        if products[k].has_key? $session.nodeProduct
-          # If current platform have product
-          if products[k][$session.nodeProduct].class == Hash
-            # If product have concrete versions
-            if $session.productVersion != nil
-              # If version specified during execution
-              if products[k][$session.nodeProduct].has_key? $session.productVersion
-                # If defined version exists
-                return products[k][$session.nodeProduct][$session.productVersion]
-              end
-            end
-          else
-            # If product without versions
-            return products[k][$session.nodeProduct]
-          end
-        end
-      end
+    return nil unless products.key?(platform)
+    platform_config = products[platform]
+    return nil unless platform_config.key?(product_to_install)
+    product_config = platform_config[product_to_install]
+    if product_config.kind_of?(Hash)
+      return nill unless product_config.key?(product_version)
+      return product_config[product_version]
     end
-    # Wrong platform/product/version
-    return nil
+    return product_config
   end
 
   def self.installProduct(args)
     pwd = Dir.pwd
     # Loading file with product packages to every system
-    products = YAML.parse(File.read($session.find_configuration('products.yaml')))
+    products = YAML.load(File.read($session.find_configuration('products.yaml')))
     raise 'Configuration name is required' if args.nil?
     args = args.split('/')
     # mdbci box
