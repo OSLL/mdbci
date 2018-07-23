@@ -13,6 +13,7 @@ gem 'xdg'
 
 group(:development) do
   gem 'pry'
+  gem 'pry-byebug'
   gem 'pry-doc'
   gem 'rake'
   gem 'rspec'
