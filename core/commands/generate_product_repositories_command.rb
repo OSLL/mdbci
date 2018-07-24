@@ -297,7 +297,7 @@ In order to specify the number of retries for repository configuration use --att
 
   def parse_mariadb(config)
     releases = []
-    version_regexp = %r{^(\p{Digit}+\.\p{Digit}+)\/?$}
+    version_regexp = %r{^(\p{Digit}+\.\p{Digit}+(\.\p{Digit}+)?)\/?$}
     releases.concat(parse_mariadb_rpm_repository(config['repo']['rpm'], 'mariadb', version_regexp))
     releases.concat(parse_mariadb_deb_repository(config['repo']['deb'], 'mariadb', version_regexp))
     write_repository(releases)
