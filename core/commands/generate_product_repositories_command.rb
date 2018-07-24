@@ -17,7 +17,7 @@ class GenerateProductRepositoriesCommand < BaseCommand
   CONFIGURATION_FILE = 'generate_repository_config.yaml'
   PRODUCTS_DIR_NAMES = {
     'columnstore' => 'columnstore',
-    'community' => 'community',
+    'mariadb' => 'mariadb',
     'galera' => 'galera',
     'maxscale_ci' => 'maxscale_ci',
     'maxscale' => 'maxscale',
@@ -116,7 +116,7 @@ In order to specify the number of retries for repository configuration use --att
     if @env.nodeProduct
       unless PRODUCTS_DIR_NAMES.key?(@env.nodeProduct)
         show_error_and_help("Unknown product #{@env.nodeProduct}.\n"\
-                            "Known products: #{PRODUCT_DIR_NAMES.keys.join(', ')}")
+                            "Known products: #{PRODUCTS_DIR_NAMES.keys.join(', ')}")
         return false
       end
       @products = [@env.nodeProduct]
@@ -290,16 +290,16 @@ In order to specify the number of retries for repository configuration use --att
   def parse_galera(config)
     releases = []
     version_regexp = %r{^(\p{Digit}+\.\p{Digit}+)\-galera\/?$}
-    releases.concat(parse_mariadb_rpm_repository(config['repo']['rpm'], 'community', version_regexp))
-    releases.concat(parse_mariadb_deb_repository(config['repo']['deb'], 'community', version_regexp))
+    releases.concat(parse_mariadb_rpm_repository(config['repo']['rpm'], 'galera', version_regexp))
+    releases.concat(parse_mariadb_deb_repository(config['repo']['deb'], 'galera', version_regexp))
     write_repository(releases)
   end
 
-  def parse_community(config)
+  def parse_mariadb(config)
     releases = []
     version_regexp = %r{^(\p{Digit}+\.\p{Digit}+)\/?$}
-    releases.concat(parse_mariadb_rpm_repository(config['repo']['rpm'], 'community', version_regexp))
-    releases.concat(parse_mariadb_deb_repository(config['repo']['deb'], 'community', version_regexp))
+    releases.concat(parse_mariadb_rpm_repository(config['repo']['rpm'], 'mariadb', version_regexp))
+    releases.concat(parse_mariadb_deb_repository(config['repo']['deb'], 'mariadb', version_regexp))
     write_repository(releases)
   end
 
