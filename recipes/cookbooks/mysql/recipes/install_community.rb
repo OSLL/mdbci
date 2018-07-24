@@ -1,6 +1,5 @@
 include_recipe "mysql::mdbcrepos"
 
-
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
   # TODO: centos7 don't have selinux
@@ -42,39 +41,34 @@ else
   package 'mysql-community-server'
 end
 
-# node cnf_template configuration
+# Copy server.cnf configuration file to configuration
 case node[:platform_family]
+when 'debian', 'ubuntu'
+  db_config_dir = '/etc/mysql/my.cnf.d/'
+  db_base_config = '/etc/mysql/my.cnf'
+when 'rhel', 'fedora', 'centos', 'suse', 'opensuse'
+  db_config_dir = '/etc/my.cnf.d/'
+  db_base_config = '/etc/my.cnf'
+end
 
-  when "debian", "ubuntu"
+directory db_config_dir do
+  owner 'root'
+  group 'root'
+  recursive true
+  mode '0755'
+  action :create
+end
 
-    createcmd = "mkdir /etc/mysql/my.cnf.d"
-    execute "Create cnf_template directory" do
-      command createcmd
-    end
+execute 'Copy server.cnf to cnf_template directory' do
+  command "cp /home/vagrant/cnf_templates/#{node['mysql']['cnf_template']} #{db_config_dir}"
+end
 
-    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mysql']['cnf_template'] + ' /etc/mysql/my.cnf.d/'
-    execute "Copy server.cnf to cnf_template directory" do
-      command copycmd
-    end
+file "#{db_config_dir}/#{node['mysql']['cnf_template']}" do
+  owner 'root'
+  group 'root'
+  mode '0644'
+end
 
-    # /etc/mysql/my.cnf.d -- dir for *.cnf files
-    addlinecmd = 'echo -e \''+'\n'+'!includedir /etc/mysql/my.cnf.d\' | tee -a /etc/mysql/my.cnf'
-    execute "Add server.cnf to my.cnf includedir parameter" do
-      command addlinecmd
-    end
-
-  when "rhel", "fedora", "centos", "suse", "opensuse"
-
-    # /etc/my.cnf.d -- dir for *.cnf files
-    copycmd = 'cp /home/vagrant/cnf_templates/' + node['mysql']['cnf_template'] + ' /etc/my.cnf.d'
-    execute "Copy server.cnf to cnf_template directory" do
-      command copycmd
-    end
-
-    # TODO: check if line already exist !!!
-    #addlinecmd = "replace '!includedir /etc/my.cnf.d' '!includedir " + node['mariadb']['cnf_template'] + "' -- /etc/my.cnf"
-    addlinecmd = 'echo -e \''+'\n'+'!includedir /etc/my.cnf.d\' | tee -a /etc/my.cnf'
-    execute "Add server.cnf to my.cnf !includedir parameter" do
-      command addlinecmd
-    end
+execute 'Add my.cnf.d directory to the base mysql configuration file' do
+  command "echo '\n!includedir #{db_config_dir}' >> #{db_base_config}"
 end

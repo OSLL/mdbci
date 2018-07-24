@@ -3,16 +3,13 @@ require 'shellwords'
 include_recipe "galera::galera_repos"
 include_recipe "ntp::default"
 
-
-
 # Install default packages
-[
-  "rsync", "sudo", "sed",
-  "coreutils", "util-linux", "curl", "grep",
-  "findutils", "gawk", "iproute"
-].each do |pkg|
+%w[
+coreutils curl findutils gawk grep iproute
+rsync sed sudo util-linux].each do |pkg|
   package pkg
 end
+
 case node[:platform_family]
 when "rhel", "fedora", "centos"
   if node['platform_version'].to_f < 7
@@ -24,6 +21,7 @@ else # debian, suse
   package "netcat"
 end
 
+# Install socat package
 if (node[:platform_family] == 'centos' || node[:platform_family] == 'rhel') &&
    node['platform_version'].to_f < 7
   execute 'install Fedora EPEL repository' do
@@ -94,8 +92,8 @@ case node[:platform_family]
   when "debian", "ubuntu", "rhel", "fedora", "centos", "suse"
     ["4567", "4568", "4444", "3306", "4006", "4008", "4009", "4442", "6444"].each do |port|
       execute "Open port #{port}" do
-        command "iptables -I INPUT -p tcp -m tcp --dport "+port+" -j ACCEPT"
-        command "iptables -I INPUT -p tcp --dport "+ port +" -j ACCEPT -m state --state NEW"
+        command "iptables -I INPUT -p tcp -m tcp --dport #{port} -j ACCEPT"
+        command "iptables -I INPUT -p tcp --dport #{port} -j ACCEPT -m state --state NEW"
       end
     end
 end # iptables ports
@@ -129,9 +127,6 @@ case node[:platform_family]
       command "iptables-save > /etc/sysconfig/iptables"
     end
 end # save iptables rules
-
-
-system 'echo Platform family: '+node[:platform_family]
 
 
 # Install packages
@@ -173,38 +168,32 @@ else
   package 'MariaDB-Galera-server'
 end
 
-# cnf_template configuration
+# Copy server.cnf configuration file to configuration
 case node[:platform_family]
+when 'debian', 'ubuntu'
+  db_config_dir = '/etc/mysql/my.cnf.d/'
+  db_base_config = '/etc/mysql/my.cnf'
+when 'rhel', 'fedora', 'centos', 'suse', 'opensuse'
+  db_config_dir = '/etc/my.cnf.d/'
+  db_base_config = '/etc/my.cnf'
+end
 
-  when "debian", "ubuntu"
+directory db_config_dir do
+  owner 'root'
+  group 'root'
+  recursive true
+  mode '0755'
+  action :create
+end
 
-    createcmd = "mkdir /etc/mysql/my.cnf.d"
-    execute "Create cnf_template directory" do
-      command createcmd
-    end
+execute 'Copy server.cnf to cnf_template directory' do
+  command "cp /home/vagrant/cnf_templates/#{node['galera']['cnf_template']} #{db_config_dir}"
+end
 
-    copycmd = 'cp /home/vagrant/cnf_templates/' + node['galera']['cnf_template'] + ' /etc/mysql/my.cnf.d'
-    execute "Copy mdbci_server.cnf to cnf_template directory" do
-      command copycmd
-    end
-
-    addlinecmd = 'echo "!includedir /etc/mysql/my.cnf.d" >> /etc/mysql/my.cnf'
-    execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-      command addlinecmd
-    end
-
-  when "rhel", "fedora", "centos", "suse"
-
-    copycmd = 'cp /home/vagrant/cnf_templates/' + node['galera']['cnf_template'] + ' /etc/my.cnf.d'
-    execute "Copy mdbci_server.cnf to cnf_template directory" do
-      command copycmd
-    end
-
-    # TODO: check if line already exist !!!
-    #addlinecmd = "replace '!includedir /etc/my.cnf.d' '!includedir " + node['mariadb']['cnf_template'] + "' -- /etc/my.cnf"
-    #execute "Add mdbci_server.cnf to my.cnf includedir parameter" do
-    #  command addlinecmd
-    #end
+file "#{db_config_dir}/#{node['galera']['cnf_template']}" do
+  owner 'root'
+  group 'root'
+  mode '0644'
 end
 
 # configure galera server.cnf file

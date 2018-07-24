@@ -267,8 +267,8 @@ end
     else
       product_name = product['name']
     end
+    recipe_name = $session.repos.recipe_name(product_name)
     if product_name != 'packages'
-      recipe_name = $session.repos.recipe_name(product_name)
       if repo.nil?
         repo = $session.repos.findRepo(product_name, product, box)
       end
@@ -389,15 +389,16 @@ end
       $out.warning 'Box '+box+'is not installed or configured ->SKIPPING'
     end
     # box with mariadb, maxscale provision - create role
-    if provisioned
-      $out.info 'Machine '+name+' is provisioned by '+product.to_s
-      role = get_role_description(name, product, box)
-      IO.write(role_file_name(path, name), role)
-      IO.write(node_config_file_name(path, name),
-               JSON.pretty_generate({
-                                      'run_list' => ["role[#{name}]"]
-                                    }))
+    if !provisioned
+      product = { 'name' => 'packages' }
     end
+    $out.info 'Machine '+name+' is provisioned by '+product.to_s
+    role = get_role_description(name, product, box)
+    IO.write(role_file_name(path, name), role)
+    IO.write(node_config_file_name(path, name),
+             JSON.pretty_generate({
+                                    'run_list' => ["role[#{name}]"]
+                                  }))
     return machine
   end
 

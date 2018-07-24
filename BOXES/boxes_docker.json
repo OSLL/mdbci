@@ -5,6 +5,30 @@
     "platform": "ubuntu",
     "platform_version": "trusty"
   },
+   "ubuntu_xenial_docker": {
+    "provider": "docker",
+    "box": "ubuntu:ubuntu14.04",
+    "platform": "ubuntu",
+    "platform_version": "xenial"
+  },
+   "ubuntu_bionic_docker": {
+    "provider": "docker",
+    "box": "ubuntu:ubuntu14.04",
+    "platform": "ubuntu",
+    "platform_version": "bionic"
+  },
+   "debian_jessie_docker": {
+    "provider": "docker",
+    "box": "debian:jessie",
+    "platform": "debian",
+    "platform_version": "jessie"
+  },
+   "debian_stretch_docker": {
+    "provider": "docker",
+    "box": "debian:stretch",
+    "platform": "debian",
+    "platform_version": "stretch"
+  },
   "centos_6_docker": {
     "provider": "docker",
     "box": "centos:6.7",

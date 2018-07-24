@@ -7,7 +7,7 @@
   },
   "debian_jessie_libvirt": {
     "provider": "libvirt",
-    "box": "kronostechnologies/jessie",
+    "box": "debian/jessie64",
     "platform": "debian",
     "platform_version": "jessie"
   },
