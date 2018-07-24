@@ -383,7 +383,7 @@ In order to specify the number of retries for repository configuration use --att
       save_as_field(:platform_version),
       extract_field(:version, %r{^mysql-(\d+\.?\d+(-[^\/]*)?)(\/?)$}),
       lambda do |release, _|
-        release[:repo] = "deb #{release[:repo_url]} #{release[:platform]} mysql-#{release[:version]}"
+        release[:repo] = "deb #{release[:repo_url]} #{release[:platform_version]} mysql-#{release[:version]}"
         release
       end
     )
