@@ -101,7 +101,12 @@ class MachineConfigurator
       @log.info("Chef #{chef_version} is already installed on the server.")
       return
     end
-    ssh_exec(connection, 'curl -s -L https://www.chef.io/chef/install.sh --output install.sh')
+    output = ssh_exec(connection, 'which curl')
+    if output.strip.empty?
+      ssh_exec(connection, 'wget https://www.chef.io/chef/install.sh --output-document install.sh')
+    else
+      ssh_exec(connection, 'curl -s -L https://www.chef.io/chef/install.sh --output install.sh')
+    end
     sudo_exec(connection, sudo_password, "bash install.sh -v #{chef_version}")
     ssh_exec(connection, 'rm install.sh')
   end
