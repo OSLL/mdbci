@@ -30,16 +30,6 @@ class GenerateProductRepositoriesCommand < BaseCommand
     'Generate product repository configuration for all known products'
   end
 
-  # Show error message and help on how to use the command
-  # @param [String] error_message text to display as en error.
-  def show_error_and_help(error_message = '')
-    if error_message
-      error_and_log('There was an error during the command run.')
-      error_and_log(error_message)
-    end
-    show_help
-  end
-
   # rubocop:disable Metrics/MethodLength
   def show_help
     info = <<-HELP
@@ -109,7 +99,7 @@ In order to specify the number of retries for repository configuration use --att
   def load_configuration_file
     config_path = @env.configuration_file || @env.find_configuration(CONFIGURATION_FILE)
     unless File.exist?(config_path)
-      show_error_and_help("Unable to find configuration file: '#{config_path}'.")
+      error_and_log("Unable to find configuration file: '#{config_path}'.")
       return false
     end
     info_and_log("Configuring repositories using configuration: '#{config_path}'.")
