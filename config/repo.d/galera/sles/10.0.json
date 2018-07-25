@@ -1,17 +1,17 @@
 [
   {
-    "repo": "http://yum.mariadb.org/10.0/sles//11/x86_64",
+    "repo": "http://yum.mariadb.org/10.0-galera/sles/11/x86_64/",
     "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
-    "platform_version": "11",
     "platform": "sles",
+    "platform_version": "11",
     "product": "galera",
     "version": "10.0"
   },
   {
-    "repo": "http://yum.mariadb.org/10.0/sles//12/x86_64",
+    "repo": "http://yum.mariadb.org/10.0-galera/sles/12/x86_64/",
     "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
-    "platform_version": "12",
     "platform": "sles",
+    "platform_version": "12",
     "product": "galera",
     "version": "10.0"
   }

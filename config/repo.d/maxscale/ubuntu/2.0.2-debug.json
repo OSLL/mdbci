@@ -1,0 +1,34 @@
+[
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/2.0.2-debug/ubuntu precise main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "precise",
+    "product": "maxscale",
+    "version": "2.0.2-debug"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/2.0.2-debug/ubuntu trusty main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "trusty",
+    "product": "maxscale",
+    "version": "2.0.2-debug"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/2.0.2-debug/ubuntu wily main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "wily",
+    "product": "maxscale",
+    "version": "2.0.2-debug"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/2.0.2-debug/ubuntu xenial main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "xenial",
+    "product": "maxscale",
+    "version": "2.0.2-debug"
+  }
+]

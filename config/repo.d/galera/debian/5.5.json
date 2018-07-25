@@ -1,9 +1,9 @@
 [
   {
-    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.5/debian/ wheezy main",
-    "repo_key": "0xcbcb082a1bb943db",
-    "platform_version": "wheezy",
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.5-galera/debian/ wheezy main",
+    "repo_key": "0xF1656F24C74CD1D8",
     "platform": "debian",
+    "platform_version": "wheezy",
     "product": "galera",
     "version": "5.5"
   }

@@ -2,8 +2,8 @@
   {
     "repo": "https://downloads.mariadb.com/ColumnStore/1.1.4/repo/ubuntu16",
     "repo_key": "AD0DEAFDA41F5C14",
-    "platform_version": "xenial",
     "platform": "ubuntu",
+    "platform_version": "xenial",
     "product": "columnstore",
     "version": "1.1.4"
   }

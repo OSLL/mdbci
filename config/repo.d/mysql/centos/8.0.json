@@ -1,17 +1,17 @@
 [
   {
-    "repo": "http://repo.mysql.com/yum/mysql-8.0-community/el//6/x86_64",
+    "repo": "http://repo.mysql.com/yum/mysql-8.0-community/el/6/x86_64/",
     "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "6",
     "platform": "centos",
+    "platform_version": "6",
     "product": "mysql",
     "version": "8.0"
   },
   {
-    "repo": "http://repo.mysql.com/yum/mysql-8.0-community/el//7/x86_64",
+    "repo": "http://repo.mysql.com/yum/mysql-8.0-community/el/7/x86_64/",
     "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "7",
     "platform": "centos",
+    "platform_version": "7",
     "product": "mysql",
     "version": "8.0"
   }

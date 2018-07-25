@@ -1,8 +1,0 @@
-{
-  "repo": "http://max-tst-01.mariadb.com/ci-repository/develop/mariadb-maxscale//centos//7/$basearch",
-  "repo_key": "https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY",
-  "platform_version": "7",
-  "platform": "centos",
-  "product": "maxscale_ci",
-  "version": "default"
-}

@@ -1,8 +1,0 @@
-{
-  "repo": "https://downloads.mariadb.com/MaxScale/2.2.3/debian stretch main",
-  "repo_key": "135659e928c12247",
-  "platform_version": "stretch",
-  "platform": "debian",
-  "product": "maxscale",
-  "version": "2.2.3"
-}

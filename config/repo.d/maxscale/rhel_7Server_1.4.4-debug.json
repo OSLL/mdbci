@@ -1,8 +1,0 @@
-{
-  "repo": "https://downloads.mariadb.com/MaxScale/1.4.4-debug/rhel/7Server/$basearch",
-  "repo_key": "https://downloads.mariadb.com/MaxScale/old_key.public",
-  "platform_version": "7Server",
-  "platform": "rhel",
-  "product": "maxscale",
-  "version": "1.4.4-debug"
-}

@@ -1,0 +1,26 @@
+[
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/1.3.0/debian jessie main",
+    "repo_key": "135659e928c12247",
+    "platform": "debian",
+    "platform_version": "jessie",
+    "product": "maxscale",
+    "version": "1.3.0"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/1.3.0/debian squeeze main",
+    "repo_key": "135659e928c12247",
+    "platform": "debian",
+    "platform_version": "squeeze",
+    "product": "maxscale",
+    "version": "1.3.0"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/1.3.0/debian wheezy main",
+    "repo_key": "135659e928c12247",
+    "platform": "debian",
+    "platform_version": "wheezy",
+    "product": "maxscale",
+    "version": "1.3.0"
+  }
+]

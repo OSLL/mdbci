@@ -1,8 +1,0 @@
-{
-  "repo": "https://downloads.mariadb.com/MaxScale/2.2.5/ubuntu xenial main",
-  "repo_key": "135659e928c12247",
-  "platform_version": "xenial",
-  "platform": "ubuntu",
-  "product": "maxscale",
-  "version": "2.2.5"
-}

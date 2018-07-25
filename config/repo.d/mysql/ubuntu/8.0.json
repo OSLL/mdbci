@@ -1,49 +1,49 @@
 [
   {
     "repo": "deb http://repo.mysql.com/apt/ubuntu artful mysql-8.0",
-    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "artful",
+    "repo_key": "5072E1F5",
     "platform": "ubuntu",
+    "platform_version": "artful",
     "product": "mysql",
     "version": "8.0"
   },
   {
     "repo": "deb http://repo.mysql.com/apt/ubuntu bionic mysql-8.0",
-    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "bionic",
+    "repo_key": "5072E1F5",
     "platform": "ubuntu",
+    "platform_version": "bionic",
     "product": "mysql",
     "version": "8.0"
   },
   {
     "repo": "deb http://repo.mysql.com/apt/ubuntu trusty mysql-8.0",
-    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "trusty",
+    "repo_key": "5072E1F5",
     "platform": "ubuntu",
+    "platform_version": "trusty",
     "product": "mysql",
     "version": "8.0"
   },
   {
     "repo": "deb http://repo.mysql.com/apt/ubuntu xenial mysql-8.0",
-    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "xenial",
+    "repo_key": "5072E1F5",
     "platform": "ubuntu",
+    "platform_version": "xenial",
     "product": "mysql",
     "version": "8.0"
   },
   {
     "repo": "deb http://repo.mysql.com/apt/ubuntu yakkety mysql-8.0",
-    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "yakkety",
+    "repo_key": "5072E1F5",
     "platform": "ubuntu",
+    "platform_version": "yakkety",
     "product": "mysql",
     "version": "8.0"
   },
   {
     "repo": "deb http://repo.mysql.com/apt/ubuntu zesty mysql-8.0",
-    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "zesty",
+    "repo_key": "5072E1F5",
     "platform": "ubuntu",
+    "platform_version": "zesty",
     "product": "mysql",
     "version": "8.0"
   }

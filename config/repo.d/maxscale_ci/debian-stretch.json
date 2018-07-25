@@ -1,8 +1,0 @@
-{
-  "repo": "http://max-tst-01.mariadb.com/ci-repository/develop/mariadb-maxscale//debian/ stretch main",
-  "repo_key": "135659e928c12247",
-  "platform_version": "stretch",
-  "platform": "debian",
-  "product": "maxscale_ci",
-  "version": "default"
-}

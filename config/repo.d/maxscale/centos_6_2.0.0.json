@@ -1,8 +1,0 @@
-{
-  "repo": "https://downloads.mariadb.com/MaxScale/2.0.0/centos/6/$basearch",
-  "repo_key": "https://downloads.mariadb.com/MaxScale/old_key.public",
-  "platform_version": "6",
-  "platform": "centos",
-  "product": "maxscale",
-  "version": "2.0.0"
-}

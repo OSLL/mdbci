@@ -1,25 +1,25 @@
 [
   {
     "repo": "deb http://repo.mysql.com/apt/debian jessie mysql-5.7",
-    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "jessie",
+    "repo_key": "5072E1F5",
     "platform": "debian",
+    "platform_version": "jessie",
     "product": "mysql",
     "version": "5.7"
   },
   {
     "repo": "deb http://repo.mysql.com/apt/debian stretch mysql-5.7",
-    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "stretch",
+    "repo_key": "5072E1F5",
     "platform": "debian",
+    "platform_version": "stretch",
     "product": "mysql",
     "version": "5.7"
   },
   {
     "repo": "deb http://repo.mysql.com/apt/debian wheezy mysql-5.7",
-    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "wheezy",
+    "repo_key": "5072E1F5",
     "platform": "debian",
+    "platform_version": "wheezy",
     "product": "mysql",
     "version": "5.7"
   }

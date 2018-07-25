@@ -1,41 +1,41 @@
 [
   {
-    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.0/ubuntu/ precise main",
-    "repo_key": "0xcbcb082a1bb943db",
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.0-galera/ubuntu/ precise main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
     "platform_version": "precise",
-    "platform": "ubuntu",
     "product": "galera",
     "version": "10.0"
   },
   {
-    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.0/ubuntu/ trusty main",
-    "repo_key": "0xcbcb082a1bb943db",
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.0-galera/ubuntu/ trusty main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
     "platform_version": "trusty",
-    "platform": "ubuntu",
     "product": "galera",
     "version": "10.0"
   },
   {
-    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.0/ubuntu/ wily main",
-    "repo_key": "0xcbcb082a1bb943db",
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.0-galera/ubuntu/ wily main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
     "platform_version": "wily",
-    "platform": "ubuntu",
     "product": "galera",
     "version": "10.0"
   },
   {
-    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.0/ubuntu/ xenial main",
-    "repo_key": "0xcbcb082a1bb943db",
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.0-galera/ubuntu/ xenial main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
     "platform_version": "xenial",
-    "platform": "ubuntu",
     "product": "galera",
     "version": "10.0"
   },
   {
-    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.0/ubuntu/ yakkety main",
-    "repo_key": "0xcbcb082a1bb943db",
-    "platform_version": "yakkety",
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.0-galera/ubuntu/ yakkety main",
+    "repo_key": "0xF1656F24C74CD1D8",
     "platform": "ubuntu",
+    "platform_version": "yakkety",
     "product": "galera",
     "version": "10.0"
   }

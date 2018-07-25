@@ -1,0 +1,26 @@
+[
+  {
+    "repo": "http://max-tst-01.mariadb.com/ci-repository/2.2/mariadb-maxscale/ubuntu bionic main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "bionic",
+    "product": "maxscale_ci",
+    "version": "2.2"
+  },
+  {
+    "repo": "http://max-tst-01.mariadb.com/ci-repository/2.2/mariadb-maxscale/ubuntu trusty main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "trusty",
+    "product": "maxscale_ci",
+    "version": "2.2"
+  },
+  {
+    "repo": "http://max-tst-01.mariadb.com/ci-repository/2.2/mariadb-maxscale/ubuntu xenial main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "xenial",
+    "product": "maxscale_ci",
+    "version": "2.2"
+  }
+]

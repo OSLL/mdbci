@@ -2,8 +2,16 @@
   {
     "repo": "https://downloads.mariadb.com/ColumnStore/latest/repo/ubuntu16",
     "repo_key": "AD0DEAFDA41F5C14",
-    "platform_version": "xenial",
     "platform": "ubuntu",
+    "platform_version": "xenial",
+    "product": "columnstore",
+    "version": "latest"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/ColumnStore/latest/repo/ubuntu18",
+    "repo_key": "AD0DEAFDA41F5C14",
+    "platform": "ubuntu",
+    "platform_version": "bionic",
     "product": "columnstore",
     "version": "latest"
   }

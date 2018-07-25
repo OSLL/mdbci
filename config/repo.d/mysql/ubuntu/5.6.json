@@ -1,49 +1,49 @@
 [
   {
     "repo": "deb http://repo.mysql.com/apt/ubuntu precise mysql-5.6",
-    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "precise",
+    "repo_key": "5072E1F5",
     "platform": "ubuntu",
+    "platform_version": "precise",
     "product": "mysql",
     "version": "5.6"
   },
   {
     "repo": "deb http://repo.mysql.com/apt/ubuntu trusty mysql-5.6",
-    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "trusty",
+    "repo_key": "5072E1F5",
     "platform": "ubuntu",
+    "platform_version": "trusty",
     "product": "mysql",
     "version": "5.6"
   },
   {
     "repo": "deb http://repo.mysql.com/apt/ubuntu utopic mysql-5.6",
-    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "utopic",
+    "repo_key": "5072E1F5",
     "platform": "ubuntu",
+    "platform_version": "utopic",
     "product": "mysql",
     "version": "5.6"
   },
   {
     "repo": "deb http://repo.mysql.com/apt/ubuntu vivid mysql-5.6",
-    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "vivid",
+    "repo_key": "5072E1F5",
     "platform": "ubuntu",
+    "platform_version": "vivid",
     "product": "mysql",
     "version": "5.6"
   },
   {
     "repo": "deb http://repo.mysql.com/apt/ubuntu wily mysql-5.6",
-    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "wily",
+    "repo_key": "5072E1F5",
     "platform": "ubuntu",
+    "platform_version": "wily",
     "product": "mysql",
     "version": "5.6"
   },
   {
     "repo": "deb http://repo.mysql.com/apt/ubuntu xenial mysql-5.6",
-    "repo_key": "http://repo.mysql.com/RPM-GPG-KEY-mysql",
-    "platform_version": "xenial",
+    "repo_key": "5072E1F5",
     "platform": "ubuntu",
+    "platform_version": "xenial",
     "product": "mysql",
     "version": "5.6"
   }

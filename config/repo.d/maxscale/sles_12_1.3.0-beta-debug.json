@@ -1,8 +1,0 @@
-{
-  "repo": "https://downloads.mariadb.com/MaxScale/1.3.0-beta-debug/sles/12/$basearch",
-  "repo_key": "https://downloads.mariadb.com/MaxScale/old_key.public",
-  "platform_version": "12",
-  "platform": "sles",
-  "product": "maxscale",
-  "version": "1.3.0-beta-debug"
-}

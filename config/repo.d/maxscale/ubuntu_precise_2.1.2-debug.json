@@ -1,8 +1,0 @@
-{
-  "repo": "https://downloads.mariadb.com/MaxScale/2.1.2-debug/ubuntu precise main",
-  "repo_key": "70E4618A8167EE24",
-  "platform_version": "precise",
-  "platform": "ubuntu",
-  "product": "maxscale",
-  "version": "2.1.2-debug"
-}

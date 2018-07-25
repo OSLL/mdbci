@@ -1,8 +1,0 @@
-{
-  "repo": "https://downloads.mariadb.com/MaxScale/2.0.0/debian wheezy main",
-  "repo_key": "70E4618A8167EE24",
-  "platform_version": "wheezy",
-  "platform": "debian",
-  "product": "maxscale",
-  "version": "2.0.0"
-}

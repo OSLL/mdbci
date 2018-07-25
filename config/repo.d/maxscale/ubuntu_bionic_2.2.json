@@ -1,8 +1,0 @@
-{
-  "repo": "https://downloads.mariadb.com/MaxScale/2.2/ubuntu bionic main",
-  "repo_key": "135659e928c12247",
-  "platform_version": "bionic",
-  "platform": "ubuntu",
-  "product": "maxscale",
-  "version": "2.2"
-}

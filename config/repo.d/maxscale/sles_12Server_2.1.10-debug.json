@@ -1,8 +1,0 @@
-{
-  "repo": "https://downloads.mariadb.com/MaxScale/2.1.10-debug/sles/12Server/$basearch",
-  "repo_key": "https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY",
-  "platform_version": "12Server",
-  "platform": "sles",
-  "product": "maxscale",
-  "version": "2.1.10-debug"
-}

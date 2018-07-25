@@ -1,0 +1,26 @@
+[
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/2.1.5-debug/ubuntu trusty main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "trusty",
+    "product": "maxscale",
+    "version": "2.1.5-debug"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/2.1.5-debug/ubuntu wily main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "wily",
+    "product": "maxscale",
+    "version": "2.1.5-debug"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/2.1.5-debug/ubuntu xenial main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "xenial",
+    "product": "maxscale",
+    "version": "2.1.5-debug"
+  }
+]

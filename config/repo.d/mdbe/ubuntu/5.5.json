@@ -1,17 +1,17 @@
 [
   {
     "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5/repo/ubuntu trusty main",
-    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
-    "platform_version": "trusty",
+    "repo_key": "0xF1656F24C74CD1D8",
     "platform": "ubuntu",
+    "platform_version": "trusty",
     "product": "mdbe",
     "version": "5.5"
   },
   {
     "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5/repo/ubuntu wheezy main",
-    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
-    "platform_version": "wheezy",
+    "repo_key": "0xF1656F24C74CD1D8",
     "platform": "ubuntu",
+    "platform_version": "wheezy",
     "product": "mdbe",
     "version": "5.5"
   }
