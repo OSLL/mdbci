@@ -1,0 +1,34 @@
+[
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/1.1/ubuntu precise main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "precise",
+    "product": "maxscale",
+    "version": "1.1"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/1.1/ubuntu saucy main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "saucy",
+    "product": "maxscale",
+    "version": "1.1"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/1.1/ubuntu trusty main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "trusty",
+    "product": "maxscale",
+    "version": "1.1"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/1.1/ubuntu utopic main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "utopic",
+    "product": "maxscale",
+    "version": "1.1"
+  }
+]

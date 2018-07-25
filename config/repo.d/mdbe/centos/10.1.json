@@ -1,0 +1,26 @@
+[
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.1/yum/centos/5/x86_64/",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform": "centos",
+    "platform_version": "5",
+    "product": "mdbe",
+    "version": "10.1"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.1/yum/centos/6/x86_64/",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform": "centos",
+    "platform_version": "6",
+    "product": "mdbe",
+    "version": "10.1"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.1/yum/centos/7/x86_64/",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform": "centos",
+    "platform_version": "7",
+    "product": "mdbe",
+    "version": "10.1"
+  }
+]

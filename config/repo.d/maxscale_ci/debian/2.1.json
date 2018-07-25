@@ -1,0 +1,26 @@
+[
+  {
+    "repo": "http://max-tst-01.mariadb.com/ci-repository/2.1/mariadb-maxscale/debian jessie main",
+    "repo_key": "135659e928c12247",
+    "platform": "debian",
+    "platform_version": "jessie",
+    "product": "maxscale_ci",
+    "version": "2.1"
+  },
+  {
+    "repo": "http://max-tst-01.mariadb.com/ci-repository/2.1/mariadb-maxscale/debian stretch main",
+    "repo_key": "135659e928c12247",
+    "platform": "debian",
+    "platform_version": "stretch",
+    "product": "maxscale_ci",
+    "version": "2.1"
+  },
+  {
+    "repo": "http://max-tst-01.mariadb.com/ci-repository/2.1/mariadb-maxscale/debian wheezy main",
+    "repo_key": "135659e928c12247",
+    "platform": "debian",
+    "platform_version": "wheezy",
+    "product": "maxscale_ci",
+    "version": "2.1"
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5/yum/rhel/5/x86_64/",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform": "rhel",
+    "platform_version": "5",
+    "product": "mdbe",
+    "version": "5.5"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5/yum/rhel/6/x86_64/",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform": "rhel",
+    "platform_version": "6",
+    "product": "mdbe",
+    "version": "5.5"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/5.5/yum/rhel/7/x86_64/",
+    "repo_key": "https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
+    "platform": "rhel",
+    "platform_version": "7",
+    "product": "mdbe",
+    "version": "5.5"
+  }
+]

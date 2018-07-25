@@ -2,59 +2,68 @@ mdbci [options] command
 
 OPTIONS:
 
--t, --template [config file]:
-Uses [config file] for running instance. By default 'instance.json' will be used as config template.
+-a, --attempts [number]:
+How many times to perform surtain action.
 
 -b, --boxes [boxes file]:
 Uses [boxes file] for existing boxes. By default 'boxes.json'  will be used as boxes file.
 
--n, --box-name [box name]:
-Use [box name] for existing box names.
+-c, --command [command]:
+Set command to execute.
+
+--configuration-file [path]:
+Path to the configuration file used for a command.
 
 -f, --field [box config field]:
 Use [box config field] for existing box config field.
 
--w, --override
-Override previous configuration
+-i, --platform-version [version]:
+Platform version for the show boxes command. Must be used together with --platform option.
 
--c, --command
-Set command to run for sudo or ssh clause
+--ipv6:
+If ipv6 must be added to network_config (also enables ipv6 for libvirt).
 
--s, --silent
-Keep silence, output only requested info or nothing if not available
+-k, --key [key file]:
+Keyfile to the node for public_keys command.
 
--r, --repo-dir
-Change default place for repo.d
+--keep-template:
+Do not destroy the template during the destroy command.
 
--a, --attempts
-Deploy configuration or node
+--maxscale-ci [release]:
+Name of the MaxScale release in the CI repository. Used during repository generation command.
 
--p, --product
-Product name for setup repo and install product commands
+-n, --box-name [box name]:
+Use [box name] for existing box names.
 
--v, --product-version
+-node-name [node name]:
+Name of the node.
+
+-o, --platform [name]:
+Platform name for the show boxes command.
+
+-p, --product [product name]:
+Product name for setup repo and install product commands.
+
+--path-to-nodes [path]:
+Path to directory with nodes configuration.
+
+-r, --repo-dir [path]:
+Set path to the product repository overriding the default locations.
+
+-s, --silent:
+Keep silence, output only requested info or nothing if not available.
+
+--snapshot-name [Name]:
+Name of the snapshot.
+
+-t, --template [config file]:
+Uses [config file] for running instance. By default 'instance.json' will be used as config template.
+
+-v, --product-version [version]:
 Product version for setup repo and install product commands
 
--k, --key
-Keyfile to the node for public_keys command
-
--o, --platform
-Platform name for the show boxes command
-
--i, --platform-version
-Platform version for the show boxes command. Must be used together with --platform option!
-
--pn, --path-to-nodes
-path to directory with nodes
-
--nn, --node-name
-name of the node
-
--sn, --snapshot-name
-name of the snapshot
-
---ipv6
-if ipv6 must be added to network_config (also enables ipv6 for libvirt)
+-w, --override:
+Override previous configuration.
 
 COMMANDS:
 

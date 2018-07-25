@@ -1,0 +1,18 @@
+[
+  {
+    "repo": "http://yum.mariadb.org/10.0.31/rhel/6/x86_64/",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform": "rhel",
+    "platform_version": "6",
+    "product": "mariadb",
+    "version": "10.0.31"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.0.31/rhel/7/x86_64/",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform": "rhel",
+    "platform_version": "7",
+    "product": "mariadb",
+    "version": "10.0.31"
+  }
+]

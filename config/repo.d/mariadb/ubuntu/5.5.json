@@ -1,0 +1,18 @@
+[
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.5/ubuntu/ precise main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
+    "platform_version": "precise",
+    "product": "mariadb",
+    "version": "5.5"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.5/ubuntu/ trusty main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
+    "platform_version": "trusty",
+    "product": "mariadb",
+    "version": "5.5"
+  }
+]

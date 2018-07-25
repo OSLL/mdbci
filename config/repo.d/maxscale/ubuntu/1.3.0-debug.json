@@ -1,0 +1,34 @@
+[
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/1.3.0-debug/ubuntu precise main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "precise",
+    "product": "maxscale",
+    "version": "1.3.0-debug"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/1.3.0-debug/ubuntu trusty main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "trusty",
+    "product": "maxscale",
+    "version": "1.3.0-debug"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/1.3.0-debug/ubuntu vivid main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "vivid",
+    "product": "maxscale",
+    "version": "1.3.0-debug"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/1.3.0-debug/ubuntu wily main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "wily",
+    "product": "maxscale",
+    "version": "1.3.0-debug"
+  }
+]

@@ -1,7 +1,0 @@
-{
-   "product":	"mdbe",
-   "repo":	"http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.0.12/opensuse/13",
-   "repo_key":	"https://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/MariaDB-Enterprise-GPG-KEY",
-   "platform":	"opensuse",
-   "platform_version":	"13"
-}

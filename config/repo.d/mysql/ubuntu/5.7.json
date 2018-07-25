@@ -1,0 +1,74 @@
+[
+  {
+    "repo": "deb http://repo.mysql.com/apt/ubuntu artful mysql-5.7",
+    "repo_key": "5072E1F5",
+    "platform": "ubuntu",
+    "platform_version": "artful",
+    "product": "mysql",
+    "version": "5.7"
+  },
+  {
+    "repo": "deb http://repo.mysql.com/apt/ubuntu bionic mysql-5.7",
+    "repo_key": "5072E1F5",
+    "platform": "ubuntu",
+    "platform_version": "bionic",
+    "product": "mysql",
+    "version": "5.7"
+  },
+  {
+    "repo": "deb http://repo.mysql.com/apt/ubuntu precise mysql-5.7",
+    "repo_key": "5072E1F5",
+    "platform": "ubuntu",
+    "platform_version": "precise",
+    "product": "mysql",
+    "version": "5.7"
+  },
+  {
+    "repo": "deb http://repo.mysql.com/apt/ubuntu trusty mysql-5.7",
+    "repo_key": "5072E1F5",
+    "platform": "ubuntu",
+    "platform_version": "trusty",
+    "product": "mysql",
+    "version": "5.7"
+  },
+  {
+    "repo": "deb http://repo.mysql.com/apt/ubuntu vivid mysql-5.7",
+    "repo_key": "5072E1F5",
+    "platform": "ubuntu",
+    "platform_version": "vivid",
+    "product": "mysql",
+    "version": "5.7"
+  },
+  {
+    "repo": "deb http://repo.mysql.com/apt/ubuntu wily mysql-5.7",
+    "repo_key": "5072E1F5",
+    "platform": "ubuntu",
+    "platform_version": "wily",
+    "product": "mysql",
+    "version": "5.7"
+  },
+  {
+    "repo": "deb http://repo.mysql.com/apt/ubuntu xenial mysql-5.7",
+    "repo_key": "5072E1F5",
+    "platform": "ubuntu",
+    "platform_version": "xenial",
+    "product": "mysql",
+    "version": "5.7"
+  },
+  {
+    "repo": "deb http://repo.mysql.com/apt/ubuntu yakkety mysql-5.7",
+    "repo_key": "5072E1F5",
+    "platform": "ubuntu",
+    "platform_version": "yakkety",
+    "product": "mysql",
+    "version": "5.7"
+  },
+  {
+    "repo": "deb http://repo.mysql.com/apt/ubuntu zesty mysql-5.7",
+    "repo_key": "5072E1F5",
+    "platform": "ubuntu",
+    "platform_version": "zesty",
+    "product": "mysql",
+    "version": "5.7"
+  }
+]

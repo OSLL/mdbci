@@ -1,0 +1,18 @@
+[
+  {
+    "repo": "deb http://repo.mysql.com/apt/debian jessie mysql-8.0",
+    "repo_key": "5072E1F5",
+    "platform": "debian",
+    "platform_version": "jessie",
+    "product": "mysql",
+    "version": "8.0"
+  },
+  {
+    "repo": "deb http://repo.mysql.com/apt/debian stretch mysql-8.0",
+    "repo_key": "5072E1F5",
+    "platform": "debian",
+    "platform_version": "stretch",
+    "product": "mysql",
+    "version": "8.0"
+  }
+]

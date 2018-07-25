@@ -10,7 +10,9 @@ opts = GetoptLong.new(
   ['--box-name', '-n', GetoptLong::REQUIRED_ARGUMENT],
   ['--boxes', '-b', GetoptLong::REQUIRED_ARGUMENT],
   ['--command', '-c', GetoptLong::REQUIRED_ARGUMENT],
+  ['--configuration-file', GetoptLong::REQUIRED_ARGUMENT],
   ['--field', '-f', GetoptLong::REQUIRED_ARGUMENT],
+  ['--help', GetoptLong::NO_ARGUMENT],
   ['--ipv6', GetoptLong::NO_ARGUMENT],
   ['--key', '-k', GetoptLong::REQUIRED_ARGUMENT],
   ['--keep-template', GetoptLong::NO_ARGUMENT],
@@ -24,7 +26,7 @@ opts = GetoptLong.new(
   ['--repo-dir', '-r', GetoptLong::REQUIRED_ARGUMENT],
   ['--silent', '-s', GetoptLong::NO_ARGUMENT],
   ['--snapshot-name', GetoptLong::REQUIRED_ARGUMENT],
-  ['--template', '-t', GetoptLong::REQUIRED_ARGUMENT]
+  ['--template', '-t', GetoptLong::REQUIRED_ARGUMENT],
 )
 
 $mdbci_exec_dir = File.expand_path(File.dirname(File.realpath(__FILE__)))
@@ -47,6 +49,10 @@ $out = out
 
 Dir.chdir ENV['MDBCI_VM_PATH'] unless ENV['MDBCI_VM_PATH'].nil?
 $work_dir = Dir.pwd
+
+session.mdbci_dir = $mdbci_exec_dir
+session.starting_dir = $current_dir
+session.working_dir = $work_dir
 
 begin
   opts.each do |opt, arg|
@@ -73,7 +79,7 @@ begin
       session.command = arg
 
     when '--repo-dir'
-      session.repoDir = arg
+      session.repo_dir = arg
 
     when '--attempts'
       session.attempts = arg
@@ -108,6 +114,12 @@ begin
     when '--ipv6'
       session.ipv6 = true
 
+    when '--configuration-file'
+      session.configuration_file = File.absolute_path(arg)
+
+    when '--help'
+      session.show_help = true
+
     else
       out.error 'Option is not supported: ' + opt
     end
@@ -120,10 +132,8 @@ end
 
 # Greeting user
 out.info 'MariaDb CI CLI'
-out.info 'mdbci called with: ' + ARGV.to_s
-
-session.checkConfig
-session.loadCollections
+out.info "mdbci called with: #{ARGV.join(' ')}"
+session.initialize_services
 
 # run commands and return 0 for success, 1 for error
 begin

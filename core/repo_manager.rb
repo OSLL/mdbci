@@ -5,13 +5,35 @@ class RepoManager
   attr_accessor :repos
   attr_accessor :recipes  # product => recipe
 
-  PRODUCT_TO_RECIPE_MAP = {
-    'mariadb' => 'mariadb::install_community',
-    'maxscale' => 'mariadb-maxscale::install_maxscale',
-    'mysql' => 'mysql::install_community',
-    'packages' => 'packages',
-    'columnstore' => 'mariadb_columnstore',
-    'galera' => 'galera'
+  PRODUCT_ATTRIBUTES = {
+    'mariadb' => {
+      recipe: 'mariadb::install_community',
+      name: 'mariadb'
+    },
+    'maxscale' => {
+      recipe: 'mariadb-maxscale::install_maxscale',
+      name: 'maxscale'
+    },
+    'maxscale_ci' => {
+      recipe: 'mariadb-maxscale::install_maxscale',
+      name: 'maxscale'
+    },
+    'mysql' => {
+      recipe: 'mysql::install_community',
+      name: 'mysql'
+    },
+    'packages' => {
+      recipe: 'packages',
+      name: 'packages'
+    },
+    'columnstore' => {
+      recipe: 'mariadb_columnstore',
+      name: 'columnstore'
+    },
+    'galera' => {
+      recipe: 'galera',
+      name: 'galera'
+    }
   }
 
   def initialize(path)
@@ -19,8 +41,14 @@ class RepoManager
     lookup(path)
   end
 
+  # Get the recipe name for the product
   def recipe_name(product)
-    PRODUCT_TO_RECIPE_MAP[product]
+    PRODUCT_ATTRIBUTES[product][:recipe]
+  end
+
+  # Get the attribute name for the product
+  def attribute_name(product)
+    PRODUCT_ATTRIBUTES[product][:name]
   end
 
   def findRepo(name, product, box)
