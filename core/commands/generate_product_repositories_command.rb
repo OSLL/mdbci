@@ -4,7 +4,6 @@ require 'open-uri'
 require 'optparse'
 require 'nokogiri'
 require 'pp'
-require 'tmpdir'
 require 'json'
 require 'fileutils'
 require 'logger'
@@ -13,6 +12,7 @@ require 'workers'
 require_relative 'base_command'
 
 # The command generates the repository configuration
+# rubocop:disable Metrics/ClassLength
 class GenerateProductRepositoriesCommand < BaseCommand
   CONFIGURATION_FILE = 'generate_repository_config.yaml'
   PRODUCTS_DIR_NAMES = {
@@ -48,26 +48,30 @@ class GenerateProductRepositoriesCommand < BaseCommand
 
 Supported options:
 
---maxscale-ci name of the repository on the MaxScale CI server to add to MaxScale CI product configuration. Required if generating configuration for MaxScale CI server.
 --configuration-file path to the configuration file to use during generation. Optional.
 --product name of the product to generate repository configuration for. Optional.
+--product-version version of the product to generate configuration for.
 --attempts number of attempts to try to get data from the remote repository. Default is 3 attempts.
 
 In order to generate repo.d for all products using the default configuration.
 
-  mdbci #{COMMAND_NAME} --maxscale-ci develop
+  mdbci #{COMMAND_NAME}
 
 You can create custom configuration file and use it during the repository creation:
 
-  mdbci #{COMMAND_NAME} --maxscale-ci develop --configuration-file ~/mdbci/config/generate_repository_config.yaml
+  mdbci #{COMMAND_NAME} --configuration-file ~/mdbci/config/generate_repository_config.yaml
 
 In order to specify the target directory pass it as the first parameter to the script.
 
-  mdbci #{COMMAND_NAME} --maxscale-ci develop ~/mdbci/repo.d
+  mdbci #{COMMAND_NAME} ~/mdbci/repo.d
 
 In orded to generate configuration for a specific product use --product option.
 
   mdbci #{COMMAND_NAME} --product mdbe
+
+In order to generate configuration for a specific product version use --product-version option. You must also specify the name of the product to generate configuration for.
+
+  mdbci #{COMMAND_NAME} --product maxscale-ci --product-version develop
 
 In order to specify the number of retries for repository configuration use --attempts option.
 
@@ -115,8 +119,8 @@ In order to specify the number of retries for repository configuration use --att
   def determine_products_to_parse
     if @env.nodeProduct
       unless PRODUCTS_DIR_NAMES.key?(@env.nodeProduct)
-        show_error_and_help("Unknown product #{@env.nodeProduct}.\n"\
-                            "Known products: #{PRODUCTS_DIR_NAMES.keys.join(', ')}")
+        error_and_log("Unknown product #{@env.nodeProduct}.\n"\
+                      "Known products: #{PRODUCTS_DIR_NAMES.keys.join(', ')}")
         return false
       end
       @products = [@env.nodeProduct]
@@ -124,6 +128,17 @@ In order to specify the number of retries for repository configuration use --att
       @products = PRODUCTS_DIR_NAMES.keys
     end
     info_and_log("Configuring repositories for products: #{@products.join(', ')}.")
+    true
+  end
+
+  def determine_product_version_to_parse
+    if @env.productVersion
+      unless @env.nodeProduct
+        error_and_log('When specifying product version you must also specify the product.')
+        return false
+      end
+      @product_version = @env.productVersion
+    end
     true
   end
 
@@ -147,11 +162,15 @@ In order to specify the number of retries for repository configuration use --att
 
   # Use data provided via constructor to configure the command.
   def configure_command
+    if @env.show_help
+      show_help
+      return false
+    end
     load_configuration_file
     return false unless determine_products_to_parse
+    return false unless determine_product_version_to_parse
     determine_number_of_attempts
     setup_destination_directory
-    @maxscale_ci = @env.maxscale_ci
     Workers.pool.resize(10)
     true
   end
@@ -182,7 +201,7 @@ In order to specify the number of retries for repository configuration use --att
     releases = []
     releases.concat(parse_maxscale_ci_rpm_repository(config['repo']['rpm']))
     releases.concat(parse_maxscale_ci_deb_repository(config['repo']['deb']))
-    write_repository(releases)
+    releases
   end
 
   def parse_maxscale_ci_rpm_repository(config)
@@ -219,7 +238,7 @@ In order to specify the number of retries for repository configuration use --att
     releases = []
     releases.concat(parse_maxscale_rpm_repository(config['repo']['rpm']))
     releases.concat(parse_maxscale_deb_repository(config['repo']['deb']))
-    write_repository(releases)
+    releases
   end
 
   def parse_maxscale_rpm_repository(config)
@@ -254,7 +273,7 @@ In order to specify the number of retries for repository configuration use --att
     releases = []
     releases.concat(parse_mdbe_rpm_repository(config['repo']['rpm']))
     releases.concat(parse_mdbe_deb_repository(config['repo']['deb']))
-    write_repository(releases)
+    releases
   end
 
   def parse_mdbe_rpm_repository(config)
@@ -292,7 +311,7 @@ In order to specify the number of retries for repository configuration use --att
     version_regexp = %r{^(\p{Digit}+\.\p{Digit}+)\-galera\/?$}
     releases.concat(parse_mariadb_rpm_repository(config['repo']['rpm'], 'galera', version_regexp))
     releases.concat(parse_mariadb_deb_repository(config['repo']['deb'], 'galera', version_regexp))
-    write_repository(releases)
+    releases
   end
 
   def parse_mariadb(config)
@@ -300,7 +319,7 @@ In order to specify the number of retries for repository configuration use --att
     version_regexp = %r{^(\p{Digit}+\.\p{Digit}+(\.\p{Digit}+)?)\/?$}
     releases.concat(parse_mariadb_rpm_repository(config['repo']['rpm'], 'mariadb', version_regexp))
     releases.concat(parse_mariadb_deb_repository(config['repo']['deb'], 'mariadb', version_regexp))
-    write_repository(releases)
+    releases
   end
 
   def parse_mariadb_rpm_repository(config, product, version_regexp)
@@ -335,7 +354,7 @@ In order to specify the number of retries for repository configuration use --att
     releases = []
     releases.concat(parse_columnstore_rpm_repository(config['repo']['rpm']))
     releases.concat(parse_columnstore_deb_repository(config['repo']['deb']))
-    write_repository(releases)
+    releases
   end
 
   def parse_columnstore_rpm_repository(config)
@@ -372,7 +391,7 @@ In order to specify the number of retries for repository configuration use --att
     releases = []
     releases.concat(parse_mysql_rpm_repository(config['repo']['rpm']))
     releases.concat(parse_mysql_deb_repository(config['repo']['deb']))
-    write_repository(releases)
+    releases
   end
 
   def parse_mysql_deb_repository(config)
@@ -405,29 +424,24 @@ In order to specify the number of retries for repository configuration use --att
     )
   end
 
-  # Write all information about releases to the JSON documents
-  def write_repository(releases)
-    platforms = releases.map { |release| release[:platform] }.uniq
-    platforms.each do |platform|
-      FileUtils.mkdir_p("#{@directory}/#{platform}")
-      releases_by_version = Hash.new { |hash, key| hash[key] = [] }
-      releases.each do |release|
-        next if release[:platform] != platform
-        releases_by_version[release[:version]] << extract_release_fields(release)
-      end
-      releases_by_version.each_pair do |version, version_releases|
-        File.write("#{@directory}/#{platform}/#{version}.json",
-                   JSON.pretty_generate(version_releases))
-      end
-    end
-  end
-
   STORED_KEYS = %i[repo repo_key platform platform_version product version].freeze
   # Extract only required fields from the passed release before writing it to the file
   def extract_release_fields(release)
     STORED_KEYS.each_with_object({}) do |key, sliced_hash|
       raise "Unable to find key #{key} in repository_configuration #{release}." unless release.key?(key)
       sliced_hash[key] = release[key]
+    end
+  end
+
+  # Method filters releases, removing empty ones and by version, if it required
+  def filter_releases(releases)
+    next_releases = releases.reject(&:nil?)
+    next_releases.select do |release|
+      if @product_version.nil? || release[:version].nil?
+        true
+      else
+        release[:version] == @product_version
+      end
     end
   end
 
@@ -444,10 +458,17 @@ In order to specify the number of retries for repository configuration use --att
         end
         apply_step_to_links(step, links, release)
       end
-      next_releases.flatten.reject(&:nil?)
+      filter_releases(next_releases.flatten)
     end
-    # Add repository key and product to all releases
-    result.each do |release|
+    add_key_and_product_to_releases(result, key, product)
+  end
+
+  # Append key and product to the releases
+  # @param releases [Array<Hash>] list of releases
+  # @param key [String] text to put into key field
+  # @param product [String] name of the product
+  def add_key_and_product_to_releases(releases, key, product)
+    releases.each do |release|
       release[:repo_key] = key
       release[:product] = product
     end
@@ -554,22 +575,53 @@ In order to specify the number of retries for repository configuration use --att
     end
   end
 
-  # Create repository
+  # Write all information about releases to the JSON documents
+  def write_repository(product_dir, releases)
+    platforms = releases.map { |release| release[:platform] }.uniq
+    platforms.each do |platform|
+      configuration_directory = File.join(product_dir, platform)
+      FileUtils.mkdir_p(configuration_directory)
+      releases_by_version = Hash.new { |hash, key| hash[key] = [] }
+      releases.each do |release|
+        next if release[:platform] != platform
+        releases_by_version[release[:version]] << extract_release_fields(release)
+      end
+      releases_by_version.each_pair do |version, version_releases|
+        File.write(File.join(configuration_directory, "#{version}.json"),
+                   JSON.pretty_generate(version_releases))
+      end
+    end
+  end
+
+  # Create repository in the target directory.
+  def write_product(product, releases)
+    info_and_log("Writing generated configuration for #{product} to the repository.")
+    product_name = PRODUCTS_DIR_NAMES[product]
+    product_dir = File.join(@destination, product_name)
+    if @product_version.nil?
+      FileUtils.rm_rf(product_dir, secure: true)
+      FileUtils.mkdir_p(product_dir)
+    else
+      releases = releases.select do |release|
+        release[:version] == @product_version
+      end
+    end
+    write_repository(product_dir, releases)
+  end
+
+  # Create repository by calling appropriate method using reflection and writing results
+  # @param product [String] name of the product to generate
+  # @returns [Boolean] whether generation was succesfull or not
   def create_repository(product)
     info_and_log("Generating repository configuration for #{product}")
-    FileUtils.rm_rf("#{@directory}/.", secure: true)
     begin
-      send("parse_#{product}".to_sym, @config[product])
+      releases = send("parse_#{product}".to_sym, @config[product])
     rescue StandardError => error
       error_and_log("#{product} was not generated. Try again.")
       error_and_log_error(error)
       return false
     end
-    info_and_log("Copying generated configuration for #{product} to the repository.")
-    product_name = PRODUCTS_DIR_NAMES[product]
-    FileUtils.mkdir_p("#{@destination}/#{product_name}")
-    FileUtils.rm_rf("#{@destination}/#{product_name}", secure: true)
-    FileUtils.cp_r("#{@directory}/.", "#{@destination}/#{product_name}")
+    write_product(product, releases)
     true
   end
 
@@ -586,8 +638,6 @@ In order to specify the number of retries for repository configuration use --att
   # Starting point of the application
   def execute
     return ARGUMENT_ERROR_RESULT unless configure_command
-    @directory = Dir.mktmpdir(COMMAND_NAME)
-    info_and_log("Writing intermediate results to #{@directory}")
     remainning_products = @products.dup
     @attempts.times do
       remainning_products = remainning_products.reject do |product|
@@ -596,7 +646,7 @@ In order to specify the number of retries for repository configuration use --att
       break if remainning_products.empty?
     end
     print_summary(remainning_products)
-    FileUtils.rm_rf(@directory)
     SUCCESS_RESULT
   end
 end
+# rubocop:enable Metrics/ClassLength

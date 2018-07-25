@@ -16,10 +16,10 @@ opts = GetoptLong.new(
   ['--command', '-c', GetoptLong::REQUIRED_ARGUMENT],
   ['--configuration-file', GetoptLong::REQUIRED_ARGUMENT],
   ['--field', '-f', GetoptLong::REQUIRED_ARGUMENT],
+  ['--help', GetoptLong::NO_ARGUMENT],
   ['--ipv6', GetoptLong::NO_ARGUMENT],
   ['--key', '-k', GetoptLong::REQUIRED_ARGUMENT],
   ['--keep-template', GetoptLong::NO_ARGUMENT],
-  ['--maxscale-ci', GetoptLong::REQUIRED_ARGUMENT],
   ['--node-name', GetoptLong::REQUIRED_ARGUMENT],
   ['--override', '-w', GetoptLong::NO_ARGUMENT],
   ['--path-to-nodes', GetoptLong::REQUIRED_ARGUMENT],
@@ -117,8 +117,8 @@ begin
     when '--configuration-file'
       session.configuration_file = File.absolute_path(arg)
 
-    when '--maxscale-ci'
-      session.maxscale_ci = arg
+    when '--help'
+      session.show_help = true
 
     else
       out.error 'Option is not supported: ' + opt

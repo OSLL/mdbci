@@ -46,7 +46,6 @@ class Session
   attr_accessor :boxes_dir
   attr_accessor :mdbciDir
   attr_accessor :mdbci_dir
-  attr_accessor :maxscale_ci
   attr_accessor :starting_dir
   attr_accessor :working_dir
   attr_accessor :nodeProduct
@@ -59,6 +58,7 @@ class Session
   attr_accessor :node_name
   attr_accessor :snapshot_name
   attr_accessor :ipv6
+  attr_accessor :show_help
 
   PLATFORM = 'platform'
   VAGRANT_NO_PARALLEL = '--no-parallel'
