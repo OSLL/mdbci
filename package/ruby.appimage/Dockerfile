@@ -46,6 +46,6 @@ RUN adduser --uid $UID --gid $GID --shell /bin/bash --home /workspace $UNAME
 COPY gen_appimage.sh /workspace
 RUN install -m 0755 -o $UID -g $GID -d /workspace/application
 # Allow to run sudo without password for this user
-RUN echo "$NAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN echo "$UNAME ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 WORKDIR /workspace/application
