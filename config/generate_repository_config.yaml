@@ -14,14 +14,6 @@ columnstore:
     deb:
       path: https://downloads.mariadb.com/ColumnStore/
       key: "AD0DEAFDA41F5C14"
-galera:
-  repo:
-    rpm:
-      path: http://yum.mariadb.org/
-      key: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-    deb:
-      path: http://mirror.netinch.com/pub/mariadb/repo/
-      key: "0xF1656F24C74CD1D8"
 maxscale_ci:
   repo:
     rpm:
