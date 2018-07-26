@@ -25,6 +25,8 @@ RUN apt-get update && apt-get install -y \
     libffi-dev \
     libgdbm3 \
     libgdbm-dev \
+    liblzma-dev \
+    patch \
     wget \
     apt-transport-https
 

@@ -105,16 +105,18 @@ pushd $RUBY_DIR
 CPU_NUMBER=$(grep -c '^processor' /proc/cpuinfo)
 make -j$CPU_NUMBER
 make install
-popd
+popd # Leaving ruby directory after compilation
 
-echo "--> patch away absolute paths"
-replace_paths_in_file $APP_DIR/usr/bin/ruby $APP_DIR/usr/ .
+echo "--> patch away absolute path in scripts"
 for SCRIPT in erb gem irb rake
 do
     insert_run_header "$APP_DIR/usr/bin/$SCRIPT"
 done
-
 popd # Leaving build subdirectory when calling external script
+
+# Configuring CPATH variable
+export CPATH=$APP_DIR/usr/include
+export LD_LIBRARY_PATH=$APP_DIR/usr/lib
 
 if [ "$EXTRA_APP" == "true" ]; then
     echo "--> installing extra application"
@@ -122,6 +124,9 @@ if [ "$EXTRA_APP" == "true" ]; then
 fi
 
 pushd $BUILD_DIR # Going back in order for scripts to work
+
+echo "--> patch away absolute paths in ruby executable"
+replace_paths_in_file $APP_DIR/usr/bin/ruby $APP_DIR/usr/ .
 
 echo "--> remove unused files"
 # remove doc, man, ri
@@ -138,7 +143,14 @@ wget -q https://github.com/AppImage/AppImages/raw/master/functions.sh -O ./funct
 pushd $APP_DIR
 
 echo "--> get AppRun"
-get_apprun
+# get_apprun Do not use it currently due to the bug
+get_stable_apprun()
+{
+  TARGET_ARCH=${ARCH:-$SYSTEM_ARCH}
+  wget -c https://github.com/AppImage/AppImageKit/releases/download/10/AppRun-${TARGET_ARCH} -O AppRun
+  chmod a+x AppRun
+}
+get_stable_apprun
 
 echo "--> get desktop file and icon"
 cp $ROOT_DIR/$APP.desktop $ROOT_DIR/$APP.png .
