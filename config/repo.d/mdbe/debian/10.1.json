@@ -1,0 +1,34 @@
+[
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.1/repo/debian jessie main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "debian",
+    "platform_version": "jessie",
+    "product": "mdbe",
+    "version": "10.1"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.1/repo/debian trusty main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "debian",
+    "platform_version": "trusty",
+    "product": "mdbe",
+    "version": "10.1"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.1/repo/debian wheezy main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "debian",
+    "platform_version": "wheezy",
+    "product": "mdbe",
+    "version": "10.1"
+  },
+  {
+    "repo": "http://downloads.mariadb.com/enterprise/WY99-BC52/mariadb-enterprise/10.1/repo/debian xenial main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "debian",
+    "platform_version": "xenial",
+    "product": "mdbe",
+    "version": "10.1"
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/2.1.16-debug/debian jessie main",
+    "repo_key": "135659e928c12247",
+    "platform": "debian",
+    "platform_version": "jessie",
+    "product": "maxscale",
+    "version": "2.1.16-debug"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/2.1.16-debug/debian stretch main",
+    "repo_key": "135659e928c12247",
+    "platform": "debian",
+    "platform_version": "stretch",
+    "product": "maxscale",
+    "version": "2.1.16-debug"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/2.1.16-debug/debian wheezy main",
+    "repo_key": "135659e928c12247",
+    "platform": "debian",
+    "platform_version": "wheezy",
+    "product": "maxscale",
+    "version": "2.1.16-debug"
+  }
+]

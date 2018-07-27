@@ -1,0 +1,58 @@
+[
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.2/ubuntu/ hardy main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
+    "platform_version": "hardy",
+    "product": "mariadb",
+    "version": "5.2"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.2/ubuntu/ lucid main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
+    "platform_version": "lucid",
+    "product": "mariadb",
+    "version": "5.2"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.2/ubuntu/ maverick main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
+    "platform_version": "maverick",
+    "product": "mariadb",
+    "version": "5.2"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.2/ubuntu/ natty main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
+    "platform_version": "natty",
+    "product": "mariadb",
+    "version": "5.2"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.2/ubuntu/ oneiric main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
+    "platform_version": "oneiric",
+    "product": "mariadb",
+    "version": "5.2"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.2/ubuntu/ precise main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
+    "platform_version": "precise",
+    "product": "mariadb",
+    "version": "5.2"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/5.2/ubuntu/ quantal main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
+    "platform_version": "quantal",
+    "product": "mariadb",
+    "version": "5.2"
+  }
+]

@@ -19,7 +19,7 @@ describe 'Network' do
     $exception_handler = ExceptionHandler.new
     boxesPath = './BOXES'
     $session.boxes = BoxesManager.new boxesPath
-    reposPath = './repo.d'
+    reposPath = './config/repo.d'
     $session.configFile='instance.json'
     $session.awsConfigFile='aws-config.yml'
     $session.repos = RepoManager.new reposPath
@@ -37,7 +37,7 @@ describe 'Network' do
   file_network_config = "#{DOCKER_CONF}_network_config"
   nil_file_network_config = '_network_config'
   wrong_file_network_config = 'WRONG_PATH_network_config'
-  
+
   it 'collectConfigurationNetworkInfo should raise error: wrong path' do
     stop_config_node(DOCKER_CONF, 'node1')
     lambda{collectConfigurationNetworkInfo(DOCKER_CONF, 'node1')}.should raise_error('Incorrect node')

@@ -1,0 +1,73 @@
+---
+debian:
+  mariadb: mariadb-server mariadb-client
+  mysql: mysql-server mysql-client
+  galera:
+    '10.1': mariadb-server
+    '10.0': mariadb-galera-server
+    '5.5': mariadb-galera-server
+  maxscale: maxscale
+  maxscale_ci: maxscale
+ubuntu:
+  mariadb: mariadb-server mariadb-client
+  mysql: mysql-server mysql-client
+  galera:
+    '10.1': mariadb-server
+    '10.0': mariadb-galera-server
+    '5.5': mariadb-galera-server
+  maxscale: maxscale
+  maxscale_ci: maxscale
+rhel:
+  mariadb: MariaDB-server MariaDB-client
+  mysql: mysql-community-client mysql-community-server
+  galera:
+    '10.1': MariaDB-server
+    '10.0': MariaDB-Galera-server galera
+    '5.5': MariaDB-Galera-server
+  maxscale: maxscale
+  maxscale_ci: maxscale
+fedora:
+  mariadb: MariaDB-server MariaDB-client
+  mysql: mysql-community-client mysql-community-server
+  galera:
+    '10.1': MariaDB-server
+    '10.0': MariaDB-Galera-server galera
+    '5.5': MariaDB-Galera-server
+  maxscale: maxscale
+  maxscale_ci: maxscale
+centos:
+  mariadb: MariaDB-server MariaDB-client
+  mysql: mysql-community-client mysql-community-server
+  galera:
+    '10.1': MariaDB-server
+    '10.0': MariaDB-Galera-server galera
+    '5.5': MariaDB-Galera-server
+  maxscale: maxscale
+  maxscale_ci: maxscale
+sles:
+  mariadb: MariaDB-server MariaDB-client
+  mysql: mysql-community-client mysql-community-server
+  galera:
+    '10.1': MariaDB-server
+    '10.0': MariaDB-Galera-server
+    '5.5': MariaDB-Galera-server
+  maxscale: maxscale
+  maxscale_ci: maxscale
+suse:
+  mariadb: MariaDB-server MariaDB-client
+  mysql: mysql-community-client mysql-community-server
+  galera:
+    '10.1': MariaDB-server
+    '10.0': MariaDB-Galera-server
+    '5.5': MariaDB-Galera-server
+  maxscale: maxscale
+  maxscale_ci: maxscale
+opensuse:
+  mariadb: MariaDB-server MariaDB-client
+  mysql: mysql-community-client mysql-community-server
+  galera:
+    '10.1': MariaDB-server
+    '10.0': MariaDB-Galera-server
+    '5.5': MariaDB-Galera-server
+  maxscale: maxscale
+  maxscale_ci: maxscale

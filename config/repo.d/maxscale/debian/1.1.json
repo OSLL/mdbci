@@ -1,0 +1,18 @@
+[
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/1.1/debian squeeze main",
+    "repo_key": "135659e928c12247",
+    "platform": "debian",
+    "platform_version": "squeeze",
+    "product": "maxscale",
+    "version": "1.1"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/1.1/debian wheezy main",
+    "repo_key": "135659e928c12247",
+    "platform": "debian",
+    "platform_version": "wheezy",
+    "product": "maxscale",
+    "version": "1.1"
+  }
+]

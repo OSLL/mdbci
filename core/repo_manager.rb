@@ -5,13 +5,41 @@ class RepoManager
   attr_accessor :repos
   attr_accessor :recipes  # product => recipe
 
-  PRODUCT_TO_RECIPE_MAP = {
-    'mariadb' => 'mariadb::install_community',
-    'maxscale' => 'mariadb-maxscale::install_maxscale',
-    'mysql' => 'mysql::install_community',
-    'packages' => 'packages',
-    'columnstore' => 'mariadb_columnstore',
-    'galera' => 'galera'
+  PRODUCT_ATTRIBUTES = {
+    'mariadb' => {
+      recipe: 'mariadb::install_community',
+      name: 'mariadb',
+      repository: 'mariadb'
+    },
+    'maxscale' => {
+      recipe: 'mariadb-maxscale::install_maxscale',
+      name: 'maxscale',
+      repository: 'maxscale'
+    },
+    'maxscale_ci' => {
+      recipe: 'mariadb-maxscale::install_maxscale',
+      name: 'maxscale',
+      repository: 'maxscale_ci'
+    },
+    'mysql' => {
+      recipe: 'mysql::install_community',
+      name: 'mysql',
+      repository: 'mysql'
+    },
+    'packages' => {
+      recipe: 'packages',
+      name: 'packages'
+    },
+    'columnstore' => {
+      recipe: 'mariadb_columnstore',
+      name: 'columnstore',
+      repository: 'columnstore'
+    },
+    'galera' => {
+      recipe: 'galera',
+      name: 'galera',
+      repository: 'mariadb'
+    }
   }
 
   def initialize(path)
@@ -19,17 +47,24 @@ class RepoManager
     lookup(path)
   end
 
+  # Get the recipe name for the product
   def recipe_name(product)
-    PRODUCT_TO_RECIPE_MAP[product]
+    PRODUCT_ATTRIBUTES[product][:recipe]
   end
 
-  def findRepo(name, product, box)
-    $out.info 'Looking for repo'
+  # Get the attribute name for the product
+  def attribute_name(product)
+    PRODUCT_ATTRIBUTES[product][:name]
+  end
+
+  def findRepo(product_name, product, box)
+    $out.info('Looking for repo')
     version = (product['version'].nil? ? 'default' : product['version']);
     platform = $session.boxes.platformKey(box)
-    repokey = name+'@'+version+'+'+ platform
-    repo = @repos[repokey]
-    $out.info 'Repo key is '+repokey + ' ... ' + (repo.nil? ? 'NOT_FOUND' : 'FOUND')
+    repository_name = PRODUCT_ATTRIBUTES[product_name][:repository]
+    repo_key = "#{repository_name}@#{version}+#{platform}"
+    repo = @repos[repo_key]
+    $out.info("Repo key is '#{repo_key}': #{repo.nil? ? 'Not found' : 'Found'}")
     return repo
   end
 

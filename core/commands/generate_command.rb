@@ -287,7 +287,8 @@ end
       if !product['node_name'].nil?
         config['node_name'] = product['node_name']
       end
-      product_config[product_name] = config
+      attribute_name = $session.repos.attribute_name(product_name)
+      product_config[attribute_name] = config
     end
     $out.info("Recipe #{recipe_name}")
     role['name'] = name

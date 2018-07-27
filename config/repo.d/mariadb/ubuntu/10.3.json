@@ -1,0 +1,50 @@
+[
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.3/ubuntu/ artful main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
+    "platform_version": "artful",
+    "product": "mariadb",
+    "version": "10.3"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.3/ubuntu/ bionic main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
+    "platform_version": "bionic",
+    "product": "mariadb",
+    "version": "10.3"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.3/ubuntu/ trusty main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
+    "platform_version": "trusty",
+    "product": "mariadb",
+    "version": "10.3"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.3/ubuntu/ xenial main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
+    "platform_version": "xenial",
+    "product": "mariadb",
+    "version": "10.3"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.3/ubuntu/ yakkety main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
+    "platform_version": "yakkety",
+    "product": "mariadb",
+    "version": "10.3"
+  },
+  {
+    "repo": "http://mirror.netinch.com/pub/mariadb/repo/10.3/ubuntu/ zesty main",
+    "repo_key": "0xF1656F24C74CD1D8",
+    "platform": "ubuntu",
+    "platform_version": "zesty",
+    "product": "mariadb",
+    "version": "10.3"
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "repo": "http://max-tst-01.mariadb.com/ci-repository/2.1/mariadb-maxscale/sles/12/x86_64/",
+    "repo_key": "https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY",
+    "platform": "sles",
+    "platform_version": "12",
+    "product": "maxscale_ci",
+    "version": "2.1"
+  }
+]

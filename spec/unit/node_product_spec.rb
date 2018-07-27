@@ -13,8 +13,7 @@ describe 'NodeProduct' do
     $session = Session.new
     $session.isSilent = true
     $out = Out.new($session)
-    $session.repoDir = './repo.d'
-    $session.repos = RepoManager.new($session.repoDir)
+    $session.repos = RepoManager.new('./config/repo.d')
   end
 
   #
