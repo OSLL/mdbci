@@ -45,7 +45,7 @@
   },
   "ubuntu_bionic_libvirt": {
     "provider": "libvirt",
-    "box": "SharkLinux/Bionic",
+    "box": "generic/ubuntu1804",
     "ssh_pty" : "false",
     "platform": "ubuntu",
     "platform_version": "bionic"
