@@ -107,7 +107,12 @@ class MachineConfigurator
     else
       ssh_exec(connection, 'curl -s -L https://www.chef.io/chef/install.sh --output install.sh')
     end
-    sudo_exec(connection, sudo_password, "bash install.sh -v #{chef_version}")
+    output = ssh_exec(connection, 'cat /etc/os-release | grep "openSUSE Leap 15.0"')
+    if output.strip.empty?
+      sudo_exec(connection, sudo_password, "bash install.sh -v #{chef_version}")  
+    else
+      sudo_exec(connection, sudo_password, "bash install.sh -l https://packages.chef.io/files/stable/chef/14.3.37/sles/12/chef-14.3.37-1.sles12.x86_64.rpm")
+    end
     ssh_exec(connection, 'rm install.sh')
   end
 

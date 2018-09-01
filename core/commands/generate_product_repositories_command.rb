@@ -18,7 +18,6 @@ class GenerateProductRepositoriesCommand < BaseCommand
   PRODUCTS_DIR_NAMES = {
     'columnstore' => 'columnstore',
     'mariadb' => 'mariadb',
-    'galera' => 'galera',
     'maxscale_ci' => 'maxscale_ci',
     'maxscale' => 'maxscale',
     'mdbe' => 'mdbe',
@@ -294,14 +293,6 @@ In order to specify the number of retries for repository configuration use --att
         release
       end
     )
-  end
-
-  def parse_galera(config)
-    releases = []
-    version_regexp = %r{^(\p{Digit}+\.\p{Digit}+)\-galera\/?$}
-    releases.concat(parse_mariadb_rpm_repository(config['repo']['rpm'], 'galera', version_regexp))
-    releases.concat(parse_mariadb_deb_repository(config['repo']['deb'], 'galera', version_regexp))
-    releases
   end
 
   def parse_mariadb(config)

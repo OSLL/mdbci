@@ -1,4 +1,12 @@
 {
+  "ubuntu_bionic_aws": {
+    "provider": "aws",
+    "ami": "ami-0ca68075",
+    "user": "ubuntu",
+    "default_instance_type": "m3.medium",
+    "platform": "ubuntu",
+    "platform_version": "bionic"
+  },
   "ubuntu_xenial_aws": {
     "provider": "aws",
     "ami": "ami-4ac34439",

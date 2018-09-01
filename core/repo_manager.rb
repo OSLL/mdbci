@@ -8,19 +8,23 @@ class RepoManager
   PRODUCT_ATTRIBUTES = {
     'mariadb' => {
       recipe: 'mariadb::install_community',
-      name: 'mariadb'
+      name: 'mariadb',
+      repository: 'mariadb'
     },
     'maxscale' => {
       recipe: 'mariadb-maxscale::install_maxscale',
-      name: 'maxscale'
+      name: 'maxscale',
+      repository: 'maxscale'
     },
     'maxscale_ci' => {
       recipe: 'mariadb-maxscale::install_maxscale',
-      name: 'maxscale'
+      name: 'maxscale',
+      repository: 'maxscale_ci'
     },
     'mysql' => {
       recipe: 'mysql::install_community',
-      name: 'mysql'
+      name: 'mysql',
+      repository: 'mysql'
     },
     'packages' => {
       recipe: 'packages',
@@ -28,11 +32,13 @@ class RepoManager
     },
     'columnstore' => {
       recipe: 'mariadb_columnstore',
-      name: 'columnstore'
+      name: 'columnstore',
+      repository: 'columnstore'
     },
     'galera' => {
       recipe: 'galera',
-      name: 'galera'
+      name: 'galera',
+      repository: 'mariadb'
     }
   }
 
@@ -51,13 +57,14 @@ class RepoManager
     PRODUCT_ATTRIBUTES[product][:name]
   end
 
-  def findRepo(name, product, box)
-    $out.info 'Looking for repo'
+  def findRepo(product_name, product, box)
+    $out.info('Looking for repo')
     version = (product['version'].nil? ? 'default' : product['version']);
     platform = $session.boxes.platformKey(box)
-    repokey = name+'@'+version+'+'+ platform
-    repo = @repos[repokey]
-    $out.info 'Repo key is '+repokey + ' ... ' + (repo.nil? ? 'NOT_FOUND' : 'FOUND')
+    repository_name = PRODUCT_ATTRIBUTES[product_name][:repository]
+    repo_key = "#{repository_name}@#{version}+#{platform}"
+    repo = @repos[repo_key]
+    $out.info("Repo key is '#{repo_key}': #{repo.nil? ? 'Not found' : 'Found'}")
     return repo
   end
 

@@ -45,7 +45,7 @@
   },
   "ubuntu_bionic_libvirt": {
     "provider": "libvirt",
-    "box": "SharkLinux/Bionic",
+    "box": "generic/ubuntu1804",
     "ssh_pty" : "false",
     "platform": "ubuntu",
     "platform_version": "bionic"
@@ -69,6 +69,12 @@
     "ssh_pty" : "true",
     "platform": "centos",
     "platform_version": "5"
+  },
+  "suse_15_libvirt" : {
+    "provider": "libvirt",
+    "platform": "opensuse",
+    "box": "opensuse/openSUSE-15.0-x86_64",
+    "platform_version": "15"
   },
   "suse_13_libvirt" : {
     "provider": "libvirt",
