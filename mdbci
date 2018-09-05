@@ -47,6 +47,8 @@ session.ipv6 = false
 out = Out.new(session)
 $out = out
 
+Dir.chdir ENV['OLD_CWD'] unless ENV['OLD_CWD'].nil?
+
 Dir.chdir ENV['MDBCI_VM_PATH'] unless ENV['MDBCI_VM_PATH'].nil?
 $work_dir = Dir.pwd
 

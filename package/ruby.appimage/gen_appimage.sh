@@ -150,7 +150,9 @@ get_stable_apprun()
   wget -c https://github.com/AppImage/AppImageKit/releases/download/10/AppRun-${TARGET_ARCH} -O AppRun
   chmod a+x AppRun
 }
-get_stable_apprun
+if [ -x AppRun ]; then
+  get_stable_apprun
+fi
 
 echo "--> get desktop file and icon"
 cp $ROOT_DIR/$APP.desktop $ROOT_DIR/$APP.png .

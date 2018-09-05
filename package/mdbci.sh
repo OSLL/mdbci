@@ -15,3 +15,12 @@ pushd $APP_DIR/usr/bin
 ln -sf ../../mdbci/mdbci mdbci
 insert_run_header mdbci
 popd
+
+echo "--> creating and insalling custom runner"
+sudo apt-get update
+sudo apt-get install -y cmake
+pushd runner/
+cmake .
+make
+cp AppRun $APP_DIR
+popd

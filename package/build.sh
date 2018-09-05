@@ -36,6 +36,9 @@ do
   cp "$file" "$BUILD_DIR/"
 done
 
+# Copy the runner directory to the build
+cp -r "runner" "$BUILD_DIR/"
+
 # Start the build using ruby.appimage
 pushd $BUILD_DIR
 "$CURRENT_DIR/ruby.appimage/docker_build.sh" mdbci $BUILD_VERSION
