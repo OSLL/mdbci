@@ -10,6 +10,7 @@ pushd $script_dir
 
 # Create docker image to build application inside it
 docker build \
+       --no-cache \
        --build-arg UID=$(id -u) \
        --build-arg GID=$(id -g) \
        --force-rm \
