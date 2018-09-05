@@ -94,16 +94,16 @@ fi
 RUBY_ARCHIVE=$RUBY_DIR.tar.xz
 if [ ! -f $RUBY_ARCHIVE ]; then
     echo "--> get ruby source"
-    wget http://cache.ruby-lang.org/pub/ruby/2.5/ruby-2.5.1.tar.xz -O ruby-2.5.1.tar.xz -O $RUBY_ARCHIVE
+    wget http://cache.ruby-lang.org/pub/ruby/2.5/$RUBY_DIR.tar.xz -O $RUBY_DIR.tar.xz -O $RUBY_ARCHIVE
 fi
 echo "--> unpacking ruby archive"
 tar xf $RUBY_ARCHIVE
 
 echo "--> compile Ruby and install it into AppDir"
 pushd $RUBY_DIR
-./configure --prefix=$APP_DIR/usr --disable-install-doc
+./configure --prefix=$APP_DIR/usr --disable-install-doc --disable-debug --disable-dependency-tracking --enable-shared --enable-load-relative
 CPU_NUMBER=$(grep -c '^processor' /proc/cpuinfo)
-make -j$CPU_NUMBER
+CFLAGS="-O3" make -j$CPU_NUMBER
 make install
 popd # Leaving ruby directory after compilation
 
