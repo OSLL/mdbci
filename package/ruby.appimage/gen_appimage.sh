@@ -35,7 +35,6 @@ insert_run_header() {
 # -*- ruby -*-
 bindir=$( cd "${0%/*}"; pwd )
 executable=$bindir/${0##*/}
-cd "$bindir/../"
 unset GEM_PATH
 unset GEM_HOME
 exec "$bindir/ruby" -x "$executable" "$@"
@@ -119,9 +118,12 @@ done
 popd # Leaving build subdirectory when calling external script
 
 # Configuring CPATH variable
-export PATH=$APP_DIR/usr/bin:$PATH
-export CPATH=$APP_DIR/usr/include
-export LD_LIBRARY_PATH=$APP_DIR/usr/lib
+export CPPFLAGS="-I${APP_DIR}/usr/include -I${APP_DIR}/usr/include/libxml2"
+export CFLAGS="${CPPFLAGS}"
+export LDFLAGS="-L${APP_DIR}/usr/lib -L${APP_DIR}/usr/lib64"
+export PATH="$APP_DIR/usr/bin:$PATH"
+export CPATH="$APP_DIR/usr/include"
+export LD_LIBRARY_PATH="$APP_DIR/usr/lib"
 unset GEM_PATH
 unset GEM_HOME
 
