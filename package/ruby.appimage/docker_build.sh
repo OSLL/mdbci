@@ -8,12 +8,13 @@ app_dir="$(pwd)"
 # Go to the directory of the script
 pushd $script_dir
 
+docker pull ubuntu:14.04
+
 # Create docker image to build application inside it
 docker build \
        --no-cache \
        --build-arg UID=$(id -u) \
        --build-arg GID=$(id -g) \
-       --force-rm \
        -t ruby-appimage:latest .
 
 docker run -it \

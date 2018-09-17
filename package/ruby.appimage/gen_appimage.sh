@@ -85,7 +85,9 @@ mkdir -p $APP_DIR
 # the source directory
 pushd $BUILD_DIR
 
-RUBY_DIR=ruby-2.5.1
+RUBY_VERSION=2.5.1
+RUBY_SHORT_VERSION=$(echo $RUBY_VERSION | awk -F. '{print $1"."$2}')
+RUBY_DIR=ruby-$RUBY_VERSION
 if [ -d $RUBY_DIR ]; then
     echo "--> removing old ruby directory"
     rm -rf $RUBY_DIR
@@ -94,7 +96,7 @@ fi
 RUBY_ARCHIVE=$RUBY_DIR.tar.xz
 if [ ! -f $RUBY_ARCHIVE ]; then
     echo "--> get ruby source"
-    wget http://cache.ruby-lang.org/pub/ruby/2.5/$RUBY_DIR.tar.xz -O $RUBY_DIR.tar.xz -O $RUBY_ARCHIVE
+    wget http://cache.ruby-lang.org/pub/ruby/$RUBY_SHORT_VERSION/$RUBY_DIR.tar.xz -O $RUBY_DIR.tar.xz -O $RUBY_ARCHIVE
 fi
 echo "--> unpacking ruby archive"
 tar xf $RUBY_ARCHIVE
@@ -112,11 +114,16 @@ for SCRIPT in erb gem irb rake
 do
     insert_run_header "$APP_DIR/usr/bin/$SCRIPT"
 done
+
+
 popd # Leaving build subdirectory when calling external script
 
 # Configuring CPATH variable
+export PATH=$APP_DIR/usr/bin:$PATH
 export CPATH=$APP_DIR/usr/include
 export LD_LIBRARY_PATH=$APP_DIR/usr/lib
+unset GEM_PATH
+unset GEM_HOME
 
 if [ "$EXTRA_APP" == "true" ]; then
     echo "--> installing extra application"
@@ -124,9 +131,6 @@ if [ "$EXTRA_APP" == "true" ]; then
 fi
 
 pushd $BUILD_DIR # Going back in order for scripts to work
-
-echo "--> patch away absolute paths in ruby executable"
-replace_paths_in_file $APP_DIR/usr/bin/ruby $APP_DIR/usr/ .
 
 echo "--> remove unused files"
 # remove doc, man, ri
@@ -150,7 +154,7 @@ get_stable_apprun()
   wget -c https://github.com/AppImage/AppImageKit/releases/download/10/AppRun-${TARGET_ARCH} -O AppRun
   chmod a+x AppRun
 }
-if [ -x AppRun ]; then
+if [ ! -x AppRun ]; then
   get_stable_apprun
 fi
 

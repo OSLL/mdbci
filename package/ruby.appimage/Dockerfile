@@ -1,6 +1,6 @@
 # Beware: only meant for use to build ruby appimages
 
-FROM ubuntu:trusty
+FROM ubuntu:14.04
 
 ARG UNAME=builduser
 ARG UID=1000
@@ -29,12 +29,14 @@ RUN apt-get update && apt-get install -y \
     patch \
     wget \
     apt-transport-https \
-    libcairo2
+    libcairo2 \
+    sudo \
+    vim \
+    software-properties-common
 
 # Install and configure GCC 8 to build ruby and packages
 # Inspiried by https://gist.github.com/application2000/73fd6f4bf1be6600a2cf9f56315a2d91
-RUN apt-get install software-properties-common -y && \
-    add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
     apt-get update && \
     apt-get install gcc-8 g++-8 -y && \
     update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /usr/bin/g++ g++ /usr/bin/g++-8;

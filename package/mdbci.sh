@@ -5,9 +5,10 @@ cp -r mdbci $APP_DIR/
 
 echo "--> installing mdbci dependencies"
 pushd $APP_DIR/mdbci
-$APP_DIR/usr/bin/gem install bundler --no-document
+gem install bundler --no-document
 insert_run_header $APP_DIR/usr/bin/bundle
-$APP_DIR/usr/bin/bundle install --without development --gemfile=$APP_DIR/mdbci/Gemfile
+insert_run_header $APP_DIR/usr/bin/bundler
+bundle install --without development --gemfile=$APP_DIR/mdbci/Gemfile
 popd
 
 echo "--> creating symlink and fixing path to ruby"
@@ -17,7 +18,6 @@ insert_run_header mdbci
 popd
 
 echo "--> creating and insalling custom runner"
-sudo apt-get update
 sudo apt-get install -y cmake
 pushd runner/
 cmake .

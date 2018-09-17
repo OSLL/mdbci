@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
     old_env = getenv("PYTHONPATH") ?: "";
     SET_NEW_ENV(new_pythonpath, appdir_s + strlen(old_env), "PYTHONPATH=%s/usr/share/pyshared/:%s", appdir, old_env);
 
-    old_env = getenv("XDG_DATA_DIRS") ?: "/usr/local/share/:/usr/share/";
+    old_env = getenv("XDG_DATA_DIRS") ?: "";
     SET_NEW_ENV(new_xdg_data_dirs, appdir_s + strlen(old_env), "XDG_DATA_DIRS=%s/usr/share/:%s", appdir, old_env);
 
     old_env = getenv("PERLLIB") ?: "";
@@ -196,7 +196,12 @@ int main(int argc, char *argv[]) {
     /* Otherwise may get errors because Python cannot write __pycache__ bytecode cache */
     putenv("PYTHONDONTWRITEBYTECODE=1");
 
+    // Set called working directory to the OLD_CWD environment variable
     SET_NEW_ENV(old_cwd, LINE_SIZE, "OLD_CWD=%s", current_working_directory);
+
+    // Undefine the GEM_PATH and GEM_HOME variables
+    unsetenv("GEM_PATH");
+    unsetenv("GEM_HOME");
 
     /* Run */
     ret = execvp(exe, outargptrs);
