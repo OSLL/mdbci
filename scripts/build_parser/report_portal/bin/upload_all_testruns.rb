@@ -43,29 +43,29 @@ client.query('SELECT * '\
              'FROM test_run '\
              'ORDER BY UNIX_TIMESTAMP(start_time) '\
              "LIMIT #{TEST_RUN_COUNT}").each do |test_run|
+  test_run_id = test_run['id']
   launch = report_portal.start_launch(
     MaxScaleReportPortal.launch_name(test_run),
     'DEFAULT',
-    MaxScaleReportPortal.description(REPOSITORY_URL, LOGS_DIR_URL, test_run),
+    MaxScaleReportPortal.description(REPOSITORY_URL, LOGS_DIR_URL, test_run, test_run_id),
     MaxScaleReportPortal.start_time(test_run),
-    MaxScaleReportPortal.launch_tags(test_run),
-    MaxScaleReportPortal.jenkins_id_tag(test_run['jenkins_id']),
-    MaxScaleReportPortal.id_tags(test_run)
+    MaxScaleReportPortal.launch_tags(test_run, test_run_id),
+    MaxScaleReportPortal.id_tag(test_run_id)
   )
 
   max_test_time = 0.0
   client.query('SELECT * '\
                'FROM results '\
-               "WHERE id = #{test_run['id']}").each do |test_result|
+               "WHERE id = #{test_run_id}").each do |test_result|
     report_portal.add_root_test_item(
       launch,
       test_result['test'],
       MaxScaleReportPortal.description(REPOSITORY_URL, LOGS_DIR_URL,
-                                       test_run, test_result),
+                                       test_run, test_run_id, test_result),
       [],
       MaxScaleReportPortal.start_time(test_run),
       'TEST',
-      MaxScaleReportPortal.test_tags(test_run, test_result),
+      MaxScaleReportPortal.test_tags(test_run, test_run_id, test_result),
       MaxScaleReportPortal.test_result_status(test_result),
       MaxScaleReportPortal.end_time(test_run, test_result['test_time'])
     )

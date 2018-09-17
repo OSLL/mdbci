@@ -22,10 +22,15 @@ module MaxScaleReportPortal
     "jenkins_id:#{jenkins_id}"
   end
 
-  def self.description(repository_url, logs_dir_url, test_run, test_result = {})
+  def self.id_tag(test_run_id)
+    "test_run_id:#{test_run_id}"
+  end
+
+  def self.description(repository_url, logs_dir_url, test_run, test_run_id, test_result = {})
     test_name = test_result['test']
     test_time = test_result['test_time']
-    "**Jenkins id:** #{test_run['jenkins_id']}\n"\
+    "**id:** #{test_run_id}\n"\
+      "**Jenkins id:** #{test_run['jenkins_id']}\n"\
       "**Target:** #{test_run['target']}\n"\
       "**Box:** #{test_run['box']}\n"\
       "**Product:** #{test_run['product']}\n"\
@@ -48,8 +53,9 @@ module MaxScaleReportPortal
     datetime(test_run['start_time'], Rational(test_time, 86400))
   end
 
-  def self.launch_tags(test_run)
+  def self.launch_tags(test_run, test_run_id)
     [
+      id_tag(test_run_id),
       jenkins_id_tag(test_run['jenkins_id']),
       test_run['box'],
       test_run['product'],
@@ -57,17 +63,6 @@ module MaxScaleReportPortal
       "maxscale:#{test_run['maxscale_source']}",
       "target:#{test_run['target']}"
     ] + tags_from_target(test_run['target'])
-  end
-
-  def self.id_tags(test_run)
-    [
-      jenkins_id_tag(test_run['jenkins_id']),
-      test_run['box'],
-      test_run['product'],
-      "ver:#{test_run['mariadb_version']}",
-      "maxscale:#{test_run['maxscale_source']}",
-      "target:#{test_run['target']}"
-    ]
   end
 
   def self.tags_from_target(target)
@@ -78,8 +73,8 @@ module MaxScaleReportPortal
     end
   end
 
-  def self.test_tags(test_run, _test_result)
-    launch_tags(test_run)
+  def self.test_tags(test_run, test_run_id, _test_result)
+    launch_tags(test_run, test_run_id)
   end
 
   def self.datetime(str, offset = 0)
