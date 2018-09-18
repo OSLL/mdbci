@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 ########################################################################
 # Package the binaries built as an AppImage
@@ -132,6 +131,8 @@ if [ "$EXTRA_APP" == "true" ]; then
     . ./$APP.sh
 fi
 
+if [ -z "$SKIP_BUILD" ]; then
+
 pushd $BUILD_DIR # Going back in order for scripts to work
 
 echo "--> remove unused files"
@@ -187,3 +188,5 @@ generate_type2_appimage
 echo '==> finished'
 
 popd
+
+fi
