@@ -54,6 +54,8 @@ session.mdbci_dir = $mdbci_exec_dir
 session.starting_dir = $current_dir
 session.working_dir = $work_dir
 
+ENV['LIBVIRT_DEFAULT_URI'] = 'qemu:///system'
+
 begin
   opts.each do |opt, arg|
     case opt
