@@ -31,7 +31,7 @@ do
 done
 
 # Copy all files required by ruby.appimage
-for file in mdbci.desktop mdbci.png mdbci.sh
+for file in mdbci.desktop mdbci.png mdbci.sh vagrant
 do
   cp "$file" "$BUILD_DIR/"
 done

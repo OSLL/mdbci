@@ -57,33 +57,31 @@ ${GEM_COMMAND} install vagrant.gem --no-document
 
 # Install extensions
 sudo apt-get install -y libxml2-dev libcurl4-openssl-dev libvirt-dev
-${GEM_COMMAND} install vagrant-aws -v 0.7.2 --force --no-document --conservative --clear-sources
 ${GEM_COMMAND} install vagrant-libvirt -v 0.0.43 --force --no-document --conservative --clear-sources
+${GEM_COMMAND} install vagrant-aws -v 0.7.2 --force --no-document --conservative --clear-sources
+
+CONFIG_DIR=${APP_DIR}/usr
 
 # Setup the system plugins
-cat <<EOF >${APP_DIR}/plugins.json
+cat <<EOF >${CONFIG_DIR}/plugins.json
 {
   "version": "1",
   "installed": {
-     "vagrant-aws" {
+     "vagrant-aws": {
        "vagrant_version": "$VAGRANT_REV",
        "installed_gem_version": "0.7.2"
      },
-     "vagrant-libvirt" {
+     "vagrant-libvirt": {
        "vagrant_version": "$VAGRANT_REV",
        "installed_gem_version": "0.0.43"
      }
   }
 }
 EOF
-chmod 0644 ${APP_DIR}/plugins.json
-
-# Setup vagrant manifest
-cat <<EOF >${APP_DIR}/manifest.json
-{
-    "vagrant_version": "${VAGRANT_REV}"
-}
-EOF
-chmod 0644 ${APP_DIR}/manifest.json
+chmod 0644 ${CONFIG_DIR}/plugins.json
 
 popd
+
+# Copy the vagrant runner script
+cp vagrant ${APP_DIR}/usr/bin/
+chmod 755 ${APP_DIR}/usr/bin/vagrant
