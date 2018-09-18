@@ -18,7 +18,7 @@ end
 
 INPUT_FILE_NAME = ARGV.shift
 CONFIG_FILENAME = ARGV.shift
-TEST_RUN_ID = if ARVG.length > 0
+TEST_RUN_ID = if ARGV.length > 0
                 ARGV.shift
               elsif !ENV['LAST_WRITE_BUILD_RESULTS_ID'].nil?
                 ENV['LAST_WRITE_BUILD_RESULTS_ID']
