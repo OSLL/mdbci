@@ -20,10 +20,10 @@ INPUT_FILE_NAME = ARGV.shift
 CONFIG_FILENAME = ARGV.shift
 TEST_RUN_ID = if ARVG.length > 0
                 ARGV.shift
-              elsif !ENV['LAST_WRITE_BILD_RESULTS_ID'].nil?
-                ENV['LAST_WRITE_BILD_RESULTS_ID']
+              elsif !ENV['LAST_WRITE_BUILD_RESULTS_ID'].nil?
+                ENV['LAST_WRITE_BUILD_RESULTS_ID']
               else
-                puts "ERROR: arg TEST_RUN_ID and env var LAST_WRITE_BILD_RESULTS_ID do not exist"
+                puts "ERROR: arg TEST_RUN_ID and env var LAST_WRITE_BUILD_RESULTS_ID do not exist"
                 exit 0
               end
 

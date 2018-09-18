@@ -166,7 +166,7 @@ def main
     require 'mysql2'
     writer = BuildResultsWriter.new
     test_run_id = writer.write_results_from_input_file(input_file_path)
-    puts "LAST_WRITE_BILD_RESULTS_ID: #{test_run_id}"
+    puts "LAST_WRITE_BUILD_RESULTS_ID: #{test_run_id}"
   rescue Exception => e
     puts e.message
     puts e.backtrace
