@@ -89,7 +89,8 @@ class UpCommand < BaseCommand
   # @param node [String] name of the node to get status from.
   # @return [Boolean]
   def node_running?(node)
-    status = `vagrant status #{node}`.split("\n")[2]
+    result = run_command('vagrant status #{node}')
+    status = result[:output].split("\n")[2]
     @ui.info "Node '#{node}' status: #{status}"
     if status.include? 'running'
       @ui.info "Node '#{node}' is running."
@@ -105,9 +106,9 @@ class UpCommand < BaseCommand
   # @param node [String] name of the node to check.
   # @return [Boolean]
   def chef_installed?(node)
-    command = "vagrant ssh #{node} -c "\
-              '"test -e /var/chef/cache/chef-stacktrace.out && printf FOUND || printf NOT_FOUND"'
-    chef_stacktrace = `#{command}`
+    result = run_command("vagrant ssh #{node} -c "\
+                         '"test -e /var/chef/cache/chef-stacktrace.out && printf FOUND || printf NOT_FOUND"')
+    chef_stacktrace = result[:output]
     if chef_stacktrace == 'FOUND'
       @ui.error "Chef on node '#{node}' was installed with error."
       false
@@ -122,9 +123,9 @@ class UpCommand < BaseCommand
   # @param node [String] name of the node to check
   # return [Boolean]
   def node_provisioned?(node)
-    command = "vagrant ssh #{node} -c"\
-                     '"test -e /var/mdbci/provisioned && printf PROVISIONED || printf NOT"'
-    provision_file = `#{command}`
+    result = run_command("vagrant ssh #{node} -c"\
+                         '"test -e /var/mdbci/provisioned && printf PROVISIONED || printf NOT"')
+    provision_file = result[:output]
     if provision_file == 'PROVISIONED'
       @ui.info "Node '#{node}' was configured."
       true

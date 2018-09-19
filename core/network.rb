@@ -4,13 +4,16 @@ require_relative 'node'
 require_relative 'out'
 require_relative 'helper'
 require_relative 'models/configuration'
+require_relative 'services/shell_commands'
 
 class Network
+  include ShellCommands
 
   attr_accessor :nodes
 
   def initialize
     @nodes = Array.new
+    @ui = $out
   end
 
   def getNodeInfo(config, node)
@@ -24,7 +27,7 @@ class Network
 
     Dir.chdir config.to_s
 
-    vagrant_out = `vagrant status`
+    vagrant_out = run_command('vagrant status')[:output]
     list = vagrant_out.split("\n")
 =begin
   Vagrant prints node info in next format:
@@ -115,9 +118,9 @@ class Network
         raise 'Configuration with such name does not exists'
       end
       Dir.chdir configPath
-      cmd = "vagrant ssh-config #{node_arg} | grep IdentityFile"
-      vagrant_out = `#{cmd}`
-      raise "Command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
+      command_result = ShellCommands.run_command($out, "vagrant ssh-config #{node_arg} | grep IdentityFile")
+      vagrant_out = command_result[:output]
+      raise "Command #{cmd} exit with non-zero exit code: #{command_result[:value].exitstatus}" unless command_result[:value].success?
       tempHash = { 'key' => vagrant_out.split(' ')[1].sub(/^"/, '').sub(/"$/, '') }
       result.push(tempHash)
       Dir.chdir pwd
@@ -284,7 +287,7 @@ class Network
   # @param node [String] name of the node to get information
   # @return [String] name of the user
   def self.get_ssh_user_name(node)
-    vagrant_out = `vagrant ssh-config #{node} | grep User`.strip
+    vagrant_out = ShellCommands.run_command($out, "vagrant ssh-config #{node} | grep User")[:output].strip
     vagrant_out.split(/\s+/)[1]
   end
 end
@@ -324,10 +327,15 @@ def collectConfigurationNetworkInfo(configuration,node_one='')
     configurationNetworkInfo["#{node}_hostname"] = $session.getSSH(configPath, COMMAND_HOSTNAME)[0].chomp
     if $session.ipv6
       provider = get_provider(configuration)
+      command = ''
       if provider == 'libvirt'
-        configurationNetworkInfo["#{node}_network6"] = in_dir(configuration){`vagrant ssh #{node} -- #{LIBVITR_IPV6}`.chop}
+        command = LIBVIRT_IPV6
       elsif provider == 'docker'
-        configurationNetworkInfo["#{node}_network6"] = in_dir(configuration){`vagrant ssh #{node} -- #{DOCKER_IPV6}`.chop}
+        command = DOCKER_IPV6
+      end
+      unless command.empty?
+        result = ShellCommands.run_command_in_dir($out, "vagrant ssh #{node} -- #{command}", configuration)
+        configurationNetworkInfo["#{node}_network6"] = result[:output].chop
       end
     end
   end
