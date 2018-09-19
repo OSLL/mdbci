@@ -217,6 +217,9 @@ int main(int argc, char *argv[], char *envp[]) {
     // Set called working directory to the OLD_CWD environment variable
     SET_NEW_ENV(old_cwd, LINE_SIZE, "OLD_CWD=%s", current_working_directory);
 
+    // Notify that we are running inside the appimage
+    putenv("APPIMAGE=true");
+
     // Undefine the GEM_PATH and GEM_HOME variables
     unsetenv("GEM_PATH");
     unsetenv("GEM_HOME");
