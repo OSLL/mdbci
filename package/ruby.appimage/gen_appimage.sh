@@ -30,13 +30,11 @@ replace_paths_in_file () {
 insert_run_header() {
     local file="$1"
     read -d '' header <<'HEADER' || true
-#!/bin/sh
+#!/bin/bash
 # -*- ruby -*-
 bindir=$( cd "${0%/*}"; pwd )
 executable=$bindir/${0##*/}
-unset GEM_PATH
-unset GEM_HOME
-exec "$bindir/ruby" -x "$executable" "$@"
+exec ruby -x "$executable" "$@"
 HEADER
     ex -sc "1i|$header" -cx $file
 }
@@ -113,7 +111,6 @@ do
     insert_run_header "$APP_DIR/usr/bin/$SCRIPT"
 done
 
-
 popd # Leaving build subdirectory when calling external script
 
 # Configuring CPATH variable
@@ -123,8 +120,6 @@ export LDFLAGS="-L${APP_DIR}/usr/lib -L${APP_DIR}/usr/lib64"
 export PATH="$APP_DIR/usr/bin:$PATH"
 export CPATH="$APP_DIR/usr/include"
 export LD_LIBRARY_PATH="$APP_DIR/usr/lib"
-unset GEM_PATH
-unset GEM_HOME
 
 if [ "$EXTRA_APP" == "true" ]; then
     echo "--> installing extra application"

@@ -202,6 +202,7 @@ int main(int argc, char *argv[]) {
     // Undefine the GEM_PATH and GEM_HOME variables
     unsetenv("GEM_PATH");
     unsetenv("GEM_HOME");
+    unsetenv("GEM_ROOT");
 
     /* Run */
     ret = execvp(exe, outargptrs);
