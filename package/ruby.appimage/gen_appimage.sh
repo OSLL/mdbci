@@ -132,7 +132,7 @@ pushd $BUILD_DIR # Going back in order for scripts to work
 
 echo "--> remove unused files"
 # remove doc, man, ri
-rm -rf $APP_DIR/usr/share
+# rm -rf $APP_DIR/usr/share
 # remove ruby headers
 rm -rf $APP_DIR/usr/include
 
@@ -162,6 +162,14 @@ cp $ROOT_DIR/$APP.desktop $ROOT_DIR/$APP.png .
 echo "--> copy dependencies"
 copy_deps
 copy_deps # Double time to be sure
+
+if [ -d ${APP_DIR}/home ]; then
+  # Move home directory to the concrete place
+  echo "--> copying home directory"
+  rm -rf ${ROOT_DIR}/out/home
+  mkdir -p ${ROOT_DIR}/out
+  mv ${APP_DIR}/home ${ROOT_DIR}/out
+fi
 
 echo "--> move the libraries to usr/bin"
 move_lib

@@ -4,6 +4,7 @@ bindir=$( cd "${0%/*}"; pwd )
 executable=$bindir/${0##*/}
 unset GEM_PATH
 unset GEM_HOME
+# switch to correct gem home before running the executable
 export APP_DIR=$( cd $bindir/..; pwd )
 . $APP_DIR/share/gem_home/gem_home.sh
 gem_home $APP_DIR/../vagrant-gems

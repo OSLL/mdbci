@@ -3,11 +3,12 @@
 insert_mdbci_run_header() {
     local file="$1"
     read -d '' header <<'HEADER' || true
-#!/bin/sh
+#!/bin/bash
 # -*- ruby -*-
 bindir=$( cd "${0%/*}"; pwd )
 executable=$bindir/${0##*/}
 # switch to correct gem home before running the executable
+export APP_DIR=$( cd $bindir/..; pwd )
 . $APP_DIR/share/gem_home/gem_home.sh
 gem_home $APP_DIR/../mdbci-gems
 exec ruby -x "$executable" "$@"
@@ -57,8 +58,6 @@ popd
 echo "--> installing vagrant"
 mkdir -p $APP_DIR/vagrant-gems
 gem_home $APP_DIR/vagrant-gems
-gem env
-sleep 10
 VAGRANT_REV=2.1.5
 
 # Download Vagrant and extract
@@ -96,3 +95,7 @@ chmod 755 ${APP_DIR}/usr/bin/vagrant
 sudo apt-get install -y libxml2-dev libcurl4-openssl-dev libvirt-dev
 vagrant plugin install vagrant-libvirt --plugin-version 0.0.43
 vagrant plugin install vagrant-aws --plugin-version 0.7.2
+
+# Copy the .vagrant.d to the ${APP_DIR}/home/
+mkdir -p ${APP_DIR}/home
+cp -r ~/.vagrant.d ${APP_DIR}/home
