@@ -57,7 +57,7 @@ int filter(const struct dirent *dir) {
     return p && !strcmp(p, ".desktop");
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[], char *envp[]) {
     char *appdir = dirname(realpath("/proc/self/exe", NULL));
     if (!appdir)
         die("Could not access /proc/self/exe\n");
@@ -162,6 +162,24 @@ int main(int argc, char *argv[]) {
     ret = chdir(usr_in_appdir);
     if (ret != 0)
         die("Could not cd into %s\n", usr_in_appdir);
+
+    // store environment variables for vagrant
+    const char *vagrant_prefix = "VAGRANT_OLD_ENV_";
+    size_t vagrant_prefix_size = strlen(vagrant_prefix);
+    char **current_variable = envp;
+    while(*current_variable) {
+      int equal_position = (int)(strchr(*current_variable, '=') - *current_variable);
+      char *new_name = calloc(vagrant_prefix_size + equal_position + 1, sizeof(char));
+      strncpy(new_name, vagrant_prefix, vagrant_prefix_size);
+      strncpy(new_name + vagrant_prefix_size, *current_variable, equal_position);
+      size_t current_variable_size = strlen(*current_variable);
+      char *new_value = calloc(current_variable_size, sizeof(char));
+      strncpy(new_value, *current_variable + equal_position + 1, current_variable_size);
+      setenv(new_name, new_value, 1);
+      free(new_name);
+      free(new_value);
+      current_variable++;
+    }
 
     // set environment variables
     char *old_env;

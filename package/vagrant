@@ -25,10 +25,6 @@ new_env = {
   'VAGRANT_INSTALLER_VERSION' => '2',
   'VAGRANT_INSTALLER_EMBEDDED_DIR' => application_dir,
 }
-# Store the "current" environment so Vagrant can restore it when shelling out.
-ENV.each_pair do |key, value|
-  new_env["VAGRANT_OLD_ENV_#{key}"] = value
-end
 
 new_env.each_pair do |key, value|
   ENV[key] = value
