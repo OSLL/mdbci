@@ -11,6 +11,7 @@ require 'set'
 require_relative 'base_command'
 require_relative '../out'
 require_relative '../models/configuration.rb'
+require_relative '../services/shell_commands'
 
 # Command generates
 class GenerateCommand < BaseCommand
@@ -202,8 +203,8 @@ end
         raise "Uncknown platform"
     end
     FileUtils.cp_r dockerfile_path, node_path
-    `sed -i 's/###PLATFORM###/#{platform}/g' #{node_path}/Dockerfile`
-    `sed -i 's/###PLATFORM_VERSION###/#{platform_version}/g' #{node_path}/Dockerfile`
+    ShellCommands.run_command($out, "sed -i 's/###PLATFORM###/#{platform}/g' #{node_path}/Dockerfile")
+    ShellCommands.run_command($out, "sed -i 's/###PLATFORM_VERSION###/#{platform_version}/g' #{node_path}/Dockerfile")
   end
 
   def self.generate_aws_tag(hash)
