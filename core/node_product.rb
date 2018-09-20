@@ -1,28 +1,25 @@
 require 'scanf'
 require 'yaml'
 require 'shellwords'
-
-require_relative  '../core/out'
+require_relative 'out'
 
 
 class NodeProduct
   #
   #
-  @@CLEAN_ALL = "sudo yum clean all"
+  CLEAN_ALL = "sudo yum clean all"
 
-  def NodeProduct.getProductRepoParameters(product, box)
-
+  def self.get_product_repo_parameters(product, box)
     repo = nil
-    repoName = nil
 
     if !product['repo'].nil?
-      repoName = product['repo']
-      unless $session.repos.knownRepo?(repoName)
-        $out.warning 'Unknown key for repo '+repoName.to_s+' will be skipped'
+      repo_name = product['repo']
+      unless $session.repos.knownRepo?(repo_name)
+        $out.warning 'Unknown key for repo '+repo_name.to_s+' will be skipped'
         return "#NONE, due invalid repo name \n"
       end
-      repo = $session.repos.getRepo(repoName)
-      product_name = $session.repos.productName(repoName)
+      repo = $session.repos.getRepo(repo_name)
+      product_name = $session.repos.productName(repo_name)
     else
       product_name = product['name']
     end
@@ -36,7 +33,7 @@ class NodeProduct
   #
   # Get product repo params from repo manager (repo.d/)
   # platform format = platform_name^platform_version
-  def NodeProduct.getProductRepo(product_name, product_version, platform)
+  def self.get_product_repo(product_name, product_version, platform)
     repokey = product_name+'@'+product_version+'+'+ platform
     repo = $session.repos.getRepo(repokey)
     $out.info 'Repo key is '+repokey + ' ... ' + (repo.nil? ? 'NOT_FOUND' : 'FOUND')
@@ -53,7 +50,7 @@ class NodeProduct
   # P.S. Require to add NOPASSWD:ALL to /etc/sudoers for a mdbci node user!
   # for example, vagranttest ALL=(ALL) NOPASSWD:ALL
   #
-  def self.setupProductRepo(args)
+  def self.setup_product_repo(args)
     pwd = Dir.pwd
     raise 'Configuration name is required' if args.nil?
     args = args.split('/')
@@ -73,13 +70,13 @@ class NodeProduct
           raise "Platform for box #{box} is not found" if full_platform == "UNKNOWN"
           # get product repo
           if $session.nodeProduct == 'maxscale'
-            repo = getProductRepo('maxscale', 'default', full_platform)
+            repo = get_product_repo('maxscale', 'default', full_platform)
           else
-            repo = getProductRepo($session.nodeProduct, $session.productVersion, full_platform)
+            repo = get_product_repo($session.nodeProduct, $session.productVersion, full_platform)
           end
           # execute command
           raise 'No such product for this node!' if repo.nil?
-          command = setupProductRepoToMdbciCmd(full_platform, repo)
+          command = setup_product_repo_to_mdbci_cmd(full_platform, repo)
           cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
           $out.info "Running #{cmd} on #{args[0]}/#{args[1]}"
           vagrant_out = `#{cmd}`
@@ -97,13 +94,13 @@ class NodeProduct
         raise  "Platform for box #{box} not found" if full_platform == "UNKNOWN"
         # get product repo
         if $session.nodeProduct == 'maxscale'
-          repo = getProductRepo('maxscale', 'default', full_platform)
+          repo = get_product_repo('maxscale', 'default', full_platform)
         else
-          repo = getProductRepo($session.nodeProduct, $session.productVersion, full_platform)
+          repo = get_product_repo($session.nodeProduct, $session.productVersion, full_platform)
         end
         # execute command
         raise 'No such product for this node!' if repo.nil?
-        command = setupProductRepoToMdbciCmd(full_platform, repo)
+        command = setup_product_repo_to_mdbci_cmd(full_platform, repo)
         cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
         $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
         vagrant_out = `#{cmd}`
@@ -120,13 +117,13 @@ class NodeProduct
           raise "platform for node #{node[0]} not found" if full_platform.nil?
           # get product repo
           if $session.nodeProduct == 'maxscale'
-            repo = getProductRepo('maxscale', 'default', full_platform)
+            repo = get_product_repo('maxscale', 'default', full_platform)
           else
-            repo = getProductRepo($session.nodeProduct, $session.productVersion, full_platform)
+            repo = get_product_repo($session.nodeProduct, $session.productVersion, full_platform)
           end
           # execute command
           raise 'No such product for this node!' if repo.nil?
-          cmd = setupProductRepoCmd(full_platform, node[0], repo)
+          cmd = setup_product_repo_cmd(full_platform, node[0], repo)
           vagrant_out = `#{cmd}`
           $out.info vagrant_out
           raise "command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
@@ -138,25 +135,25 @@ class NodeProduct
         raise "Platform for node #{args[1]} not found" if full_platform.nil?
         # get product repo
         if $session.nodeProduct == 'maxscale'
-          repo = getProductRepo('maxscale', 'default', full_platform)
+          repo = get_product_repo('maxscale', 'default', full_platform)
         else
-          repo = getProductRepo($session.nodeProduct, $session.productVersion, full_platform)
+          repo = get_product_repo($session.nodeProduct, $session.productVersion, full_platform)
         end
         # execute command
         raise 'No such product for this node!' if repo.nil?
-        cmd = setupProductRepoCmd(full_platform, node[0], repo)
+        cmd = setup_product_repo_cmd(full_platform, node[0], repo)
         vagrant_out = `#{cmd}`
         $out.info vagrant_out
         raise "command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
       end
     end
     Dir.chdir pwd
-    return 0
+    0
   end
   #
   #
 
-  def NodeProduct.suseSetupProductRepoCmd(repo)
+  def self.suse_setup_product_repo_cmd(repo)
     repo_path = "/etc/zypp/repos.d/#{$session.nodeProduct.to_s}.repo"
     setup_suse_repo = "sudo dd if=/dev/null of=#{repo_path} && " +
         "sudo echo -e \"[#{Shellwords.escape($session.nodeProduct)}]\\n\" | sudo tee -a #{repo_path} && " +
@@ -169,7 +166,7 @@ class NodeProduct
         "#{setup_suse_repo}"
   end
 
-  def NodeProduct.setupProductRepoCmd(full_platform, node_name, repo)
+  def self.setup_product_repo_cmd(full_platform, node_name, repo)
     platform = full_platform.split('^')
     $out.info 'Setup '+$session.nodeProduct.to_s+' repo on '+platform[0].to_s
     if platform[0] == 'ubuntu' || platform[0] == 'debian'
@@ -183,15 +180,15 @@ class NodeProduct
                        + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
                        + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
                        + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-                       + @@CLEAN_ALL+' && sudo yum -y update '+$session.nodeProduct.to_s+'"'
+                       + CLEAN_ALL+' && sudo yum -y update '+$session.nodeProduct.to_s+'"'
     elsif platform[0] == 'sles' || platform[0] == 'suse' || platform[0] == 'opensuse'
-      cmd_install_repo = "vagrant ssh #{node_name} -c '#{suseSetupProductRepoCmd(repo)}'"
+      cmd_install_repo = "vagrant ssh #{node_name} -c '#{suse_setup_product_repo_cmd(repo)}'"
     end
-    return cmd_install_repo
+    cmd_install_repo
   end
 
   # for #{ ssh ... } version
-  def NodeProduct.setupProductRepoToMdbciCmd(full_platform, repo)
+  def self.setup_product_repo_to_mdbci_cmd(full_platform, repo)
     platform = full_platform.split('^')
     $out.info 'Setup '+$session.nodeProduct.to_s+' repo on '+platform[0].to_s
     if platform[0] == 'ubuntu' || platform[0] == 'debian'
@@ -205,11 +202,11 @@ class NodeProduct
                        + 'sudo echo -e \'['+$session.nodeProduct.to_s+']'+'\n'+'name='+$session.nodeProduct.to_s+'\n'+'baseurl='+Shellwords.escape(repo['repo'].to_s)+'\n'\
                        + 'gpgkey='+Shellwords.escape(repo['repo_key'].to_s)+'\n'\
                        + 'gpgcheck=1\' | sudo tee -a /etc/yum.repos.d/'+$session.nodeProduct.to_s+'.repo && '\
-                       + @@CLEAN_ALL+' && sudo yum update '+$session.nodeProduct.to_s+''
+                       + CLEAN_ALL+' && sudo yum update '+$session.nodeProduct.to_s+''
     elsif platform[0] == 'sles' || platform[0] == 'suse' || platform[0] == 'opensuse'
-      cmd_install_repo = suseSetupProductRepoCmd(repo)
+      cmd_install_repo = suse_setup_product_repo_cmd(repo)
     end
-    return cmd_install_repo
+    cmd_install_repo
   end
   #
   #
@@ -219,7 +216,7 @@ class NodeProduct
   # @param platform [String] name of the determined platform
   # @param products [Hash] product configuration table
   # @return [String] pagkages or nil if search did not succeed
-  def NodeProduct.validateProduct(platform, products)
+  def self.validate_product(platform, products)
     product_to_install = $session.nodeProduct
     product_version = $session.productVersion
 
@@ -231,10 +228,10 @@ class NodeProduct
       return nill unless product_config.key?(product_version)
       return product_config[product_version]
     end
-    return product_config
+    product_config
   end
 
-  def self.installProduct(args)
+  def self.install_product(args)
     pwd = Dir.pwd
     # Loading file with product packages to every system
     products = YAML.load(File.read($session.find_configuration('products.yaml')))
@@ -251,12 +248,12 @@ class NodeProduct
           mdbci_params = $session.boxes.getBox(box)
           raise "Box is not found for #{node[0]}" if mdbci_params.nil?
           platform = $session.boxes.platformKey(box).split('^')
-          packages = validateProduct(platform[0], products)
+          packages = validate_product(platform[0], products)
           version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
           raise "Product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}" if packages.nil?
           $out.info "Install #{$session.nodeProduct} repo to #{platform[0]}"
           # execute command
-          command = installProductToMdbciCmd(platform[0], packages)
+          command = install_product_to_mdbci_cmd(platform[0], packages)
           cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
           $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
           vagrant_out = `#{cmd}`
@@ -270,7 +267,7 @@ class NodeProduct
         raise "Box parameter is not found for #{args[1]}/#{args[0]}" if box.empty?
         mdbci_params = $session.boxes.getBox(box)
         platform = $session.boxes.platformKey(box).split('^')
-        packages = validateProduct(platform[0], products)
+        packages = validate_product(platform[0], products)
         if packages == nil
           version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
           $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}"
@@ -278,7 +275,7 @@ class NodeProduct
         end
         $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0].to_s
         # execute command
-        command = installProductToMdbciCmd(platform[0], packages)
+        command = install_product_to_mdbci_cmd(platform[0], packages)
         cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
         $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
         vagrant_out = `#{cmd}`
@@ -292,12 +289,12 @@ class NodeProduct
         raise "nodes not  found in #{args[0]}" if $session.templateNodes.empty?
         $session.templateNodes.each do |node|
           platform = $session.loadNodePlatform(node[0].to_s).split('^')
-          packages = validateProduct(platform[0], products)
+          packages = validate_product(platform[0], products)
           version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
           raise "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}" if packages.nil?
           $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0]
           # execute command
-          cmd = installProductCmd(platform[0], node[0], packages)
+          cmd = install_product_cmd(platform[0], node[0], packages)
           vagrant_out = `#{cmd}`
           $out.info vagrant_out
           raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}" if $?.exitstatus != 0
@@ -306,46 +303,47 @@ class NodeProduct
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
         raise "node #{args[1]} not found in #{args[0]}" if node.nil?
         platform = $session.loadNodePlatform(node[0].to_s).split('^')
-        packages = validateProduct(platform[0], products)
+        packages = validate_product(platform[0], products)
         raise "product #{$session.nodeProduct} not found for platform #{platform[0]}" if packages.nil?
         $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
         # execute command
-        cmd = installProductCmd(platform[0], node[0], packages)
+        cmd = install_product_cmd(platform[0], node[0], packages)
         vagrant_out = `#{cmd}`
         $out.info vagrant_out
         raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}" if $?.exitstatus != 0
       end
     end
     Dir.chdir pwd
-    return 0
+    0
   end
 
   # install Maxscale product command for Vagrant nodes
-  def NodeProduct.installProductCmd(platform, node_name, packages)
+  def self.install_product_cmd(platform, node_name, packages)
     if platform == 'ubuntu' || platform == 'debian'
       cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo DEBIAN_FRONTEND=noninteractive apt-get -y install '+ packages +'"'
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
-      cmd_install_product = 'vagrant ssh '+node_name+' -c "'+ @@CLEAN_ALL +' && sudo yum -y install '+ packages + '"'
+      cmd_install_product = 'vagrant ssh '+node_name+' -c "'+ CLEAN_ALL + ' && sudo yum -y install '+ packages + '"'
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
       packages_with_repository = ''
       packages.split(' ').each { |package| packages_with_repository += $session.nodeProduct + ":" + package + ' ' }
       cmd_install_product = 'vagrant ssh '+node_name+' -c "sudo zypper --non-interactive remove MariaDB*; sudo zypper --non-interactive install -f '+ packages_with_repository +'"'
     end
-    return cmd_install_product
+    cmd_install_product
   end
+
   #
   # #{ ssh ... } version of install Maxscale product on a mdbci nodes
-  def NodeProduct.installProductToMdbciCmd(platform, packages)
+  def self.install_product_to_mdbci_cmd(platform, packages)
     if platform == 'ubuntu' || platform == 'debian'
       cmd_install_product = 'sudo DEBIAN_FRONTEND=noninteractive apt-get -y install '+ packages
     elsif platform == 'rhel' || platform == 'centos' || platform == 'fedora'
-      cmd_install_product = @@CLEAN_ALL + '&& sudo yum -y install '+ packages
+      cmd_install_product = CLEAN_ALL + '&& sudo yum -y install '+ packages
     elsif platform == 'sles' || platform == 'suse' || platform == 'opensuse'
       packages_with_repository = ''
       packages.split(' ').each { |package| packages_with_repository += $session.nodeProduct + ":" + package + ' ' }
       cmd_install_product = 'sudo zypper --non-interactive remove MariaDB*; sudo zypper --non-interactive install -f '+ packages_with_repository
     end
-    return cmd_install_product
+    cmd_install_product
   end
 
 end

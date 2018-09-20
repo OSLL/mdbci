@@ -531,13 +531,13 @@ EOF
       command = HelpCommand.new(ARGV, self, $out)
       exit_code = command.execute
     when 'install_product'
-      exit_code = NodeProduct.installProduct(ARGV.shift)
+      exit_code = NodeProduct.install_product(ARGV.shift)
     when 'public_keys'
       exit_code = publicKeys(ARGV.shift)
     when 'setup'
       exit_code = setup(ARGV.shift)
     when 'setup_repo'
-      exit_code = NodeProduct.setupProductRepo(ARGV.shift)
+      exit_code = NodeProduct.setup_product_repo(ARGV.shift)
     when 'show'
       exit_code = show(ARGV)
     when 'snapshot'
