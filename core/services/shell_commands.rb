@@ -3,13 +3,13 @@
 # This is the mixin that executes commands on the shell, logs it.
 # Mixin depends on @ui instance variable that points to the logger.
 module ShellCommands
-  PREFIX="VAGRANT_OLD_ENV_"
+  PREFIX = 'MDBCI_OLD_ENV_'.freeze
 
-  if ENV['APPIMAGE'] != 'true'
-    @@env = ENV
-  else
-    @@env = {}
-  end
+  @@env = if ENV['APPIMAGE'] != 'true'
+            ENV
+          else
+            {}
+          end
 
   # Get the environment for external service to run in
   def self.environment
@@ -24,14 +24,15 @@ module ShellCommands
 
   # Execute the command, log stdout and stderr
   #
+  # @param logger [Out] logger to log information to
   # @param command [String] command to run
-  # @param show_idle_notifications [Boolean] show notifications when there is no
+  # @param show_notifications [Boolean] show notifications when there is no
   # @param options [Hash] options that are passed to popen3 command.
   # @param env [Hash] environment parameters that are passed to popen3 command.
   # @return [Process::Status] of the run command
   # rubocop:disable Metrics/MethodLength
-  def self.run_command_and_log(ui, command, show_idle_notifications = false, options = {}, env = ShellCommands.environment)
-    ui.info "Invoking command: #{command}"
+  def self.run_command_and_log(logger, command, show_notifications = false, options = {}, env = ShellCommands.environment)
+    logger.info "Invoking command: #{command}"
     Open3.popen3(env, command, options) do |stdin, stdout, stderr, wthr|
       stdin.close
       stdout_text = ''
@@ -39,19 +40,19 @@ module ShellCommands
       loop do
         wait_streams = []
         wait_streams << read_stream(stdout) do |line|
-          ui.info(line)
+          logger.info(line)
           stdout_text += line
         end
         wait_streams << read_stream(stderr) do |line|
-          ui.error(line)
+          logger.error(line)
           stderr_text += line
         end
         alive_streams = wait_streams.reject(&:nil?)
         break if alive_streams.empty?
         result = IO.select(alive_streams, nil, nil, 300)
-        if result.nil? && show_idle_notifications
-          ui.error("The running command was inactive for 5 minutes.")
-          ui.error("The command is: '#{command}'.")
+        if result.nil? && show_notifications
+          logger.error("The running command was inactive for 5 minutes.")
+          logger.error("The command is: '#{command}'.")
         end
       end
       {
@@ -64,16 +65,16 @@ module ShellCommands
   # rubocop:enable Metrics/MethodLength
 
   # Wrapper method for the module method
-  def run_command_and_log(command, show_idle_notifications = false, options = {}, env = ShellCommands.environment)
-    ShellCommands.run_command_and_log(@ui, command, show_idle_notifications, options, env)
+  def run_command_and_log(command, show_noticifacions = false, options = {}, env = ShellCommands.environment)
+    ShellCommands.run_command_and_log(@ui, command, show_noticifacions, options, env)
   end
 
   # Run the command, gather the standard output and save the process results
   # @param command [String] command to run
   # @param options [Hash] parameters to pass to Open3 method
   # @param env [Hash] environment to run command in
-  def self.run_command(ui, command, options = {}, env = environment)
-    ui.info("Invoking command: #{command}")
+  def self.run_command(logger, command, options = {}, env = environment)
+    logger.info("Invoking command: #{command}")
     output, status = Open3.capture2(env, command, options)
     {
       value: status,
@@ -96,15 +97,15 @@ module ShellCommands
 
   # Execute the command in the specified directory.
   #
-  # @param ui [Out] logger to provide data to
+  # @param logger [Out] logger to provide data to
   # @param command [String] command to run
   # @param directory [String] path to the working directory where execution is happening
   # @param log [Boolean] whether to log to stdout or not
-  def self.run_command_in_dir(ui, command, directory, log = true)
+  def self.run_command_in_dir(logger, command, directory, log = true)
     if log
-      run_command_and_log(ui, command, false, { chdir: directory })
+      run_command_and_log(logger, command, false, { chdir: directory })
     else
-      run_command(ui, command, { chdir: directory })
+      run_command(logger, command, { chdir: directory })
     end
   end
 
@@ -121,22 +122,20 @@ module ShellCommands
   end
 
   # Execute the command in the specified directory, log stdout and stderr.
-  # If command was not successfull, then print it onto error stream.
+  # If command was not successful, then print it onto error stream.
   #
   # @param command [String] command to run
-  # @param dir [String] directory to run command in
+  # @param directory [String] directory to run command in
   # @param message [String] message to display in case of failure
   def check_command_in_dir(command, directory, message)
     check_command(command, message, { chdir: directory })
   end
 
-  private
-
   # Method reads the data from the stream in the non-blocking manner.
-  # Each read string is yield to the assosiated block.
+  # Each read string is yield to the associated block.
   #
   # @param stream [IO] input stream to read data from.
-  # @return [IO] stream or nil if stream has ended. Returninng nil is crusial
+  # @return [IO] stream or nil if stream has ended. Returning nil is crucial
   # as we do not have any other information on when stream has ended.
   def self.read_stream(stream)
     begin
