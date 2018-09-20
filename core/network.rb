@@ -187,7 +187,7 @@ class Network
     duration = 5
     while attempts > 0
         begin
-           node.getIp(node.provider, false)
+           node.get_ip(node.provider, false)
            break
         rescue Exception => e
            Dir.chdir pwd
@@ -269,7 +269,7 @@ class Network
 
   def self.getNodeIP(node)
     result = Hash.new("")
-    exit_code = node.getIp(node.provider, true)
+    exit_code = node.get_ip(node.provider, true)
     raise "Can not get IP for #{node.name} in #{dir}" if exit_code != 0
     result["node"] = node.name.to_s
     result["ip"] = node.ip.to_s
