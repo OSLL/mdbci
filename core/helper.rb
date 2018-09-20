@@ -115,29 +115,17 @@ end
 
 # method returns bash command exit code
 def execute_bash(cmd, silent = false)
-  output = String.new
-  process_status = nil
-  begin
-    process_status = Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
-      stdin.close
-      stdout.each do |line|
-        out_info line unless silent
-        output = output + line
-      end
-      stdout.close
-      stderr.each { |line| out_error line }
-      stderr.close
-      wait_thr.value.exitstatus
-    end
-    raise unless process_status == 0
-  rescue Exception=>e
-    msg = ''
-    msg = ", message: #{e.message}" unless e.message.to_s.empty?
-    error_msg = "#{cmd}: #{NON_ZERO_BASH_EXIT_CODE_ERROR} - #{process_status} in #{Dir.pwd}#{msg}"
-    out_error error_msg
+  result = if silent
+             ShellCommands.run_command($out, cmd)
+           else
+             ShellCommands.run_command_and_log($out, cmd)
+           end
+  unless result[:value].success?
+    error_msg = "#{cmd}: #{NON_ZERO_BASH_EXIT_CODE_ERROR} - #{result[:value].exitstatus} in #{Dir.pwd}#{msg}"
+    $out.error(error_msg)
     raise error_msg
   end
-  return output
+  result[:output]
 end
 
 def destroy_config(config_name)
