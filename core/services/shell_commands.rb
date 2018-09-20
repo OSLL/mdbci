@@ -91,8 +91,9 @@ module ShellCommands
   #
   # @param command [String] command to run
   # @param directory [String] path to the directory to run the command
-  def run_command_in_dir(command, directory)
-    ShellCommands.run_command_and_log(@ui, command, directory)
+  # @param log [Boolean] whether to print output or not
+  def run_command_in_dir(command, directory, log = true)
+    ShellCommands.run_command_in_dir(@ui, command, directory, log)
   end
 
   # Execute the command in the specified directory.

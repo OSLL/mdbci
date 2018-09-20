@@ -21,6 +21,7 @@ require_relative 'network'
 require_relative 'out'
 require_relative 'repo_manager'
 require_relative 'services/aws_service'
+require_relative 'services/shell_commands'
 
 # Currently it is the GOD object that contains configuration and manages the commands that should be run.
 # These responsibilites should be split between several classes.
@@ -139,8 +140,7 @@ EOF
     case what
       when 'boxes'
         $out.info 'Adding boxes to vagrant'
-        raise "cannot adding boxes: directory not exist" unless Dir.exists?($session.boxes_dir)
-        raise "cannot adding boxes: boxes are not found in #{$session.boxes_dir}" unless File.directory?($session.boxes_dir)
+        raise 'Cannot load boxes: directory does not exist' unless Dir.exist?(@boxes_dir) && File.directory?(@boxes_dir)
         @boxes.boxesManager.each do |key, value|
           next if value['provider'] == "aws" # skip 'aws' block
           # TODO: add aws dummy box
@@ -154,18 +154,17 @@ EOF
             puts "vagrant box add --provider #{value['provider']} "+value['box'].to_s
             shell = "vagrant box add --provider #{value['provider']} "+value['box'].to_s
           end
-          shellCommand = `#{shell} 2>&1` # THERE CAN BE DONE CUSTOM EXCEPTION
-
-          puts "#{shellCommand}\n"
-          # just one soft exeption - box already exist
-          if $?!=0 && shellCommand[/attempting to add already exists/]==nil
+          result = ShellCommands.run_command_and_log($out, "#{shell} 2>&1")
+          command_output = result[:output]
+          # just one soft exception - box already exist
+          if !result[:value].success? && command_output[/attempting to add already exists/].nil?
             raise "failed command: #{shell}"
           end
         end
       else
         raise "Cannot setup #{what}"
     end
-    return 0
+    0
   end
 
   def sudo(args)
@@ -173,18 +172,13 @@ EOF
     config = args.split('/')
     raise 'config does not exists' unless Dir.exist?(config[0])
     raise 'node name is required' if config[1].to_s.empty?
-    pwd = Dir.pwd
-    Dir.chdir config[0]
-    cmd = 'vagrant ssh '+config[1]+' -c "/usr/bin/sudo '+$session.command+'"'
-    $out.info 'Running ['+cmd+'] on '+config[0]+'/'+config[1]
-    vagrant_out = `#{cmd}`
-    exit_code = $?.exitstatus
-    $out.out vagrant_out
-    Dir.chdir pwd
-    if exit_code != 0
+    cmd = "vagrant ssh #{config[1]} -c '/usr/bin/sudo #{@command}'"
+    $out.info("Running #{cmd} on #{config[0]}/#{config[1]}")
+    result = ShellCommands.run_command_in_dir($out, cmd, config[0])
+    unless result[:value].success?
       raise "command '#{cmd}' exit with non-zero code: #{exit_code}"
     end
-    return 0
+    0
   end
 
   # load template nodes
@@ -281,23 +275,21 @@ EOF
     return cmd
   end
 
-  def runSSH(cmd,params)
+  def runSSH(cmd, params)
     dir = params[0]
-    node_arg =  params[1]
+    node_arg = params[1]
     $out.info 'Running ['+cmd+'] on '+dir.to_s+'/'+node_arg.to_s
-    vagrant_out = `#{cmd}`
-    if $?.exitstatus!=0
-     $out.out vagrant_out
-     raise "'#{cmd}' command returned non-zero exit code: (#{$?.exitstatus})"
+    result = ShellCommands.run_command_and_log($out, cmd)
+    unless result[:value].success?
+      raise "'#{cmd}' command returned non-zero exit code: (#{result[:value].exitstatus})"
     end
-    return vagrant_out.to_s
+    result[:output]
   end
 
   def platformKey(box_name)
     key = $session.boxes.boxesManager.keys.select { |value| value == box_name }
-    return key.nil? ? "UNKNOWN" : $session.boxes.boxesManager[key[0]]['platform']+'^'+$session.boxes.boxesManager[key[0]]['platform_version']
+    key.nil? ? "UNKNOWN" : $session.boxes.boxesManager[key[0]]['platform']+'^'+$session.boxes.boxesManager[key[0]]['platform_version']
   end
-
 
   def showBoxKeys
     values = Array.new
@@ -308,7 +300,7 @@ EOF
       raise "box key #{$session.field} is not found"
     end
     puts values.uniq
-    return 0
+    0
   end
 
   def getPlatfroms
@@ -654,8 +646,8 @@ EOF
                           + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
-          $out.info `#{cmd}`
-          if $?.exitstatus!=0
+          result = ShellCommands.run_command_and_log($out, cmd)
+          unless result[:value].success?
             raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
           end
         end
@@ -677,9 +669,8 @@ EOF
                           + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
-          $out.info `#{cmd}`
-
-          if $?.exitstatus != 0
+          result = ShellCommands.run_command_and_log($out, cmd)
+          unless result[:value].success?
             raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
           end
         else
@@ -705,8 +696,8 @@ EOF
           # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
           cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
           $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
-          $out.info `#{cmd}`
-          if $?.exitstatus!=0
+          result = ShellCommands.run_command_and_log($out, cmd)
+          unless result[:value].success?
             raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
           end
         end
@@ -722,8 +713,8 @@ EOF
         # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
         cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
         $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
-        $out.info `#{cmd}`
-        if $?.exitstatus!=0
+        result = ShellCommands.run_command_and_log($out, cmd)
+        unless result[:value].success?
           raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
         end
       end
