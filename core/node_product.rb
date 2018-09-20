@@ -2,12 +2,10 @@ require 'scanf'
 require 'yaml'
 require 'shellwords'
 require_relative 'out'
-
+require_relative 'services/shell_commands'
 
 class NodeProduct
-  #
-  #
-  CLEAN_ALL = "sudo yum clean all"
+  CLEAN_ALL = 'sudo yum clean all'
 
   def self.get_product_repo_parameters(product, box)
     repo = nil
@@ -24,26 +22,21 @@ class NodeProduct
       product_name = product['name']
     end
 
-    if repo.nil?; repo = $session.repos.findRepo(product_name, product, box); end
-    if repo.nil?; return nil; end
-
-    return repo
+    if repo.nil?
+      repo = $session.repos.findRepo(product_name, product, box)
+    end
+    repo
   end
-  #
-  #
+
   # Get product repo params from repo manager (repo.d/)
   # platform format = platform_name^platform_version
   def self.get_product_repo(product_name, product_version, platform)
     repokey = product_name+'@'+product_version+'+'+ platform
     repo = $session.repos.getRepo(repokey)
     $out.info 'Repo key is '+repokey + ' ... ' + (repo.nil? ? 'NOT_FOUND' : 'FOUND')
-
-    if repo.nil?; return nil; end
-
-    return repo
+    repo
   end
-  #
-  #
+
   # Setup repo for product to nodes (install product repo and update it)
   # Supported products: Maxscale
   #
@@ -79,9 +72,10 @@ class NodeProduct
           command = setup_product_repo_to_mdbci_cmd(full_platform, repo)
           cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
           $out.info "Running #{cmd} on #{args[0]}/#{args[1]}"
-          vagrant_out = `#{cmd}`
+          result = ShellCommands.run_command($out, command)
+          vagrant_out = result[:output]
           $out.info vagrant_out
-          raise "command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
+          raise "command #{cmd} exit with non-zero exit code: #{result[:value].exitstatus}" if result[:value].exitstatus != 0
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
@@ -91,7 +85,7 @@ class NodeProduct
         mdbci_params = $session.boxes.getBox(box)
         raise "Box #{box} is not found" if mdbci_params.nil?
         full_platform = $session.platformKey(box)
-        raise  "Platform for box #{box} not found" if full_platform == "UNKNOWN"
+        raise "Platform for box #{box} is not found" if full_platform == "UNKNOWN"
         # get product repo
         if $session.nodeProduct == 'maxscale'
           repo = get_product_repo('maxscale', 'default', full_platform)
@@ -102,10 +96,11 @@ class NodeProduct
         raise 'No such product for this node!' if repo.nil?
         command = setup_product_repo_to_mdbci_cmd(full_platform, repo)
         cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
-        $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
-        vagrant_out = `#{cmd}`
+        $out.info "Running #{cmd} on #{args[0]}/#{args[1]}"
+        result = ShellCommands.run_command($out, command)
+        vagrant_out = result[:output]
         $out.info vagrant_out
-        raise "command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
+        raise "command #{cmd} exit with non-zero exit code: #{result[:value].exitstatus}" if result[:value].exitstatus != 0
       end
     else # aws, vbox, libvirt, docker nodes
       Dir.chdir $work_dir+'/'+args[0]
@@ -124,9 +119,10 @@ class NodeProduct
           # execute command
           raise 'No such product for this node!' if repo.nil?
           cmd = setup_product_repo_cmd(full_platform, node[0], repo)
-          vagrant_out = `#{cmd}`
+          result = ShellCommands.run_command($out, command)
+          vagrant_out = result[:output]
           $out.info vagrant_out
-          raise "command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
+          raise "command #{cmd} exit with non-zero exit code: #{result[:value].exitstatus}" if result[:value].exitstatus != 0
         end
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
@@ -142,9 +138,10 @@ class NodeProduct
         # execute command
         raise 'No such product for this node!' if repo.nil?
         cmd = setup_product_repo_cmd(full_platform, node[0], repo)
-        vagrant_out = `#{cmd}`
+        result = ShellCommands.run_command($out, command)
+        vagrant_out = result[:output]
         $out.info vagrant_out
-        raise "command #{cmd} exit with non-zero exit code: #{$?.exitstatus}" if $?.exitstatus != 0
+        raise "command #{cmd} exit with non-zero exit code: #{result[:value].exitstatus}" if result[:value].exitstatus != 0
       end
     end
     Dir.chdir pwd
@@ -256,9 +253,10 @@ class NodeProduct
           command = install_product_to_mdbci_cmd(platform[0], packages)
           cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
           $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
-          vagrant_out = `#{cmd}`
+          result = ShellCommands.run_command($out, command)
+          vagrant_out = result[:output]
           $out.info vagrant_out
-          raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}" if $?.exitstatus != 0
+          raise "command #{cmd} exit with non-zero exit code: #{result[:value].exitstatus}" if result[:value].exitstatus != 0
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == args[1] }
@@ -278,9 +276,10 @@ class NodeProduct
         command = install_product_to_mdbci_cmd(platform[0], packages)
         cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
         $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
-        vagrant_out = `#{cmd}`
+        result = ShellCommands.run_command($out, command)
+        vagrant_out = result[:output]
         $out.info vagrant_out
-        raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}" if $?.exitstatus != 0
+        raise "command #{cmd} exit with non-zero exit code: #{result[:value].exitstatus}" if result[:value].exitstatus != 0
       end
     else # aws, vbox, libvirt, docker nodes
       Dir.chdir $work_dir+'/'+args[0]
@@ -295,9 +294,10 @@ class NodeProduct
           $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0]
           # execute command
           cmd = install_product_cmd(platform[0], node[0], packages)
-          vagrant_out = `#{cmd}`
+          result = ShellCommands.run_command($out, command)
+          vagrant_out = result[:output]
           $out.info vagrant_out
-          raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}" if $?.exitstatus != 0
+          raise "command #{cmd} exit with non-zero exit code: #{result[:value].exitstatus}" if result[:value].exitstatus != 0
         end
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
@@ -308,9 +308,10 @@ class NodeProduct
         $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
         # execute command
         cmd = install_product_cmd(platform[0], node[0], packages)
-        vagrant_out = `#{cmd}`
+        result = ShellCommands.run_command($out, command)
+        vagrant_out = result[:output]
         $out.info vagrant_out
-        raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}" if $?.exitstatus != 0
+        raise "command #{cmd} exit with non-zero exit code: #{result[:value].exitstatus}" if result[:value].exitstatus != 0
       end
     end
     Dir.chdir pwd
