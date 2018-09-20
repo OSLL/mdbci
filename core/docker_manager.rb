@@ -1,15 +1,14 @@
-require 'open3'
 require_relative 'helper'
 require_relative 'session'
+require_relative 'services/shell_commands'
 
 class DockerManager
-
   DOCKER_IMAGES_CMD = 'docker images'
   DOCKER_BUILD_CMD = 'docker build'
 
   # @image_name - string PLATFORM:PLATFORM_VERSION
   def DockerManager.image_exists(image_name)
-    images_output = `#{DOCKER_IMAGES_CMD}`
+    images_output = ShellCommands.run_command($out, DOCKER_IMAGES_CMD)[:output]
     raise 'Can not get docker images (check docker daemon)' if $?.exitstatus != 0
     images_lines = images_output.split "\n"
     if images_lines.length > 1
