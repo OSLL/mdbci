@@ -33,6 +33,7 @@ module ShellCommands
   # rubocop:disable Metrics/MethodLength
   def self.run_command_and_log(logger, command, show_notifications = false, options = {}, env = ShellCommands.environment)
     logger.info "Invoking command: #{command}"
+    options[:unsetenv_others] = true
     Open3.popen3(env, command, options) do |stdin, stdout, stderr, wthr|
       stdin.close
       stdout_text = ''
@@ -73,8 +74,9 @@ module ShellCommands
   # @param command [String] command to run
   # @param options [Hash] parameters to pass to Open3 method
   # @param env [Hash] environment to run command in
-  def self.run_command(logger, command, options = {}, env = environment)
+  def self.run_command(logger, command, options = {}, env = ShellCommands.environment)
     logger.info("Invoking command: #{command}")
+    options[:unsetenv_others] = true
     output, status = Open3.capture2(env, command, options)
     {
       value: status,
