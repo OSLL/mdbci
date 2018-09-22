@@ -110,7 +110,8 @@
     "hostname" : "maxscale",
     "box" : "centos_7_libvirt",
     "product" : {
-      "name" : "maxscale"
+      "name" : "maxscale",
+      "version": "latest"
     },
     "memory_size" : "1024"
   }
