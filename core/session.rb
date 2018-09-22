@@ -13,6 +13,7 @@ require_relative 'commands/destroy_command'
 require_relative 'commands/generate_command'
 require_relative 'commands/generate_product_repositories_command'
 require_relative 'commands/help_command'
+require_relative 'commands/configure_command'
 require_relative 'constants'
 require_relative 'docker_manager'
 require_relative 'helper'
@@ -102,7 +103,9 @@ EOF
     @tool_config = ToolConfiguration.load
     $out.info("Load Repos from #{@repo_dir}")
     @repos = RepoManager.new(@repo_dir)
-    @aws_service = AwsService.new(@tool_config['aws'])
+    if @tool_config['aws']
+      @aws_service = AwsService.new(@tool_config['aws'], $out)
+    end
   end
 
   # Search for a configuration file in all known configuration locations that include
@@ -463,7 +466,7 @@ EOF
       description: 'List boxes versions for specified platform',
       action: ->(*) { showBoxesPlatformVersions }
     }
-  }
+  }.freeze
 
   # Show list of actions available for the base command
   #
@@ -511,6 +514,9 @@ EOF
       exit_code = checkRelevanceNetworkConfig(ARGV.shift)
     when 'clone'
       exit_code = clone(ARGV[0], ARGV[1])
+    when 'configure'
+      command = ConfigureCommand.new(ARGV, self, $out)
+      exit_code = command.execute
     when 'destroy'
       destroy = DestroyCommand.new(ARGV, self, $out)
       exit_code = destroy.execute
