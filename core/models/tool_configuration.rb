@@ -26,10 +26,10 @@ class ToolConfiguration
   # Stores current state of the configuration in the file
   def save
     Dir.mktmpdir do |directory|
-      file = File.new('new-config.yaml')
+      file = File.new("#{directory}/new-config.yaml", 'w')
       file.write(YAML.dump(@config))
       file.close
-      config_file = File.expand_path(CONFIG_FILE_NAME, XDG['CONFIG_HOME'])
+      config_file = File.expand_path(CONFIG_FILE_NAME, XDG['CONFIG_HOME'].to_s)
       FileUtils.cp(file.path, config_file)
     end
   end

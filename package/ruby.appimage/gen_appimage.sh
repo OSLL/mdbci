@@ -132,7 +132,7 @@ pushd $BUILD_DIR # Going back in order for scripts to work
 
 echo "--> remove unused files"
 # remove doc, man, ri
-# rm -rf $APP_DIR/usr/share
+rm -rf $APP_DIR/usr/share/{doc, man}
 # remove ruby headers
 rm -rf $APP_DIR/usr/include
 
