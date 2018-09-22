@@ -41,7 +41,7 @@ HEADER
       aws.keypair_name = "#{keypair_name}"
       override.ssh.private_key_path = "#{pemfile_path}"
       aws.region = "#{aws_config['region']}"
-      aws.security_groups = #{aws_config['security_groups']}
+      aws.security_groups = ['default', '#{aws_config['security_group']}']
       aws.access_key_id = "#{aws_config['access_key_id']}"
       aws.secret_access_key = "#{aws_config['secret_access_key']}"
       aws.user_data = "#!/bin/bash\nsed -i -e 's/^Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers"
