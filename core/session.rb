@@ -14,6 +14,7 @@ require_relative 'commands/generate_command'
 require_relative 'commands/generate_product_repositories_command'
 require_relative 'commands/help_command'
 require_relative 'commands/configure_command'
+require_relative 'commands/deploy_command'
 require_relative 'constants'
 require_relative 'docker_manager'
 require_relative 'helper'
@@ -547,6 +548,9 @@ EOF
       exit_code = sudo(ARGV.shift)
     when 'up'
       command = UpCommand.new([ARGV.shift], self, $out)
+      exit_code = command.execute
+    when 'deploy-examples'
+      command = DeployCommand.new([ARGV.shift], self, $out)
       exit_code = command.execute
     when 'validate_template'
       exit_code = validate_template
