@@ -518,6 +518,9 @@ EOF
     when 'configure'
       command = ConfigureCommand.new(ARGV, self, $out)
       exit_code = command.execute
+    when 'deploy-examples'
+      command = DeployCommand.new([ARGV.shift], self, $out)
+      exit_code = command.execute
     when 'destroy'
       destroy = DestroyCommand.new(ARGV, self, $out)
       exit_code = destroy.execute
@@ -548,9 +551,6 @@ EOF
       exit_code = sudo(ARGV.shift)
     when 'up'
       command = UpCommand.new([ARGV.shift], self, $out)
-      exit_code = command.execute
-    when 'deploy-examples'
-      command = DeployCommand.new([ARGV.shift], self, $out)
       exit_code = command.execute
     when 'validate_template'
       exit_code = validate_template

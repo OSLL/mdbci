@@ -21,7 +21,7 @@ class HelpCommand < BaseCommand
     'check_relevance' => 'Check for relevance of network_config file.',
     'clone' => 'Clone existing configuration into a new one.',
     'configure' => ConfigureCommand.synopsis,
-    'deploy' => DeployCommand.synopsis,
+    'deploy-examples' => DeployCommand.synopsis,
     'destroy' => DestroyCommand.synopsis,
     'generate' => GenerateCommand.synopsis,
     'generate-product-repositories' => GenerateProductRepositoriesCommand.synopsis,
