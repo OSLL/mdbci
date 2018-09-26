@@ -28,7 +28,7 @@ class ConfigureCommand < BaseCommand
     end
     credentials = input_aws_credentials
     return ERROR_RESULT if credentials.nil?
-    security_group = input_or_create_security_group
+    security_group = input_or_create_security_group(credentials)
     credentials['security_group'] = security_group
     @configuration['aws'] = credentials
     @configuration.save
@@ -37,7 +37,7 @@ class ConfigureCommand < BaseCommand
 
   private
 
-  def input_or_create_security_group
+  def input_or_create_security_group(credentials)
     if read_topic('Create new AWS security group?', 'y').downcase == 'y'
       aws_service = AwsService.new(credentials, @ui)
       security_group = aws_service.create_security_group

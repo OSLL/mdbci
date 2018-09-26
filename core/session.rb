@@ -14,6 +14,7 @@ require_relative 'commands/generate_command'
 require_relative 'commands/generate_product_repositories_command'
 require_relative 'commands/help_command'
 require_relative 'commands/configure_command'
+require_relative 'commands/deploy_command'
 require_relative 'constants'
 require_relative 'docker_manager'
 require_relative 'helper'
@@ -516,6 +517,9 @@ EOF
       exit_code = clone(ARGV[0], ARGV[1])
     when 'configure'
       command = ConfigureCommand.new(ARGV, self, $out)
+      exit_code = command.execute
+    when 'deploy-examples'
+      command = DeployCommand.new([ARGV.shift], self, $out)
       exit_code = command.execute
     when 'destroy'
       destroy = DestroyCommand.new(ARGV, self, $out)
