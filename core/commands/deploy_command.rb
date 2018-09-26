@@ -7,7 +7,7 @@ require_relative '../services/shell_commands'
 # Command provides a documentation to the user on how to use the mdbci tool.
 class DeployCommand < BaseCommand
   def self.synopsis
-    'Deploy examples from AppImage.'
+    'Deploy examples from AppImage to the current working directory.'
   end
 
   DEPLOY_PATH = File.expand_path('../../../', __FILE__)
