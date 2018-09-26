@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Ruby
+Exec=ruby
+Icon=ruby
+Type=Application
+Categories=Utility;
+Terminal=true

@@ -23,7 +23,7 @@ class MachineConfigurator
   # Upload chef scripts onto the machine and configure it using specified role. The method is able to transfer
   # extra files into the provision directory making runtime configuration of Chef scripts possible.
   # @param extra_files [Array<Array<String>>] pairs of source and target paths.
-  def configure(machine, config_name, extra_files = [], sudo_password = '', chef_version = '14.0.202')
+  def configure(machine, config_name, extra_files = [], sudo_password = '', chef_version = '14.5.27')
     @log.info("Configuring machine #{machine['network']} with #{config_name}")
     within_ssh_session(machine) do |connection|
       install_chef_on_server(connection, sudo_password, chef_version)

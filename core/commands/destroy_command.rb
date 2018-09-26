@@ -35,6 +35,7 @@ class DestroyCommand < BaseCommand
   # @raise [ArgumentError] if parameters are not valid.
   # @return [Configuration, String] parsed configuration.
   def setup_command
+    @aws_service = @env.aws_service
     Configuration.parse_spec(@args.first)
   end
 
@@ -90,12 +91,10 @@ HELP
   # Destroy aws keypair specified in the configuration.
   #
   # @param configuration [Configuration] that we operate on.
-  # @raise [RuntimeError] if there was an error during deletion of the key pair.
   def destroy_aws_keypair(configuration)
     return unless configuration.aws_keypair_name?
     @ui.info "Destroying AWS key pair #{configuration.aws_keypair_name}"
-    result = CommandResult.for_command("aws ec2 delete-key-pair --key-name '#{configuration.aws_keypair_name}'")
-    raise "Unable to delete AWS key pair #{configuration.aws_keypair_name}.\n#{result.messages}" unless result.success?
+    @aws_service.delete_key_pair(configuration.aws_keypair_name)
   end
 
   # Destroy the node if it was not destroyed by the vagrant.
@@ -162,26 +161,19 @@ HELP
   #
   # @param configuration [Configuration] configuration to user.
   # @param node [String] name of node to destroy.
-  # rubocop:disable Metrics/MethodLength
   def destroy_aws_machine(configuration, node)
     aws_box_name = "#{configuration.name}_#{node}"
-    if @aws_instance_ids.empty? || @aws_instance_ids[node].nil?
-      @ui.error "Unable to terminate #{aws_box_name} machine. Instance id does not exist."
+    instance_id = @aws_instance_ids[node]
+    if @aws_instance_ids.empty? || instance_id.nil?
+      @ui.error("Unable to terminate #{aws_box_name} machine. Instance id does not exist.")
       return
     end
-    aws_box_state = get_aws_instance_state_by_id(@aws_instance_ids[node])
-    if aws_box_state == INSTANCE_NOT_FOUND
-      @ui.error "Unable get state of #{aws_box_name} from AWS."
-      return
+    unless @aws_service.instance_running?(instance_id)
+      @ui.info("AWS instance '#{instance_id}' for node '#{node}' is not running.")
     end
-    if %w[stopping stopped shutting-down terminated].include?(aws_box_state)
-      @ui.info "AWS machine #{aws_box_name} has been destroyed, doing notthing."
-      return
-    end
-    check_command("aws ec2 terminate-instances --instance-ids #{@aws_instance_ids[node]} --profile mdbci",
-                  "Unable to terminate #{aws_box_name} machine.")
+    @ui.info("Sending termination command for instance '#{instance_id}' used for node '#{node}.")
+    @aws_service.terminate_instance(instance_id)
   end
-  # rubocop:enable Metrics/MethodLength
 
   def execute
     return ARGUMENT_ERROR_RESULT unless check_parameters
@@ -225,23 +217,5 @@ HELP
     aws_instance_id_path = "#{configuration.path}/.vagrant/machines/#{node}/aws/id"
     return nil unless File.file?(aws_instance_id_path)
     File.read(aws_instance_id_path)
-  end
-
-  # Get the state of aws virtual machine instance from aws instances description by id.
-  #
-  # @param instance_id [String] aws virtual machine instance id.
-  # @return [String] state of the instance or INSTANCE_NOT_FOUND constant.
-  def get_aws_instance_state_by_id(instance_id)
-    return INSTANCE_NOT_FOUND if instance_id.nil?
-    instances_description = run_command_and_log('aws ec2 describe-instances --profile mdbci')[:output]
-    instances_array = JSON.parse(instances_description).to_h
-    instance = nil
-    instances_array['Reservations'].find do |reservation|
-      instance = reservation['Instances'].find do |current_instance|
-        current_instance['InstanceId'] == instance_id
-      end
-    end
-    return INSTANCE_NOT_FOUND if instance.nil?
-    instance['State']['Name']
   end
 end

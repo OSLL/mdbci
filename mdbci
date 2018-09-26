@@ -3,10 +3,6 @@
 
 require 'getoptlong'
 
-require_relative 'core/session'
-require_relative 'core/node_product'
-require_relative 'core/out'
-require_relative 'core/exception_handler'
 
 # Reading options
 opts = GetoptLong.new(
@@ -33,20 +29,26 @@ opts = GetoptLong.new(
   ['--template', '-t', GetoptLong::REQUIRED_ARGUMENT],
 )
 
-$mdbci_exec_dir = File.expand_path(File.dirname(__FILE__))
+$mdbci_exec_dir = File.expand_path(File.dirname(File.realpath(__FILE__)))
+$LOAD_PATH.unshift($mdbci_exec_dir) unless $LOAD_PATH.include?($mdbci_exec_dir)
+
+require 'core/session'
+require 'core/node_product'
+require 'core/out'
+require 'core/exception_handler'
 
 session = Session.new
 $session = session
 session.configFile = 'instance.json'
 session.boxesFile = 'boxes.json'
-session.awsConfigFile = $mdbci_exec_dir + '/aws-config.yml'
 $exception_handler = ExceptionHandler.new
 session.ipv6 = false
 
 out = Out.new(session)
 $out = out
 
-$current_dir = Dir.pwd
+Dir.chdir ENV['OLD_CWD'] unless ENV['OLD_CWD'].nil?
+
 Dir.chdir ENV['MDBCI_VM_PATH'] unless ENV['MDBCI_VM_PATH'].nil?
 $work_dir = Dir.pwd
 
@@ -134,7 +136,7 @@ end
 
 # Greeting user
 out.info 'MariaDb CI CLI'
-out.info 'mdbci called with: ' + ARGV.to_s
+out.info "mdbci called with: #{ARGV.join(' ')}"
 session.initialize_services
 
 # run commands and return 0 for success, 1 for error

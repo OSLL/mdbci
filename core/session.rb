@@ -5,13 +5,7 @@ require 'uri'
 require 'open3'
 require 'xdg'
 
-
-require_relative 'network'
 require_relative 'boxes_manager'
-require_relative 'repo_manager'
-require_relative 'out'
-require_relative 'docker_manager'
-require_relative 'helper'
 require_relative 'clone'
 require_relative 'commands/up_command'
 require_relative 'commands/snapshot_command'
@@ -19,10 +13,21 @@ require_relative 'commands/destroy_command'
 require_relative 'commands/generate_command'
 require_relative 'commands/generate_product_repositories_command'
 require_relative 'commands/help_command'
+require_relative 'commands/configure_command'
+require_relative 'commands/deploy_command'
 require_relative 'constants'
+require_relative 'docker_manager'
+require_relative 'helper'
+require_relative 'models/tool_configuration'
+require_relative 'network'
+require_relative 'out'
+require_relative 'repo_manager'
+require_relative 'services/aws_service'
+require_relative 'services/shell_commands'
 
+# Currently it is the GOD object that contains configuration and manages the commands that should be run.
+# These responsibilites should be split between several classes.
 class Session
-
   attr_accessor :boxes
   attr_accessor :configs
   attr_accessor :configuration_file
@@ -31,9 +36,6 @@ class Session
   attr_accessor :boxesFile
   attr_accessor :boxName
   attr_accessor :field
-  attr_accessor :awsConfig # aws-config parameters
-  attr_accessor :awsConfigFile # aws-config.yml file
-  attr_accessor :awsConfigOption # path to aws-config.yml in template file
   attr_accessor :isOverride
   attr_accessor :isSilent
   attr_accessor :command
@@ -58,6 +60,8 @@ class Session
   attr_accessor :node_name
   attr_accessor :snapshot_name
   attr_accessor :ipv6
+  attr_reader :aws_service
+  attr_reader :tool_config
   attr_accessor :show_help
 
   PLATFORM = 'platform'
@@ -94,12 +98,15 @@ EOF
   # Method initializes services that depend on the parsed configuration
   def initialize_services
     fill_paths
-    $out.info "Load Boxes from #{@boxes_dir}"
+    $out.info("Load Boxes from #{@boxes_dir}")
     @boxes = BoxesManager.new(@boxes_dir)
-    $out.info "Load AWS config from #{@awsConfigFile}"
-    @awsConfig = $exception_handler.handle('AWS configuration file not found') { YAML.load_file(@awsConfigFile)['aws'] }
-    $out.info "Load Repos from #{@repo_dir}"
+    $out.info('Load MDBCI configuration file')
+    @tool_config = ToolConfiguration.load
+    $out.info("Load Repos from #{@repo_dir}")
     @repos = RepoManager.new(@repo_dir)
+    if @tool_config['aws']
+      @aws_service = AwsService.new(@tool_config['aws'], $out)
+    end
   end
 
   # Search for a configuration file in all known configuration locations that include
@@ -134,12 +141,10 @@ EOF
   end
 
   def setup(what)
-    possibly_failed_command = ''
     case what
       when 'boxes'
         $out.info 'Adding boxes to vagrant'
-        raise "cannot adding boxes: directory not exist" unless Dir.exists?($session.boxes_dir)
-        raise "cannot adding boxes: boxes are not found in #{$session.boxes_dir}" unless File.directory?($session.boxes_dir)
+        raise 'Cannot load boxes: directory does not exist' unless Dir.exist?(@boxes_dir) && File.directory?(@boxes_dir)
         @boxes.boxesManager.each do |key, value|
           next if value['provider'] == "aws" # skip 'aws' block
           # TODO: add aws dummy box
@@ -153,19 +158,17 @@ EOF
             puts "vagrant box add --provider #{value['provider']} "+value['box'].to_s
             shell = "vagrant box add --provider #{value['provider']} "+value['box'].to_s
           end
-          shellCommand = `#{shell} 2>&1` # THERE CAN BE DONE CUSTOM EXCEPTION
-
-          puts "#{shellCommand}\n"
-          # just one soft exeption - box already exist
-          if $?!=0 && shellCommand[/attempting to add already exists/]==nil
+          result = ShellCommands.run_command_and_log($out, "#{shell} 2>&1")
+          command_output = result[:output]
+          # just one soft exception - box already exist
+          if !result[:value].success? && command_output[/attempting to add already exists/].nil?
             raise "failed command: #{shell}"
           end
         end
       else
         raise "Cannot setup #{what}"
     end
-
-    return 0
+    0
   end
 
   def sudo(args)
@@ -173,18 +176,13 @@ EOF
     config = args.split('/')
     raise 'config does not exists' unless Dir.exist?(config[0])
     raise 'node name is required' if config[1].to_s.empty?
-    pwd = Dir.pwd
-    Dir.chdir config[0]
-    cmd = 'vagrant ssh '+config[1]+' -c "/usr/bin/sudo '+$session.command+'"'
-    $out.info 'Running ['+cmd+'] on '+config[0]+'/'+config[1]
-    vagrant_out = `#{cmd}`
-    exit_code = $?.exitstatus
-    $out.out vagrant_out
-    Dir.chdir pwd
-    if exit_code != 0
+    cmd = "vagrant ssh #{config[1]} -c '/usr/bin/sudo #{@command}'"
+    $out.info("Running #{cmd} on #{config[0]}/#{config[1]}")
+    result = ShellCommands.run_command_in_dir($out, cmd, config[0])
+    unless result[:value].success?
       raise "command '#{cmd}' exit with non-zero code: #{exit_code}"
     end
-    return 0
+    0
   end
 
   # load template nodes
@@ -281,23 +279,21 @@ EOF
     return cmd
   end
 
-  def runSSH(cmd,params)
+  def runSSH(cmd, params)
     dir = params[0]
-    node_arg =  params[1]
+    node_arg = params[1]
     $out.info 'Running ['+cmd+'] on '+dir.to_s+'/'+node_arg.to_s
-    vagrant_out = `#{cmd}`
-    if $?.exitstatus!=0
-     $out.out vagrant_out
-     raise "'#{cmd}' command returned non-zero exit code: (#{$?.exitstatus})"
+    result = ShellCommands.run_command_and_log($out, cmd)
+    unless result[:value].success?
+      raise "'#{cmd}' command returned non-zero exit code: (#{result[:value].exitstatus})"
     end
-    return vagrant_out.to_s
+    result[:output]
   end
 
   def platformKey(box_name)
     key = $session.boxes.boxesManager.keys.select { |value| value == box_name }
-    return key.nil? ? "UNKNOWN" : $session.boxes.boxesManager[key[0]]['platform']+'^'+$session.boxes.boxesManager[key[0]]['platform_version']
+    key.nil? ? "UNKNOWN" : $session.boxes.boxesManager[key[0]]['platform']+'^'+$session.boxes.boxesManager[key[0]]['platform_version']
   end
-
 
   def showBoxKeys
     values = Array.new
@@ -308,7 +304,7 @@ EOF
       raise "box key #{$session.field} is not found"
     end
     puts values.uniq
-    return 0
+    0
   end
 
   def getPlatfroms
@@ -471,7 +467,7 @@ EOF
       description: 'List boxes versions for specified platform',
       action: ->(*) { showBoxesPlatformVersions }
     }
-  }
+  }.freeze
 
   # Show list of actions available for the base command
   #
@@ -519,6 +515,12 @@ EOF
       exit_code = checkRelevanceNetworkConfig(ARGV.shift)
     when 'clone'
       exit_code = clone(ARGV[0], ARGV[1])
+    when 'configure'
+      command = ConfigureCommand.new(ARGV, self, $out)
+      exit_code = command.execute
+    when 'deploy-examples'
+      command = DeployCommand.new([ARGV.shift], self, $out)
+      exit_code = command.execute
     when 'destroy'
       destroy = DestroyCommand.new(ARGV, self, $out)
       exit_code = destroy.execute
@@ -531,13 +533,13 @@ EOF
       command = HelpCommand.new(ARGV, self, $out)
       exit_code = command.execute
     when 'install_product'
-      exit_code = NodeProduct.installProduct(ARGV.shift)
+      exit_code = NodeProduct.install_product(ARGV.shift)
     when 'public_keys'
       exit_code = publicKeys(ARGV.shift)
     when 'setup'
       exit_code = setup(ARGV.shift)
     when 'setup_repo'
-      exit_code = NodeProduct.setupProductRepo(ARGV.shift)
+      exit_code = NodeProduct.setup_product_repo(ARGV.shift)
     when 'show'
       exit_code = show(ARGV)
     when 'snapshot'
@@ -597,10 +599,6 @@ EOF
     raise 'Template configuration file is empty!' if @configs.nil?
 
     LoadNodesProvider configs
-    #
-    aws_config = @configs.find { |value| value.to_s.match(/aws_config/) }
-    @awsConfigOption = aws_config.to_s.empty? ? $mdbci_exec_dir+'/aws-config.yml' : aws_config[1].to_s
-    #
     if @nodesProvider != 'mdbci'
       GenerateCommand.generate(path, configs, boxes, isOverride, nodesProvider)
       $out.info 'Generating config in ' + path
@@ -658,8 +656,8 @@ EOF
                           + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
-          $out.info `#{cmd}`
-          if $?.exitstatus!=0
+          result = ShellCommands.run_command_and_log($out, cmd)
+          unless result[:value].success?
             raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
           end
         end
@@ -681,9 +679,8 @@ EOF
                           + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
                           + "\"" + command + "\""
           $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
-          $out.info `#{cmd}`
-
-          if $?.exitstatus != 0
+          result = ShellCommands.run_command_and_log($out, cmd)
+          unless result[:value].success?
             raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
           end
         else
@@ -709,8 +706,8 @@ EOF
           # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
           cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
           $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
-          $out.info `#{cmd}`
-          if $?.exitstatus!=0
+          result = ShellCommands.run_command_and_log($out, cmd)
+          unless result[:value].success?
             raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
           end
         end
@@ -726,8 +723,8 @@ EOF
         # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
         cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
         $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
-        $out.info `#{cmd}`
-        if $?.exitstatus!=0
+        result = ShellCommands.run_command_and_log($out, cmd)
+        unless result[:value].success?
           raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
         end
       end

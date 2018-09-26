@@ -11,6 +11,7 @@ require 'set'
 require_relative 'base_command'
 require_relative '../out'
 require_relative '../models/configuration.rb'
+require_relative '../services/shell_commands'
 
 # Command generates
 class GenerateCommand < BaseCommand
@@ -30,16 +31,7 @@ class GenerateCommand < BaseCommand
 HEADER
   end
 
-  def self.aws_provider_config_import(aws_config_file)
-    <<-PROVIDER
-    ### Import AWS Provider access config ###
-    require 'yaml'
-    aws_config = YAML.load_file('#{File.expand_path(aws_config_file)}')['aws']
-    ## End of import AWS Provider access config' ###
-    PROVIDER
-  end
-
-  def self.aws_provider_config(pemfile_path, keypair_name)
+  def self.aws_provider_config(aws_config, pemfile_path, keypair_name)
     <<-PROVIDER
     ###           AWS Provider config block                 ###
     ###########################################################
@@ -47,12 +39,13 @@ HEADER
 
     config.vm.provider :aws do |aws, override|
       aws.keypair_name = "#{keypair_name}"
-      aws.region = aws_config["region"]
-      aws.security_groups = aws_config["security_groups"]
-      aws.user_data = aws_config["user_data"]
       override.ssh.private_key_path = "#{pemfile_path}"
+      aws.region = "#{aws_config['region']}"
+      aws.security_groups = ['default', '#{aws_config['security_group']}']
+      aws.access_key_id = "#{aws_config['access_key_id']}"
+      aws.secret_access_key = "#{aws_config['secret_access_key']}"
+      aws.user_data = "#!/bin/bash\nsed -i -e 's/^Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers"
       override.nfs.functional = false
-      aws.aws_profile = "mdbci"
     end ## of AWS Provider config block
     PROVIDER
   end
@@ -210,8 +203,8 @@ end
         raise "Uncknown platform"
     end
     FileUtils.cp_r dockerfile_path, node_path
-    `sed -i 's/###PLATFORM###/#{platform}/g' #{node_path}/Dockerfile`
-    `sed -i 's/###PLATFORM_VERSION###/#{platform_version}/g' #{node_path}/Dockerfile`
+    ShellCommands.run_command($out, "sed -i 's/###PLATFORM###/#{platform}/g' #{node_path}/Dockerfile")
+    ShellCommands.run_command($out, "sed -i 's/###PLATFORM_VERSION###/#{platform_version}/g' #{node_path}/Dockerfile")
   end
 
   def self.generate_aws_tag(hash)
@@ -402,22 +395,14 @@ end
     return machine
   end
 
-  def self.generateKeypair(path)
-    hostname = Socket.gethostname
-    keypair_name = Pathname(File.expand_path(path)).basename
-    aws_cmd_output = `aws --profile mdbci ec2 create-key-pair --key-name #{hostname}_#{keypair_name}_#{Time.new.to_i}`
-    raise "AWS CLI command exited with non zero exit code: #{$?.exitstatus}" unless $?.success?
-    aws_json_credential = JSON.parse(aws_cmd_output)
-    keypair_name = aws_json_credential["KeyName"]
-    path_to_keyfile = File.join(File.expand_path(path), 'maxscale.pem')
-    open(path_to_keyfile, 'w') do |f|
-      f.write(aws_json_credential["KeyMaterial"])
-    end
-    path_to_keypair_file = File.join(File.expand_path(path), Configuration::AWS_KEYPAIR_NAME)
-    open(path_to_keypair_file, 'w') do |f|
-      f.write(keypair_name)
-    end
-    return path_to_keyfile, keypair_name
+  def self.generate_key_pair(path)
+    full_path = File.expand_path(path)
+    key_pair = $session.aws_service.generate_key_pair(full_path)
+    path_to_keyfile = File.join(full_path, 'maxscale.pem')
+    File.write(path_to_keyfile, key_pair.key_material)
+    path_to_keypair_file = File.join(full_path, Configuration::AWS_KEYPAIR_NAME)
+    File.write(path_to_keypair_file, key_pair.key_name)
+    return path_to_keyfile, key_pair.key_name
   end
 
   # Check that all boxes specified in the the template are identical.
@@ -460,13 +445,12 @@ end
       vagrant.puts 'require \'json\''
     end
     vagrant.puts vagrant_file_header
-    if (!$session.awsConfigOption.to_s.empty? && provider=='aws')
+    if (provider=='aws')
       # Generate AWS Configuration
       $out.info 'Generating AWS configuration'
-      vagrant.puts aws_provider_config_import($session.awsConfigOption)
       vagrant.puts vagrant_config_header
-      path_to_keyfile, keypair_name = generateKeypair path
-      vagrant.puts aws_provider_config(path_to_keyfile, keypair_name)
+      path_to_keyfile, keypair_name = generate_key_pair path
+      vagrant.puts aws_provider_config($session.tool_config['aws'], path_to_keyfile, keypair_name)
     else
       # Generate VBox/Qemu Configuration
       $out.info 'Generating libvirt/VirtualBox/Docker configuration'

@@ -27,7 +27,7 @@ describe 'NodeProduct' do
     maxscale_repo = { "product"=>"maxscale", "version"=>"default",
                      "repo"=>"http://max-tst-01.mariadb.com/ci-repository/develop/mariadb-maxscale/ubuntu trusty main",
                      "repo_key"=>"70E4618A8167EE24", "platform"=>"ubuntu", "platform_version"=>"trusty" }
-    repo = NodeProduct.getProductRepo(product_name, product_version, full_platform)
+    repo = NodeProduct.get_product_repo(product_name, product_version, full_platform)
     repo.should eq(maxscale_repo)
   end
 
@@ -41,7 +41,7 @@ describe 'NodeProduct' do
     maxscale_repo = { "product"=>"maxscale", "version"=>"10.0",
                      "repo"=>"http://maxscale-jenkins.mariadb.com/ci-repository/develop/mariadb-maxscale//ubuntu trusty main",
                      "repo_key"=>"70E4618A8167EE24", "platform"=>"ubuntu", "platform_version"=>"trusty" }
-    repo = NodeProduct.getProductRepo(product_name, product_version, full_platform)
+    repo = NodeProduct.get_product_repo(product_name, product_version, full_platform)
     repo.should_not eq(maxscale_repo)
   end
   #
@@ -59,7 +59,7 @@ describe 'NodeProduct' do
                       "repo_key"=>"https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
                       "platform"=>"centos",
                       "platform_version"=>7 }
-    repo = NodeProduct.getProductRepo(product_name, product_version, full_platform)
+    repo = NodeProduct.get_product_repo(product_name, product_version, full_platform)
     repo.should eq(mariadb_repo)
   end
 
@@ -76,7 +76,7 @@ describe 'NodeProduct' do
                      "repo_key"=>"https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
                      "platform"=>"centos",
                      "platform_version"=>7 }
-    repo = NodeProduct.getProductRepo(product_name, product_version, full_platform)
+    repo = NodeProduct.get_product_repo(product_name, product_version, full_platform)
     repo.should_not eq(mariadb_repo)
   end
   #
@@ -94,7 +94,7 @@ describe 'NodeProduct' do
                      "repo_key"=>"https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
                      "platform"=>"centos",
                      "platform_version"=>6 }
-    repo = NodeProduct.getProductRepo(product_name, product_version, full_platform)
+    repo = NodeProduct.get_product_repo(product_name, product_version, full_platform)
     repo.should eq(galera_repo)
   end
 
@@ -111,7 +111,7 @@ describe 'NodeProduct' do
                      "repo_key"=>"https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
                      "platform"=>"centos",
                      "platform_version"=>7 }
-    repo = NodeProduct.getProductRepo(product_name, product_version, full_platform)
+    repo = NodeProduct.get_product_repo(product_name, product_version, full_platform)
     repo.should_not eq(galera_repo)
   end
   #
@@ -130,7 +130,7 @@ describe 'NodeProduct' do
         "platform"=>"debian",
         "platform_version"=>"wheezy"
     }
-    repo = NodeProduct.getProductRepo(product_name, product_version, full_platform)
+    repo = NodeProduct.get_product_repo(product_name, product_version, full_platform)
     repo.should eq(mysql_repo)
   end
 
@@ -148,7 +148,7 @@ describe 'NodeProduct' do
         "platform"=>"sles",
         "platform_version"=>12
     }
-    repo = NodeProduct.getProductRepo(product_name, product_version, full_platform)
+    repo = NodeProduct.get_product_repo(product_name, product_version, full_platform)
     repo.should_not eq(mysql_repo)
   end
 

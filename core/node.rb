@@ -2,8 +2,8 @@ require 'scanf'
 require 'yaml'
 require 'ipaddress'
 require 'socket'
-
-require_relative  '../core/out'
+require_relative 'services/shell_commands'
+require_relative 'out'
 
 class Node
   attr_accessor :config # Name of stand
@@ -12,100 +12,95 @@ class Node
   attr_accessor :provider
   attr_accessor :ip
 
-  def curlCheck
-    cmd_curl = 'vagrant ssh '+@name+' -c "which curl"'
-    vagrant_out = `#{cmd_curl}`
-    curl = vagrant_out.scanf('%s')
-    #
-    if curl.to_s.tr('[]','') == ''
-      $out.out("Curl not found! Trying to install curl...")
-      return false
-    else
-      return true
-    end
-  end
+  include ShellCommands
 
-  # TODO - now only for Debian/Ubuntu
-  def installCurl
-    exit_code = 1
-    cmd = 'vagrant ssh '+@name+' -c "sudo apt-get install -y curl"'
-    vagrant_cmd = `#{cmd}`
-    exit_code = $?.exitstatus
-    #
-    if curlCheck
-      $out.out("Curl installed! Try to run 'show network' again!")
-    else
-      $out.error("Curl not installed!")
-    end
-    return exit_code
-  end
-
-  # get node ip address from ifconfig interface
-  def getInterfaceBoxIp(node_name, iface)
-    exit_code = 1
-    $out.info('getInterfaceBoxIp attempt')
-    vagrant_out = `vagrant ssh-config #{node_name} | grep HostName`.strip
-    $out.info(vagrant_out)
-    $out.info($?.exitstatus.to_s)
-    exit_code = $?.exitstatus
-    hostname = vagrant_out.split(/\s+/)[1]
-    begin
-      @ip = IPSocket.getaddress(hostname)
-    rescue
-      $out.error("Unable to determine IP address for #{node}")
-      return -1
-    end
-    exit_code
-  end
-
-  def getIp(provider, is_private)
-    exit_code = 1
-    if provider.nil?
-      raise $out.error "Can not identify configuration for provider #{provider.to_s}"
-    end
-    case provider
-      when '(virtualbox)'
-        exit_code = getInterfaceBoxIp(@name, "eth1")
-      when '(libvirt)'
-        exit_code = getInterfaceBoxIp(@name, "eth0")
-      when '(docker)'
-        exit_code = getInterfaceBoxIp(@name, "eth0")
-      when '(aws)'
-        if curlCheck
-          if is_private
-            cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["private_ip_service"]+'"'
-          else
-            cmd = 'vagrant ssh '+@name+' -c "'+$session.awsConfig["public_ip_service"]+'"'
-          end
-          vagrant_out = `#{cmd}`
-          exit_code = $?.exitstatus
-          ip = vagrant_out.scanf('%s')
-          # get ip from command output
-          @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')
-        else
-          installCurl
-        end
-      else
-        $out.warning('WARNING: Unknown machine type!')
-    end
-    !@ip.to_s.empty? ? $out.info('IP:'+@ip.to_s) : $out.warning('IP address is not received!')
-    if exit_code != 0
-      raise $out.error "vagrant ssh get IP command returned non-zero exit code: (#{$?.exitstatus})"
-    end
-    return exit_code
-  end
-
-
-  def initialize(config, initString)
-    parts = initString.scanf('%s %s %s')
+  def initialize(config, init_string)
+    @ui = $out
+    parts = init_string.scanf('%s %s %s')
     if parts.length == 3
       @name = parts[0]
       @state = parts[1]
       @provider = parts[2]
       @config = config
     else
-      $out.error 'ERR: Cannot parse vagrant node description. Has format changed? ['+initString+']'
+      @ui.error("ERR: Cannot parse vagrant node description. Has format changed? [#{init_string}]")
     end
   end
 
+  def curl_check
+    vagrant_out = run_command("vagrant ssh #{@name} -c 'which curl'")[:output]
+    curl = vagrant_out.scanf('%s')
+    if curl.to_s.tr('[]', '') == ''
+      @ui.out('Curl not found! Trying to install curl...')
+      return false
+    end
+    true
+  end
+
+  # TODO - now only for Debian/Ubuntu
+  def install_curl
+    result = run_command("vagrant ssh #{@name} -c 'sudo apt-get install -y curl'")
+    if curl_check
+      @ui.out('Curl installed! Try to run "show network" again!')
+    else
+      @ui.error('Curl not installed!')
+    end
+    result[:value].exitstatus
+  end
+
+  # get node ip address from ifconfig interface
+  def get_interface_box_ip(node_name, iface)
+    @ui.info('getInterfaceBoxIp attempt')
+    result = run_command("vagrant ssh-config #{node_name} | grep HostName")
+    vagrant_out = result[:output].strip
+    exit_code = result[:value].exitstatus
+    @ui.info(vagrant_out)
+    @ui.info(exit_code)
+    hostname = vagrant_out.split(/\s+/)[1]
+    begin
+      @ip = IPSocket.getaddress(hostname)
+    rescue
+      @ui.error("Unable to determine IP address for #{node}")
+      return -1
+    end
+    exit_code
+  end
+
+  def get_ip(provider, is_private)
+    exit_code = 1
+    if provider.nil?
+      raise @ui.error "Can not identify configuration for provider #{provider}"
+    end
+    case provider
+    when '(virtualbox)'
+      exit_code = get_interface_box_ip(@name, "eth1")
+    when '(libvirt)'
+      exit_code = get_interface_box_ip(@name, "eth0")
+    when '(docker)'
+      exit_code = get_interface_box_ip(@name, "eth0")
+    when '(aws)'
+      if curl_check
+        remote_command = if is_private
+                           'curl http://169.254.169.254/latest/meta-data/local-ipv4'
+                         else
+                           'curl http://169.254.169.254/latest/meta-data/public-ipv4'
+                         end
+        result = run_command("vagrant ssh #{@name} -c '#{remote_command}'")
+        vagrant_out = result[:output]
+        exit_code = result[:value].exitstatus
+        ip = vagrant_out.scanf('%s')
+        # get ip from command output
+        @ip = ip.to_s.sub(/#{'Connection'}.+/, 'Connection').tr('[""]', '')
+      else
+        install_curl
+      end
+    else
+      @ui.warning('WARNING: Unknown machine type!')
+    end
+    !@ip.to_s.empty? ? @ui.info('IP:' + @ip.to_s) : @ui.warning('IP address is not received!')
+    if exit_code != 0
+      raise @ui.error("vagrant ssh get IP command returned non-zero exit code: #{exit_code}")
+    end
+    exit_code
+  end
 end

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=mdbci
+Exec=mdbci
+Icon=mdbci
+Type=Application
+Categories=Utility;
+Terminal=true
