@@ -17,7 +17,7 @@ docker build \
        --build-arg GID=$(id -g) \
        -t ruby-appimage:latest .
 
-docker run -it \
+docker run \
        -e DOCKER_BUILD=true \
        --user $(id -u):$(id -g) \
        -v "$app_dir":/workspace/application \
