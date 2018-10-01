@@ -119,7 +119,7 @@ class NodeProduct
           # execute command
           raise 'No such product for this node!' if repo.nil?
           cmd = setup_product_repo_cmd(full_platform, node[0], repo)
-          result = ShellCommands.run_command($out, command)
+          result = ShellCommands.run_command($out, cmd)
           vagrant_out = result[:output]
           $out.info vagrant_out
           raise "command #{cmd} exit with non-zero exit code: #{result[:value].exitstatus}" if result[:value].exitstatus != 0
@@ -138,7 +138,7 @@ class NodeProduct
         # execute command
         raise 'No such product for this node!' if repo.nil?
         cmd = setup_product_repo_cmd(full_platform, node[0], repo)
-        result = ShellCommands.run_command($out, command)
+        result = ShellCommands.run_command($out, cmd)
         vagrant_out = result[:output]
         $out.info vagrant_out
         raise "command #{cmd} exit with non-zero exit code: #{result[:value].exitstatus}" if result[:value].exitstatus != 0
