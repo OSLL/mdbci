@@ -175,6 +175,7 @@ class UpCommand < BaseCommand
   # @param nde[String] name of the node
   # @return [Boolean] whether we were successfull or not
   def configure(node)
+    run_command("vagrant ssh #{node} -- 'sudo sh -c \"echo nameserver 8.8.8.8 >> /etc/resolv.conf\"'")
     @network_configs[node] = get_node_network_config(node, @config, @env)
     solo_config = "#{node}-config.json"
     role_file = GenerateCommand.role_file_name(@config.path, node)

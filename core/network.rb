@@ -325,6 +325,7 @@ def collectConfigurationNetworkInfo(configuration,node_one='')
     configurationNetworkInfo["#{node}_private_ip"] = Network.getIP(configPath)[0]["ip"].to_s
     configurationNetworkInfo["#{node}_whoami"] = $session.getSSH(configPath, COMMAND_WHOAMI)[0].chomp
     configurationNetworkInfo["#{node}_hostname"] = $session.getSSH(configPath, COMMAND_HOSTNAME)[0].chomp
+    ShellCommands.run_command_in_dir($out, "vagrant ssh #{node} -- 'sudo sh -c \"echo nameserver 8.8.8.4 >> /etc/resolv.conf\"'", configuration)
     if $session.ipv6
       provider = get_provider(configuration)
       command = ''
