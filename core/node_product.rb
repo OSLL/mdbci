@@ -294,7 +294,7 @@ class NodeProduct
           $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0]
           # execute command
           cmd = install_product_cmd(platform[0], node[0], packages)
-          result = ShellCommands.run_command($out, command)
+          result = ShellCommands.run_command($out, cmd)
           vagrant_out = result[:output]
           $out.info vagrant_out
           raise "command #{cmd} exit with non-zero exit code: #{result[:value].exitstatus}" if result[:value].exitstatus != 0
@@ -308,7 +308,7 @@ class NodeProduct
         $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
         # execute command
         cmd = install_product_cmd(platform[0], node[0], packages)
-        result = ShellCommands.run_command($out, command)
+        result = ShellCommands.run_command($out, cmd)
         vagrant_out = result[:output]
         $out.info vagrant_out
         raise "command #{cmd} exit with non-zero exit code: #{result[:value].exitstatus}" if result[:value].exitstatus != 0
