@@ -1,4 +1,4 @@
-# MariaDb continuous integration infrastructure (MDBCI)
+# MariaDB continuous integration infrastructure (MDBCI)
 
 [MDBCI](https://github.com/mariadb-corporation/mdbci) is a set of tools for testing MariaDB components on the wide set of configurations. The main features of MDBCI are:
 
@@ -11,7 +11,7 @@
 
 MDBCI is a tool written in Ruby programming language. In order to ease the deployment of the tool the AppImage distribution is provided. It allows to use MDBCI as a standalone executable.
 
-MDBCI uses the [Vagrant](https://www.vagrantup.com/) and a set of low-level tools to create virtual machines and reliably destroy them when the need for them is over. Currently the following Vagrant backends are supported:
+MDBCI uses the [Vagrant](https://www.vagrantup.com/) and a set of low-level tools to create virtual machines and reliably destroy them when the need for them is over. Currently the following Vagrant back ends are supported:
 
 * [Libvirt](https://libvirt.org/) to manage kvm virtual machines,
 * Amazon EC2 virtual machines,
@@ -37,153 +37,115 @@ The list of repositories for application installation can be automatically updat
 
 In-depth architecture description is provided in the [separate document](docs/architecture.md).
 
-## MDBCI Syntax
+## MDBCI installation
 
-In this section mdbci commands are described. In order to get help in runtime just call mdbci with --help flag:
+MDBCI requires you to install the Libvirt in your Linux installation, install Vagrant and install required plugins. The installation scripts are now in work, but you can follow the [quickstart](docs/QUICKSTART.md) to install them manually.
 
-<pre>
-  ./mdbci --help
-</pre>
-  
-General syntax for mdbci is following:
+## MDBCI usage
 
-```
-mdbci [options] <show | setup | generate>
-```
+MDBCI is the command-line utility that has a lots of commands and options. A full overview of them is available from the [CLI documentation](docs/cli_help.md) or from the `mdbci` using the `--help` flag: `./mdbci --help`.
 
-### Flags
+The core steps required to create virtual machines using MDBCI are:
 
--h, --help:
-  Shows help screen
+1. Create or copy the configuration template that describes the VMs you want to create.
+2. Generate concrete configuration based on the template.
+3. Issue VMs creation command and wait for it's completion.
+4. Use the created VMs for required purposes. You may also snapshot the VMs state and revert to it if necessary.
+5. When done, call the destroy command that will terminate VMs and clear all the artifacts: configuration, template (may be kept) and network configuration file.
 
--t, --template [config file]:
-  Use [config file] for running instance. By default 'instance.json' will be used as config template.
+In the following section we will explore each step in detail. In the overview we will create two VMs: one with MariaDB database and another one with MaxScale server.
 
--b, --boxes [boxes file]:
-  Use [boxes file] for existing boxes. By default 'boxes.json'  will be used as boxes file.
+### Template creation
 
--n, --box-name [box name]:
-  Use [box name] for existing box names.
+Template is a JSON document that describes a set of virtual machines.
 
--f, --field [box config field]:
-  Use [box config field] for existing box config field.
-
--w, --override
-  Override previous configuration
-
--c, --command
-  Set command to run in sudo clause
-
--s, --silent
-  Keep silence, output only requested info or nothing if not available
-
--r, --repo-dir
-  Change default place for repo.d
-
--p, --product
-  Product name for setup repo and install product commands. Currently supported products: **MySQL**, **MariaDB**, **Galera**, **Maxscale**.
-
--v, --product-version
-  Product version for setup repo and install product commands.
-
--e, --template_validation_type
-  Template validation type (aws, no_aws)
-
--sn, --snapshot-name
-  name of the snapshot
-
---ipv6
-  if ipv6 must be added to network_config (also enables ipv6 for libvirt)
-
-### Commands:
-
-  show [boxes, boxinfo, platforms, versions, network, repos [config | config/node], keyfile [config/node], validate_template ]
-
-  generate
-
-  setup [boxes]
-
-  sudo --command 'command arguments' config/node
-
-  ssh --command 'command arguments' config/node
-
-  setup_repo --product 'product name' --product-version 'product_version' config/node
-    Setup product repo on the specified config/node. Install repo and update repo on th node/
-    Product name and its version are defined by **--product** and **--product-version** command option.
-    **P.S.** SSH access to the **MDBCI** boxes needs **NOPASSWD:ALL** option in the **/etc/sudoers** file for the mdbci ssh user.
-
-  **install_product --product maxscale config/node**
-    Install specified product by command option **--product** on a config/node. Currently supported only **Maxscale** product.
-
-  validate_template -e aws -template TEMPLATE
-
-  snapshot list --path-to-nodes T --node-name N
-
-  snapshot [take, revert, delete] --path-to-nodes T [ --node-name N ] --snapshot-name S
-
-  clone ORIGIN_CONFIG NEW_CONFIG_NAME
-
-### Examples:
-
-Run command inside of VM
-
-```
-  ./mdbci sudo --command "tail /var/log/anaconda.syslog" T/node0 --silent
-  ./mdbci ssh --command "cat anaconda.syslog" T/node0 --silent
-  ./mdbci setup_repo --product maxscale T/node0
-  ./mdbci setup_repo --product mariadb --product-version 10.0 T/node0
-  ./mdbci install_product --product 'maxscale' T/node0
-  ./mdbci validate_template --template TEMPLATE_PATH
-  ./mdbci show network_config T
-  ./mdbci show network_config T/node0
+```json
+{
+  "mariadb_host": {
+    "hostname": "mariadbhost",
+    "box": "centos_7_libvirt",
+    "product": {
+      "name": "mariadb",
+      "version": "10.3",
+      "cnf_template": "server1.cnf",
+      "cnf_template_path": "../cnf"
+    }
+  },
+  "maxscal_host": {
+    "hostname": "maxscalehost",
+    "box": "centos_7_libvirt",
+    "product": {
+      "name": "maxscale",
+      "version": "2.3"
+    }
+  }
+}
 ```
 
-Show repos with using alternative repo.d repository
-```
-  mdbci --repo-dir /home/testbed/config/repos show repos
-```
+Each host description contains the `hostname` and `box` fields. The first one is set to the created virtual machine. The `box` field describes the image that is being used for VM creation and the provider. In the example we use `centos_7_libvirt` that creates the CentOS 7 using the Libvirt provider.
 
-Cloning configuration (docker_light should be launched before clonning)
-```
-  mdbci clone docker_light cloned_docker_light
-```
+You can get the list of boxes using the `./mdbci show platforms` command.
 
+Then each host is setup with the product. The products will be installed on the machines. The mandatory fields for each product is it's name and version that is required to be installed.
 
-## MDBCI scripts
+When installing a database you must also specify the name of the configuration file and the path to the folder where the file is stored. It is advised to use absolute path in `cnf_template_path` as the relative path is calculated from within the configuration directory.
 
-MDBCI scripts are located in the **mdbci/scripts** directory. Their main goal is to setup and control Vagrant infrastructure.
+### Configuration creation
 
-* **./scripts/clean_vms.sh** - cleanup launched mdbci virtual machines (vbox, libvirt, docker) at the current platform. One parameter: substring
-* **./scripts/run_tests.sh** - run tests that does not require virtual machines to be running. One possible named parameter for printing output: [-s true|false]
-* **./scripts/install_mdbci_dependencies.sh** - install MDBCI dependencies and configure them (Debian/Ubuntu)
-* **./scripts/install_mdbci_dependencies_yum.sh** - install MDBCI dependencies and configure them (CentOS)
-
-Run script examples
+In order to create configuration you should issue the `generate` command. Let's assume you have called the template file in the previous step `config.json`. Then the generation command might look like this:
 
 ```
-  ./scripts/clean_vms.sh mdbci - find all VMs with ID prefix mdbci* and cleanup them.
-  ./scripts/run_tests.sh -s true - run tests without output from mdbci inner methods
-  ./scripts/run_tests.sh - run tests without output from mdbci inner methods
-  ./scripts/run_tests.sh -s false - run tests with output from mdbci inner methods
-  ./scripts/install_mdbci_dependencies.sh - install MDBCI dependencies
-  ./scripts/install_mdbci_dependencies_yum.sh - install MDBCI dependencies
+./mdbci generate --template config.json config
 ```
 
+After that the `config` directory containing the MDBCI configuration will be created.
 
+During the generation procedure MDBCI will look through the repositories to find the required image and product information. Please look through the warnings to determine the issues in the template.
 
-## Build parsing
+On this step you can safely remove the configuration directory, modify the template and regenerate the configuration once again.
 
-This repository also contain a solution developed for parsing jenkins build logs. See https://github.com/mariadb-corporation/mdbci/tree/integration/scripts/build_parser/README.md for more details.
+### Virtual machine creation
 
+MDBCI tries to reliably bring up the virtual machines. In order to achieve it the creation and configuration steps may be repeated several times if they fail. By default the procedure will be repeated 5 times.
+
+It is advised to reduce this number to one as it is sufficient to catch most issues. In order to run the configuration issue the following command:
+
+```
+./mdbci up --attempts 1 config
+```
+
+### Using the virtual machines
+
+After the successful startup the file `config_network_config` will be created. This file contains information about the network information of the created entities. You can either use this information or issue [commands directly](docs/examples.md) using special MDBCI commands.
+
+### Shutting down the virtual machines
+
+When finished and virtual machines are no longer needed you can issue destroy command that will:
+
+* stop the virtual machines reliably;
+* remove configuration directory;
+* remove network information file;
+* remove template that was used to generate the configuration.
+
+Issue the following command:
+
+```
+mdbci destroy config
+```
 
 ## Team
 
 * Project leader: Sergey Balandin
 * Developers:
+  * Timofey Turenko
+  * Andrey Vasilyev
+  * Maksim Kosterin
+  * Evgeny Vlasov
+  * Roman Vlasov
+* Former Developers:
   * Alexander Kaluzhniy
   * Kirill Krinkin
   * Ilfat Kinyaev
   * Mark Zaslavskiy
-* Former developers:
   * Tatyana Berlenko
   * Kirill Yudenok

@@ -1,7 +1,6 @@
 # Quickstart
 
-These instructions install the bare minimum that is required to run the MaxScale
-system test setup. This configuration requires about 10GB of memory to run.
+These instructions install the bare minimum that is required to run the MaxScale system test setup. This configuration requires about 10GB of memory to run.
 
 ## Install Dependencies
 
@@ -9,25 +8,24 @@ system test setup. This configuration requires about 10GB of memory to run.
 
 ```
 sudo yum -y install libvirt-client qemu git
-sudo yum -y install https://releases.hashicorp.com/vagrant/2.1.5/vagrant_2.1.5_x86_64.rpm
+sudo yum -y install https://releases.hashicorp.com/vagrant/2.2.0/vagrant_2.2.0_x86_64.rpm
 ```
 
 ### Debian/Ubuntu
 
 ```
 sudo apt-get update
-sudo apt-get -y install libxslt-dev libxml2-dev libvirt-dev wget git cmake wget
-wget https://releases.hashicorp.com/vagrant/2.1.5/vagrant_2.1.5_x86_64.deb
-sudo dpkg -i vagrant_2.1.5_x86_64.deb
-
+sudo apt-get -y install build-essential libxslt-dev libxml2-dev libvirt-dev wget git cmake wget
+wget https://releases.hashicorp.com/vagrant/2.2.0/vagrant_2.2.0_x86_64.deb
+sudo dpkg -i vagrant_2.2.0_x86_64.deb
+rm vagrant_2.2.0_x86_64.deb
 ```
 
 ## Prepare the Environment
 
 ```
-vagrant plugin install vagrant-omnibus
-vagrant plugin install vagrant-mutate
-vagrant plugin install vagrant-libvirt
+vagrant plugin install vagrant-libvirt --plugin-version 0.0.43
+vagrant plugin install vagrant-aws --plugin-version 0.7.2
 sudo mkdir /var/lib/libvirt/libvirt-images
 sudo virsh pool-create default dir --target=/var/lib/libvirt/libvirt-images
 sudo usermod -a -G libvirt $(whoami)
@@ -48,10 +46,17 @@ For configuring AWS access:
 ```
 and put AWS credentials
 
-After this, you need to log out and back in again. This needs to be done in order
-for the new groups to become active. 
+After this, you need to log out and back in again. This needs to be done in order for the new groups to become active.
 
 ## Generate Configuration and Start VMs
+
+You need to get example configuration out of the AppImage. The following command will place `confs` and `scripts` directory into the current working directory:
+
+```
+./mdbci deploy-examples
+```
+
+In order to generate configuration out of the sample template and create VMs run:
 
 ```
 ./mdbci generate -t confs/libvirt.json my-setup
