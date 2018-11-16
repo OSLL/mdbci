@@ -9,7 +9,8 @@ class SetupDependenciesCommand < BaseCommand
   end
 
   def execute
-    install_dependencies
+    result = install_dependencies
+    prepare_environment if result.success?
   end
 
   # Extracts linux distributor id from lsb_release command
@@ -41,5 +42,19 @@ class SetupDependenciesCommand < BaseCommand
       raise "Unknown platform"
     end
     result[:value]
+  end
+
+  # Install vagrant plugins and prepares mdbci environment
+  def prepare_environment
+    ShellCommands.run_command($out, 'vagrant plugin install vagrant-libvirt --plugin-version 0.0.43')
+    ShellCommands.run_command($out, 'vagrant plugin install vagrant-aws --plugin-version 0.7.2')
+    ShellCommands.run_command($out, 'sudo mkdir /var/lib/libvirt/libvirt-images')
+    ShellCommands.run_command($out, 'sudo virsh pool-create default dir --target=/var/lib/libvirt/libvirt-images')
+    ShellCommands.run_command($out, 'sudo usermod -a -G libvirt $(whoami)')
+    ShellCommands.run_command($out, 'vagrant box add --force dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box')
+    ShellCommands.run_command($out, 'mkdir mdbci')
+    ShellCommands.run_command($out, 'cd mdbci')
+    ShellCommands.run_command($out, 'wget http://max-tst-01.mariadb.com/ci-repository/mdbci')
+    ShellCommands.run_command($out, 'chmod a+x mdbci')
   end
 end
