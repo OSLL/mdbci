@@ -7,6 +7,7 @@
 # All rights reserved - Do Not Redistribute
 #
 
+include_recipe 'packages::setup_resolved'
 include_recipe 'packages::configure_apt'
 
 # install additional packages for all platform
