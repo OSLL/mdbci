@@ -10,7 +10,8 @@ class SetupDependenciesCommand < BaseCommand
 
   def execute
     result = install_dependencies
-    prepare_environment if result.success?
+    result = prepare_environment if result.success?
+    result.success? ? SUCCESS_RESULT : ERROR_RESULT
   end
 
   # Extracts linux distributor id from lsb_release command
@@ -34,7 +35,8 @@ class SetupDependenciesCommand < BaseCommand
       result = ShellCommands.run_command($out, "sudo yum -y install #{vagrant_url}.rpm") if result[:value].success?
     when 'debian', 'ubuntu'
       ShellCommands.run_command($out, 'sudo apt-get update')
-      result = ShellCommands.run_command($out, 'sudo apt-get -y install build-essential libxslt-dev libxml2-dev libvirt-dev wget git cmake wget')
+      result = ShellCommands.run_command($out, 'sudo apt-get -y install build-essential libxslt-dev '\
+                                                'libxml2-dev libvirt-dev wget git cmake wget')
       result = ShellCommands.run_command($out, "wget #{vagrant_url}.deb") if result[:value].success?
       result = ShellCommands.run_command($out, "sudo dpkg -i #{vagrant_package}.deb") if result[:value].success?
       ShellCommands.run_command($out, "rm #{vagrant_package}.deb")
@@ -46,15 +48,14 @@ class SetupDependenciesCommand < BaseCommand
 
   # Install vagrant plugins and prepares mdbci environment
   def prepare_environment
-    ShellCommands.run_command($out, 'vagrant plugin install vagrant-libvirt --plugin-version 0.0.43')
-    ShellCommands.run_command($out, 'vagrant plugin install vagrant-aws --plugin-version 0.7.2')
-    ShellCommands.run_command($out, 'sudo mkdir /var/lib/libvirt/libvirt-images')
-    ShellCommands.run_command($out, 'sudo virsh pool-create default dir --target=/var/lib/libvirt/libvirt-images')
-    ShellCommands.run_command($out, 'sudo usermod -a -G libvirt $(whoami)')
-    ShellCommands.run_command($out, 'vagrant box add --force dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box')
-    ShellCommands.run_command($out, 'mkdir mdbci')
-    ShellCommands.run_command($out, 'cd mdbci')
-    ShellCommands.run_command($out, 'wget http://max-tst-01.mariadb.com/ci-repository/mdbci')
-    ShellCommands.run_command($out, 'chmod a+x mdbci')
+    result = ShellCommands.run_command($out, 'vagrant plugin install vagrant-libvirt --plugin-version 0.0.43')
+    result = ShellCommands.run_command($out, 'vagrant plugin install vagrant-aws --plugin-version 0.7.2') if result[:value].success?
+    result = ShellCommands.run_command($out, 'sudo mkdir -p /var/lib/libvirt/libvirt-images')  if result[:value].success?
+    result = ShellCommands.run_command($out, 'sudo virsh pool-create default dir '\
+                                              '--target=/var/lib/libvirt/libvirt-images') if result[:value].success?
+    result = ShellCommands.run_command($out, 'sudo usermod -a -G libvirt $(whoami)') if result[:value].success?
+    result = ShellCommands.run_command($out, 'vagrant box add --force dummy '\
+                                              'https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box') if result[:value].success?
+    result[:value]
   end
 end
