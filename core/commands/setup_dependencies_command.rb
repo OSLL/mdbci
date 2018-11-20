@@ -51,8 +51,8 @@ class SetupDependenciesCommand < BaseCommand
     result = ShellCommands.run_command($out, 'vagrant plugin install vagrant-libvirt --plugin-version 0.0.43')
     result = ShellCommands.run_command($out, 'vagrant plugin install vagrant-aws --plugin-version 0.7.2') if result[:value].success?
     result = ShellCommands.run_command($out, 'sudo mkdir -p /var/lib/libvirt/libvirt-images')  if result[:value].success?
-    result = ShellCommands.run_command($out, 'sudo virsh pool-create default dir '\
-                                              '--target=/var/lib/libvirt/libvirt-images') if result[:value].success?
+    result = ShellCommands.run_command($out, 'sudo virsh pool-create-as default dir '\
+                                              '--target /var/lib/libvirt/libvirt-images') if result[:value].success?
     result = ShellCommands.run_command($out, 'sudo usermod -a -G libvirt $(whoami)') if result[:value].success?
     result = ShellCommands.run_command($out, 'vagrant box add --force dummy '\
                                               'https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box') if result[:value].success?
