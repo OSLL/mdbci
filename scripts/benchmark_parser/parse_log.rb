@@ -119,7 +119,7 @@ def extract_sysbench_results_raw(input_file)
   end
 
   if sysbench_results_raw == ''
-    raise "sysbench_results_raw not found"
+    raise "Performance test failed before gathering SQL statistics"
   end
   return sysbench_results_raw
 end
@@ -271,13 +271,17 @@ end
 
 def main
   options = parse_cmd_args
-  sysbench_results_raw = extract_sysbench_results_raw(options[:input_file])
-  write_sysbench_results_to_env_file(sysbench_results_raw, options[:env_file])
-  hash = parse_sysbench_results_raw(sysbench_results_raw)
-  hash = flatten_keys(hash)
-  hash = split_slash_keys(hash)
-  hash = clean_values(hash)
-  hash = remove_slashes_from_keys(hash)
+  begin
+    sysbench_results_raw = extract_sysbench_results_raw(options[:input_file])
+    write_sysbench_results_to_env_file(sysbench_results_raw, options[:env_file])
+    hash = parse_sysbench_results_raw(sysbench_results_raw)
+    hash = flatten_keys(hash)
+    hash = split_slash_keys(hash)
+    hash = clean_values(hash)
+    hash = remove_slashes_from_keys(hash)
+  rescue RuntimeError => e
+    puts e.message
+  end
   build_params_hash = get_build_params_hash
   update_build_params_hash_with_build_log(build_params_hash, options[:input_file])
   result = { BUILD_PARAMS => build_params_hash, BENCHMARK_RESULTS => hash}
