@@ -4,6 +4,8 @@ require_relative 'base_command'
 require_relative '../services/shell_commands'
 
 class SetupDependenciesCommand < BaseCommand
+  include ShellCommands
+
   def self.synopsis
     'Installs vagrant and its dependencies'
   end
@@ -22,7 +24,7 @@ class SetupDependenciesCommand < BaseCommand
   # @return [String] Linux distribution name
   def get_linux_distro
     lsb_distributor_regex = /^Distributor ID:\s*(\w+)$/
-    lsb_output = ShellCommands.run_command($out, 'lsb_release -a')
+    lsb_output = run_command('lsb_release -a')
     lsb_output[:output].split('\n').each do |line|
       return line.match(lsb_distributor_regex)[1] if line =~ lsb_distributor_regex
     end
@@ -34,15 +36,15 @@ class SetupDependenciesCommand < BaseCommand
     vagrant_url = "https://releases.hashicorp.com/vagrant/2.2.0/#{vagrant_package}"
     case distro
     when 'centos'
-      result = ShellCommands.run_command($out, 'sudo yum -y install libvirt-client qemu git')
-      result = ShellCommands.run_command($out, "sudo yum -y install #{vagrant_url}.rpm") if result[:value].success?
+      result = run_command('sudo yum -y install libvirt-client qemu git')
+      result = run_command("sudo yum -y install #{vagrant_url}.rpm") if result[:value].success?
     when 'debian', 'ubuntu'
-      ShellCommands.run_command($out, 'sudo apt-get update')
-      result = ShellCommands.run_command($out, 'sudo apt-get -y install build-essential libxslt-dev '\
-                                               'libxml2-dev libvirt-dev wget git cmake')
-      result = ShellCommands.run_command($out, "wget #{vagrant_url}.deb") if result[:value].success?
-      result = ShellCommands.run_command($out, "sudo dpkg -i #{vagrant_package}.deb") if result[:value].success?
-      ShellCommands.run_command($out, "rm #{vagrant_package}.deb")
+      run_command('sudo apt-get update')
+      result = run_command('sudo apt-get -y install build-essential libxslt-dev '\
+                           'libxml2-dev libvirt-dev wget git cmake')
+      result = run_command("wget #{vagrant_url}.deb") if result[:value].success?
+      result = run_command("sudo dpkg -i #{vagrant_package}.deb") if result[:value].success?
+      run_command("rm #{vagrant_package}.deb")
     else
       raise 'Unknown platform'
     end
@@ -51,19 +53,19 @@ class SetupDependenciesCommand < BaseCommand
 
   # Install vagrant plugins and prepares mdbci environment
   def prepare_environment
-    result = ShellCommands.run_command($out, 'vagrant plugin install vagrant-libvirt --plugin-version 0.0.43')
-    result = ShellCommands.run_command($out, 'vagrant plugin install vagrant-aws --plugin-version 0.7.2') if result[:value].success?
-    result = ShellCommands.run_command($out, 'sudo mkdir -p /var/lib/libvirt/libvirt-images')  if result[:value].success?
-    result = ShellCommands.run_command($out, 'sudo virsh pool-create-as default dir '\
-                                             '--target /var/lib/libvirt/libvirt-images') if result[:value].success?
-    result = ShellCommands.run_command($out, 'sudo usermod -a -G libvirt $(whoami)') if result[:value].success?
-    result = ShellCommands.run_command($out, 'vagrant box add --force dummy '\
-                                              'https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box') if result[:value].success?
+    result = run_command('vagrant plugin install vagrant-libvirt --plugin-version 0.0.43')
+    result = run_command('vagrant plugin install vagrant-aws --plugin-version 0.7.2') if result[:value].success?
+    result = run_command('sudo mkdir -p /var/lib/libvirt/libvirt-images')  if result[:value].success?
+    result = run_command('sudo virsh pool-create-as default dir '\
+                         '--target /var/lib/libvirt/libvirt-images') if result[:value].success?
+    result = run_command('sudo usermod -a -G libvirt $(whoami)') if result[:value].success?
+    result = run_command('vagrant box add --force dummy '\
+                         'https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box') if result[:value].success?
     result[:value]
   end
 
   def delete_dependencies(distro)
-    $stdout.print("This operation will uninstall following packages: 
+    $stdout.print("This operation will uninstall following packages:
   vagrant,
   #{distro == 'centos' ? 'libvirt-client' : 'libvirt-dev'},
 as well as all installed vagrant plugins and 'default' libvirt pool.
@@ -84,9 +86,9 @@ Are you sure you want to continue? [y/N]: ")
   end
 
   def delete_libvirt_pool
-    ShellCommands.run_command($out, 'sudo virsh pool-destroy default')
-    ShellCommands.run_command($out, 'sudo virsh pool-delete default')
-    ShellCommands.run_command($out, 'sudo virsh pool-undefine default')
+    run_command('sudo virsh pool-destroy default')
+    run_command('sudo virsh pool-delete default')
+    run_command('sudo virsh pool-undefine default')
   end
 
   def delete_vagrant_plugins
@@ -95,21 +97,21 @@ Are you sure you want to continue? [y/N]: ")
     rescue
       $stdout.puts('Vagrant in not installed')
     else
-      vagrant_plugin_list = ShellCommands.run_command($out, 'vagrant plugin list')
+      vagrant_plugin_list = run_command('vagrant plugin list')
       return if vagrant_plugin_list[:output] == 'No plugins installed.'
       plugins = vagrant_plugin_list[:output].split(/ \(.+\)\s+\- Version Constraint: [0-9.]+\n/)
-      ShellCommands.run_command($out, "vagrant plugin uninstall #{plugins.join(" ")}")
+      run_command("vagrant plugin uninstall #{plugins.join(' ')}")
     end
   end
 
   def delete_packages(distro)
     case distro
     when 'centos'
-      ShellCommands.run_command($out, 'sudo yum -y remove vagrant')
-      ShellCommands.run_command($out, 'sudo yum -y remove libvirt-client')
+      run_command('sudo yum -y remove vagrant')
+      run_command('sudo yum -y remove libvirt-client')
     when 'debian', 'ubuntu'
-      ShellCommands.run_command($out, 'sudo dpkg -P vagrant')
-      ShellCommands.run_command($out, 'sudo dpkg -P libvirt-dev')
+      run_command('sudo dpkg -P vagrant')
+      run_command('sudo dpkg -P libvirt-dev')
     end
   end
 end
