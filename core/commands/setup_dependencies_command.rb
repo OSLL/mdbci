@@ -9,7 +9,11 @@ class SetupDependenciesCommand < BaseCommand
   end
 
   def execute
-    result = install_dependencies
+    distro = get_linux_distro.downcase
+    if @env.reinstall
+      return SUCCESS_RESULT unless delete_dependencies(distro)
+    end
+    result = install_dependencies(distro)
     result = prepare_environment if result.success?
     result.success? ? SUCCESS_RESULT : ERROR_RESULT
   end
@@ -25,8 +29,7 @@ class SetupDependenciesCommand < BaseCommand
   end
 
   # Installs dependencies for supported platforms
-  def install_dependencies
-    distro = get_linux_distro.downcase
+  def install_dependencies(distro)
     vagrant_package = 'vagrant_2.2.0_x86_64'
     vagrant_url = "https://releases.hashicorp.com/vagrant/2.2.0/#{vagrant_package}"
     case distro
@@ -36,12 +39,12 @@ class SetupDependenciesCommand < BaseCommand
     when 'debian', 'ubuntu'
       ShellCommands.run_command($out, 'sudo apt-get update')
       result = ShellCommands.run_command($out, 'sudo apt-get -y install build-essential libxslt-dev '\
-                                                'libxml2-dev libvirt-dev wget git cmake wget')
+                                               'libxml2-dev libvirt-dev wget git cmake')
       result = ShellCommands.run_command($out, "wget #{vagrant_url}.deb") if result[:value].success?
       result = ShellCommands.run_command($out, "sudo dpkg -i #{vagrant_package}.deb") if result[:value].success?
       ShellCommands.run_command($out, "rm #{vagrant_package}.deb")
     else
-      raise "Unknown platform"
+      raise 'Unknown platform'
     end
     result[:value]
   end
@@ -52,10 +55,61 @@ class SetupDependenciesCommand < BaseCommand
     result = ShellCommands.run_command($out, 'vagrant plugin install vagrant-aws --plugin-version 0.7.2') if result[:value].success?
     result = ShellCommands.run_command($out, 'sudo mkdir -p /var/lib/libvirt/libvirt-images')  if result[:value].success?
     result = ShellCommands.run_command($out, 'sudo virsh pool-create-as default dir '\
-                                              '--target /var/lib/libvirt/libvirt-images') if result[:value].success?
+                                             '--target /var/lib/libvirt/libvirt-images') if result[:value].success?
     result = ShellCommands.run_command($out, 'sudo usermod -a -G libvirt $(whoami)') if result[:value].success?
     result = ShellCommands.run_command($out, 'vagrant box add --force dummy '\
                                               'https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box') if result[:value].success?
     result[:value]
+  end
+
+  def delete_dependencies(distro)
+    $stdout.print("This operation will uninstall following packages: 
+  vagrant,
+  #{distro == 'centos' ? 'libvirt-client' : 'libvirt-dev'},
+as well as all installed vagrant plugins and 'default' libvirt pool.
+Are you sure you want to continue? [y/N]: ")
+    while input = gets.strip
+      if input == 'y'
+        break
+      elsif input == 'N'
+        return
+      else
+        $stdout.print('Please enter one of the options [y/N]: ')
+      end
+    end
+    delete_libvirt_pool
+    delete_vagrant_plugins
+    delete_packages(distro)
+    SUCCESS_RESULT
+  end
+
+  def delete_libvirt_pool
+    ShellCommands.run_command($out, 'sudo virsh pool-destroy default')
+    ShellCommands.run_command($out, 'sudo virsh pool-delete default')
+    ShellCommands.run_command($out, 'sudo virsh pool-undefine default')
+  end
+
+  def delete_vagrant_plugins
+    begin
+      `vagrant -v`
+    rescue
+      $stdout.puts('Vagrant in not installed')
+    else
+      vagrant_plugin_list = ShellCommands.run_command($out, 'vagrant plugin list')
+      return if vagrant_plugin_list[:output] == 'No plugins installed.'
+      plugins = vagrant_plugin_list[:output].split(/ \(.+\)\s+\- Version Constraint: [0-9.]+\n/)
+      ShellCommands.run_command($out, "vagrant plugin uninstall #{plugins.join(" ")}")
+    end
+  end
+
+  def delete_packages(distro)
+    case distro
+    when 'centos'
+      ShellCommands.run_command($out, 'sudo yum -y remove vagrant')
+      ShellCommands.run_command($out, 'sudo yum -y remove libvirt-client')
+    when 'debian', 'ubuntu'
+      ShellCommands.run_command($out, 'sudo dpkg -P vagrant')
+      ShellCommands.run_command($out, 'sudo dpkg -P libvirt-dev')
+    end
   end
 end
