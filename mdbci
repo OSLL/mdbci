@@ -27,6 +27,7 @@ opts = GetoptLong.new(
   ['--silent', '-s', GetoptLong::NO_ARGUMENT],
   ['--snapshot-name', GetoptLong::REQUIRED_ARGUMENT],
   ['--template', '-t', GetoptLong::REQUIRED_ARGUMENT],
+  ['--reinstall', GetoptLong::NO_ARGUMENT],
 )
 
 $mdbci_exec_dir = File.expand_path(File.dirname(File.realpath(__FILE__)))
@@ -123,6 +124,9 @@ begin
 
     when '--help'
       session.show_help = true
+
+    when '--reinstall'
+      session.reinstall = true
 
     else
       out.error 'Option is not supported: ' + opt

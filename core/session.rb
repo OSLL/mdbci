@@ -15,6 +15,7 @@ require_relative 'commands/generate_product_repositories_command'
 require_relative 'commands/help_command'
 require_relative 'commands/configure_command'
 require_relative 'commands/deploy_command'
+require_relative 'commands/setup_dependencies_command'
 require_relative 'constants'
 require_relative 'docker_manager'
 require_relative 'helper'
@@ -63,6 +64,7 @@ class Session
   attr_reader :aws_service
   attr_reader :tool_config
   attr_accessor :show_help
+  attr_accessor :reinstall
 
   PLATFORM = 'platform'
   VAGRANT_NO_PARALLEL = '--no-parallel'
@@ -554,6 +556,9 @@ EOF
       exit_code = command.execute
     when 'validate_template'
       exit_code = validate_template
+    when 'setup-dependencies'
+      command = SetupDependenciesCommand.new(ARGV, self, $out)
+      exit_code = command.execute()
     else
       $out.error 'Unknown mdbci command. Please look help!'
       command = HelpCommand.new(ARGV, self, $out)
