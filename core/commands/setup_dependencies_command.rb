@@ -30,6 +30,8 @@ class SetupDependenciesCommand < BaseCommand
     result.success? ? SUCCESS_RESULT : ERROR_RESULT
   end
 
+  private
+
   # Extracts linux distributor id from lsb_release command
   # @return [String] Linux distribution name
   def get_linux_distro
