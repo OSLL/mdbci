@@ -70,14 +70,10 @@ class SetupDependenciesCommand < BaseCommand
   libvirt-dev,
 as well as all installed vagrant plugins and 'default' libvirt pool.
 Are you sure you want to continue? [y/N]: ")
-    while input = gets.strip
-      if input == 'y'
-        return true
-      elsif input == 'N'
-        return false
-      else
-        $stdout.print('Please enter one of the options [y/N]: ')
-      end
+    while (input = gets.strip)
+      return true if input == 'y'
+      return false if input == 'N'
+      $stdout.print('Please enter one of the options [y/N]: ')
     end
   end
 
@@ -90,16 +86,14 @@ Are you sure you want to continue? [y/N]: ")
   end
 
   def delete_vagrant_plugins
-    begin
-      `vagrant -v`
-    rescue
-      $stdout.puts('Vagrant in not installed')
-    else
-      vagrant_plugin_list = run_command('vagrant plugin list')
-      return if vagrant_plugin_list[:output] == 'No plugins installed.'
-      plugins = vagrant_plugin_list[:output].split(/ \(.+\)\s+\- Version Constraint: [0-9.]+\n/)
-      run_command("vagrant plugin uninstall #{plugins.join(' ')}")
-    end
+    `vagrant -v`
+  rescue Errno::ENOENT
+    $stdout.puts('Vagrant in not installed')
+  else
+    vagrant_plugin_list = run_command('vagrant plugin list')
+    return if vagrant_plugin_list[:output] == 'No plugins installed.'
+    plugins = vagrant_plugin_list[:output].split(/ \(.+\)\s+\- Version Constraint: [0-9.]+\n/)
+    run_command("vagrant plugin uninstall #{plugins.join(' ')}")
   end
 end
 
