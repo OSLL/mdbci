@@ -112,6 +112,29 @@ module ShellCommands
     end
   end
 
+  # Run sequence of commands, gather the standard output from each and save the process results
+  #
+  # @param commands [String[]] command to run
+  # @param options [Hash] parameters to pass to Open3 method
+  # @param env [Hash] environment to run command in
+  # @param until_first_error [Boolean] abort after first encountered error
+  def self.run_sequence(logger, commands, options = {}, env = ShellCommands.environment, until_first_error = true)
+    commands.inject({output: ''}) do |acc, command|
+      result = ShellCommands.run_command(logger, command, options, env)
+      acc[:output] += result[:output]
+      acc[:value] = result[:value]
+      if until_first_error
+        break acc unless result[:value].success?
+      end
+      acc
+    end
+  end
+
+  # Wrapper method for the module method
+  def run_sequence(commands, options = {}, env = ShellCommands.environment, until_first_error: true)
+    ShellCommands.run_sequence(@ui, commands, options, env, until_first_error)
+  end
+
   # Execute the command, log stdout and stderr. If command was not
   # successful, then print information to error stream.
   #
