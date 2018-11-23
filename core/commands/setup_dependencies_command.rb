@@ -44,15 +44,14 @@ class SetupDependenciesCommand < BaseCommand
 
   # Install vagrant plugins and prepares mdbci environment
   def prepare_environment
-    result = run_command('vagrant plugin install vagrant-libvirt --plugin-version 0.0.43')
-    result = run_command('vagrant plugin install vagrant-aws --plugin-version 0.7.2') if result[:value].success?
-    result = run_command('sudo mkdir -p /var/lib/libvirt/libvirt-images') if result[:value].success?
-    result = run_command('sudo virsh pool-create-as default dir '\
-                         '--target /var/lib/libvirt/libvirt-images') if result[:value].success?
-    result = run_command('sudo usermod -a -G libvirt $(whoami)') if result[:value].success?
-    result = run_command('vagrant box add --force dummy '\
-                         'https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box') if result[:value].success?
-    result[:value]
+    run_sequence([
+                   'vagrant plugin install vagrant-libvirt --plugin-version 0.0.43',
+                   'vagrant plugin install vagrant-aws --plugin-version 0.7.2',
+                   'sudo mkdir -p /var/lib/libvirt/libvirt-images',
+                   'sudo virsh pool-create-as default dir --target /var/lib/libvirt/libvirt-images',
+                   'sudo usermod -a -G libvirt $(whoami)',
+                   'vagrant box add --force dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box'
+                 ])[:value]
   end
 
   def delete_packages
@@ -66,11 +65,11 @@ class SetupDependenciesCommand < BaseCommand
   # Ask user to confirm clean installation
   def ask_confirmation
     $stdout.print("This operation will uninstall following packages:
-      vagrant,
-      libvirt-client,
-      libvirt-dev,
-    as well as all installed vagrant plugins and 'default' libvirt pool.
-    Are you sure you want to continue? [y/N]: ")
+  vagrant,
+  libvirt-client,
+  libvirt-dev,
+as well as all installed vagrant plugins and 'default' libvirt pool.
+Are you sure you want to continue? [y/N]: ")
     while input = gets.strip
       if input == 'y'
         return true
@@ -83,9 +82,11 @@ class SetupDependenciesCommand < BaseCommand
   end
 
   def delete_libvirt_pool
-    run_command('sudo virsh pool-destroy default')
-    run_command('sudo virsh pool-delete default')
-    run_command('sudo virsh pool-undefine default')
+    run_sequence([
+                   'sudo virsh pool-destroy default',
+                   'sudo virsh pool-delete default',
+                   'sudo virsh pool-undefine default'
+                 ], until_first_error: false)
   end
 
   def delete_vagrant_plugins
@@ -130,14 +131,17 @@ end
 # Class that manages CentOS specific packages
 class CentosDependencyManager < DependencyManager
   def install_dependencies
-    result = run_command('sudo yum -y install libvirt-client qemu git')
-    result = run_command("sudo yum -y install #{VAGNRAT_URL}.rpm") if result[:value].success?
-    result[:value]
+    run_sequence([
+                   'sudo yum -y install libvirt-client qemu git',
+                   "sudo yum -y install #{VAGNRAT_URL}.rpm"
+                 ])[:value]
   end
 
   def delete_dependencies
-    run_command('sudo yum -y remove vagrant')
-    run_command('sudo yum -y remove libvirt-client')
+    run_sequence([
+                   'sudo yum -y remove vagrant',
+                   'sudo yum -y remove libvirt-client'
+                 ], until_first_error: false)
   end
 end
 
@@ -145,16 +149,20 @@ end
 class DebianDependencyManager < DependencyManager
   def install_dependencies
     run_command('sudo apt-get update')
-    result = run_command('sudo apt-get -y install build-essential libxslt-dev '\
-                         'libxml2-dev libvirt-dev wget git cmake')
-    result = run_command("wget #{VAGNRAT_URL}.deb") if result[:value].success?
-    result = run_command("sudo dpkg -i #{VAGRANT_PACKAGE}.deb") if result[:value].success?
+    result = run_sequence([
+                            'sudo apt-get -y install build-essential libxslt-dev '\
+                            'libxml2-dev libvirt-dev wget git cmake',
+                            "wget #{VAGNRAT_URL}.deb",
+                            "sudo dpkg -i #{VAGRANT_PACKAGE}.deb"
+                          ])
     run_command("rm #{VAGRANT_PACKAGE}.deb")
     result[:value]
   end
 
   def delete_dependencies
-    run_command('sudo dpkg -P vagrant')
-    run_command('sudo dpkg -P libvirt-dev')
+    run_sequence([
+                   'sudo dpkg -P vagrant',
+                   'sudo dpkg -P libvirt-dev'
+                 ], until_first_error: false)
   end
 end
