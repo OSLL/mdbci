@@ -54,25 +54,30 @@ class SetupDependenciesCommand < BaseCommand
   end
 
   def delete_packages
-    $stdout.print("This operation will uninstall following packages:
-  vagrant,
-  libvirt-client,
-  libvirt-dev,
-as well as all installed vagrant plugins and 'default' libvirt pool.
-Are you sure you want to continue? [y/N]: ")
-    while input = gets.strip
-      if input == 'y'
-        break
-      elsif input == 'N'
-        return
-      else
-        $stdout.print('Please enter one of the options [y/N]: ')
-      end
-    end
+    return unless ask_confirmation
     delete_libvirt_pool
     delete_vagrant_plugins
     @dependency_manager.delete_dependencies
     SUCCESS_RESULT
+  end
+
+  # Ask user to confirm clean installation
+  def ask_confirmation
+    $stdout.print("This operation will uninstall following packages:
+      vagrant,
+      libvirt-client,
+      libvirt-dev,
+    as well as all installed vagrant plugins and 'default' libvirt pool.
+    Are you sure you want to continue? [y/N]: ")
+    while input = gets.strip
+      if input == 'y'
+        return true
+      elsif input == 'N'
+        return false
+      else
+        $stdout.print('Please enter one of the options [y/N]: ')
+      end
+    end
   end
 
   def delete_libvirt_pool
