@@ -111,12 +111,10 @@ end
 
 # Install packages
 case node[:platform_family]
-when "suse"
-  execute "install" do
-    command "zypper -n install maxscale"
-  end
-when "debian"
-  package 'maxscale'
+# when "suse"
+#   execute "install" do
+#     command "zypper -n install maxscale maxscale-experimental"
+#   end
 when "windows"
   windows_package "maxscale" do
     source "#{Chef::Config[:file_cache_path]}/maxscale.msi"
@@ -125,4 +123,5 @@ when "windows"
   end
 else
   package 'maxscale'
+  package 'maxscale-experimental'
 end
