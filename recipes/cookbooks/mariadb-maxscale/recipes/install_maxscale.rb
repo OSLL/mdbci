@@ -1,5 +1,5 @@
-include_recipe "mariadb-maxscale::maxscale_repos"
 include_recipe "ntp::default"
+include_recipe "mariadb-maxscale::maxscale_repos"
 
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
@@ -93,14 +93,6 @@ case node[:platform_family]
     end
 end # save iptables rules
 
-# Set timezone to Europe/Paris
-case node[:platform_family]
-when "debian", "ubuntu", "rhel", "fedora", "centos", "suse", "opensuse"
-  execute "Set timezone to Europe/Paris" do
-    command "rm -f /etc/localtime && ln -s /usr/share/Europe/Paris /etc/localtime"
-  end
-end # iptables rules
-
 # Install bind-utils/dnsutils for nslookup
 case node[:platform_family]
 when "rhel", "centos"
@@ -119,12 +111,10 @@ end
 
 # Install packages
 case node[:platform_family]
-when "suse"
-  execute "install" do
-    command "zypper -n install maxscale"
-  end
-when "debian"
-  package 'maxscale'
+# when "suse"
+#   execute "install" do
+#     command "zypper -n install maxscale maxscale-experimental"
+#   end
 when "windows"
   windows_package "maxscale" do
     source "#{Chef::Config[:file_cache_path]}/maxscale.msi"
@@ -133,4 +123,5 @@ when "windows"
   end
 else
   package 'maxscale'
+  package 'maxscale-experimental'
 end
