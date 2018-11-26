@@ -125,6 +125,8 @@ class BuildResultsWriter
         write_results_table(id, name, result, test_time, core_dump_path)
       end
     end
+
+    id
   end
 end
 
@@ -163,7 +165,8 @@ def main
   begin
     require 'mysql2'
     writer = BuildResultsWriter.new
-    writer.write_results_from_input_file(input_file_path)
+    test_run_id = writer.write_results_from_input_file(input_file_path)
+    puts "LAST_WRITE_BUILD_RESULTS_ID: #{test_run_id}"
   rescue Exception => e
     puts e.message
     puts e.backtrace
