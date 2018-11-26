@@ -15,11 +15,11 @@ class SetupDependenciesCommand < BaseCommand
     info = <<-HELP
 'setup-dependencies' command prepares environment for starting virtual machines using MDBCI.
 
-First it installs Vagrant and suited libvirt package using native distribution package manager.
+First it installs Vagrant and suited libvirt development library using native distribution package manager.
 
 Then it installs 'vagrant-libvirt' and 'vagrant-aws' plugins for Vagrant.
 
-After that 'default' VM pool created for libvirt.
+After that 'default' VM pool created for libvirt and the current user added to the libvirt user group.
 
 OPTIONS:
   --reinstall:
@@ -43,15 +43,27 @@ Delete previously installed dependencies and VM pools
       show_help
       return SUCCESS_RESULT
     end
+    unless @dependency_manager
+      @ui.error('Unsupported linux distribution.')
+      @ui.error("Check 'mdbci setup-dependencies --help' for short manual installation instructions.")
+      return ERROR_RESULT
+    end
     if @env.reinstall
       return SUCCESS_RESULT unless delete_packages
     end
+    install
+  end
+
+  private
+
+  # Setups environment for mdbci
+  #
+  # @return [Integer] result of execution
+  def install
     result = @dependency_manager.install_dependencies
     result = prepare_environment if result.success?
     result.success? ? SUCCESS_RESULT : ERROR_RESULT
   end
-
-  private
 
   # Extracts linux distributor id from lsb_release command
   # @return [String] Linux distribution name
@@ -75,6 +87,9 @@ Delete previously installed dependencies and VM pools
                  ])[:value]
   end
 
+  # Deletes previously setup environment
+  #
+  # @return [Integer] result of execution
   def delete_packages
     return unless ask_confirmation
     delete_libvirt_pool
@@ -98,6 +113,7 @@ Are you sure you want to continue? [y/N]: ")
     end
   end
 
+  # Deletes 'defoult' libvirt pool
   def delete_libvirt_pool
     run_sequence([
                    'sudo virsh pool-destroy default',
@@ -106,6 +122,7 @@ Are you sure you want to continue? [y/N]: ")
                  ], until_first_error: false)
   end
 
+  # Deletes all vagrant plugins
   def delete_vagrant_plugins
     `vagrant -v`
   rescue Errno::ENOENT
