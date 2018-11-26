@@ -1,5 +1,5 @@
-include_recipe "mariadb-maxscale::maxscale_repos"
 include_recipe "ntp::default"
+include_recipe "mariadb-maxscale::maxscale_repos"
 
 # Turn off SElinux
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
@@ -92,14 +92,6 @@ case node[:platform_family]
       command "iptables-save > /etc/sysconfig/iptables"
     end
 end # save iptables rules
-
-# Set timezone to Europe/Paris
-case node[:platform_family]
-when "debian", "ubuntu", "rhel", "fedora", "centos", "suse", "opensuse"
-  execute "Set timezone to Europe/Paris" do
-    command "rm -f /etc/localtime && ln -s /usr/share/Europe/Paris /etc/localtime"
-  end
-end # iptables rules
 
 # Install bind-utils/dnsutils for nslookup
 case node[:platform_family]
