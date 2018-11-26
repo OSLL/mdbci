@@ -8,6 +8,7 @@ require_relative 'up_command'
 require_relative 'generate_product_repositories_command'
 require_relative 'configure_command'
 require_relative 'deploy_command'
+require_relative 'setup_dependencies_command'
 
 # Command provides a documentation to the user on how to use the mdbci tool.
 class HelpCommand < BaseCommand
@@ -35,7 +36,8 @@ class HelpCommand < BaseCommand
     'ssh' => 'Execute command on the configuration node.',
     'sudo' => 'Execute command using sudo on the node.',
     'up' => UpCommand.synopsis,
-    'validate_template' => 'Check that template has valid syntax.'
+    'validate_template' => 'Check that template has valid syntax.',
+    'setup-dependencies' => SetupDependenciesCommand.synopsis
   }.freeze
 
   # Show overview about all the commands that are available

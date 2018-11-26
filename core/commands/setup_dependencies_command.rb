@@ -8,7 +8,24 @@ class SetupDependenciesCommand < BaseCommand
   include ShellCommands
 
   def self.synopsis
-    'Installs vagrant and its dependencies'
+    'Install vagrant and its dependencies'
+  end
+
+  def show_help
+    info = <<-HELP
+'setup-dependencies' command prepares environment for starting virtual machines using MDBCI.
+
+First it installs Vagrant and suited libvirt package using native distribution package manager.
+
+Then it installs 'vagrant-libvirt' and 'vagrant-aws' plugins for Vagrant.
+
+After that 'default' VM pool created for libvirt.
+
+OPTIONS:
+  --reinstall:
+Delete previously installed dependencies and VM pools
+    HELP
+    @ui.info(info)
   end
 
   def initialize(arg, env, logger)
@@ -22,6 +39,10 @@ class SetupDependenciesCommand < BaseCommand
   end
 
   def execute
+    if @env.show_help
+      show_help
+      return SUCCESS_RESULT
+    end
     if @env.reinstall
       return SUCCESS_RESULT unless delete_packages
     end
