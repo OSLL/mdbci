@@ -22,14 +22,12 @@ case node[:platform_family]
   #
   when "debian", "ubuntu"
 
-    # Add repo key
-    execute "Key add" do
-      command "apt-key adv --recv-keys --keyserver keyserver.ubuntu.com " + node['maxscale']['repo_key']
-    end
-
-    addrepocmd = 'echo "deb '+ node['maxscale']['repo'] +' " >/etc/apt/sources.list.d/maxscale.list'
-    execute "Repository add" do
-      command addrepocmd
+    # Split MaxScale repository information into parts
+    repository = node['maxscale']['repo'].split(/\s+/)
+    apt_repository 'maxscale' do
+      key node['maxscale']['repo_key']
+      uri repository[0]
+      components repository.slice(1, repository.size)
     end
 
     execute "update" do
