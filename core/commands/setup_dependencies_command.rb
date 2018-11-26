@@ -68,8 +68,8 @@ Delete previously installed dependencies and VM pools
   # Extracts linux distributor id from lsb_release command
   # @return [String] Linux distribution name
   def get_linux_distro
-    lsb_distributor_regex = /^Distributor ID:\s*(\w+)$/
-    lsb_output = run_command('lsb_release -a')
+    lsb_distributor_regex = /^ID=(\w+)$/
+    lsb_output = run_command('cat /etc/os-release')
     lsb_output[:output].split('\n').each do |line|
       return line.match(lsb_distributor_regex)[1] if line =~ lsb_distributor_regex
     end
