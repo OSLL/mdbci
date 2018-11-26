@@ -68,7 +68,7 @@ Delete previously installed dependencies and VM pools
   # Extracts linux distributor id from lsb_release command
   # @return [String] Linux distribution name
   def get_linux_distro
-    lsb_distributor_regex = /^ID=(\w+)$/
+    lsb_distributor_regex = /^ID=\W*(\w+)\W*$/
     lsb_output = run_command('cat /etc/os-release')
     lsb_output[:output].split('\n').each do |line|
       return line.match(lsb_distributor_regex)[1] if line =~ lsb_distributor_regex
@@ -129,7 +129,7 @@ Are you sure you want to continue? [y/N]: ")
     $stdout.puts('Vagrant in not installed')
   else
     vagrant_plugin_list = run_command('vagrant plugin list')
-    return if vagrant_plugin_list[:output] == 'No plugins installed.'
+    return if vagrant_plugin_list[:output] =~ /No plugins installed/
     plugins = vagrant_plugin_list[:output].split(/ \(.+\)\s+\- Version Constraint: [0-9.]+\n/)
     run_command("vagrant plugin uninstall #{plugins.join(' ')}")
   end
