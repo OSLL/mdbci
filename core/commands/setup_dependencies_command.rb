@@ -163,17 +163,11 @@ end
 # Class that manages CentOS specific packages
 class CentosDependencyManager < DependencyManager
   def install_dependencies
-    run_sequence([
-                   'sudo yum -y install libvirt-client qemu git',
-                   "sudo yum -y install #{VAGNRAT_URL}.rpm"
-                 ])[:value]
+    run_command("sudo yum -y install libvirt-client libvirt-devel qemu git #{VAGNRAT_URL}.rpm")[:value]
   end
 
   def delete_dependencies
-    run_sequence([
-                   'sudo yum -y remove vagrant',
-                   'sudo yum -y remove libvirt-client'
-                 ], until_first_error: false)
+    run_command('sudo yum -y remove vagrant libvirt-client libvirt-devel')
   end
 end
 
