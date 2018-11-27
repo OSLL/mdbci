@@ -141,7 +141,7 @@ class DependencyManager
 
   VAGRANT_VERSION = '2.2.0'
   VAGRANT_PACKAGE = "vagrant_#{VAGRANT_VERSION}_x86_64"
-  VAGNRAT_URL = "https://releases.hashicorp.com/vagrant/#{VAGRANT_VERSION}/#{VAGRANT_PACKAGE}"
+  VAGRANT_URL = "https://releases.hashicorp.com/vagrant/#{VAGRANT_VERSION}/#{VAGRANT_PACKAGE}"
 
   def initialize(args, env, logger)
     @args = args
@@ -165,7 +165,7 @@ class CentosDependencyManager < DependencyManager
   def install_dependencies
     run_sequence([
                    'sudo yum -y install libvirt-client libvirt-devel qemu git',
-                   "sudo yum -y install #{VAGNRAT_URL}.rpm"
+                   "sudo yum -y install #{VAGRANT_URL}.rpm"
                  ])[:value]
   end
 
@@ -181,7 +181,7 @@ class DebianDependencyManager < DependencyManager
     result = run_sequence([
                             'sudo apt-get -y install build-essential libxslt-dev '\
                             'libxml2-dev libvirt-dev wget git cmake',
-                            "wget #{VAGNRAT_URL}.deb",
+                            "wget #{VAGRANT_URL}.deb",
                             "sudo dpkg -i #{VAGRANT_PACKAGE}.deb"
                           ])
     run_command("rm #{VAGRANT_PACKAGE}.deb")
