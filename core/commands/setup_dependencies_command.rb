@@ -62,6 +62,7 @@ Delete previously installed dependencies and VM pools
   def install
     result = @dependency_manager.install_dependencies
     result = prepare_environment if result.success?
+    result = create_libvirt_pool if result.success?
     result.success? ? SUCCESS_RESULT : ERROR_RESULT
   end
 
@@ -80,22 +81,27 @@ Delete previously installed dependencies and VM pools
     run_sequence([
                    'vagrant plugin install vagrant-libvirt --plugin-version 0.0.43',
                    'vagrant plugin install vagrant-aws --plugin-version 0.7.2',
-                   'sudo mkdir -p /var/lib/libvirt/libvirt-images',
-                   'sudo virsh pool-create-as default dir --target /var/lib/libvirt/libvirt-images',
                    'sudo usermod -a -G libvirt $(whoami)',
                    'vagrant box add --force dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box'
                  ])[:value]
   end
 
+  # Created new libvirt pool with 'default' as name
+  def create_libvirt_pool
+    delete_libvirt_pool if run_command('sudo virsh pool-info default')[:value].success?
+    images_dir = "#{ENV['HOME']}/libvirt-images"
+    run_sequence([
+                   "sudo mkdir -p #{images_dir}",
+                   "sudo virsh pool-create-as default dir --target #{images_dir}"
+                 ])[:value]
+  end
+
   # Deletes previously setup environment
-  #
-  # @return [Integer] result of execution
   def delete_packages
     return unless ask_confirmation
     delete_libvirt_pool
     delete_vagrant_plugins
     @dependency_manager.delete_dependencies
-    SUCCESS_RESULT
   end
 
   # Ask user to confirm clean installation
