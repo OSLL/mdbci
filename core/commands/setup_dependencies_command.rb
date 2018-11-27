@@ -61,9 +61,9 @@ Delete previously installed dependencies and VM pools
   # @return [Integer] result of execution
   def install
     result = @dependency_manager.install_dependencies
-    result = prepare_environment if result.success?
-    result = create_libvirt_pool if result.success?
-    result.success? ? SUCCESS_RESULT : ERROR_RESULT
+    result = prepare_environment if result == SUCCESS_RESULT
+    result = create_libvirt_pool if result == SUCCESS_RESULT
+    result
   end
 
   # Extracts linux distributor id from lsb_release command
@@ -83,7 +83,7 @@ Delete previously installed dependencies and VM pools
                    'vagrant plugin install vagrant-aws --plugin-version 0.7.2',
                    'sudo usermod -a -G libvirt $(whoami)',
                    'vagrant box add --force dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box'
-                 ])[:value]
+                 ])[:value].exitstatus
   end
 
   # Created new libvirt pool with 'default' as name
@@ -93,7 +93,7 @@ Delete previously installed dependencies and VM pools
     run_sequence([
                    "sudo mkdir -p #{images_dir}",
                    "sudo virsh pool-create-as default dir --target #{images_dir}"
-                 ])[:value]
+                 ])[:value].exitstatus
   end
 
   # Deletes previously setup environment
@@ -170,32 +170,31 @@ end
 class CentosDependencyManager < DependencyManager
   def install_dependencies
     required_packages = ['libvirt-client', 'libvirt-devel', 'git']
-    result = nil
     required_packages.each do |package|
       unless installed?(package)
         result = run_command("sudo yum install -y #{package}")[:value]
-        return result unless result.success?
+        return BaseCommand::ERROR_RESULT unless result.success?
       end
     end
-    install_vagrant || result
+    install_vagrant
   end
 
   # Installs or updates Vagrant if installed version older than VAGRANT_VERSION
   def install_vagrant
     if installed?('vagrant')
       vagrant_v = `vagrant -v`.match(/^Vagrant ([0-9.]+\s*)/)[1]
-      return if vagrant_v >= VAGRANT_VERSION
+      return BaseCommand::SUCCESS_RESULT if vagrant_v >= VAGRANT_VERSION
     end
-    run_command("sudo yum install #{VAGRANT_URL}")[:value]
+    run_command("sudo yum install #{VAGRANT_URL}")[:value].exitstatus
   end
 
   # Check if package is installed
   def installed?(package)
-    run_command("yum list installed #{package}")[:value].success? ? true : false
+    run_command("yum list installed #{package}")[:value].success?
   end
 
   def delete_dependencies
-    run_command('sudo yum -y remove vagrant libvirt-client libvirt-devel')
+    run_command('sudo yum -y remove vagrant libvirt-client libvirt-devel')[:value].exitstatus
   end
 end
 
@@ -210,7 +209,7 @@ class DebianDependencyManager < DependencyManager
                             "sudo dpkg -i #{VAGRANT_PACKAGE}.deb"
                           ])
     run_command("rm #{VAGRANT_PACKAGE}.deb")
-    result[:value]
+    result[:value].exitstatus
   end
 
   def delete_dependencies
