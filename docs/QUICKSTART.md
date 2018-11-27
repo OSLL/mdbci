@@ -7,7 +7,7 @@ These instructions install the bare minimum that is required to run the MaxScale
 ### CentOS
 
 ```
-sudo yum -y install libvirt-client qemu git
+sudo yum -y install libvirt-client libvirt-devel qemu git
 sudo yum -y install https://releases.hashicorp.com/vagrant/2.2.0/vagrant_2.2.0_x86_64.rpm
 ```
 
@@ -15,7 +15,7 @@ sudo yum -y install https://releases.hashicorp.com/vagrant/2.2.0/vagrant_2.2.0_x
 
 ```
 sudo apt-get update
-sudo apt-get -y install build-essential libxslt-dev libxml2-dev libvirt-dev wget git cmake wget
+sudo apt-get -y install build-essential libxslt-dev libxml2-dev libvirt-dev wget git cmake
 wget https://releases.hashicorp.com/vagrant/2.2.0/vagrant_2.2.0_x86_64.deb
 sudo dpkg -i vagrant_2.2.0_x86_64.deb
 rm vagrant_2.2.0_x86_64.deb
@@ -27,7 +27,7 @@ rm vagrant_2.2.0_x86_64.deb
 vagrant plugin install vagrant-libvirt --plugin-version 0.0.43
 vagrant plugin install vagrant-aws --plugin-version 0.7.2
 sudo mkdir /var/lib/libvirt/libvirt-images
-sudo virsh pool-create default dir --target=/var/lib/libvirt/libvirt-images
+sudo virsh pool-create-as default dir --target=/var/lib/libvirt/libvirt-images
 sudo usermod -a -G libvirt $(whoami)
 vagrant box add --force dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
 
