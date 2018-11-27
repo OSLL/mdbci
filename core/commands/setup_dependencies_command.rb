@@ -163,7 +163,10 @@ end
 # Class that manages CentOS specific packages
 class CentosDependencyManager < DependencyManager
   def install_dependencies
-    run_command("sudo yum -y install libvirt-client libvirt-devel qemu git #{VAGNRAT_URL}.rpm")[:value]
+    run_sequence([
+                   'sudo yum -y install libvirt-client libvirt-devel qemu git',
+                   "sudo yum -y install #{VAGNRAT_URL}.rpm"
+                 ])[:value]
   end
 
   def delete_dependencies
