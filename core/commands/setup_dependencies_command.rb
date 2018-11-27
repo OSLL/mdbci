@@ -185,7 +185,7 @@ class CentosDependencyManager < DependencyManager
       vagrant_v = `vagrant -v`.match(/^Vagrant ([0-9.]+\s*)/)[1]
       return BaseCommand::SUCCESS_RESULT if vagrant_v >= VAGRANT_VERSION
     end
-    run_command("sudo yum install #{VAGRANT_URL}")[:value].exitstatus
+    run_command("sudo yum install -y #{VAGRANT_URL}.rpm")[:value].exitstatus
   end
 
   # Check if package is installed
