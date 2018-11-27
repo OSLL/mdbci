@@ -163,10 +163,29 @@ end
 # Class that manages CentOS specific packages
 class CentosDependencyManager < DependencyManager
   def install_dependencies
-    run_sequence([
-                   'sudo yum -y install libvirt-client libvirt-devel qemu git',
-                   "sudo yum -y install #{VAGRANT_URL}.rpm"
-                 ])[:value]
+    required_packages = ['libvirt-client', 'libvirt-devel', 'git']
+    result = nil
+    required_packages.each do |package|
+      unless installed?(package)
+        result = run_command("sudo yum install -y #{package}")[:value]
+        return result unless result.success?
+      end
+    end
+    install_vagrant || result
+  end
+
+  # Installs or updates Vagrant if installed version older than VAGRANT_VERSION
+  def install_vagrant
+    if installed?('vagrant')
+      vagrant_v = `vagrant -v`.match(/^Vagrant ([0-9.]+\s*)/)[1]
+      return if vagrant_v >= VAGRANT_VERSION
+    end
+    run_command("sudo yum install #{VAGRANT_URL}")[:value]
+  end
+
+  # Check if package is installed
+  def installed?(package)
+    run_command("yum list installed #{package}")[:value].success? ? true : false
   end
 
   def delete_dependencies
