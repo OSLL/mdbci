@@ -45,7 +45,7 @@ Delete previously installed dependencies and VM pools
     end
     unless @dependency_manager
       @ui.error('Unsupported linux distribution.')
-      @ui.error("Check 'mdbci setup-dependencies --help' for short manual installation instructions.")
+      @ui.error('Check Quickstart manual at https://github.com/mariadb-corporation/mdbci/blob/integration/docs/QUICKSTART.md')
       return ERROR_RESULT
     end
     if @env.reinstall
