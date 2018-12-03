@@ -145,7 +145,7 @@ end
 class DependencyManager
   include ShellCommands
 
-  VAGRANT_VERSION = '2.2.0'
+  VAGRANT_VERSION = '2.2.1'
   VAGRANT_PACKAGE = "vagrant_#{VAGRANT_VERSION}_x86_64"
   VAGRANT_URL = "https://releases.hashicorp.com/vagrant/#{VAGRANT_VERSION}/#{VAGRANT_PACKAGE}"
 
