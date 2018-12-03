@@ -540,6 +540,9 @@ EOF
       exit_code = publicKeys(ARGV.shift)
     when 'setup'
       exit_code = setup(ARGV.shift)
+    when 'setup-dependencies'
+      command = SetupDependenciesCommand.new(ARGV, self, $out)
+      exit_code = command.execute()
     when 'setup_repo'
       exit_code = NodeProduct.setup_product_repo(ARGV.shift)
     when 'show'
@@ -556,9 +559,6 @@ EOF
       exit_code = command.execute
     when 'validate_template'
       exit_code = validate_template
-    when 'setup-dependencies'
-      command = SetupDependenciesCommand.new(ARGV, self, $out)
-      exit_code = command.execute()
     else
       $out.error 'Unknown mdbci command. Please look help!'
       command = HelpCommand.new(ARGV, self, $out)

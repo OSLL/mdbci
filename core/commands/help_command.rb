@@ -30,14 +30,14 @@ class HelpCommand < BaseCommand
     'install_product' => 'Install a product onto the configuration node.',
     'public_keys' => 'Copy ssh keys to configured nodes.',
     'setup' => 'Download boxes to the vagrant.',
+    'setup-dependencies' => SetupDependenciesCommand.synopsis,
     'setup_repo' => 'Install product repository and update it.',
     'show' => 'Get information about mdbci and configurations.',
     'snapshot' => SnapshotCommand.synopsis,
     'ssh' => 'Execute command on the configuration node.',
     'sudo' => 'Execute command using sudo on the node.',
     'up' => UpCommand.synopsis,
-    'validate_template' => 'Check that template has valid syntax.',
-    'setup-dependencies' => SetupDependenciesCommand.synopsis
+    'validate_template' => 'Check that template has valid syntax.'
   }.freeze
 
   # Show overview about all the commands that are available
