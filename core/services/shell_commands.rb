@@ -119,10 +119,14 @@ module ShellCommands
   # @param env [Hash] environment to run command in
   # @param until_first_error [Boolean] abort after first encountered error
   def self.run_sequence(logger, commands, options = {}, env = ShellCommands.environment, until_first_error = true)
-    commands.inject({output: ''}) do |acc, command|
+    commands.each_with_object(output: '') do |command, acc|
       result = ShellCommands.run_command(logger, command, options, env)
       acc[:output] += result[:output]
-      acc[:value] = result[:value]
+      if result[:value].success?
+        acc[:value] ||= result[:value]
+      else
+        acc[:value] = result[:value]
+      end
       if until_first_error
         break acc unless result[:value].success?
       end
