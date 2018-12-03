@@ -213,9 +213,6 @@ class DebianDependencyManager < DependencyManager
   end
 
   def delete_dependencies
-    run_sequence([
-                   'sudo dpkg -P vagrant',
-                   'sudo dpkg -P libvirt-dev'
-                 ], until_first_error: false)
+    run_command('sudo apt purge vagrant libvirt-dev')
   end
 end
