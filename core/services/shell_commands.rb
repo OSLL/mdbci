@@ -113,7 +113,7 @@ module ShellCommands
   end
 
   # Execute the command, log stdout and stderr. If command was not
-  # successfull, then print information to error stream.
+  # successful, then print information to error stream.
   #
   # @param command [String] command to run
   # @param message [String] message to display in case of failure
@@ -132,6 +132,25 @@ module ShellCommands
   # @param message [String] message to display in case of failure
   def check_command_in_dir(command, directory, message)
     check_command(command, message, { chdir: directory })
+  end
+
+  # Execute the command and raise error if it did not succeed
+  #
+  # @param command [String] command to run
+  # @param message [String] message to display in case of emergency
+  # @param log [Boolean] whether to log command output or not
+  # @param options [Hash] different options to pass to underlying implementation
+  def run_reliable_command(command, message = "Command #{command} failed.", log = true, options = {})
+    result = if log
+               run_command_and_log(command, false, options)
+             else
+               run_command(command, options)
+             end
+    unless result[:value].success?
+      @ui.error message
+      raise message
+    end
+    result
   end
 
   # Method reads the data from the stream in the non-blocking manner.
