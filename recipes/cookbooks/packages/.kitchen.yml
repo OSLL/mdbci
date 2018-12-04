@@ -7,10 +7,10 @@ provisioner:
   always_update_cookbooks: true
 
 platforms:
-  - name: ubuntu-16.04
+  - name: ubuntu-18.04
   - name: debian-9
 
 suites:
   - name: configure_apt
     run_list:
-      - recipe[packages::configure_apt]
+      - recipe[packages::default]
