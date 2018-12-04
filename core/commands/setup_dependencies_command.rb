@@ -176,7 +176,7 @@ end
 # Class that manages CentOS specific packages
 class CentosDependencyManager < DependencyManager
   def install_dependencies
-    required_packages = ['libvirt', 'libvirt-client', 'libvirt-devel', 'git']
+    required_packages = ['gcc', 'libvirt', 'libvirt-client', 'libvirt-devel', 'git']
     required_packages.each do |package|
       unless installed?(package)
         result = run_command("sudo yum install -y #{package}")[:value]
