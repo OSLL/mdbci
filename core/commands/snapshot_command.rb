@@ -3,9 +3,12 @@
 require 'open3'
 require_relative 'base_command'
 require_relative '../constants'
+require_relative '../services/shell_commands'
 
 # Snapshot command allows to manage snapshots of virtual environments for configurations.
 class SnapshotCommand < BaseCommand
+  include ShellCommands
+
   SNAPSHOT_ACTION_REQUIRED = 'snapshot action is required (take, revert, delete, list)'
 
   PATH_TO_NODES_OPTION_REQUIRED = '--path-to-nodes option must be specified'
@@ -109,7 +112,7 @@ class SnapshotCommand < BaseCommand
     when ACTION_LIST
       list_snapshots node_name
     end
-    0
+    SUCCESS_RESULT
   end
 
   def get_nodes
@@ -202,7 +205,7 @@ class SnapshotCommand < BaseCommand
   end
 
   def get_docker_images
-    execute_bash('docker images --format "{{.Repository}}"', true)
+    run_reliable_command('docker images --format "{{.Repository}}"', log = false)[:output].strip
   end
 
   # args[0] node name
@@ -211,14 +214,16 @@ class SnapshotCommand < BaseCommand
     raise NODE_NAME_OPTIONS_REQUIRED if node_name.to_s.empty?
     case @provider
     when LIBVIRT
-      output = execute_bash("virsh -q snapshot-list --domain #{@nodes_directory_name}_#{node_name} | awk '{print $1}'", true)
-      return output.reverse
+      output = run_reliable_command("virsh -q snapshot-list --domain #{@nodes_directory_name}_#{node_name} | awk '{print $1}'",
+                                    log = false)[:output].strip
+      return output
     when DOCKER
       return get_docker_snapshots(node_name)
     else
       current_dir = Dir.pwd
       Dir.chdir @path_to_nodes
-      output = execute_bash("vagrant snap list #{node_name} | grep +.* | awk '{print $2}'", true)
+      output = run_reliable_command("vagrant snap list #{node_name} | grep +.* | awk '{print $2}'",
+                                    log = false)[:output].strip
       Dir.chdir current_dir
       return output
     end
@@ -236,7 +241,7 @@ class SnapshotCommand < BaseCommand
     raise SNAPSHOT_ALREADY_EXISTS if get_snapshots(node_name).include? full_snapshot_name
     case @provider
     when LIBVIRT
-      execute_bash("virsh snapshot-create-as --domain #{@nodes_directory_name}_#{node_name} --name #{full_snapshot_name}", false)
+      run_reliable_command("virsh snapshot-create-as --domain #{@nodes_directory_name}_#{node_name} --name #{full_snapshot_name}")
     when DOCKER
       raise DOCKER_IMAGE_NAME_EXISTS if get_docker_images.include? full_snapshot_name
       unless full_snapshot_name == full_snapshot_name.to_s.downcase
@@ -245,12 +250,12 @@ class SnapshotCommand < BaseCommand
       end
       docker_containers_ids = get_docker_containers_ids
       raise "#{node_name} #{DOCKER_MACHINE_NOT_CREATED}" unless docker_containers_ids.include? node_name
-      execute_bash("docker commit -p #{docker_containers_ids[node_name]} #{full_snapshot_name}", false)
+      run_reliable_command("docker commit -p #{docker_containers_ids[node_name]} #{full_snapshot_name}")
       add_docker_snapshot_information(node_name, full_snapshot_name)
     else
       current_dir = Dir.pwd
       Dir.chdir @path_to_nodes
-      execute_bash("vagrant snap take #{node_name} --name=#{full_snapshot_name}", false)
+      run_reliable_command("vagrant snap take #{node_name} --name=#{full_snapshot_name}")
       Dir.chdir current_dir
     end
   end
@@ -264,28 +269,29 @@ class SnapshotCommand < BaseCommand
   def revert_snapshot(node_name, snapshot_name)
     full_snapshot_name = "#{SNAPSHOT_GLOBAL_PREFIX}_#{snapshot_name}_#{@nodes_directory_name}_#{node_name}"
     @ui.info "Reverting node #{node_name} to snapshot #{full_snapshot_name}"
-    raise SNAPSHOTS_NOT_FOUND if get_snapshots(node_name).empty?
-    raise SNAPSHOT_NOT_EXISTS unless get_snapshots(node_name).include? full_snapshot_name
+    snapshots = get_snapshots(node_name)
+    raise SNAPSHOTS_NOT_FOUND if snapshots.empty?
+    raise SNAPSHOT_NOT_EXISTS unless snapshots.include? full_snapshot_name
     case @provider
     when LIBVIRT
-      execute_bash("virsh snapshot-revert --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{full_snapshot_name}", false)
+      run_reliable_command("virsh snapshot-revert --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{full_snapshot_name}")
       pwd = Dir.pwd
       Dir.chdir @path_to_nodes
-      execute_bash("vagrant ssh #{node_name} -c '/usr/bin/sudo service ntpd stop'", true)
-      execute_bash("vagrant ssh #{node_name} -c '/usr/bin/sudo ntpdate 0.europe.pool.ntp.org'", false)
-      execute_bash("vagrant ssh #{node_name} -c '/usr/bin/sudo service ntpd start'", true)
+      run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo service ntpd stop'")
+      run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo ntpdate 0.europe.pool.ntp.org'")
+      run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo service ntpd start'")
       Dir.chdir pwd
     when DOCKER
       change_current_docker_snapshot(node_name, full_snapshot_name)
       current_dir = Dir.pwd
       Dir.chdir @path_to_nodes
-      execute_bash("vagrant destroy -f #{node_name}", false, false)
-      execute_bash("vagrant up #{node_name} --no-provision --provider #{DOCKER}", false)
+      run_reliable_command("vagrant destroy -f #{node_name}")
+      run_reliable_command("vagrant up #{node_name} --no-provision --provider #{DOCKER}")
       Dir.chdir current_dir
     else
       current_dir = Dir.pwd
       Dir.chdir @path_to_nodes
-      execute_bash("vagrant snap rollback #{node_name} --name=#{full_snapshot_name}", false)
+      run_reliable_command("vagrant snap rollback #{node_name} --name=#{full_snapshot_name}")
       Dir.chdir current_dir
     end
   end
@@ -303,19 +309,19 @@ class SnapshotCommand < BaseCommand
     raise SNAPSHOT_NOT_EXISTS unless get_snapshots(node_name).include? full_snapshot_name
     case @provider
     when LIBVIRT
-      execute_bash("virsh snapshot-delete --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{full_snapshot_name}", false)
+      run_reliable_command("virsh snapshot-delete --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{full_snapshot_name}")
     when DOCKER
       if (get_docker_initial_snapshot(node_name) == full_snapshot_name) || (get_docker_current_snapshot(node_name) == full_snapshot_name)
         raise "#{full_snapshot_name} #{DOCKER_SNAPSHOT_INITIAL_OR_IN_USE_NO_DELETION}"
       end
       raise "#{node_name} #{DOCKER_MACHINE_NOT_CREATED}" unless get_docker_containers_ids.include? node_name
       raise "#{full_snapshot_name} #{DOCKER_SNAPSHOT_EXISTS}" unless get_docker_snapshots(node_name).include? full_snapshot_name
-      execute_bash("docker rmi #{full_snapshot_name}", false)
+      run_reliable_command("docker rmi #{full_snapshot_name}")
       remove_docker_snapshot_information(node_name, full_snapshot_name)
     else
       current_dir = Dir.pwd
       Dir.chdir @path_to_nodes
-      execute_bash("vagrant snap delete #{node_name} --name=#{full_snapshot_name}", false)
+      run_reliable_command("vagrant snap delete #{node_name} --name=#{full_snapshot_name}")
       Dir.chdir current_dir
     end
   end
