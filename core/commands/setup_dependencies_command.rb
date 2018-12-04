@@ -215,12 +215,10 @@ class DebianDependencyManager < DependencyManager
     run_command('sudo apt-get update')
     result = run_sequence([
                             'sudo apt-get -y install build-essential libxslt-dev '\
-                            'libxml2-dev libvirt-dev wget git cmake',
-                            "wget #{VAGRANT_URL}.deb",
-                            "sudo dpkg -i #{VAGRANT_PACKAGE}.deb"
-                          ])
-    run_command("rm #{VAGRANT_PACKAGE}.deb")
-    result[:value].exitstatus
+                            'libxml2-dev libvirt-dev wget git cmake'
+                          ])[:value]
+    return result.exitstatus unless result.success?
+    install_vagrant
   end
 
   def delete_dependencies
@@ -229,6 +227,15 @@ class DebianDependencyManager < DependencyManager
 
   def add_user_to_usergroup
     run_command('sudo usermod -a -G libvirt,libvirt-qemu $(whoami)')[:value].exitstatus
+  end
+
+  def install_vagrant
+    result = run_sequence([
+                            "wget #{VAGRANT_URL}.deb",
+                            "sudo dpkg -i #{VAGRANT_PACKAGE}.deb"
+                          ])
+    run_command("rm #{VAGRANT_PACKAGE}.deb")
+    result[:value].exitstatus
   end
 end
 
