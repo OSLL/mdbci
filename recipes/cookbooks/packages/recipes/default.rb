@@ -7,9 +7,6 @@
 # All rights reserved - Do Not Redistribute
 #
 
-include_recipe 'packages::setup_resolved'
-include_recipe 'packages::configure_apt'
-
 # install additional packages for all platform
 %w(net-tools psmisc curl).each do |pkg|
   if node[:platform] == "linux"
@@ -24,3 +21,7 @@ include_recipe 'packages::configure_apt'
     end
   end
 end
+
+include_recipe 'packages::setup_resolved'
+include_recipe 'packages::configure_apt'
+include_recipe 'ntp::default'
