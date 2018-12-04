@@ -33,8 +33,10 @@ Delete previously installed dependencies and VM pools
     case get_linux_distro.downcase
     when 'centos'
       @dependency_manager = CentosDependencyManager.new(arg, env, logger)
-    when 'debian', 'ubuntu'
+    when 'debian'
       @dependency_manager = DebianDependencyManager.new(arg, env, logger)
+    when 'ubuntu'
+      @dependency_manager = UbuntuDependencyManager.new(arg, env, logger)
     end
   end
 
@@ -61,7 +63,8 @@ Delete previously installed dependencies and VM pools
   # @return [Integer] result of execution
   def install
     result = @dependency_manager.install_dependencies
-    result = prepare_environment if result == SUCCESS_RESULT
+    result = @dependency_manager.add_user_to_usergroup if result == SUCCESS_RESULT
+    result = install_vagrant_plugins if result == SUCCESS_RESULT
     result = create_libvirt_pool if result == SUCCESS_RESULT
     result
   end
@@ -77,11 +80,10 @@ Delete previously installed dependencies and VM pools
   end
 
   # Install vagrant plugins and prepares mdbci environment
-  def prepare_environment
+  def install_vagrant_plugins
     run_sequence([
                    'vagrant plugin install vagrant-libvirt --plugin-version 0.0.43',
                    'vagrant plugin install vagrant-aws --plugin-version 0.7.2',
-                   'sudo usermod -a -G libvirt $(whoami)',
                    'vagrant box add --force dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box'
                  ])[:value].exitstatus
   end
@@ -164,6 +166,11 @@ class DependencyManager
   def delete_dependencies
     raise 'Not implemented'
   end
+
+  # Adds user to libvirt user group
+  def add_user_to_usergroup
+    raise 'Not implemented'
+  end
 end
 
 # Class that manages CentOS specific packages
@@ -179,6 +186,14 @@ class CentosDependencyManager < DependencyManager
     install_vagrant
   end
 
+  def delete_dependencies
+    run_command('sudo yum -y remove vagrant libvirt-client libvirt-devel')[:value].exitstatus
+  end
+
+  def add_user_to_usergroup
+    run_command('sudo usermod -a -G libvirt $(whoami)')[:value].exitstatus
+  end
+
   # Installs or updates Vagrant if installed version older than VAGRANT_VERSION
   def install_vagrant
     if installed?('vagrant')
@@ -192,13 +207,9 @@ class CentosDependencyManager < DependencyManager
   def installed?(package)
     run_command("yum list installed #{package}")[:value].success?
   end
-
-  def delete_dependencies
-    run_command('sudo yum -y remove vagrant libvirt-client libvirt-devel')[:value].exitstatus
-  end
 end
 
-# Class that manages Debian specific packages, also suit for Ubuntu
+# Class that manages Debian specific packages
 class DebianDependencyManager < DependencyManager
   def install_dependencies
     run_command('sudo apt-get update')
@@ -214,5 +225,16 @@ class DebianDependencyManager < DependencyManager
 
   def delete_dependencies
     run_command('sudo apt purge vagrant libvirt-dev')
+  end
+
+  def add_user_to_usergroup
+    run_command('sudo usermod -a -G libvirt,libvirt-qemu $(whoami)')[:value].exitstatus
+  end
+end
+
+# Class that manages Ubuntu specific packages
+class UbuntuDependencyManager < DebianDependencyManager
+  def add_user_to_usergroup
+    run_command('sudo usermod -a -G libvirtd $(whoami)')[:value].exitstatus
   end
 end
