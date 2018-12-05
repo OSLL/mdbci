@@ -39,7 +39,31 @@ In-depth architecture description is provided in the [separate document](docs/ar
 
 ## MDBCI installation
 
-MDBCI requires you to install the Libvirt in your Linux installation, install Vagrant and install required plugins. The installation scripts are now in work, but you can follow the [quickstart](docs/QUICKSTART.md) to install them manually.
+MDBCI requires you to install the Libvirt in your Linux installation, install Vagrant and install required plugins.
+
+Dependencies installation can be performed automatically using command
+
+```
+./mdbci setup-dependencies
+```
+
+This will install Libvirt development libraries, libvirt virtualization packages, vagrant and its plugins for Libvirt and AWS support, as well as all the tools required in the installation process.
+
+Current user will be added to existing libvirt groups and a new VM pool will bew created.
+
+During the installation you will be prompted to enter your password.
+
+**WARNING**: upon installation previously created libvirt VM pool named 'default' will be deleted.
+
+To perform a clean installation call
+
+```
+./mdbci setup-dependencies --reinstall
+````
+
+This will uninstall libvirt development package, vagrant and its plugins and destroy existing 'default' libvirt pool.
+
+If you have trouble using `./mdbci setup-dependencies` you can follow the [quickstart](docs/QUICKSTART.md) to install them manually.
 
 ## MDBCI usage
 
