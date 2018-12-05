@@ -169,7 +169,12 @@ class DependencyManager
 
   # Adds user to libvirt user group
   def add_user_to_usergroup
-    raise 'Not implemented'
+    libvirt_groups = `getent group | grep libvirt | cut -d ":" -f1`.split("\n").join(',')
+    if libvirt_groups.empty?
+      @ui.error('Cannot add user to libvirt group. Libvirt group not found')
+      return BaseCommand::ERROR_RESULT
+    end
+    run_command("sudo usermod -a -G #{libvirt_groups} $(whoami)")[:value].exitstatus
   end
 end
 
@@ -188,10 +193,6 @@ class CentosDependencyManager < DependencyManager
 
   def delete_dependencies
     run_command('sudo yum -y remove vagrant libvirt-client libvirt-devel')[:value].exitstatus
-  end
-
-  def add_user_to_usergroup
-    run_command('sudo usermod -a -G libvirt $(whoami)')[:value].exitstatus
   end
 
   # Installs or updates Vagrant if installed version older than VAGRANT_VERSION
@@ -225,10 +226,6 @@ class DebianDependencyManager < DependencyManager
     run_command('sudo apt purge vagrant libvirt-dev')
   end
 
-  def add_user_to_usergroup
-    run_command('sudo usermod -a -G libvirt,libvirt-qemu $(whoami)')[:value].exitstatus
-  end
-
   def install_vagrant
     result = run_sequence([
                             "wget #{VAGRANT_URL}.deb",
@@ -249,9 +246,5 @@ class UbuntuDependencyManager < DebianDependencyManager
                           ])[:value]
     return result.exitstatus unless result.success?
     install_vagrant
-  end
-
-  def add_user_to_usergroup
-    run_command('sudo usermod -a -G libvirtd $(whoami)')[:value].exitstatus
   end
 end
