@@ -89,7 +89,7 @@ class UpCommand < BaseCommand
   # @param node [String] name of the node to get status from.
   # @return [Boolean]
   def node_running?(node)
-    result = run_command('vagrant status #{node}')
+    result = run_command("vagrant status #{node}")
     status = result[:output].split("\n")[2]
     @ui.info "Node '#{node}' status: #{status}"
     if status.include? 'running'
