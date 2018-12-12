@@ -66,6 +66,8 @@ class Session
   attr_reader :tool_config
   attr_accessor :show_help
   attr_accessor :reinstall
+  attr_accessor :recreate
+  attr_accessor :labels
 
   PLATFORM = 'platform'
   VAGRANT_NO_PARALLEL = '--no-parallel'

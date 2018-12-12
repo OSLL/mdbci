@@ -16,6 +16,7 @@ opts = GetoptLong.new(
   ['--ipv6', GetoptLong::NO_ARGUMENT],
   ['--key', '-k', GetoptLong::REQUIRED_ARGUMENT],
   ['--keep-template', GetoptLong::NO_ARGUMENT],
+  ['--labels', '-l', GetoptLong::REQUIRED_ARGUMENT],
   ['--list', GetoptLong::NO_ARGUMENT],
   ['--node-name', GetoptLong::REQUIRED_ARGUMENT],
   ['--override', '-w', GetoptLong::NO_ARGUMENT],
@@ -24,11 +25,12 @@ opts = GetoptLong.new(
   ['--platform-version', '-i', GetoptLong::REQUIRED_ARGUMENT],
   ['--product', '-p', GetoptLong::REQUIRED_ARGUMENT],
   ['--product-version', '-v', GetoptLong::REQUIRED_ARGUMENT],
+  ['--recreate', GetoptLong::NO_ARGUMENT],
+  ['--reinstall', GetoptLong::NO_ARGUMENT],
   ['--repo-dir', '-r', GetoptLong::REQUIRED_ARGUMENT],
   ['--silent', '-s', GetoptLong::NO_ARGUMENT],
   ['--snapshot-name', GetoptLong::REQUIRED_ARGUMENT],
   ['--template', '-t', GetoptLong::REQUIRED_ARGUMENT],
-  ['--reinstall', GetoptLong::NO_ARGUMENT],
 )
 
 $mdbci_exec_dir = File.expand_path(File.dirname(File.realpath(__FILE__)))
@@ -131,6 +133,12 @@ begin
 
     when '--reinstall'
       session.reinstall = true
+
+    when '--recreate'
+      session.recreate = true
+
+    when '--labels'
+      session.labels = arg
 
     else
       out.error 'Option is not supported: ' + opt
