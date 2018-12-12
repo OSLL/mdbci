@@ -226,21 +226,25 @@ class UpCommand < BaseCommand
     halt_nodes.concat(configure_nodes(unconfigured_nodes))
   end
 
-  # Destroy all existing nodes and setup configuration
+  # Starts and configurats mathing nodes from configuration file
   #
   # @param config [Configuration] configuration that should be run
   # @param node [String] name of the node to bring up
-  # @return [Array<String>] list of nodes that should be checked
+  # @return [Array<String>] list of nodes that should be fixed
   def setup_nodes(config, node = '')
     generate_docker_images(config.template, '.') if config.provider == 'docker'
-    @ui.info 'Destroying existing nodes.'
-    run_command_and_log("vagrant destroy --force #{node}")
-    bring_up_machines(config.provider)
-    nodes_to_check = if node.empty?
-                       config.node_names
-                     else
+    nodes_to_check = if !node.empty?
                        [node]
+                     elsif @env.labels
+                       select_nodes_by_label(config, @env.labels.split(','))
+                     else
+                       config.node_names
                      end
+    if nodes_to_check.empty?
+      @ui.error('No machines to start')
+      return ERROR_RESULT
+    end
+    start_disabled_nodes(config.provider, nodes_to_check)
     check_and_configure_nodes(nodes_to_check)
   end
 
@@ -305,6 +309,27 @@ class UpCommand < BaseCommand
     node_names
   end
 
+  # Forcefully destroys given nodes
+  #
+  # @param node [String] node name, can contain multiple names separated by whitespaces
+  def destroy_node(node)
+    @ui.info 'Destroying existing nodes.'
+    run_command_and_log("vagrant destroy --force #{node}")
+  end
+
+  # Starts shutdown nodes, restarts running nodes when up command called with --recreate option
+  #
+  # @param provider [String] name of the provider to use.
+  # @param node_names [Arrat<String>] List of nodes to start
+  def start_disabled_nodes(provider, node_names)
+    running_nodes, halt_nodes = running_and_halt_nodes(node_names)
+    if @env.recreate
+      destroy_node(running_nodes.join(' '))
+      halt_nodes = halt_nodes.concat(running_nodes)
+    end
+    bring_up_machines(provider, halt_nodes.join(' '))
+  end
+
   # Switch to the working directory, so all Vagrant commands will
   # be run in corresponding directory. The directory will be returned
   # to the invoking one after the completion.
@@ -327,6 +352,7 @@ class UpCommand < BaseCommand
     end
     run_in_directory(@config.path) do
       nodes_to_fix = setup_nodes(@config, node)
+      return ERROR_RESULT if nodes_to_fix == ERROR_RESULT
       return ERROR_RESULT unless fix_nodes(nodes_to_fix, @config.provider)
     end
     generate_config_information(Dir.pwd, @config.path, node)
