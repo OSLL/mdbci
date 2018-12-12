@@ -286,6 +286,25 @@ class UpCommand < BaseCommand
     end
   end
 
+  # Select nodes from the template file that have given labels
+  #
+  # @param config [Configuration] configuration that should be run
+  # @param labels [Array<String>] list of node labels
+  # @return [Array<String>] list of nodes matching given labels
+  def select_nodes_by_label(config, labels)
+    is_labels_set = false
+    node_names = config.template.select do |_, value|
+      next unless value.instance_of?(Hash) && value['labels']
+      is_labels_set = true
+      labels.each do |label|
+        break true if value['labels'].include?(label)
+      end
+    end.keys
+    @ui.error("Unable to find nodes matching labels #{labels.join(', ')}") if node_names.empty?
+    @ui.error('Labels were not set in the template file') unless is_labels_set
+    node_names
+  end
+
   # Switch to the working directory, so all Vagrant commands will
   # be run in corresponding directory. The directory will be returned
   # to the invoking one after the completion.
