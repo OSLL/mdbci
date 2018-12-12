@@ -90,9 +90,10 @@ class UpCommand < BaseCommand
   # @return [Boolean]
   def node_running?(node)
     result = run_command("vagrant status #{node}")
-    status = result[:output].split("\n")[2]
+    status_regex = /^#{node}\s+([\w\s()]*)\s$/
+    status = result[:output].match(status_regex)[1] if result[:output] =~ status_regex
     @ui.info "Node '#{node}' status: #{status}"
-    if status.include? 'running'
+    if status && status.include?('running')
       @ui.info "Node '#{node}' is running."
       true
     else
