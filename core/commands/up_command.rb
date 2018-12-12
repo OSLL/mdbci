@@ -43,9 +43,9 @@ class UpCommand < BaseCommand
   def parse_configuration
     config, node = Configuration.parse_spec(@specification)
     if node.empty?
-      @ui.info "Node #{node} is specified in #{@specification}"
-    else
       @ui.info "Node is not specified in #{@specification}"
+    else
+      @ui.info "Node #{node} is specified in #{@specification}"
     end
     [config, node]
   end
