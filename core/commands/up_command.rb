@@ -93,11 +93,11 @@ class UpCommand < BaseCommand
     status_regex = /^#{node}\s+([\w\s()]*)\s$/
     status = result[:output].match(status_regex)[1] if result[:output] =~ status_regex
     @ui.info "Node '#{node}' status: #{status}"
-    if status && status.include?('running')
+    if status&.include?('running')
       @ui.info "Node '#{node}' is running."
       true
     else
-      @ui.error "Node '#{node}' is not running."
+      @ui.info "Node '#{node}' is not running."
       false
     end
   end
@@ -302,7 +302,7 @@ class UpCommand < BaseCommand
       next unless value.instance_of?(Hash) && value['labels']
       is_labels_set = true
       labels.each do |label|
-        break true if value['labels'].include?(label)
+        break false unless value['labels'].include?(label)
       end
     end.keys
     @ui.error("Unable to find nodes matching labels #{labels.join(', ')}") if node_names.empty?
@@ -328,7 +328,9 @@ class UpCommand < BaseCommand
       destroy_node(running_nodes.join(' '))
       halt_nodes = halt_nodes.concat(running_nodes)
     end
-    bring_up_machines(provider, halt_nodes.join(' '))
+    halt_nodes.each do |node|
+      bring_up_machines(provider, node)
+    end
   end
 
   # Switch to the working directory, so all Vagrant commands will
