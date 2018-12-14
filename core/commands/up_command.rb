@@ -245,8 +245,8 @@ class UpCommand < BaseCommand
     @ui.error(e.message)
     ERROR_RESULT
   else
-    start_disabled_nodes(config.provider, nodes_to_check)
-    check_and_configure_nodes(nodes_to_check)
+    brougt_up_nodes = start_disabled_nodes(config.provider, nodes_to_check)
+    check_and_configure_nodes(brougt_up_nodes)
   end
 
   # Try to fix nodes that were not brought up. Try to reconfigure them.
@@ -305,6 +305,7 @@ class UpCommand < BaseCommand
   #
   # @param provider [String] name of the provider to use.
   # @param node_names [Arrat<String>] List of nodes to start
+  # @return [Array<String>] List of nodes that were brought up
   def start_disabled_nodes(provider, node_names)
     running_nodes, halt_nodes = running_and_halt_nodes(node_names)
     if @env.recreate
@@ -314,6 +315,7 @@ class UpCommand < BaseCommand
     halt_nodes.each do |node|
       bring_up_machines(provider, node)
     end
+    halt_nodes
   end
 
   # Switch to the working directory, so all Vagrant commands will
