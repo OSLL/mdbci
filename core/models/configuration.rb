@@ -83,6 +83,24 @@ class Configuration
     end.uniq
   end
 
+  # Select nodes from the template file that have given labels
+  #
+  # @param labels [Array<String>] list of node labels
+  # @return [Array<String>] list of nodes matching given labels
+  def select_nodes_by_label(labels)
+    is_labels_set = false
+    node_names = @template.select do |_, value|
+      next unless value.instance_of?(Hash) && value['labels']
+      is_labels_set = true
+      labels.each do |label|
+        break false unless value['labels'].include?(label)
+      end
+    end.keys
+    raise(ArgumentError, 'Labels were not set in the template file') unless is_labels_set
+    raise(ArgumentError, "Unable to find nodes matching labels: #{labels.join(', ')}") if node_names.empty?
+    node_names
+  end
+
   private
 
   # Read the aws key pair name from the corresponding file.

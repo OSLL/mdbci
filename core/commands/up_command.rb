@@ -237,14 +237,14 @@ class UpCommand < BaseCommand
     nodes_to_check = if !node.empty?
                        [node]
                      elsif @env.labels
-                       select_nodes_by_label(config, @env.labels.split(','))
+                       config.select_nodes_by_label(@env.labels.split(','))
                      else
                        config.node_names
                      end
-    if nodes_to_check.empty?
-      @ui.error('No machines to start')
-      return ERROR_RESULT
-    end
+  rescue ArgumentError => e
+    @ui.error(e.message)
+    ERROR_RESULT
+  else
     start_disabled_nodes(config.provider, nodes_to_check)
     check_and_configure_nodes(nodes_to_check)
   end
@@ -291,31 +291,14 @@ class UpCommand < BaseCommand
     end
   end
 
-  # Select nodes from the template file that have given labels
-  #
-  # @param config [Configuration] configuration that should be run
-  # @param labels [Array<String>] list of node labels
-  # @return [Array<String>] list of nodes matching given labels
-  def select_nodes_by_label(config, labels)
-    is_labels_set = false
-    node_names = config.template.select do |_, value|
-      next unless value.instance_of?(Hash) && value['labels']
-      is_labels_set = true
-      labels.each do |label|
-        break false unless value['labels'].include?(label)
-      end
-    end.keys
-    @ui.error("Unable to find nodes matching labels #{labels.join(', ')}") if node_names.empty?
-    @ui.error('Labels were not set in the template file') unless is_labels_set
-    node_names
-  end
-
   # Forcefully destroys given nodes
   #
-  # @param node [String] node name, can contain multiple names separated by whitespaces
-  def destroy_node(node)
+  # @param node [Array<String>] node name, can contain multiple names separated by whitespaces
+  def destroy_nodes(node_names)
     @ui.info 'Destroying existing nodes.'
-    run_command_and_log("vagrant destroy --force #{node}")
+    node_names.each do |node|
+      run_command_and_log("vagrant destroy --force #{node}")
+    end
   end
 
   # Starts shutdown nodes, restarts running nodes when up command called with --recreate option
@@ -325,7 +308,7 @@ class UpCommand < BaseCommand
   def start_disabled_nodes(provider, node_names)
     running_nodes, halt_nodes = running_and_halt_nodes(node_names)
     if @env.recreate
-      destroy_node(running_nodes.join(' '))
+      destroy_nodes(running_nodes)
       halt_nodes = halt_nodes.concat(running_nodes)
     end
     halt_nodes.each do |node|
