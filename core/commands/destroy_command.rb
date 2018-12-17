@@ -20,8 +20,8 @@ class DestroyCommand < BaseCommand
   #
   # @return [Boolean] whether parameters are good or not.
   def check_parameters
-    if @args.empty? || @args.first.nil?
-      @ui.error 'Please specify path to the mdbci configuration or configuration/node as a parameter.'
+    if !$session.list && !$session.node_name && (@args.empty? || @args.first.nil?)
+      @ui.error 'Please specify the node name or path to the mdbci configuration or configuration/node as a parameter.'
       show_help
       false
     else
@@ -50,6 +50,12 @@ You can either destroy a single node:
 Or you can destroy all nodes:
   mdbci destroy configuration
 
+You can destroy nodes by name without the need for configuration file:
+  mdbci destroy --node-name
+
+You can view a list of all the virtual machines of all providers:
+  mdbci destroy --list
+
 In the latter case the command will remove the configuration folder,
 the network configuration file and the template. You can prevent
 destroy command from deleting the template file:
@@ -61,6 +67,45 @@ After running the vagrant destroy this command also deletes the
 libvirt and VirtualBox boxes using low-level commands.
 HELP
     @ui.out(info)
+  end
+
+  # Method gets the libvirt virtual machines names list.
+  #
+  # @return [Array] virtual machines names.
+  def libvirt_vm_list
+    check_command('virsh list --name --all',
+                  'Unable to get Libvirt vm\'s list')[:output].split("\n")
+  end
+
+  # Method gets the VirtualBox virtual machines names list.
+  #
+  # @return [Array] virtual machines names.
+  def virtualbox_vm_list
+    check_command('VBoxManage list vms | grep -o \'"[^\"]*"\' | tr -d \'"\'',
+                  'Unable to get VirtualBox vm\'s list')[:output].split("\n")
+  end
+
+  # Print virtual machines names list of all providers.
+  def show_vm_list
+    vm_list = libvirt_vm_list + virtualbox_vm_list
+    @ui.info("Virtual machines list: #{vm_list}")
+  end
+
+  # Destroy all virtual machines of all providers that correspond with the node_name.
+  #
+  # @param node_name [String] regexp of the node name.
+  def destroy_machine_by_name(node_name)
+    node_name_regexp = Regexp.new(node_name)
+    vm_list = { libvirt: libvirt_vm_list, virtualbox: virtualbox_vm_list }
+    vm_list.each do |provider, nodes|
+      vm_list[provider] = nodes.select { |node| node =~ node_name_regexp }
+    end
+    @ui.info("Virtual machines to destroy: #{vm_list.values.flatten}")
+    @ui.info('Do you want to continue? [y/n]')
+    return if gets[0] != 'y'
+    vm_list.each do |provider, nodes|
+      nodes.each { |node| destroy_machine(nil, nil, provider.to_s, node) }
+    end
   end
 
   # Remove all files from the file system that correspond with the configuration.
@@ -98,34 +143,42 @@ HELP
   end
 
   # Destroy the node if it was not destroyed by the vagrant.
+  # To destroy the nodes by name, use provider and vm_name params.
   #
   # @param configuration [Configuration] configuration to use.
   # @param node [String] node name to destroy.
-  def destroy_machine(configuration, node)
-    case configuration.provider
+  # @param provider [String] provider name of virtual machine.
+  # @param vm_name [String] virtual machine name to destroy
+  def destroy_machine(configuration, node, provider = nil, vm_name = nil)
+    provider ||= configuration.provider
+    case provider
     when 'libvirt'
-      destroy_libvirt_domain(configuration, node)
+      destroy_libvirt_domain(configuration, node, vm_name)
     when 'virtualbox'
-      destroy_virtualbox_machine(configuration, node)
+      destroy_virtualbox_machine(configuration, node, vm_name)
     when 'aws'
       destroy_aws_machine(configuration, node)
     else
-      @ui.error("Unknown provider #{configuration.provider}. Can not manually destroy virtual machines.")
+      @ui.error("Unknown provider #{provider}. Can not manually destroy virtual machines.")
     end
   end
 
   # Destroy the libvirt domain.
+  # To destroy the node by name, use domain_name param.
   #
   # @param configuration [Configuration] configuration to use.
   # @param node [String] node name to destroy.
+  # @param domain_name [String] name of libvirt domain to destroy.
   # rubocop:disable Metrics/MethodLength
-  def destroy_libvirt_domain(configuration, node)
-    domain_name = "#{configuration.name}_#{node}".gsub(/[^-a-z0-9_\.]/i, '')
+  def destroy_libvirt_domain(configuration, node, domain_name = nil)
+    domain_name ||= "#{configuration.name}_#{node}".gsub(/[^-a-z0-9_\.]/i, '')
     result = run_command_and_log("virsh domstats #{domain_name}")
     if !result[:value].success?
       @ui.info "Libvirt domain #{domain_name} has been destroyed, doing nothing."
       return
     end
+    check_command("virsh shutdown #{domain_name}",
+                  "Unable to shutdown domain #{domain_name}")
     check_command("virsh destroy #{domain_name}",
                   "Unable to destroy domain #{domain_name}")
     result = check_command("virsh snapshot-list #{domain_name} --tree",
@@ -137,15 +190,24 @@ HELP
     end
     check_command("virsh undefine #{domain_name}",
                   "Unable to undefine domain #{domain_name}")
+    result = check_command("virsh -q vol-list --pool default | awk '{print $1}' | grep '^#{domain_name}'",
+                           "Unable to get machine's volumes for #{domain_name}")
+    result[:output].split('\n').each do |volume|
+      next if volume.chomp.empty?
+      check_command("virsh vol-delete --pool default #{volume}",
+                    "Unable to delete volume #{volume} for #{domain_name} domain")
+    end
   end
   # rubocop:enable Metrics/MethodLength
 
   # Destroy the virtualbox virtual machine.
+  # To destroy the node by name, use vbox_name param.
   #
   # @param configuration [Configuration] configuration to user.
   # @param node [String] name of node to destroy.
-  def destroy_virtualbox_machine(configuration, node)
-    vbox_name = "#{configuration.name}_#{node}"
+  # @param vbox_name [String] name of virtual machine to destroy.
+  def destroy_virtualbox_machine(configuration, node, vbox_name = nil)
+    vbox_name ||= "#{configuration.name}_#{node}"
     result = run_command_and_log("VBoxManage showvminfo #{vbox_name}")
     if !result[:value].success?
       @ui.info "VirtualBox machine #{vbox_name} has been destroyed, doing notthing"
@@ -177,8 +239,15 @@ HELP
 
   def execute
     return ARGUMENT_ERROR_RESULT unless check_parameters
+    if $session.list
+      show_vm_list
+      return SUCCESS_RESULT
+    elsif $session.node_name
+      destroy_machine_by_name($session.node_name)
+      return SUCCESS_RESULT
+    end
     configuration, node = setup_command
-    remember_aws_instance_id(configuration, node)
+    remember_aws_instance_id(configuration, node) unless configuration.nil?
     stop_machines(configuration, node)
     if node.empty?
       configuration.node_names.each do |node_name|

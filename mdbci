@@ -16,6 +16,7 @@ opts = GetoptLong.new(
   ['--ipv6', GetoptLong::NO_ARGUMENT],
   ['--key', '-k', GetoptLong::REQUIRED_ARGUMENT],
   ['--keep-template', GetoptLong::NO_ARGUMENT],
+  ['--list', GetoptLong::NO_ARGUMENT],
   ['--node-name', GetoptLong::REQUIRED_ARGUMENT],
   ['--override', '-w', GetoptLong::NO_ARGUMENT],
   ['--path-to-nodes', GetoptLong::REQUIRED_ARGUMENT],
@@ -100,6 +101,9 @@ begin
 
     when '--keep-template'
       session.keep_template = true
+
+    when '--list'
+      session.list = true
 
     when '--platform'
       session.boxPlatform = arg unless arg.empty?

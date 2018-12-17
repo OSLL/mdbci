@@ -55,6 +55,7 @@ class Session
   attr_accessor :productVersion
   attr_accessor :keyFile
   attr_accessor :keep_template
+  attr_accessor :list
   attr_accessor :boxPlatform
   attr_accessor :boxPlatformVersion
   attr_accessor :path_to_nodes
