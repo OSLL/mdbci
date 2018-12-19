@@ -26,9 +26,9 @@ class Node
   # Returns local node ip address from ifconfig interface
   #
   # @return [String] Node IP address
-  def get_interface_box_ip
-    result = run_command("vagrant ssh-config #{@node_name} | grep HostName")
-    raise "vagrant ssh-config #{@node_name} exited with non 0 exit code" unless result[:value].success?
+  def get_interface_box_ip(node_name)
+    result = run_command_in_dir("vagrant ssh-config #{node_name} | grep HostName", @config.path)
+    raise "vagrant ssh-config #{node_name} exited with non 0 exit code" unless result[:value].success?
     vagrant_out = result[:output].strip
     hostname = vagrant_out.split(/\s+/)[1]
     IPSocket.getaddress(hostname)
@@ -37,13 +37,13 @@ class Node
   # Returns AWS node ip address
   #
   # @return [String] Node IP address
-  def get_aws_node_ip(name, is_private)
+  def get_aws_node_ip(node_name, is_private)
     remote_command = if is_private
                        "curl #{AWS_METADATA_URL}/local-ipv4"
                      else
                        "curl #{AWS_METADATA_URL}/public-ipv4"
                      end
-    result = run_command("vagrant ssh #{name} -c '#{remote_command}'")
+    result = run_command_in_dir("vagrant ssh #{node_name} -c '#{remote_command}'", @config.path)
     raise "#{remote_command} exited with non 0 exit code" unless result[:value].success?
     result[:output].strip
   end
@@ -51,7 +51,7 @@ class Node
   def get_ip(_provider, is_private)
     @ip = if %w[virtualbox libvirt docker].include?(@provider)
             get_interface_box_ip(@name)
-          elsif @provider == '(aws)'
+          elsif @provider == 'aws'
             get_aws_node_ip(@name, is_private)
           else
             raise 'Unknown box provider!'
