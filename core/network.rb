@@ -23,42 +23,8 @@ class Network
 
   # TODO BUG 6633
   def loadNodes(config)
-    $out.info 'Load configuration nodes from vagrant status ...'
-
-    Dir.chdir config.to_s
-
-    vagrant_out = run_command('vagrant status')[:output]
-    list = vagrant_out.split("\n")
-=begin
-  Vagrant prints node info in next format:
-  >Current machine states:
-  >
-  >node0                     running (virtualbox)
-  >node1                     running (virtualbox)
-  >
-  >This environment represents multiple VMs. The VMs are all listed
-  >above with their current state. For more information about a specific
-  >VM, run `vagrant status NAME`.
-  >
-
-  VBOX Node info is located in (2..END-3) lines
-  AWS Node info is located in (2..END-4) lines
-
-=end
-
-    count = 0
-    provider = ["virtualbox", "aws", "libvirt", "docker"]
-    list.each do |line|
-      provider.each do |item|
-        count += 1 if line.to_s.include?(item)
-      end
-    end
-
-    # Log offset: 4 - for ONE node, 5 - for multiple nodes
-    if count == 1; offset = 4; else offset = 5; end
-
-    (2..list.length-offset).each do |x|
-      getNodeInfo(config, list[x])
+    config.node_names.each do |node|
+      getNodeInfo(config, node)
     end
   end
 
@@ -96,24 +62,24 @@ class Network
     result = Array.new()
     pwd = Dir.pwd
     raise 'Configuration name is required' if name.nil?
-    dir, node_arg = extract_directory_and_node(name)
+    dir, node_arg = Configuration.parse_spec(name)
     # mdbci ppc64 boxes
-    if File.exist?(dir+'/mdbci_template')
-      $session.loadMdbciNodes dir
-      raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty?
-      if node_arg.nil?
+    if File.exist?(dir.path+'/mdbci_template')
+      $session.loadMdbciNodes dir.path
+      raise "MDBCI nodes are not found in #{dir.path}" if $session.mdbciNodes.empty?
+      if node_arg.empty?
         $session.mdbciNodes.each do |node|
-          key_path = getBoxParameterKeyPath(dir,node,pwd)
+          key_path = getBoxParameterKeyPath(dir.path,node,pwd)
           result.push(key_path)
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == node_arg }
-        raise "MDBCI node is not found in #{dir}" if mdbci_node.nil?
-        key_path = getBoxParameterKeyPath(dir,mdbci_node,pwd)
+        raise "MDBCI node is not found in #{dir.path}" if mdbci_node.nil?
+        key_path = getBoxParameterKeyPath(dir.path,mdbci_node,pwd)
         result.push(key_path)
       end
     else
-      configPath = File.absolute_path(dir)
+      configPath = File.absolute_path(dir.path)
       unless Dir.exists? configPath
         raise 'Configuration with such name does not exists'
       end
@@ -144,13 +110,13 @@ class Network
       raise 'Configuration name is required'
     end
 
-    directory, node_arg = extract_directory_and_node(name)
+    directory, node_arg = Configuration.parse_spec(name)
     # mdbci ppc64 boxes
-    if File.exist?(directory+'/mdbci_template')
-      $session.loadMdbciNodes directory
+    if File.exist?(directory.path + '/mdbci_template')
+      $session.loadMdbciNodes directory.path
       if node_arg.nil?
         if $session.mdbciNodes.empty?
-          raise "MDBCI nodes not found in #{directory}"
+          raise "MDBCI nodes not found in #{directory.path}"
         end
         $session.mdbciNodes.each do |node|
           results.push(getBoxParameter(node, 'IP'))
@@ -163,12 +129,12 @@ class Network
         results.push(getBoxParameter(mdbci_node, 'IP'))
       end
     else # aws, vbox nodes
-      unless Dir.exist? directory
-        raise "Configuration not found: #{directory}"
+      unless Dir.exist? directory.path
+        raise "Configuration not found: #{directory.path}"
       end
       network = Network.new
-      network.loadNodes File.absolute_path(directory) # load nodes from dir
-      if node_arg.nil? # No node argument, show all config
+      network.loadNodes directory # load nodes from dir
+      if node_arg.empty? # No node argument, show all config
         network.nodes.each do |node|
           temp_var = getIpWrapper(node,pwd)
           results.push(getIpWrapper(node,pwd))
@@ -232,34 +198,34 @@ class Network
     pwd = Dir.pwd
     result_ip = Array.new()
     raise 'Configuration name is required' if args.nil?
-    dir, node_arg = extract_directory_and_node(args)
+    dir, node_arg = Configuration.parse_spec(@specification)
     # mdbci box
-    if File.exist?(dir+'/mdbci_template')
-      $session.loadMdbciNodes dir
-      raise "MDBCI nodes are not found in #{dir}" if $session.mdbciNodes.empty?
-      if node_arg.nil?     # read ip for all nodes
+    if File.exist?(dir.path+'/mdbci_template')
+      $session.loadMdbciNodes dir.path
+      raise "MDBCI nodes are not found in #{dir.path}" if $session.mdbciNodes.empty?
+      if node_arg.empty?     # read ip for all nodes
         $session.mdbciNodes.each do |node|
           box_params = getBoxParameters(node[1])
           result_ip.push({'node' =>node[0], 'ip' =>getNodeParam('IP', node[0], box_params)['IP']})
         end
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == node_arg }
-        raise "MDBCI node #{node_arg} is not found in #{dir}" if mdbci_node.nil?
+        raise "MDBCI node #{node_arg} is not found in #{dir.path}" if mdbci_node.nil?
         box_params = getBoxParameters(mdbci_node[1])
         result_ip.push({'node' =>mdbci_node[0], 'ip' =>getNodeParam('IP', mdbci_node[0], box_params)['IP']})
       end
     else # aws, vbox nodes
-      raise "Can not find directory #{dir}" unless Dir.exists? dir
+      raise "Can not find directory #{dir.path}" unless Dir.exists? dir.path
       network = Network.new
-      network.loadNodes File.absolute_path(dir) # load nodes from dir
-      raise "Nodes are not found in #{dir}" if network.nodes.empty?
-      if node_arg.nil? # No node argument, show all config
+      network.loadNodes dir # load nodes from dir
+      raise "Nodes are not found in #{dir.path}" if network.nodes.empty?
+      if node_arg.empty? # No node argument, show all config
         network.nodes.each do |node|
           result_ip.push(getNodeIP(node))
         end
       else
         node = network.nodes.find { |elem| elem.name == node_arg}
-        raise "Node #{node_arg} is not found in #{dir}" if node.nil?
+        raise "Node #{node_arg} is not found in #{dir.path}" if node.nil?
         result_ip.push(getNodeIP(node))
       end
     end
