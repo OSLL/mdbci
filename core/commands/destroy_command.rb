@@ -36,6 +36,7 @@ class DestroyCommand < BaseCommand
   # @return [Configuration, String] parsed configuration.
   def setup_command
     @aws_service = @env.aws_service
+    return [nil, nil] if $session.node_name || $session.list
     Configuration.parse_spec(@args.first)
   end
 
@@ -65,7 +66,7 @@ The command also deletes AWS key pair for corresponding configurations.
 
 After running the vagrant destroy this command also deletes the
 libvirt and VirtualBox boxes using low-level commands.
-HELP
+    HELP
     @ui.out(info)
   end
 
@@ -85,9 +86,16 @@ HELP
                   'Unable to get VirtualBox vm\'s list')[:output].split("\n")
   end
 
+  # Method gets the AWS instances names list.
+  #
+  # @return [Array] instances names list.
+  def aws_vm_list
+    @aws_instance_ids.map { |instance| instance[:node_name] }
+  end
+
   # Print virtual machines names list of all providers.
   def show_vm_list
-    vm_list = libvirt_vm_list + virtualbox_vm_list
+    vm_list = libvirt_vm_list + virtualbox_vm_list + aws_vm_list
     @ui.info("Virtual machines list: #{vm_list}")
   end
 
@@ -96,7 +104,7 @@ HELP
   # @param node_name [String] regexp of the node name.
   def destroy_machine_by_name(node_name)
     node_name_regexp = Regexp.new(node_name)
-    vm_list = { libvirt: libvirt_vm_list, virtualbox: virtualbox_vm_list }
+    vm_list = { libvirt: libvirt_vm_list, virtualbox: virtualbox_vm_list, aws: aws_vm_list }
     vm_list.each do |provider, nodes|
       vm_list[provider] = nodes.select { |node| node =~ node_name_regexp }
     end
@@ -157,7 +165,7 @@ HELP
     when 'virtualbox'
       destroy_virtualbox_machine(configuration, node, vm_name)
     when 'aws'
-      destroy_aws_machine(configuration, node)
+      destroy_aws_machine(configuration, node, vm_name)
     else
       @ui.error("Unknown provider #{provider}. Can not manually destroy virtual machines.")
     end
@@ -220,13 +228,15 @@ HELP
   end
 
   # Destroy the aws virtual machine.
+  # To destroy the node by name, use aws_box_name param.
   #
   # @param configuration [Configuration] configuration to user.
   # @param node [String] name of node to destroy.
-  def destroy_aws_machine(configuration, node)
-    aws_box_name = "#{configuration.name}_#{node}"
-    instance_id = @aws_instance_ids[node]
-    if @aws_instance_ids.empty? || instance_id.nil?
+  # @param aws_box_name [String] name of instance to destroy.
+  def destroy_aws_machine(configuration, node, aws_box_name = nil)
+    aws_box_name ||= "#{configuration.name}_#{node}"
+    instance_id = get_aws_instance_id_by_node_name(aws_box_name)
+    if instance_id.nil?
       @ui.error("Unable to terminate #{aws_box_name} machine. Instance id does not exist.")
       return
     end
@@ -239,6 +249,8 @@ HELP
 
   def execute
     return ARGUMENT_ERROR_RESULT unless check_parameters
+    configuration, node = setup_command
+    remember_aws_instance_id(configuration)
     if $session.list
       show_vm_list
       return SUCCESS_RESULT
@@ -246,8 +258,6 @@ HELP
       destroy_machine_by_name($session.node_name)
       return SUCCESS_RESULT
     end
-    configuration, node = setup_command
-    remember_aws_instance_id(configuration, node) unless configuration.nil?
     stop_machines(configuration, node)
     if node.empty?
       configuration.node_names.each do |node_name|
@@ -264,27 +274,23 @@ HELP
   # Remember the instance id of aws virtual machine.
   #
   # @param configuration [Configuration] configuration to user.
-  # @param node [String] name of node to remember.
-  def remember_aws_instance_id(configuration, node)
-    return if configuration.provider != 'aws'
-    node_names = if node.empty?
-                   configuration.node_names
-                 else
-                   [node]
-                 end
-    @aws_instance_ids = node_names.map do |node_name|
-      [node_name, get_aws_instance_id_by_node_name(configuration, node_name)]
-    end.to_h
+  def remember_aws_instance_id(configuration)
+    return if !configuration.nil? && configuration.provider != 'aws'
+    @aws_instance_ids = @aws_service.describe_instances.reservations.map do |reservation|
+      reservation.instances.map do |instance|
+        next nil unless %w[running pending].include?(instance.state.name)
+        node_name = instance.tags.find { |tag| tag.key == 'machinename' }.value
+        { instance_id: instance.instance_id, node_name: node_name }
+      end
+    end.flatten.compact
   end
 
   # Read the instance id of aws virtual machine from local vagrant directory.
   #
-  # @param configuration [Configuration] configuration to user.
-  # @param node [String] name of node to read.
+  # @param node_name [String] name of instance.
   # @return [String] id of the instance.
-  def get_aws_instance_id_by_node_name(configuration, node)
-    aws_instance_id_path = "#{configuration.path}/.vagrant/machines/#{node}/aws/id"
-    return nil unless File.file?(aws_instance_id_path)
-    File.read(aws_instance_id_path)
+  def get_aws_instance_id_by_node_name(node_name)
+    found_instance = @aws_instance_ids.find { |instance| instance[:node_name] == node_name }
+    found_instance.nil? ? nil : found_instance[:instance_id]
   end
 end

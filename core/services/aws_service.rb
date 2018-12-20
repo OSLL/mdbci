@@ -49,6 +49,12 @@ class AwsService
     @client.delete_key_pair(key_name: name)
   end
 
+  # Get information about instances
+  # @return [Aws::EC2::Types::DescribeInstancesResult] instances information
+  def describe_instances
+    @client.describe_instances
+  end
+
   # Check whether instance with the specified id running or not.
   # @param [String] instance_id to check
   # @return [Boolean] true if it is running
