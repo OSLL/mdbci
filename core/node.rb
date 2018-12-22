@@ -51,7 +51,7 @@ class Node
   # @param _provider [String] machine provider, left for the sake of backwards compatibility
   # @param is_private [Boolean] whether to retrieve private ipv4 address
   # @return [String] Node IP address
-  def get_ip(_provider, is_private)
+  def get_ip(is_private)
     # This assignment is left for the sake of backwards compatibility
     @ip = if %w[virtualbox libvirt docker].include?(@provider)
             get_interface_box_ip
