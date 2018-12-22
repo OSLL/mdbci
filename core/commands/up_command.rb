@@ -5,6 +5,7 @@ require_relative '../docker_manager'
 require_relative '../models/configuration'
 require_relative '../services/shell_commands'
 require_relative '../services/machine_configurator'
+require_relative '../services/network_config'
 require_relative 'generate_command'
 
 # The command sets up the environment specified in the configuration file.
@@ -26,11 +27,7 @@ class UpCommand < BaseCommand
       raise ArgumentError, 'You must specify path to the mdbci configuration as a parameter.'
     end
     @specification = @args.first
-    @attempts = if @env.attempts.nil?
-                  5
-                else
-                  @env.attempts.to_i
-                end
+    @attempts = @env.attempts&.to_i || 5
     @box_manager = @env.boxes
     @network_configs = {}
     @machine_configurator = MachineConfigurator.new(@ui)
@@ -90,7 +87,7 @@ class UpCommand < BaseCommand
   # @return [Boolean]
   def node_running?(node)
     result = run_command("vagrant status #{node}")
-    status_regex = /^#{node}\s+([\w\s()]*)\s$/
+    status_regex = /^#{node}\s+(\S+)\s+(\S+)\s$/
     status = result[:output].match(status_regex)[1] if result[:output] =~ status_regex
     @ui.info "Node '#{node}' status: #{status}"
     if status&.include?('running')
@@ -173,10 +170,10 @@ class UpCommand < BaseCommand
   end
 
   # Configure single node using the chef-solo respected role
-  # @param nde[String] name of the node
+  # @param node[String] name of the node
   # @return [Boolean] whether we were successfull or not
   def configure(node)
-    @network_configs[node] = get_node_network_config(node, @config, @env)
+    @network_configs[node] = NetworkConfig.get_node_network_config(@config, @ui, node)
     solo_config = "#{node}-config.json"
     role_file = GenerateCommand.role_file_name(@config.path, node)
     unless File.exist?(role_file)
@@ -216,7 +213,7 @@ class UpCommand < BaseCommand
     end
   end
 
-  # Check that nodes were brougt up and configrued. If they were not
+  # Check that nodes were brougt up and configured. If they were not
   # configured, then try to reconfigure them
   #
   # @param nodes_to_check [Array<String>] list of nodes to check
@@ -293,7 +290,7 @@ class UpCommand < BaseCommand
 
   # Forcefully destroys given nodes
   #
-  # @param node [Array<String>] node name, can contain multiple names separated by whitespaces
+  # @param node [Array<String>] List with names of nodes which needs to be destroyed
   def destroy_nodes(node_names)
     @ui.info 'Destroying existing nodes.'
     node_names.each do |node|
@@ -316,6 +313,14 @@ class UpCommand < BaseCommand
       bring_up_machines(provider, node)
     end
     halt_nodes
+  end
+
+  # Restors network configuration of nodes that were already brought up
+  def restore_previous_network_config
+    running_nodes = running_and_halt_nodes(@config.node_names)[0]
+    running_nodes.each do |name|
+      @network_configs[name] ||= NetworkConfig.get_node_network_config(@config, @ui, name)
+    end
   end
 
   # Switch to the working directory, so all Vagrant commands will
@@ -342,6 +347,7 @@ class UpCommand < BaseCommand
       nodes_to_fix = setup_nodes(@config, node)
       return ERROR_RESULT if nodes_to_fix == ERROR_RESULT
       return ERROR_RESULT unless fix_nodes(nodes_to_fix, @config.provider)
+      restore_previous_network_config
     end
     generate_config_information(Dir.pwd, @config.path, node)
     SUCCESS_RESULT
