@@ -24,28 +24,6 @@ class Node
     @ssh_config = get_vagrant_node_config
   end
 
-  # Runs 'vagrant ssh-config' command for node and collects configuration
-  #
-  # @return [Hash] hash with vagrant machine configuration
-  def get_vagrant_node_config
-    result = run_command_in_dir("vagrant ssh-config #{@name}", @config.path, false)
-    raise "Could not get configuration of machine with name '#{@name}'" unless result[:value].success?
-    parse_ssh_config(result[:output])
-  end
-
-  # Parses output of 'vagrant ssh-config' command
-  #
-  # @param [String] 'vagrant ssh-config' output
-  # @return [Hash] hash with vagrant machine configuration
-  def parse_ssh_config(ssh_config)
-    pattern = /^(\S+)\s+(\S+)$/
-    ssh_config.split("\n").each_with_object({}) do |line, node_config|
-      if (match_result = line.strip.match(pattern))
-        node_config[match_result[1]] = match_result[2]
-      end
-    end
-  end
-
   # Returns node ip address
   #
   # @param _provider [String] machine provider, left for the sake of backwards compatibility
@@ -69,6 +47,44 @@ class Node
     @ip
   end
 
+  # Get path to private_key file
+  #
+  # @return [String] path to private_key file
+  def identity_file
+    @ssh_config['IdentityFile']
+  end
+
+  # Get name of the user of this node
+  #
+  # @return [String] username for this node
+  def user
+    @ssh_config['User']
+  end
+
+  private
+
+  # Runs 'vagrant ssh-config' command for node and collects configuration
+  #
+  # @return [Hash] hash with vagrant machine configuration
+  def get_vagrant_node_config
+    result = run_command_in_dir("vagrant ssh-config #{@name}", @config.path, false)
+    raise "Could not get configuration of machine with name '#{@name}'" unless result[:value].success?
+    parse_ssh_config(result[:output])
+  end
+
+  # Parses output of 'vagrant ssh-config' command
+  #
+  # @param [String] 'vagrant ssh-config' output
+  # @return [Hash] hash with vagrant machine configuration
+  def parse_ssh_config(ssh_config)
+    pattern = /^(\S+)\s+(\S+)$/
+    ssh_config.split("\n").each_with_object({}) do |line, node_config|
+      if (match_result = line.strip.match(pattern))
+        node_config[match_result[1]] = match_result[2]
+      end
+    end
+  end
+
   # Returns local node ip address from ifconfig interface
   #
   # @return [String] Node IP address
@@ -89,19 +105,5 @@ class Node
     result = run_command_in_dir("vagrant ssh #{@name} -c '#{remote_command}'", @config.path)
     raise "#{remote_command} exited with non 0 exit code" unless result[:value].success?
     result[:output].strip
-  end
-
-  # Get path to private_key file
-  #
-  # @return [String] path to private_key file
-  def identity_file
-    @ssh_config['IdentityFile']
-  end
-
-  # Get name of the user of this node
-  #
-  # @return [String] username for this node
-  def user
-    @ssh_config['User']
   end
 end
