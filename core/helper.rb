@@ -339,7 +339,11 @@ end
 # @return [Array<String>] path to configuration and node name.
 def extract_directory_and_node(name)
   args = name.split('/')
-  directory = args[0, args.length - 1].join('/')
-  node_arg = args.last
+  if args.length == 1
+    directory = args.join('/')
+  else
+    directory = args[0...-1].join('/')
+    node_arg = args.last
+  end
   [directory, node_arg]
 end
