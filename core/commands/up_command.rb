@@ -7,6 +7,7 @@ require_relative '../services/shell_commands'
 require_relative '../services/machine_configurator'
 require_relative '../services/network_config'
 require_relative 'generate_command'
+require_relative 'destroy_command'
 
 # The command sets up the environment specified in the configuration file.
 class UpCommand < BaseCommand
@@ -208,7 +209,7 @@ class UpCommand < BaseCommand
   def recreate(nodes, provider)
     nodes.each do |node|
       @ui.info "Destroying '#{node}' node."
-      run_command_and_log("vagrant destroy --force #{node}")
+      DestroyCommand.execute(["#{@config.path}/#{node}"], @env, @ui, { keep_template: true })
       bring_up_machines(provider, node)
     end
   end
@@ -294,7 +295,7 @@ class UpCommand < BaseCommand
   def destroy_nodes(node_names)
     @ui.info 'Destroying existing nodes.'
     node_names.each do |node|
-      run_command_and_log("vagrant destroy --force #{node}")
+      DestroyCommand.execute(["#{@config.path}/#{node}"], @env, @ui, { keep_template: true })
     end
   end
 
