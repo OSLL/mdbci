@@ -141,7 +141,6 @@ class Network
       network.loadNodes directory # load nodes from dir
       if node_arg.nil? # No node argument, show all config
         network.nodes.each do |node|
-          temp_var = getIpWrapper(node,pwd)
           results.push(getIpWrapper(node,pwd))
         end
       else
