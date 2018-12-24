@@ -34,17 +34,17 @@ describe 'Session' do
   end
 
   it '#clone should exit with zero code for libvirt provider' do
-    $session.clone(ENV['mdbci_param_conf_libvirt'], CLONED_LIBVIRT_CONFIG_NAME).should(eql(0))
+    $session.clone_config(ENV['mdbci_param_conf_libvirt'], CLONED_LIBVIRT_CONFIG_NAME).should(eql(0))
   end
 
 
   it '#clone should exit with zero code for docker provider' do
-    $session.clone(ENV['mdbci_param_conf_docker'], CLONED_DOCKER_CONFIG_NAME).should(eql(0))
+    $session.clone_config(ENV['mdbci_param_conf_docker'], CLONED_DOCKER_CONFIG_NAME).should(eql(0))
   end
 
 
   it '#clone should exit with non-zero code for another provider ' do
-    lambda{$session.clone(ENV['mdbci_param_conf_ppc'].to_s, 'NEVER_HAPPENS')}.should raise_error('mdbci: provider does not support cloning')
+    lambda{$session.clone_config(ENV['mdbci_param_conf_ppc'].to_s, 'NEVER_HAPPENS')}.should raise_error('mdbci: provider does not support cloning')
   end
 
 end

@@ -72,7 +72,7 @@ Arguments:
   end
 
   def clone_config(origin_config, testing_config)
-    $session.clone(origin_config, testing_config)
+    $session.clone_config(origin_config, testing_config)
   end
 
   def complete_restart_origin_config(template_path, config_name)

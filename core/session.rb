@@ -507,7 +507,7 @@ EOF
     instance_exec(*action_parameters, &action[:action])
   end
 
-  def clone(path_to_nodes, new_path_to_nodes)
+  def clone_config(path_to_nodes, new_path_to_nodes)
     $out.info "Performing cloning operation for config #{path_to_nodes}. Cloned configuration name: #{new_path_to_nodes}"
     Clone.new.clone_nodes(path_to_nodes, new_path_to_nodes)
     return 0
@@ -520,7 +520,7 @@ EOF
     when 'check_relevance'
       exit_code = checkRelevanceNetworkConfig(ARGV.shift)
     when 'clone'
-      exit_code = clone(ARGV[0], ARGV[1])
+      exit_code = clone_config(ARGV[0], ARGV[1])
     when 'configure'
       command = ConfigureCommand.new(ARGV, self, $out)
       exit_code = command.execute
