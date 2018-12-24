@@ -22,9 +22,13 @@ class BaseCommand
   # @param args [Array<String>] list of arguments for the curernt command.
   # @param env [Session] reference to the GOD object of this application.
   # @param logger [Out] the object that should be used to log information.
-  def initialize(args, env, logger)
+  # @param options [Hash] additional options that will be passed to executed command
+  def initialize(args, env, logger, options = {})
     @args = args
-    @env = env
+    @env = env.clone
+    options.each_pair do |key, value|
+      @env.send("#{key}=", value) if @env.class.method_defined?("#{key}=")
+    end
     @ui = logger
   end
 
@@ -34,5 +38,13 @@ class BaseCommand
   # @return [Number] exit code for the command execution.
   def execute
     raise "#{self.class} must implement execute method."
+  end
+
+  # Creates new instance of command and executes it
+  #
+  # @return [Number] exit code of the executed command
+  def self.execute(args, env, logger, options)
+    command = new(args, env, logger, options)
+    command.execute
   end
 end
