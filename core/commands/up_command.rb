@@ -320,7 +320,11 @@ class UpCommand < BaseCommand
   def restore_previous_network_config
     running_nodes = running_and_halt_nodes(@config.node_names)[0]
     running_nodes.each do |name|
-      @network_configs[name] ||= NetworkConfig.get_node_network_config(@config, @ui, name)
+      begin
+        @network_configs[name] ||= NetworkConfig.get_node_network_config(@config, @ui, name)
+      rescue RuntimeError
+        @ui.error("Node #{name} is not running. Skipping")
+      end
     end
   end
 

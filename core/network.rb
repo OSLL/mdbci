@@ -25,11 +25,7 @@ class Network
   def loadNodes(config_path)
     config = Configuration.new(config_path)
     config.node_names.each do |node|
-      begin
-        getNodeInfo(config, node)
-      rescue RuntimeError
-        @ui.info("Node #{node} is not running. Skipping")
-      end
+      getNodeInfo(config, node)
     end
   end
 
