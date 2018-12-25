@@ -14,22 +14,41 @@ class Node
   attr_accessor :config
   attr_accessor :name
   attr_accessor :provider
-  attr_accessor :ip
+  attr_reader :ip
 
   def initialize(config, node_name)
     @ui = $out
     @config = config
     @name = node_name
     @provider = @config.provider
-    @ssh_config = get_vagrant_node_config
+    load_vagrant_node_config
+  end
+
+  # Runs 'vagrant ssh-config' command for node and collects configuration
+  #
+  # @return [Hash] hash with vagrant machine configuration
+  def load_vagrant_node_config
+    result = run_command_in_dir("vagrant ssh-config #{@name}", @config.path, false)
+    if result[:value].success?
+      @running = true
+      ssh_config = parse_ssh_config(result[:output])
+    else
+      @running = false
+      @ui.error("Could not get configuration of machine with name '#{@name}'")
+    end
+    @ssh_config = ssh_config
+  end
+
+  def running?
+    @running
   end
 
   # Returns node ip address
   #
-  # @param _provider [String] machine provider, left for the sake of backwards compatibility
   # @param is_private [Boolean] whether to retrieve private ipv4 address
   # @return [String] Node IP address
   def get_ip(is_private)
+    raise "Node #{name} is not running" unless @running
     # This assignment is left for the sake of backwards compatibility
     @ip = if %w[virtualbox libvirt docker].include?(@provider)
             get_interface_box_ip
@@ -38,19 +57,16 @@ class Node
           else
             raise 'Unknown box provider!'
           end
-  rescue SocketError, RuntimeError => e
+  rescue SocketError, RuntimeError
     @ui.error('IP address is not received!')
-    @ui.error(e.message)
     raise
-  else
-    @ui.info("IP: #{@ip}")
-    @ip
   end
 
   # Get path to private_key file
   #
   # @return [String] path to private_key file
   def identity_file
+    raise "Node #{name} is not running" unless @running
     @ssh_config['IdentityFile']
   end
 
@@ -58,19 +74,11 @@ class Node
   #
   # @return [String] username for this node
   def user
+    raise "Node #{name} is not running" unless @running
     @ssh_config['User']
   end
 
   private
-
-  # Runs 'vagrant ssh-config' command for node and collects configuration
-  #
-  # @return [Hash] hash with vagrant machine configuration
-  def get_vagrant_node_config
-    result = run_command_in_dir("vagrant ssh-config #{@name}", @config.path, false)
-    raise "Could not get configuration of machine with name '#{@name}'" unless result[:value].success?
-    parse_ssh_config(result[:output])
-  end
 
   # Parses output of 'vagrant ssh-config' command
   #
