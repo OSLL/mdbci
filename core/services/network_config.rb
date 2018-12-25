@@ -13,10 +13,7 @@ class NetworkConfig
     @nodes = {}
     @config.node_names.each do |name|
       next unless nodes_to_configure.include?(name)
-      begin
-        @nodes[name] = Node.new(@config, name)
-      rescue RuntimeError
-        @ui.info("Node #{name} is not running. Skipping")
+      @nodes[name] = Node.new(@config, name)
       end
     end
   end
