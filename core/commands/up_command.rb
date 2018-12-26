@@ -17,6 +17,27 @@ class UpCommand < BaseCommand
     'Setup environment as specified in the configuration.'
   end
 
+  def show_help
+    info = <<-HELP
+'up' starts virtual machines in the specified condfiguration.
+
+mdbci up config - configure all VMs in the specified configuration.
+
+mdbci up config/node - configure the specified node from the configuration.
+
+OPTIONS:
+  --attempts [number]:
+Specifies the number of times VM will be destroyed durintg the provisioning.
+  --recreate:
+Specifies that existing VMs must be destroyed before the configuration of all target VMs.
+  -l, --labels [number]:
+Specifies the list of desired labels. It allows to filter VMs based on the label presence.
+If any of the labels passed to the command match any label in the machine description, then this machine will be brought up and configured according to its configuration.
+Labels should be separated with commas, do not contain any whitespaces.
+  HELP
+    @ui.info(info)
+  end
+
   VAGRANT_NO_PARALLEL = '--no-parallel'
 
   # Checks that all required parameters are passed to the command

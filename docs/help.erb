@@ -29,6 +29,11 @@ Key file to the node for public_keys command.
 --keep-template:
 Do not destroy the template during the destroy command.
 
+-l, --labels [comma separated labels]:
+Specifies the list of desired labels. It allows to filter VMs based on the label presence.
+If any of the labels passed to the command match any label in the machine description, then this machine will be brought up and configured according to its configuration.
+Labels should be separated with commas, do not contain any whitespaces.
+
 --maxscale-ci [release]:
 Name of the MaxScale release in the CI repository. Used during repository generation command.
 
@@ -46,6 +51,9 @@ Product name for setup repository and install product commands.
 
 --path-to-nodes [path]:
 Path to directory with nodes configuration.
+
+--recreate:
+Specifies that existing VMs must be destroyed before the configuration of all target VMs.
 
 -r, --repo-dir [path]:
 Set path to the product repository overriding the default locations.
