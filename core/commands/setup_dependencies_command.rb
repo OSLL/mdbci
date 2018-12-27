@@ -66,6 +66,7 @@ Delete previously installed dependencies and VM pools
     result = @dependency_manager.add_user_to_usergroup if result == SUCCESS_RESULT
     result = install_vagrant_plugins if result == SUCCESS_RESULT
     result = create_libvirt_pool if result == SUCCESS_RESULT
+    @ui.info('Dependencies successfully installed') if result == SUCCESS_RESULT
     result
   end
 
