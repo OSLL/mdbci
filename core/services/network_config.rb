@@ -14,7 +14,6 @@ class NetworkConfig
     @config.node_names.each do |name|
       next unless nodes_to_configure.include?(name)
       @nodes[name] = Node.new(@config, name)
-      end
     end
   end
 
