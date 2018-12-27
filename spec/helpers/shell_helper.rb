@@ -30,11 +30,12 @@ module ShellHelper
   # Run mdbci command and return the exit code of the application.
   #
   # @param command [String] command that should be run.
+  # @param options [Hash] list of options to pass to Open3 library
   # @return [CommandResult] result of executing the command.
-  def mdbci_run_command(command)
+  def mdbci_run_command(command, options = {})
     mdbci_command = "#{MDBCI_EXECUTABLE} #{command}"
     logger.info("Running mdbci command: '#{mdbci_command}'")
-    result = CommandResult.for_command(mdbci_command)
+    result = CommandResult.for_command(mdbci_command, options)
     logger.debug(result.to_s)
     result
   end
@@ -43,10 +44,11 @@ module ShellHelper
   # does not succeed, raise an exception.
   #
   # @param command [String] command that should be run.
+  # @param options [Hash] list of options to pass to Open3 library
   # @return [CommandResult] result of executing the command.
   # @raise [RuntimeError] if the command execution has failed.
-  def mdbci_check_command(command)
-    result = mdbci_run_command(command)
+  def mdbci_check_command(command, options = {})
+    result = mdbci_run_command(command, options)
     raise "Unable to execute command: #{result}" unless result.success?
     result
   end

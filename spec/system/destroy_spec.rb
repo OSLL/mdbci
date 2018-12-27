@@ -2,6 +2,7 @@
 
 require 'tmpdir'
 require 'fileutils'
+require 'stringio'
 require 'models/configuration'
 
 describe 'destroy command', :system do
@@ -122,6 +123,20 @@ describe 'destroy command', :system do
       mdbci_check_command("destroy #{config}")
       libvirt_domain = "#{template}_node"
       expect(destroy_list.to_s).to include(libvirt_domain)
+    end
+  end
+
+  context 'when call with --node-name option' do
+    it 'should destroy virtual machine by name without configuration' do
+      template = 'centos_7_libvirt_plain'
+      config = mdbci_create_configuration(@test_dir, template)
+      mdbci_check_command("up #{config}")
+      FileUtils.rm_f("#{config}/Vagrantfile")
+      FileUtils.touch("#{config}/Vagrantfile")
+      libvirt_domain = "#{template}_node"
+      mdbci_check_command("destroy --node-name #{libvirt_domain}", stdin_data: 'y')
+      result = run_command("virsh domstats #{libvirt_domain}")
+      expect(result).not_to be_success
     end
   end
 end
