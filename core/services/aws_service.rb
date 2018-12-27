@@ -50,9 +50,9 @@ class AwsService
   end
 
   # Get information about instances
-  # @return [Aws::EC2::Types::DescribeInstancesResult] instances information
+  # @return [Hash] instances information
   def describe_instances
-    @client.describe_instances
+    @client.describe_instances.to_h
   end
 
   # Check whether instance with the specified id running or not.
