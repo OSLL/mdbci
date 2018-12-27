@@ -112,4 +112,16 @@ describe 'destroy command', :system do
       expect(result).not_to be_success
     end
   end
+
+  context 'when call with --list option' do
+    it 'should display virtual machines list' do
+      template = 'centos_7_libvirt_plain'
+      config = mdbci_create_configuration(@test_dir, template)
+      mdbci_check_command("up #{config}")
+      destroy_list = mdbci_check_command('destroy --list')
+      mdbci_check_command("destroy #{config}")
+      libvirt_domain = "#{template}_node"
+      expect(destroy_list.to_s).to include(libvirt_domain)
+    end
+  end
 end
