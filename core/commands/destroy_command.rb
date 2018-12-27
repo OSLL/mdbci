@@ -51,8 +51,9 @@ You can either destroy a single node:
 Or you can destroy all nodes:
   mdbci destroy configuration
 
-You can destroy nodes by name without the need for configuration file:
-  mdbci destroy --node-name
+You can destroy nodes by name without the need for configuration file.
+As a name you can use any part of node name or regular expression:
+  mdbci destroy --node-name name
 
 You can view a list of all the virtual machines of all providers:
   mdbci destroy --list
