@@ -20,7 +20,7 @@ class DestroyCommand < BaseCommand
   #
   # @return [Boolean] whether parameters are good or not.
   def check_parameters
-    if !$session.list && !$session.node_name && (@args.empty? || @args.first.nil?)
+    if !@env.list && !@env.node_name && (@args.empty? || @args.first.nil?)
       @ui.error 'Please specify the node name or path to the mdbci configuration or configuration/node as a parameter.'
       show_help
       false
@@ -36,7 +36,7 @@ class DestroyCommand < BaseCommand
   # @return [Configuration, String] parsed configuration.
   def setup_command
     @aws_service = @env.aws_service
-    return [nil, nil] if $session.node_name || $session.list
+    return [nil, nil] if @env.node_name || @env.list
     Configuration.parse_spec(@args.first)
   end
 
@@ -252,11 +252,11 @@ libvirt and VirtualBox boxes using low-level commands.
     return ARGUMENT_ERROR_RESULT unless check_parameters
     configuration, node = setup_command
     remember_aws_instance_id(configuration)
-    if $session.list
+    if @env.list
       show_vm_list
       return SUCCESS_RESULT
-    elsif $session.node_name
-      destroy_machine_by_name($session.node_name)
+    elsif @env.node_name
+      destroy_machine_by_name(@env.node_name)
       return SUCCESS_RESULT
     end
     stop_machines(configuration, node)
