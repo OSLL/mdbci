@@ -82,6 +82,7 @@ EOF
     @mdbciNodes = {}
     @templateNodes = {}
     @keep_template = false
+    @list = false
   end
 
   # Fill in paths based on the provided configuration if they were
