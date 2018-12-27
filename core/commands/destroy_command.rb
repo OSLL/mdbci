@@ -110,8 +110,7 @@ libvirt and VirtualBox boxes using low-level commands.
       vm_list[provider] = nodes.select { |node| node =~ node_name_regexp }
     end
     @ui.info("Virtual machines to destroy: #{vm_list.values.flatten}")
-    @ui.info('Do you want to continue? [y/n]')
-    return if !gets[0].strip.casecmp('y').zero?
+    return unless @ui.prompt('Do you want to continue? [y/n]')[0].casecmp('y').zero?
     vm_list.each do |provider, nodes|
       nodes.each { |node| destroy_machine(nil, nil, provider.to_s, node) }
     end

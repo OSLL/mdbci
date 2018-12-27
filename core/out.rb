@@ -30,6 +30,12 @@ class Out
     print_line('ERROR', string)
   end
 
+  def prompt(string)
+    return if @configuration.isSilent
+    @stream.print("PROMPT: #{string} ")
+    gets.strip
+  end
+
   private
 
   def print_line(level, string)
