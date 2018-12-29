@@ -11,9 +11,9 @@ class Node
 
   AWS_METADATA_URL = 'http://169.254.169.254/latest/meta-data'
 
-  attr_accessor :config
-  attr_accessor :name
-  attr_accessor :provider
+  attr_reader :config
+  attr_reader :name
+  attr_reader :provider
   attr_reader :ip
 
   def initialize(config, node_name)
