@@ -37,6 +37,10 @@ class NetworkConfig
     @nodes[node_name].get_ip(true)
   end
 
+  # Get uername for given node
+  #
+  # @param node_name [String] name of the node
+  # return [String] node user name
   def get_whoami(node_name)
     @nodes[node_name].user
   end
@@ -44,8 +48,6 @@ class NetworkConfig
   # Get information about the network configuration of the particular node
   #
   # @param node [String] name of the node to get information about
-  # @param configuration [Configuration] mdbci configuration
-  # @param session [Session] session object that allows to run commands on remote machine
   # @return [Hash] node network configuration
   def [](node)
     {
