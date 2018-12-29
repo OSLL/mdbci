@@ -2,7 +2,7 @@
 
 # Class represents the MDBCI configuration on the hard drive.
 class Configuration
-  attr_reader :path, :provider, :template, :template_path, :aws_keypair_name
+  attr_reader :path, :provider, :template, :template_path, :aws_keypair_name, :labels, :node_names
 
   NETWORK_FILE_SUFFIX = '_network_config'
   AWS_KEYPAIR_NAME = 'maxscale.keypair_name'
@@ -27,7 +27,7 @@ class Configuration
   # @param spec [String] specification of configuration to parse
   # @raise [ArgumentError] if path to the configuration is invalid
   # @return configuration and node name. Node name is empty if not found in spec.
-  def self.parse_spec(spec)
+  def self.parse_spec(spec, env)
     # Separating config_path from node
     paths = spec.split('/') # Split path to the configuration
     config_path = paths[0, paths.length - 1].join('/')
@@ -37,24 +37,19 @@ class Configuration
       node = ''
       config_path = spec
     end
-    [Configuration.new(config_path), node]
+    labels = env.labels ? env.labels.split(',') : []
+    Configuration.new(config_path, node, labels)
   end
 
-  def initialize(path)
+  def initialize(path, node = '', labels = [])
     raise ArgumentError, "Invalid path to the MDBCI configuration: #{path}" unless self.class.config_directory?(path)
     @path = File.absolute_path(path)
     @provider = read_provider(@path)
     @template_path = read_template_path(@path)
     @template = read_template(@template_path)
     @aws_keypair_name = read_aws_keypair_name
-  end
-
-  # Provide a list of nodes that are defined in the configuration
-  # @return [Array<String>] names of the nodes.
-  def node_names
-    @template.select do |_, value|
-      value.instance_of?(Hash)
-    end.keys
+    @labels = labels
+    @node_names = select_node_names(node)
   end
 
   # Provide a path to the network settings configuration file.
@@ -78,21 +73,35 @@ class Configuration
   # @return [Array<String>] unique names of the boxes used in the configuration
   def box_names(node_name = '')
     return [@template[node_name]['box']] unless node_name.empty?
-    node_names.map do |name|
+    @node_names.map do |name|
       @template[name]['box']
     end.uniq
+  end
+
+  private
+
+  # Selects relevant node names based on information provided to constructor
+  #
+  # @param node [String] specific node
+  # @return [Array<String>] list of relevant node names
+  def select_node_names(node)
+    return [node] unless node.empty?
+    return select_nodes_by_label unless @labels.empty?
+    @template.select do |_, value|
+      value.instance_of?(Hash)
+    end.keys
   end
 
   # Select nodes from the template file that have given labels
   #
   # @param desired_labels [Array<String>] list of node labels
   # @return [Array<String>] list of nodes matching given labels
-  def select_nodes_by_label(desired_labels)
+  def select_nodes_by_label
     is_labels_set = false
     node_names = @template.select do |_, node_configuration|
       next unless node_configuration.instance_of?(Hash) && node_configuration['labels']
       is_labels_set = true
-      desired_labels.any? do |desired_label|
+      @labels.any? do |desired_label|
         node_configuration['labels'].include?(desired_label)
       end
     end.keys
@@ -100,8 +109,6 @@ class Configuration
     raise(ArgumentError, "Unable to find nodes matching labels: #{desired_labels.join(', ')}") if node_names.empty?
     node_names
   end
-
-  private
 
   # Read the aws key pair name from the corresponding file.
   # @return [String] name of the keypair or empty string.

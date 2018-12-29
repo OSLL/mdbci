@@ -53,20 +53,7 @@ Labels should be separated with commas, do not contain any whitespaces.
     @attempts = @env.attempts&.to_i || 5
     @box_manager = @env.boxes
     @machine_configurator = MachineConfigurator.new(@ui)
-  end
-
-  # Method parses up command configuration and extracts path to the
-  # configuration and node name if specified.
-  #
-  # @raise [ArgumentError] if path to the configuration is invalid
-  def parse_configuration
-    config, node = Configuration.parse_spec(@specification)
-    if node.empty?
-      @ui.info "Node is not specified in #{@specification}"
-    else
-      @ui.info "Node #{node} is specified in #{@specification}"
-    end
-    [config, node]
+    @config = Configuration.parse_spec(@specification, @env)
   end
 
   # Generate docker images, so they will not be loaded during production
@@ -239,15 +226,9 @@ Labels should be separated with commas, do not contain any whitespaces.
   # @param config [Configuration] configuration that should be run
   # @param node [String] name of the node to bring up
   # @return [Array<String>] list of nodes that should be fixed
-  def setup_nodes(config, node = '')
+  def setup_nodes(config)
     generate_docker_images(config.template, '.') if config.provider == 'docker'
-    nodes_to_check = if !node.empty?
-                       [node]
-                     elsif @env.labels
-                       config.select_nodes_by_label(@env.labels.split(','))
-                     else
-                       config.node_names
-                     end
+    nodes_to_check = config.node_names
   rescue ArgumentError => e
     @ui.error(e.message)
     ERROR_RESULT
@@ -346,14 +327,13 @@ Labels should be separated with commas, do not contain any whitespaces.
   def execute
     begin
       setup_command
-      @config, node = parse_configuration
     rescue ArgumentError => error
       @ui.warning error.message
       return ARGUMENT_ERROR_RESULT
     end
     run_in_directory(@config.path) do
       store_network_config
-      nodes_to_fix = setup_nodes(@config, node)
+      nodes_to_fix = setup_nodes(@config)
       return ERROR_RESULT if nodes_to_fix == ERROR_RESULT
       return ERROR_RESULT unless fix_nodes(nodes_to_fix, @config.provider)
     end
