@@ -29,17 +29,6 @@ class DestroyCommand < BaseCommand
     end
   end
 
-  # Method checks that all required parameters are passed to the command.
-  # If not, it raises error.
-  #
-  # @raise [ArgumentError] if parameters are not valid.
-  # @return [Configuration, String] parsed configuration.
-  def setup_command
-    @aws_service = @env.aws_service
-    return [nil, nil] if @env.node_name || @env.list
-    Configuration.parse_spec(@args.first)
-  end
-
   # Print brief instructions on how to use the command.
   def show_help
     info = <<-HELP
@@ -249,8 +238,8 @@ libvirt and VirtualBox boxes using low-level commands.
 
   def execute
     return ARGUMENT_ERROR_RESULT unless check_parameters
-    configuration, node = setup_command
-    remember_aws_instance_id(configuration)
+    @aws_service = @env.aws_service
+    remember_aws_instance_id if @env.node_name || @env.list
     if @env.list
       show_vm_list
       return SUCCESS_RESULT
@@ -258,6 +247,8 @@ libvirt and VirtualBox boxes using low-level commands.
       destroy_machine_by_name(@env.node_name)
       return SUCCESS_RESULT
     end
+    configuration, node = Configuration.parse_spec(@args.first)
+    remember_aws_instance_id(configuration)
     stop_machines(configuration, node)
     if node.empty?
       configuration.node_names.each do |node_name|
@@ -274,7 +265,7 @@ libvirt and VirtualBox boxes using low-level commands.
   # Remember the instance id of aws virtual machine.
   #
   # @param configuration [Configuration] configuration to user.
-  def remember_aws_instance_id(configuration)
+  def remember_aws_instance_id(configuration = nil)
     return if !configuration.nil? && configuration.provider != 'aws'
     @aws_instance_ids = @aws_service.describe_instances[:reservations].map do |reservation|
       reservation[:instances].map do |instance|
