@@ -71,7 +71,7 @@ class NetworkConfig
 
   # Iterates over hash with nodes calling passed block for each node
   def each_pair
-    @nodes.each do |name|
+    @nodes.each_key do |name|
       yield(name, self[name])
     end
   end
