@@ -34,7 +34,7 @@ Specifies that existing VMs must be destroyed before the configuration of all ta
 Specifies the list of desired labels. It allows to filter VMs based on the label presence.
 If any of the labels passed to the command match any label in the machine description, then this machine will be brought up and configured according to its configuration.
 Labels should be separated with commas, do not contain any whitespaces.
-  HELP
+    HELP
     @ui.info(info)
   end
 
