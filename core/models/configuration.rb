@@ -21,34 +21,14 @@ class Configuration
       File.exist?("#{path}/Vagrantfile")
   end
 
-  # Method parses configuration/node specification and extracts path to the
-  # configuration and node name if specified.
-  #
-  # @param spec [String] specification of configuration to parse
-  # @raise [ArgumentError] if path to the configuration is invalid
-  # @return configuration and node name. Node name is empty if not found in spec.
-  def self.parse_spec(spec, env)
-    # Separating config_path from node
-    paths = spec.split('/') # Split path to the configuration
-    config_path = paths[0, paths.length - 1].join('/')
-    if config_directory?(config_path)
-      node = paths.last
-    else
-      node = ''
-      config_path = spec
-    end
-    labels = env.labels ? env.labels.split(',') : []
-    Configuration.new(config_path, node, labels)
-  end
-
-  def initialize(path, node = '', labels = [])
-    raise ArgumentError, "Invalid path to the MDBCI configuration: #{path}" unless self.class.config_directory?(path)
-    @path = File.absolute_path(path)
+  def initialize(spec, labels = nil)
+    @path, node = parse_spec(spec)
+    raise ArgumentError, "Invalid path to the MDBCI configuration: #{spec}" unless self.class.config_directory?(@path)
     @provider = read_provider(@path)
     @template_path = read_template_path(@path)
     @template = read_template(@template_path)
     @aws_keypair_name = read_aws_keypair_name
-    @labels = labels
+    @labels = labels.nil? ? [] : labels.split(',')
     @node_names = select_node_names(node)
   end
 
@@ -79,6 +59,25 @@ class Configuration
   end
 
   private
+
+  # Method parses configuration/node specification and extracts path to the
+  # configuration and node name if specified.
+  #
+  # @param spec [String] specification of configuration to parse
+  # @raise [ArgumentError] if path to the configuration is invalid
+  # @return configuration and node name. Node name is empty if not found in spec.
+  def parse_spec(spec)
+    # Separating config_path from node
+    paths = spec.split('/') # Split path to the configuration
+    config_path = paths[0, paths.length - 1].join('/')
+    if self.class.config_directory?(config_path)
+      node = paths.last
+    else
+      node = ''
+      config_path = spec
+    end
+    return File.absolute_path(config_path), node
+  end
 
   # Selects relevant node names based on information provided to constructor
   #

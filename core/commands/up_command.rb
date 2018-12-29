@@ -53,7 +53,7 @@ Labels should be separated with commas, do not contain any whitespaces.
     @attempts = @env.attempts&.to_i || 5
     @box_manager = @env.boxes
     @machine_configurator = MachineConfigurator.new(@ui)
-    @config = Configuration.parse_spec(@specification, @env)
+    @config = Configuration.new(@specification, @env.labels)
   end
 
   # Generate docker images, so they will not be loaded during production
