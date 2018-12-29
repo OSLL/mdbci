@@ -76,7 +76,7 @@ class Network
       else
         mdbci_node = $session.mdbciNodes.find { |elem| elem[0].to_s == node_arg }
         raise "MDBCI node is not found in #{dir}" if mdbci_node.nil?
-        key_path = getBoxParameterKeyPath(dir.path,mdbci_node,pwd)
+        key_path = getBoxParameterKeyPath(dir,mdbci_node,pwd)
         result.push(key_path)
       end
     else
@@ -85,7 +85,8 @@ class Network
         raise 'Configuration with such name does not exists'
       end
       Dir.chdir configPath
-      command_result = ShellCommands.run_command($out, "vagrant ssh-config #{node_arg} | grep IdentityFile")
+      cmd = "vagrant ssh-config #{node_arg} | grep IdentityFile"
+      command_result = ShellCommands.run_command($out, cmd)
       vagrant_out = command_result[:output]
       raise "Command #{cmd} exit with non-zero exit code: #{command_result[:value].exitstatus}" unless command_result[:value].success?
       tempHash = { 'key' => vagrant_out.split(' ')[1].sub(/^"/, '').sub(/"$/, '') }
