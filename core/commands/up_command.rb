@@ -195,7 +195,8 @@ Labels should be separated with commas, do not contain any whitespaces.
   # @param node[String] name of the node
   # @return [Boolean] whether we were successfull or not
   def configure(node)
-    @network_configs[node] = NetworkConfig.get_node_network_config(@config, @ui, node)
+    node_network_config = NetworkConfig.new(@config, @ui, node)
+    @network_configs[node] = node_network_config.get_node_network_config(node)
     solo_config = "#{node}-config.json"
     role_file = GenerateCommand.role_file_name(@config.path, node)
     unless File.exist?(role_file)
@@ -342,7 +343,8 @@ Labels should be separated with commas, do not contain any whitespaces.
     running_nodes = running_and_halt_nodes(@config.node_names)[0]
     running_nodes.each do |name|
       begin
-        @network_configs[name] ||= NetworkConfig.get_node_network_config(@config, @ui, name)
+        node_network_config = NetworkConfig.new(@config, @ui, node)
+        @network_configs[name] ||= node_network_config.get_node_network_config(node)
       rescue RuntimeError
         @ui.error("Node #{name} is not running. Skipping")
       end
