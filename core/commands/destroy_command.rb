@@ -30,6 +30,7 @@ class DestroyCommand < BaseCommand
   end
 
   # Print brief instructions on how to use the command.
+  # rubocop:disable Metrics/MethodLength
   def show_help
     info = <<-HELP
 'destroy' command allows to destroy nodes and configuration data.
@@ -59,6 +60,7 @@ libvirt and VirtualBox boxes using low-level commands.
     HELP
     @ui.out(info)
   end
+  # rubocop:enable Metrics/MethodLength
 
   # Method gets the libvirt virtual machines names list.
   #
@@ -236,19 +238,20 @@ libvirt and VirtualBox boxes using low-level commands.
     @aws_service.terminate_instance(instance_id)
   end
 
-  def execute
-    return ARGUMENT_ERROR_RESULT unless check_parameters
-    @aws_service = @env.aws_service
-    remember_aws_instance_id if @env.node_name || @env.list
+  # Handle cases when command calling with --list or --node-name options.
+  def manage_destroy_by_node_name
+    remember_aws_instance_id
     if @env.list
       show_vm_list
-      return SUCCESS_RESULT
     elsif @env.node_name
       destroy_machine_by_name(@env.node_name)
-      return SUCCESS_RESULT
     end
+  end
+
+  # Handle case when command calling with configuration.
+  def manage_destroy_by_configuration
     configuration, node = Configuration.parse_spec(@args.first)
-    remember_aws_instance_id(configuration)
+    remember_aws_instance_id if configuration.provider == 'aws'
     stop_machines(configuration, node)
     if node.empty?
       configuration.node_names.each do |node_name|
@@ -259,14 +262,21 @@ libvirt and VirtualBox boxes using low-level commands.
     else
       destroy_machine(configuration, node)
     end
+  end
+
+  def execute
+    return ARGUMENT_ERROR_RESULT unless check_parameters
+    @aws_service = @env.aws_service
+    if @env.node_name || @env.list
+      manage_destroy_by_node_name
+    else
+      manage_destroy_by_configuration
+    end
     SUCCESS_RESULT
   end
 
   # Remember the instance id of aws virtual machine.
-  #
-  # @param configuration [Configuration] configuration to user.
-  def remember_aws_instance_id(configuration = nil)
-    return if !configuration.nil? && configuration.provider != 'aws'
+  def remember_aws_instance_id
     @aws_instance_ids = @aws_service.describe_instances[:reservations].map do |reservation|
       reservation[:instances].map do |instance|
         next nil unless %w[running pending].include?(instance[:state][:name])
