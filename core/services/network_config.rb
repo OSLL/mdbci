@@ -7,14 +7,10 @@ require_relative 'shell_commands'
 class NetworkConfig
   include ShellCommands
 
-  def initialize(config, logger, nodes_to_configure = config.node_names)
+  def initialize(config, logger)
     @config = config
     @ui = logger
     @nodes = {}
-    @config.node_names.each do |name|
-      next unless nodes_to_configure.include?(name)
-      @nodes[name] = Node.new(@config, name)
-    end
   end
 
   # Get node public IP
@@ -51,7 +47,7 @@ class NetworkConfig
   # @param configuration [Configuration] mdbci configuration
   # @param session [Session] session object that allows to run commands on remote machine
   # @return [Hash] node network configuration
-  def get_node_network_config(node)
+  def [](node)
     {
       'network' => get_network(node),
       'keyfile' => get_keyfile(node),
@@ -61,7 +57,20 @@ class NetworkConfig
     }
   end
 
-  def self.get_node_network_config(config, logger, node)
-    NetworkConfig.new(config, logger, [node]).get_node_network_config(node)
+  # Adds configuration for a list of nodes.
+  # Names not in the configuration file will be ignored
+  #
+  # @param [Array<String>] names of node to add
+  def add_nodes(node_names)
+    node_names.each do |name|
+      @nodes[name] = Node.new(@config, name) if @config.node_names.include?(name)
+    end
+  end
+
+  # Iterates over hash with nodes calling passed block for each node
+  def each_pair
+    @nodes.each_pair do |name, config|
+      yield(name, self[name])
+    end
   end
 end

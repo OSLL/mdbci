@@ -51,7 +51,6 @@ Labels should be separated with commas, do not contain any whitespaces.
     @specification = @args.first
     @attempts = @env.attempts&.to_i || 5
     @box_manager = @env.boxes
-    @network_configs = {}
     @machine_configurator = MachineConfigurator.new(@ui)
   end
 
@@ -195,8 +194,7 @@ Labels should be separated with commas, do not contain any whitespaces.
   # @param node[String] name of the node
   # @return [Boolean] whether we were successfull or not
   def configure(node)
-    node_network_config = NetworkConfig.new(@config, @ui, node)
-    @network_configs[node] = node_network_config.get_node_network_config(node)
+    @network_config.add_nodes([node])
     solo_config = "#{node}-config.json"
     role_file = GenerateCommand.role_file_name(@config.path, node)
     unless File.exist?(role_file)
@@ -207,7 +205,7 @@ Labels should be separated with commas, do not contain any whitespaces.
       [role_file, "roles/#{node}.json"],
       [GenerateCommand.node_config_file_name(@config.path, node), "configs/#{solo_config}"]
     ]
-    @machine_configurator.configure(@network_configs[node], solo_config, extra_files)
+    @machine_configurator.configure(@network_config[node], solo_config, extra_files)
     node_provisioned?(node)
   end
 
@@ -303,7 +301,7 @@ Labels should be separated with commas, do not contain any whitespaces.
     @ui.info "CONF_PATH=#{config_path}"
     @ui.info "Generating #{network_config_path} file"
     File.open(network_config_path, 'w') do |file|
-      @network_configs.each_pair do |node_name, config|
+      @network_config.each_pair do |node_name, config|
         config.each_pair do |key, value|
           file.puts("#{node_name}_#{key}=#{value}")
         end
@@ -339,16 +337,10 @@ Labels should be separated with commas, do not contain any whitespaces.
   end
 
   # Restors network configuration of nodes that were already brought up
-  def restore_previous_network_config
+  def store_network_config
+    @network_config = NetworkConfig.new(@config, @ui)
     running_nodes = running_and_halt_nodes(@config.node_names)[0]
-    running_nodes.each do |name|
-      begin
-        node_network_config = NetworkConfig.new(@config, @ui, node)
-        @network_configs[name] ||= node_network_config.get_node_network_config(node)
-      rescue RuntimeError
-        @ui.error("Node #{name} is not running. Skipping")
-      end
-    end
+    @network_config.add_nodes(running_nodes)
   end
 
   # Switch to the working directory, so all Vagrant commands will
@@ -372,10 +364,10 @@ Labels should be separated with commas, do not contain any whitespaces.
       return ARGUMENT_ERROR_RESULT
     end
     run_in_directory(@config.path) do
+      store_network_config
       nodes_to_fix = setup_nodes(@config, node)
       return ERROR_RESULT if nodes_to_fix == ERROR_RESULT
       return ERROR_RESULT unless fix_nodes(nodes_to_fix, @config.provider)
-      restore_previous_network_config
     end
     generate_config_information(Dir.pwd, @config.path, node)
     SUCCESS_RESULT
