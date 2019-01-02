@@ -85,19 +85,19 @@ class Configuration
 
   # Select nodes from the template file that have given labels
   #
-  # @param labels [Array<String>] list of node labels
+  # @param desired_labels [Array<String>] list of node labels
   # @return [Array<String>] list of nodes matching given labels
-  def select_nodes_by_label(labels)
+  def select_nodes_by_label(desired_labels)
     is_labels_set = false
-    node_names = @template.select do |_, value|
-      next unless value.instance_of?(Hash) && value['labels']
+    node_names = @template.select do |_, node_configuration|
+      next unless node_configuration.instance_of?(Hash) && node_configuration['labels']
       is_labels_set = true
-      labels.each do |label|
-        break false unless value['labels'].include?(label)
+      desired_labels.any? do |desired_label|
+        node_configuration['labels'].include?(desired_label)
       end
     end.keys
     raise(ArgumentError, 'Labels were not set in the template file') unless is_labels_set
-    raise(ArgumentError, "Unable to find nodes matching labels: #{labels.join(', ')}") if node_names.empty?
+    raise(ArgumentError, "Unable to find nodes matching labels: #{desired_labels.join(', ')}") if node_names.empty?
     node_names
   end
 
