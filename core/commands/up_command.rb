@@ -90,18 +90,6 @@ Labels should be separated with commas, do not contain any whitespaces.
     flags.uniq.join(' ')
   end
 
-  # Identify whether we should show idle notifications or not
-  #
-  # @param node_name [String] name of the box that is being brought up.
-  # @return [Boolean] true if box or configuration is slow.
-  def show_idle_notifications(node_name = '')
-    box_names = @config.box_names(node_name)
-    box_names.any? do |box_name|
-      box = @box_manager.getBox(box_name)
-      box.key?('extra_vagrant_output')
-    end
-  end
-
   # Check whether node is running or not.
   #
   # @param node [String] name of the node to get status from.
@@ -219,7 +207,7 @@ Labels should be separated with commas, do not contain any whitespaces.
     @ui.info "Bringing up #{(node_name.empty? ? 'configuration ' : 'node ')} #{@specification}"
     vagrant_flags = generate_vagrant_run_flags(provider)
     run_command_and_log("vagrant up #{vagrant_flags} --provider=#{provider} #{node_name}",
-                        show_idle_notifications(node_name))
+                        show_notifications = true)
   end
 
   # Destroy and then create specified nodes.
