@@ -11,6 +11,7 @@ class Out
 
   def out(string)
     return if string.nil?
+
     @stream.puts(string)
   end
 
@@ -32,6 +33,7 @@ class Out
 
   def prompt(string)
     return if @configuration.isSilent
+
     @stream.print("PROMPT: #{string} ")
     gets.strip
   end
@@ -40,7 +42,8 @@ class Out
 
   def print_line(level, string)
     return if @configuration.isSilent || string.nil?
-    timestamp = Time.now.strftime("%Y-%m-%dT%H:%M:%S")
+
+    timestamp = Time.now.strftime('%Y-%m-%dT%H:%M:%S')
     @stream.puts("#{timestamp} #{level}: #{string}")
   end
 end
