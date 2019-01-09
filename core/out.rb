@@ -40,6 +40,7 @@ class Out
 
   def print_line(level, string)
     return if @configuration.isSilent || string.nil?
-    @stream.puts("#{level}: #{string}")
+    timestamp = Time.now.strftime("%Y-%m-%dT%H:%M:%S")
+    @stream.puts("#{timestamp} #{level}: #{string}")
   end
 end
