@@ -2,24 +2,27 @@
 
 # This is the mixin that executes commands on the shell, logs it.
 # Mixin depends on @ui instance variable that points to the logger.
+# rubocop:disable Metrics/ModuleLength
 module ShellCommands
-  PREFIX = 'MDBCI_OLD_ENV_'.freeze
+  PREFIX = 'MDBCI_OLD_ENV_'
 
-  @@env = if ENV['APPIMAGE'] != 'true'
-            ENV
-          else
-            {}
-          end
+  @env = if ENV['APPIMAGE'] != 'true'
+           ENV
+         else
+           {}
+         end
 
   # Get the environment for external service to run in
   def self.environment
-    return @@env unless @@env.empty?
+    return @env unless @env.empty?
+
     ENV.each_pair do |key, value|
       next unless key.include?(PREFIX)
+
       correct_key = key.sub(/^#{PREFIX}/, '')
-      @@env[correct_key] = value
+      @env[correct_key] = value
     end
-    @@env
+    @env
   end
 
   # Execute the command, log stdout and stderr
@@ -31,7 +34,9 @@ module ShellCommands
   # @param env [Hash] environment parameters that are passed to popen3 command.
   # @return [Process::Status] of the run command
   # rubocop:disable Metrics/MethodLength
-  def self.run_command_and_log(logger, command, show_notifications = false, options = {}, env = ShellCommands.environment)
+  # rubocop:disable Metrics/BlockLength
+  def self.run_command_and_log(logger, command, show_notifications = false, options = {},
+                               env = ShellCommands.environment)
     logger.info "Invoking command: #{command}"
     options[:unsetenv_others] = true
     Open3.popen3(env, command, options) do |stdin, stdout, stderr, wthr|
@@ -50,9 +55,10 @@ module ShellCommands
         end
         alive_streams = wait_streams.reject(&:nil?)
         break if alive_streams.empty?
+
         result = IO.select(alive_streams, nil, nil, 300)
         if result.nil? && show_notifications
-          logger.error("The running command was inactive for 5 minutes.")
+          logger.error('The running command was inactive for 5 minutes.')
           logger.error("The command is: '#{command}'.")
         end
       end
@@ -63,6 +69,7 @@ module ShellCommands
       }
     end
   end
+  # rubocop:enable Metrics/BlockLength
   # rubocop:enable Metrics/MethodLength
 
   # Wrapper method for the module method
@@ -106,9 +113,9 @@ module ShellCommands
   # @param log [Boolean] whether to log to stdout or not
   def self.run_command_in_dir(logger, command, directory, log = true)
     if log
-      run_command_and_log(logger, command, false, { chdir: directory })
+      run_command_and_log(logger, command, false, chdir: directory)
     else
-      run_command(logger, command, { chdir: directory })
+      run_command(logger, command, chdir: directory)
     end
   end
 
@@ -158,7 +165,7 @@ module ShellCommands
   # @param directory [String] directory to run command in
   # @param message [String] message to display in case of failure
   def check_command_in_dir(command, directory, message)
-    check_command(command, message, { chdir: directory })
+    check_command(command, message, chdir: directory)
   end
 
   # Execute the command and raise error if it did not succeed
@@ -187,18 +194,17 @@ module ShellCommands
   # @return [IO] stream or nil if stream has ended. Returning nil is crucial
   # as we do not have any other information on when stream has ended.
   def self.read_stream(stream)
-    begin
-      buf = ''
-      loop do
-        buf += stream.read_nonblock(10000)
-      end
-    rescue IO::WaitReadable
-      buf.each_line do |line|
-        yield line
-      end
-      return stream
-    rescue EOFError
-      return nil
+    buf = ''
+    loop do
+      buf += stream.read_nonblock(10_000)
     end
+  rescue IO::WaitReadable
+    buf.each_line do |line|
+      yield line
+    end
+    stream
+  rescue EOFError
+    nil
   end
 end
+# rubocop:enable Metrics/ModuleLength
