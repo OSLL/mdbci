@@ -212,7 +212,7 @@ Labels should be separated with commas, do not contain any whitespaces.
   # Bring up whole configuration or a machine up.
   #
   # @param provider [String] name of the provider to use.
-  # @param node [String] node name to bring up. It can be empty if we need to bring
+  # @param node_name [String] node name to bring up. It can be empty if we need to bring
   # the whole configuration up.
   # @return [Array<String>] list of node names that should be checked
   def bring_up_machines(provider, node_name = '')
