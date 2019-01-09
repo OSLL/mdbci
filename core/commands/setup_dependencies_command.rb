@@ -30,7 +30,7 @@ Delete previously installed dependencies and VM pools
 
   def initialize(arg, env, logger)
     super(arg, env, logger)
-    case get_linux_distro.downcase
+    case get_linux_distro
     when 'centos'
       @dependency_manager = CentosDependencyManager.new(arg, env, logger)
     when 'debian'
@@ -73,10 +73,10 @@ Delete previously installed dependencies and VM pools
   # Extracts linux distributor id from lsb_release command
   # @return [String] Linux distribution name
   def get_linux_distro
-    lsb_distributor_regex = /^ID=\W*(\w+)\W*$/
+    distributor_regex = /ID=\W*(\w+)\W*/
     File.open('/etc/os-release') do |release_file|
       release_file.each do |line|
-        return line.match(lsb_distributor_regex)[1] if line =~ lsb_distributor_regex
+        return line.match(lsb_distributor_regex)[1].downcase if line =~ distributor_regex
       end
     end
   end
