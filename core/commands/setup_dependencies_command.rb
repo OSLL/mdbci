@@ -186,7 +186,7 @@ end
 # Class that manages CentOS specific packages
 class CentosDependencyManager < DependencyManager
   def install_dependencies
-    required_packages = ['gcc', 'libvirt', 'libvirt-client', 'libvirt-devel', 'git']
+    required_packages = ['gcc', 'libvirt', 'libvirt-client', 'libvirt-devel', 'git', 'wget']
     required_packages.each do |package|
       unless installed?(package)
         result = run_command("sudo yum install -y #{package}")[:value]
@@ -206,7 +206,12 @@ class CentosDependencyManager < DependencyManager
       vagrant_v = `vagrant -v`.match(/^Vagrant ([0-9.]+\s*)/)[1]
       return BaseCommand::SUCCESS_RESULT if vagrant_v >= VAGRANT_VERSION
     end
-    run_command("sudo yum install -y #{VAGRANT_URL}.rpm")[:value].exitstatus
+    result = run_sequence([
+                            "wget #{VAGRANT_URL}.rpm",
+                            "sudo yum install -y #{VAGRANT_PACKAGE}.rpm",
+                          ])
+    run_command("rm #{VAGRANT_PACKAGE}.rpm")
+    result[:value].exitstatus
   end
 
   # Check if package is installed
