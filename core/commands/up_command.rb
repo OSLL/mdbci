@@ -48,6 +48,7 @@ Labels should be separated with commas, do not contain any whitespaces.
     if @args.empty? || @args.first.nil?
       raise ArgumentError, 'You must specify path to the mdbci configuration as a parameter.'
     end
+
     @specification = @args.first
     @attempts = @env.attempts&.to_i || 5
     @box_manager = @env.boxes
@@ -76,6 +77,7 @@ Labels should be separated with commas, do not contain any whitespaces.
     @ui.info 'Generating docker images.'
     config.each do |node|
       next if node[1]['box'].nil?
+
       DockerManager.build_image("#{nodes_directory}/#{node[0]}", node[1]['box'])
     end
   end
@@ -97,7 +99,11 @@ Labels should be separated with commas, do not contain any whitespaces.
   def node_running?(node)
     result = run_command("vagrant status #{node}")
     status_regex = /^#{node}\s+(\S+)\s+(\S+)\s$/
-    status = result[:output].match(status_regex)[1] if result[:output] =~ status_regex
+    status = if result[:output] =~ status_regex
+               result[:output].match(status_regex)[1]
+             else
+               'UNKNOWN'
+             end
     @ui.info "Node '#{node}' status: #{status}"
     if status&.include?('running')
       @ui.info "Node '#{node}' is running."
@@ -146,9 +152,7 @@ Labels should be separated with commas, do not contain any whitespaces.
   # @param nodes [Array<String] name of nodes to check
   # @return [Array<String>, Array<String>] nodes that are running and those that are not
   def running_and_halt_nodes(nodes)
-    nodes.partition do |node|
-      node_running?(node)
-    end
+    nodes.partition(&method(:node_running?))
   end
 
   # Check that all specified nodes are configured and brought up.
@@ -173,14 +177,12 @@ Labels should be separated with commas, do not contain any whitespaces.
   # @param nodes [Array<String>] names of nodes that should be configured
   # @return [Array<String>] list of nodes that we not successfully configured
   def configure_nodes(nodes)
-    nodes.reject do |node|
-      configure(node)
-    end
+    nodes.reject(&method(:configure))
   end
 
   # Configure single node using the chef-solo respected role
   # @param node[String] name of the node
-  # @return [Boolean] whether we were successfull or not
+  # @return [Boolean] whether we were successful or not
   def configure(node)
     @network_config.add_nodes([node])
     solo_config = "#{node}-config.json"
@@ -206,8 +208,7 @@ Labels should be separated with commas, do not contain any whitespaces.
   def bring_up_machines(provider, node_name = '')
     @ui.info "Bringing up #{(node_name.empty? ? 'configuration ' : 'node ')} #{@specification}"
     vagrant_flags = generate_vagrant_run_flags(provider)
-    run_command_and_log("vagrant up #{vagrant_flags} --provider=#{provider} #{node_name}",
-                        show_notifications = true)
+    run_command_and_log("vagrant up #{vagrant_flags} --provider=#{provider} #{node_name}", true)
   end
 
   # Destroy and then create specified nodes.
@@ -217,7 +218,7 @@ Labels should be separated with commas, do not contain any whitespaces.
   def recreate(nodes, provider)
     nodes.each do |node|
       @ui.info "Destroying '#{node}' node."
-      DestroyCommand.execute(["#{@config.path}/#{node}"], @env, @ui, { keep_template: true })
+      DestroyCommand.execute(["#{@config.path}/#{node}"], @env, @ui, keep_template: true)
       bring_up_machines(provider, node)
     end
   end
@@ -281,8 +282,7 @@ Labels should be separated with commas, do not contain any whitespaces.
   # Provide information for the end-user where to find the required information
   # @param working_directory [String] path to the current working directory
   # @param config_path [String] path to the configuration
-  # @param node [String] name of the node that was brought up
-  def generate_config_information(working_directory, config_path, node = '')
+  def generate_config_information(working_directory, config_path)
     network_config_path = "#{config_path}#{Configuration::NETWORK_FILE_SUFFIX}"
     @ui.info 'All nodes were brought up and configured.'
     @ui.info "DIR_PWD=#{working_directory}"
@@ -299,11 +299,11 @@ Labels should be separated with commas, do not contain any whitespaces.
 
   # Forcefully destroys given nodes
   #
-  # @param node [Array<String>] List with names of nodes which needs to be destroyed
+  # @param node_names [Array<String>] List with names of nodes which needs to be destroyed
   def destroy_nodes(node_names)
     @ui.info 'Destroying existing nodes.'
     node_names.each do |node|
-      DestroyCommand.execute(["#{@config.path}/#{node}"], @env, @ui, { keep_template: true })
+      DestroyCommand.execute(["#{@config.path}/#{node}"], @env, @ui, keep_template: true)
     end
   end
 
@@ -324,7 +324,7 @@ Labels should be separated with commas, do not contain any whitespaces.
     halt_nodes
   end
 
-  # Restors network configuration of nodes that were already brought up
+  # Restores network configuration of nodes that were already brought up
   def store_network_config
     @network_config = NetworkConfig.new(@config, @ui)
     running_nodes = running_and_halt_nodes(@config.node_names)[0]
@@ -357,7 +357,7 @@ Labels should be separated with commas, do not contain any whitespaces.
       return ERROR_RESULT if nodes_to_fix == ERROR_RESULT
       return ERROR_RESULT unless fix_nodes(nodes_to_fix, @config.provider)
     end
-    generate_config_information(Dir.pwd, @config.path, node)
+    generate_config_information(Dir.pwd, @config.path)
     SUCCESS_RESULT
   end
 end
