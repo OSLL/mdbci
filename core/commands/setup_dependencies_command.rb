@@ -225,8 +225,9 @@ class DebianDependencyManager < DependencyManager
   def install_dependencies
     run_command('sudo apt-get update')
     result = run_sequence([
-                            'sudo apt-get -y install libvirt-daemon-system build-essential '\
-                            'libxslt-dev libxml2-dev libvirt-dev wget git cmake'
+                            'sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install '\
+                            'libvirt-daemon-system build-essential libxslt-dev '\
+                            'libxml2-dev libvirt-dev wget git cmake curl'
                           ])[:value]
     return result.exitstatus unless result.success?
     install_vagrant
