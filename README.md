@@ -7,6 +7,30 @@
 * creation and management of virtual machine state snapshots,
 * reliable destruction of created virtual machines.
 
+## Requirements
+
+FUSE should be installed on all linux distributions as it's required to execute AppImage file.
+
+```
+sudo apt-get install -y libfuse2 fuse
+```
+
+```
+sudo yum install -y fuse-libs fuse
+```
+
+* fuse-libs - additional fuse libraries for CentOS
+* libfuse2 - additional fuse libraries for Ubuntu and Debian
+
+You also may need to add current user to the `fuse` user group in case you are getting `fuse: failed to open /dev/fuse: Permission denied` error.
+
+```
+sudo addgroup fuse
+usermod -a -G fuse $(whoami)
+```
+
+Check [Toubleshooting](https://docs.appimage.org/user-guide/run-appimages.html#troubleshooting) section for additional help.
+
 ## Architecture overview
 
 MDBCI is a tool written in Ruby programming language. In order to ease the deployment of the tool the AppImage distribution is provided. It allows to use MDBCI as a standalone executable.
