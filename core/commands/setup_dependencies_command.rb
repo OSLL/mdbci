@@ -199,6 +199,7 @@ class CentosDependencyManager < DependencyManager
         return BaseCommand::ERROR_RESULT unless result.success?
       end
     end
+    return BaseCommand::ERROR_RESULT unless run_command('sudo systemctl start libvirtd')
     install_vagrant
   end
 
