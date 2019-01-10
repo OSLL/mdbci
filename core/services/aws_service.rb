@@ -55,6 +55,18 @@ class AwsService
     @client.describe_instances.to_h
   end
 
+  # Get the instances list
+  # @return [Array] instances list in format [{ instance_id, node_name }]
+  def instances_list
+    describe_instances[:reservations].map do |reservation|
+      reservation[:instances].map do |instance|
+        next nil if !%w[running pending].include?(instance[:state][:name]) || instance[:tags].nil?
+        node_name = instance[:tags].find { |tag| tag[:key] == 'machinename' }[:value]
+        { instance_id: instance[:instance_id], node_name: node_name }
+      end
+    end.flatten.compact
+  end
+
   # Check whether instance with the specified id running or not.
   # @param [String] instance_id to check
   # @return [Boolean] true if it is running

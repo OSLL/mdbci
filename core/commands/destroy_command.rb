@@ -275,15 +275,9 @@ libvirt and VirtualBox boxes using low-level commands.
     SUCCESS_RESULT
   end
 
-  # Remember the instance id of aws virtual machine.
+  # Remember the instance id of aws virtual machines.
   def remember_aws_instance_id
-    @aws_instance_ids = @aws_service.describe_instances[:reservations].map do |reservation|
-      reservation[:instances].map do |instance|
-        next nil unless %w[running pending].include?(instance[:state][:name])
-        node_name = instance[:tags].find { |tag| tag[:key] == 'machinename' }[:value]
-        { instance_id: instance[:instance_id], node_name: node_name }
-      end
-    end.flatten.compact
+    @aws_instance_ids = @aws_service.instances_list
   end
 
   # Read the instance id of aws virtual machine from local vagrant directory.
