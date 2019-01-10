@@ -203,7 +203,8 @@ class CentosDependencyManager < DependencyManager
   end
 
   def delete_dependencies
-    run_command('sudo yum -y remove vagrant libvirt-client libvirt-devel')[:value].exitstatus
+    run_command('sudo yum -y remove vagrant libvirt-client '\
+                'libvirt-devel libvirt-daemon libvirt')[:value].exitstatus
   end
 
   # Installs or updates Vagrant if installed version older than VAGRANT_VERSION
