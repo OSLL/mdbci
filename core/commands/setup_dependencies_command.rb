@@ -186,7 +186,10 @@ end
 # Class that manages CentOS specific packages
 class CentosDependencyManager < DependencyManager
   def install_dependencies
-    required_packages = ['gcc', 'libvirt', 'libvirt-client', 'libvirt-devel', 'git', 'wget']
+    required_packages = [
+                          'gcc', 'libvirt', 'libvirt-client', 'libvirt-devel',
+                          'git', 'wget', 'ceph-common', 'rsync'
+                        ]
     required_packages.each do |package|
       unless installed?(package)
         result = run_command("sudo yum install -y #{package}")[:value]
@@ -227,7 +230,7 @@ class DebianDependencyManager < DependencyManager
     result = run_sequence([
                             'sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install '\
                             'libvirt-daemon-system build-essential libxslt-dev '\
-                            'libxml2-dev libvirt-dev wget git cmake curl'
+                            'libxml2-dev libvirt-dev wget git cmake curl rsync'
                           ])[:value]
     return result.exitstatus unless result.success?
     install_vagrant
@@ -253,7 +256,7 @@ class UbuntuDependencyManager < DebianDependencyManager
     run_command('sudo apt-get update')
     result = run_sequence([
                             'sudo apt-get -y install libvirt-bin build-essential '\
-                            'libxslt-dev libxml2-dev libvirt-dev wget git cmake'
+                            'libxslt-dev libxml2-dev libvirt-dev wget git cmake rsync'
                           ])[:value]
     return result.exitstatus unless result.success?
     install_vagrant
