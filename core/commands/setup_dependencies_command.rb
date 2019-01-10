@@ -3,6 +3,10 @@
 require_relative 'base_command'
 require_relative '../services/shell_commands'
 
+VAGRANT_VERSION = '2.2.2'
+VAGRANT_LIBVIRT_PLUGIN_VERSION = ''
+VAGRANT_AWS_PLUGIN_VERSION = ''
+
 # Command installs reqired dependencies for running mdbci
 class SetupDependenciesCommand < BaseCommand
   include ShellCommands
@@ -87,8 +91,8 @@ Delete previously installed dependencies and VM pools
   # Install vagrant plugins and prepares mdbci environment
   def install_vagrant_plugins
     run_sequence([
-                   'vagrant plugin install vagrant-libvirt --plugin-version 0.0.43',
-                   'vagrant plugin install vagrant-aws --plugin-version 0.7.2',
+                   "vagrant plugin install vagrant-libvirt --plugin-version #{VAGRANT_LIBVIRT_PLUGIN_VERSION}",
+                   "vagrant plugin install vagrant-aws --plugin-version #{VAGRANT_AWS_PLUGIN_VERSION}",
                    'vagrant box add --force dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box'
                  ])[:value].exitstatus
   end
@@ -152,7 +156,6 @@ end
 class DependencyManager
   include ShellCommands
 
-  VAGRANT_VERSION = '2.2.2'
   VAGRANT_PACKAGE = "vagrant_#{VAGRANT_VERSION}_x86_64"
   VAGRANT_URL = "https://releases.hashicorp.com/vagrant/#{VAGRANT_VERSION}/#{VAGRANT_PACKAGE}"
 
@@ -187,8 +190,8 @@ end
 class CentosDependencyManager < DependencyManager
   def install_dependencies
     required_packages = [
-                          'gcc', 'libvirt', 'libvirt-client', 'libvirt-devel',
-                          'git', 'wget', 'ceph-common', 'rsync'
+                          'ceph-common', 'gcc', 'libvirt', 'libvirt-client',
+                          'libvirt-devel', 'git', 'wget',  'rsync'
                         ]
     required_packages.each do |package|
       unless installed?(package)
@@ -255,8 +258,8 @@ class UbuntuDependencyManager < DebianDependencyManager
   def install_dependencies
     run_command('sudo apt-get update')
     result = run_sequence([
-                            'sudo apt-get -y install libvirt-bin build-essential '\
-                            'libxslt-dev libxml2-dev libvirt-dev wget git cmake rsync'
+                            'sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install libvirt-bin '\
+                            'build-essential libxslt-dev libxml2-dev libvirt-dev wget git cmake rsync'
                           ])[:value]
     return result.exitstatus unless result.success?
     install_vagrant
