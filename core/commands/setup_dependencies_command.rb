@@ -35,7 +35,7 @@ Delete previously installed dependencies and VM pools
   def initialize(arg, env, logger)
     super(arg, env, logger)
     case get_linux_distro
-    when 'centos'
+    when 'centos', 'rhel'
       @dependency_manager = CentosDependencyManager.new(arg, env, logger)
     when 'debian'
       @dependency_manager = DebianDependencyManager.new(arg, env, logger)
