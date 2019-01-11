@@ -115,7 +115,7 @@ end
   end
 
   # Vagrantfile for Libvirt provider
-  def self.get_libvirt_definition(_cookbook_path, path, name, host, boxurl, ssh_pty, vm_mem, template_path, _provisioned)
+  def self.get_libvirt_definition(_cookbook_path, path, name, host, boxurl, ssh_pty, vm_cpu, vm_mem, template_path, _provisioned)
     templatedef = if template_path
                     "\t"+name+'.vm.synced_folder '+quote(template_path)+", "+quote('/home/vagrant/cnf_templates') \
                     +", type:"+quote('rsync')
@@ -138,6 +138,7 @@ end
             + templatedef + "\n"\
             + "\t"+name+'.vm.provider :libvirt do |qemu|' + "\n" \
             + "\t\t"+'qemu.driver = ' + quote('kvm') + "\n" \
+            + "\t\t"+'qemu.cpus = ' + quote(vm_cpu) + "\n" \
             + "\t\t"+'qemu.memory = ' + vm_mem + "\n\tend"
     qemudef += "\nend #  <-- End of Qemu definition for machine: " + name +"\n\n"
     return qemudef
@@ -314,6 +315,7 @@ end
 
   def self.node_definition(node, boxes, path, cookbook_path)
     vm_mem = node[1]['memory_size'].nil? ? '1024' : node[1]['memory_size'].to_s
+    vm_cpu = ($session.cpu_count || node[1]['cpu_count'] || '1').to_s
     # cookbook path dir
     if node[0]['cookbook_path']
       cookbook_path = node[1].to_s
@@ -370,7 +372,7 @@ end
                                 })
           machine = get_aws_vms_definition(cookbook_path, name, amiurl, user, ssh_pty, instance, template_path, provisioned, tags)
         when 'libvirt'
-          machine = get_libvirt_definition(cookbook_path, path, name, host, boxurl, ssh_pty, vm_mem, template_path, provisioned)
+          machine = get_libvirt_definition(cookbook_path, path, name, host, boxurl, ssh_pty, vm_cpu, vm_mem, template_path, provisioned)
         when 'docker'
           machine = get_docker_definition(cookbook_path, path, name, ssh_pty, template_path, provisioned, platform, platform_version, box)
           generate_dockerfiles(path, name, platform, platform_version)

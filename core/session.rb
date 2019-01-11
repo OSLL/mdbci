@@ -69,6 +69,7 @@ class Session
   attr_accessor :recreate
   attr_accessor :labels
   attr_accessor :force_distro
+  attr_accessor :cpu_count
 
   PLATFORM = 'platform'
   VAGRANT_NO_PARALLEL = '--no-parallel'
