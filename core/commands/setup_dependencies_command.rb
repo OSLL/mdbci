@@ -99,11 +99,11 @@ Delete previously installed dependencies and VM pools
 
   # Created new libvirt pool with 'default' as name
   def create_libvirt_pool
-    delete_libvirt_pool if run_command('virsh pool-info default')[:value].success?
+    delete_libvirt_pool if run_command('sudo virsh pool-info default')[:value].success?
     images_dir = "#{ENV['HOME']}/libvirt-images"
     run_sequence([
                    "sudo mkdir -p #{images_dir}",
-                   "virsh pool-create-as default dir --target #{images_dir}"
+                   "sudo virsh pool-create-as default dir --target #{images_dir}"
                  ])[:value].exitstatus
   end
 
@@ -133,9 +133,9 @@ Are you sure you want to continue? [y/N]: ")
   # Deletes 'defoult' libvirt pool
   def delete_libvirt_pool
     run_sequence([
-                   'virsh pool-destroy default',
-                   'virsh pool-delete default',
-                   'virsh pool-undefine default'
+                   'sudo virsh pool-destroy default',
+                   'sudo virsh pool-delete default',
+                   'sudo virsh pool-undefine default'
                  ], until_first_error: false)
   end
 
