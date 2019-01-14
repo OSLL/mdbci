@@ -7,7 +7,7 @@ These instructions install the bare minimum that is required to run the MaxScale
 ### CentOS
 
 ```
-sudo yum -y install libvirt-client libvirt-devel qemu git
+sudo yum -y install ceph-common libvirt libvirt-client libvirt-devel qemu-kvm git
 sudo yum -y install https://releases.hashicorp.com/vagrant/2.2.0/vagrant_2.2.0_x86_64.rpm
 ```
 
