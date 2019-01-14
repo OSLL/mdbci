@@ -72,7 +72,7 @@ Delete previously installed dependencies and VM pools
     result = create_libvirt_pool if result == SUCCESS_RESULT
     if result == SUCCESS_RESULT
       @ui.info('Dependencies successfully installed.')
-      @ui.info('Please log out of your current session and log in again to apply changes to user groups.')
+      @ui.info('Please restart your computer in order to apply changes.')
     end
     result
   end
