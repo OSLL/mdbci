@@ -190,7 +190,7 @@ end
 class CentosDependencyManager < DependencyManager
   def install_dependencies
     required_packages = [
-                          'ceph-common', 'gcc', 'libvirt', 'libvirt-client',
+                          'ceph-common', 'qemu-kvm', 'gcc', 'libvirt', 'libvirt-client',
                           'libvirt-devel', 'git', 'wget',  'rsync'
                         ]
     required_packages.each do |package|
