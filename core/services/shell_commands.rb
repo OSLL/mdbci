@@ -22,6 +22,7 @@ module ShellCommands
       correct_key = key.sub(/^#{PREFIX}/, '')
       @env[correct_key] = value
     end
+    @env['LIBVIRT_DEFAULT_URI'] ||= 'qemu:///system'
     @env
   end
 
