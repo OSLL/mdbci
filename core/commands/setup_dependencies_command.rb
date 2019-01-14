@@ -184,6 +184,15 @@ class DependencyManager
     end
     run_command("sudo usermod -a -G #{libvirt_groups} $(whoami)")[:value].exitstatus
   end
+
+  # Check if required version of vagrant need to be installed
+  def should_install_vagrant?
+    vagrant_v_output = run_command('vagrant -v')[:output]
+    installed_version = vagrant_v_output.match(/^Vagrant ([0-9.]+)\s*$/)[1]
+    return VAGRANT_VERSION > installed_version
+  rescue Errno::ENOENT
+    return true
+  end
 end
 
 # Class that manages CentOS specific packages
@@ -210,10 +219,8 @@ class CentosDependencyManager < DependencyManager
 
   # Installs or updates Vagrant if installed version older than VAGRANT_VERSION
   def install_vagrant
-    if installed?('vagrant')
-      vagrant_v = `vagrant -v`.match(/^Vagrant ([0-9.]+\s*)/)[1]
-      return BaseCommand::SUCCESS_RESULT if vagrant_v >= VAGRANT_VERSION
-    end
+    return BaseCommand::SUCCESS_RESULT unless should_install_vagrant?
+
     result = run_sequence([
                             "wget #{VAGRANT_URL}.rpm",
                             "sudo yum install -y #{VAGRANT_PACKAGE}.rpm",
@@ -246,6 +253,8 @@ class DebianDependencyManager < DependencyManager
   end
 
   def install_vagrant
+    return BaseCommand::SUCCESS_RESULT unless should_install_vagrant?
+
     result = run_sequence([
                             "wget #{VAGRANT_URL}.deb",
                             "sudo dpkg -i #{VAGRANT_PACKAGE}.deb"
