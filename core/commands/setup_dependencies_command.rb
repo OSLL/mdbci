@@ -110,6 +110,7 @@ Delete previously installed dependencies and VM pools
   # Deletes previously setup environment
   def delete_packages
     return unless ask_confirmation
+
     delete_libvirt_pool
     delete_vagrant_plugins
     @dependency_manager.delete_dependencies
@@ -147,6 +148,7 @@ Are you sure you want to continue? [y/N]: ")
   else
     vagrant_plugin_list = run_command('vagrant plugin list')
     return if vagrant_plugin_list[:output] =~ /No plugins installed/
+
     plugins = vagrant_plugin_list[:output].split(/ \(.+\)\s+\- Version Constraint: [0-9.]+\n/)
     run_command("vagrant plugin uninstall #{plugins.join(' ')}")
   end
@@ -189,9 +191,9 @@ class DependencyManager
   def should_install_vagrant?
     vagrant_v_output = run_command('vagrant -v')[:output]
     installed_version = vagrant_v_output.match(/^Vagrant ([0-9.]+)\s*$/)[1]
-    return VAGRANT_VERSION > installed_version
+    VAGRANT_VERSION > installed_version
   rescue Errno::ENOENT
-    return true
+    true
   end
 end
 
@@ -199,9 +201,9 @@ end
 class CentosDependencyManager < DependencyManager
   def install_dependencies
     required_packages = [
-                          'ceph-common', 'qemu-kvm', 'gcc', 'libvirt', 'libvirt-client',
-                          'libvirt-devel', 'git', 'wget',  'rsync'
-                        ]
+      'ceph-common', 'qemu-kvm', 'gcc', 'libvirt', 'libvirt-client',
+      'libvirt-devel', 'git', 'wget', 'rsync'
+    ]
     required_packages.each do |package|
       unless installed?(package)
         result = run_command("sudo yum install -y #{package}")[:value]
@@ -209,6 +211,7 @@ class CentosDependencyManager < DependencyManager
       end
     end
     return BaseCommand::ERROR_RESULT unless run_command('sudo systemctl start libvirtd')
+
     install_vagrant
   end
 
@@ -223,7 +226,7 @@ class CentosDependencyManager < DependencyManager
 
     result = run_sequence([
                             "wget #{VAGRANT_URL}.rpm",
-                            "sudo yum install -y #{VAGRANT_PACKAGE}.rpm",
+                            "sudo yum install -y #{VAGRANT_PACKAGE}.rpm"
                           ])
     run_command("rm #{VAGRANT_PACKAGE}.rpm")
     result[:value].exitstatus
@@ -245,6 +248,7 @@ class DebianDependencyManager < DependencyManager
                             'libxml2-dev libvirt-dev wget git cmake curl rsync'
                           ])[:value]
     return result.exitstatus unless result.success?
+
     install_vagrant
   end
 
@@ -273,6 +277,7 @@ class UbuntuDependencyManager < DebianDependencyManager
                             'build-essential libxslt-dev libxml2-dev libvirt-dev wget git cmake rsync'
                           ])[:value]
     return result.exitstatus unless result.success?
+
     install_vagrant
   end
 end
