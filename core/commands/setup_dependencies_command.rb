@@ -4,7 +4,7 @@ require_relative 'base_command'
 require_relative '../services/shell_commands'
 
 VAGRANT_VERSION = '2.2.3'
-VAGRANT_LIBVIRT_PLUGIN_VERSION = '0.0.43'
+VAGRANT_LIBVIRT_PLUGIN_VERSION = '0.0.45'
 VAGRANT_AWS_PLUGIN_VERSION = '0.7.2'
 
 # Command installs reqired dependencies for running mdbci
