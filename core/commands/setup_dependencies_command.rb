@@ -165,13 +165,17 @@ Are you sure you want to continue? [y/N]: ")
   def delete_vagrant_plugins
     `vagrant -v`
   rescue Errno::ENOENT
-    $stdout.puts('Vagrant in not installed')
+    @ui.info('Vagrant in not installed')
   else
     vagrant_plugin_list = run_command('vagrant plugin list')
     return if vagrant_plugin_list[:output] =~ /No plugins installed/
 
-    plugins = vagrant_plugin_list[:output].split(/ \(.+\)\s+\- Version Constraint: [0-9.]+\n/)
-    run_command("vagrant plugin uninstall #{plugins.join(' ')}")
+    plugin_regexp = /(\S+) \([0-9.]+.*\)/
+    plugins = vagrant_plugin_list[:output].split("\n").each_with_object([]) do |line, acc|
+      acc.push(line.match(plugin_regexp)[1]) if line =~ plugin_regexp
+      acc
+    end
+    run_command("vagrant plugin uninstall #{plugins.join(' ')}") unless plugins.empty?
   end
 
   # Adds LIBVIRT_DEFAULT_URI=qemu:///system environmental varible initialization
