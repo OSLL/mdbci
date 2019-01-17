@@ -67,7 +67,7 @@ Delete previously installed dependencies and VM pools
   # @return [Integer] result of execution
   def install
     result = @dependency_manager.install_dependencies
-    result = @dependency_manager.add_user_to_usergroup if result == SUCCESS_RESULT
+    result = add_user_to_usergroup if result == SUCCESS_RESULT
     result = install_vagrant_plugins if result == SUCCESS_RESULT
     result = create_libvirt_pool if result == SUCCESS_RESULT
     export_libvirt_default_uri
@@ -87,6 +87,16 @@ Delete previously installed dependencies and VM pools
         return line.match(distribution_regex)[1].downcase if line =~ distribution_regex
       end
     end
+  end
+
+  # Adds user to libvirt user group
+  def add_user_to_usergroup
+    libvirt_groups = `getent group | grep libvirt | cut -d ":" -f1`.split("\n").join(',')
+    if libvirt_groups.empty?
+      @ui.error('Cannot add user to libvirt group. Libvirt group not found')
+      return BaseCommand::ERROR_RESULT
+    end
+    run_command("sudo usermod -a -G #{libvirt_groups} $(whoami)")[:value].exitstatus
   end
 
   # Install vagrant plugins and prepares mdbci environment
@@ -207,16 +217,6 @@ class DependencyManager
   # Deletes dependencies on supported platform
   def delete_dependencies
     raise 'Not implemented'
-  end
-
-  # Adds user to libvirt user group
-  def add_user_to_usergroup
-    libvirt_groups = `getent group | grep libvirt | cut -d ":" -f1`.split("\n").join(',')
-    if libvirt_groups.empty?
-      @ui.error('Cannot add user to libvirt group. Libvirt group not found')
-      return BaseCommand::ERROR_RESULT
-    end
-    run_command("sudo usermod -a -G #{libvirt_groups} $(whoami)")[:value].exitstatus
   end
 
   # Check if required version of vagrant need to be installed
