@@ -272,14 +272,13 @@ end
 
 # Class that manages Debian specific packages
 class DebianDependencyManager < DependencyManager
+  REQUIRED_PACKAGES = ['libvirt-daemon-system', 'build-essential', 'libxslt-dev',
+                       'libxml2-dev', 'wget', 'git', 'cmake', 'rsync'].freeze
+
   def install_dependencies
     run_command('sudo apt-get update')
-    result = run_sequence([
-                            'sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install '\
-                            'libvirt-daemon-system build-essential libxslt-dev '\
-                            'libxml2-dev libvirt-dev wget git cmake curl rsync'
-                          ])[:value]
-    return result.exitstatus unless result.success?
+    result = run_command("sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install #{REQUIRED_PACKAGES.join(' ')}")
+    return result[:value].exitstatus unless result[:value].success?
 
     install_vagrant
   end
@@ -302,14 +301,6 @@ end
 
 # Class that manages Ubuntu specific packages
 class UbuntuDependencyManager < DebianDependencyManager
-  def install_dependencies
-    run_command('sudo apt-get update')
-    result = run_sequence([
-                            'sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install libvirt-bin '\
-                            'build-essential libxslt-dev libxml2-dev libvirt-dev wget git cmake rsync'
-                          ])[:value]
-    return result.exitstatus unless result.success?
-
-    install_vagrant
-  end
+  REQUIRED_PACKAGES = ['libvirt-bin', 'build-essential', 'libxslt-dev',
+                       'libxml2-dev', 'wget', 'git', 'cmake', 'rsync'].freeze
 end
