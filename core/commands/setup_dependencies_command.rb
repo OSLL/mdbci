@@ -91,8 +91,18 @@ Delete previously installed dependencies and VM pools
 
   # Install vagrant plugins and prepares mdbci environment
   def install_vagrant_plugins
+    install_libvirt_plugin = "vagrant plugin install vagrant-libvirt --plugin-version #{VAGRANT_LIBVIRT_PLUGIN_VERSION}"
+    result = run_command(install_libvirt_plugin)[:value]
+    unless result.success?
+      @ui.error('Regular vagrant-libvirt installation failed. Retrying with additional options.')
+      result = run_command("CONFIGURE_ARGS='with-ldflags=-L/opt/vagrant/embedded/lib "\
+                           "with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib' "\
+                           'GEM_HOME=~/.vagrant.d/gems GEM_PATH=$GEM_HOME:/opt/vagrant/embedded/gems '\
+                           "PATH=/opt/vagrant/embedded/bin:$PATH #{install_libvirt_plugin}")[:value]
+    end
+    return result.exitstatus unless result.success?
+
     run_sequence([
-                   "vagrant plugin install vagrant-libvirt --plugin-version #{VAGRANT_LIBVIRT_PLUGIN_VERSION}",
                    "vagrant plugin install vagrant-aws --plugin-version #{VAGRANT_AWS_PLUGIN_VERSION}",
                    'vagrant box add --force dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box'
                  ])[:value].exitstatus
@@ -232,7 +242,7 @@ class CentosDependencyManager < DependencyManager
         return BaseCommand::ERROR_RESULT unless result.success?
       end
     end
-    return BaseCommand::SUCCESS_RESULT unless run_command('sudo systemctl start libvirtd')[:value].success?
+    return BaseCommand::ERROR_RESULT unless run_command('sudo systemctl start libvirtd')[:value].success?
 
     install_vagrant
   end
