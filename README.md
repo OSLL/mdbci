@@ -79,6 +79,15 @@ During the installation you will be prompted to enter your password.
 
 **WARNING**: upon installation previously created libvirt VM pool named 'default' will be deleted.
 
+You can force the use of installation method for a specific Дinux distribution by passing its name to the `--force-distro` option
+
+```
+./mdbci setup-dependencies --force-distro CentOS
+````
+
+This will only work if your distribution uses the same package manager as a chosen distribution and provides all required packages.
+Currently supports installation for Debian, Ubuntu, CentOS, RHEL.
+
 To perform a clean installation call
 
 ```
