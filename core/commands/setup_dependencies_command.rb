@@ -28,13 +28,17 @@ After that 'default' VM pool created for libvirt and the current user added to t
 OPTIONS:
   --reinstall:
 Delete previously installed dependencies and VM pools
+  --force-distro:
+Force to use installation method implemented for specific linux distribution.
+Currently supports installation for Debian, Ubuntu, CentOS, RHEL.
     HELP
     @ui.info(info)
   end
 
   def initialize(arg, env, logger)
     super(arg, env, logger)
-    case get_linux_distro
+    distro = env.force_distro&.downcase || get_linux_distro
+    case distro
     when 'centos', 'rhel'
       @dependency_manager = CentosDependencyManager.new(arg, env, logger)
     when 'debian'
