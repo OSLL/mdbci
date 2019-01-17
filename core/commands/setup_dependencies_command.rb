@@ -239,11 +239,12 @@ end
 
 # Class that manages CentOS specific packages
 class CentosDependencyManager < DependencyManager
+  def required_packages
+    ['ceph-common', 'qemu-kvm', 'gcc', 'libvirt', 'libvirt-client',
+     'libvirt-devel', 'git', 'wget', 'rsync']
+  end
+
   def install_dependencies
-    required_packages = [
-      'ceph-common', 'qemu-kvm', 'gcc', 'libvirt', 'libvirt-client',
-      'libvirt-devel', 'git', 'wget', 'rsync'
-    ]
     required_packages.each do |package|
       unless installed?(package)
         result = run_command("sudo yum install -y #{package}")[:value]
@@ -280,12 +281,14 @@ end
 
 # Class that manages Debian specific packages
 class DebianDependencyManager < DependencyManager
-  REQUIRED_PACKAGES = ['libvirt-daemon-system', 'build-essential', 'libxslt-dev',
-                       'libxml2-dev', 'wget', 'git', 'cmake', 'rsync'].freeze
+  def required_packages
+    ['libvirt-daemon-system', 'build-essential', 'libxslt-dev',
+     'libxml2-dev', 'wget', 'git', 'cmake', 'rsync']
+  end
 
   def install_dependencies
     run_command('sudo apt-get update')
-    result = run_command("sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install #{REQUIRED_PACKAGES.join(' ')}")
+    result = run_command("sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install #{required_packages.join(' ')}")
     return result[:value].exitstatus unless result[:value].success?
 
     install_vagrant
@@ -309,6 +312,8 @@ end
 
 # Class that manages Ubuntu specific packages
 class UbuntuDependencyManager < DebianDependencyManager
-  REQUIRED_PACKAGES = ['libvirt-bin', 'build-essential', 'libxslt-dev',
-                       'libxml2-dev', 'wget', 'git', 'cmake', 'rsync'].freeze
+  def required_packages
+    ['libvirt-bin', 'build-essential', 'libxslt-dev',
+     'libxml2-dev', 'wget', 'git', 'cmake', 'rsync']
+  end
 end
