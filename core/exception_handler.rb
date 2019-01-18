@@ -12,6 +12,7 @@ class ExceptionHandler
       details.backtrace.reverse.each do |detail|
         $out.error detail
       end
+      # TODO: ExceptionHandler need to be refactored! Don't return 1 for error
       exit -1
     end
   end

@@ -533,7 +533,8 @@ EOF
       destroy = DestroyCommand.new(ARGV, self, $out)
       exit_code = destroy.execute
     when 'generate'
-      exit_code = generate(ARGV.shift)
+      command = GenerateCommand.new(ARGV, self, $out)
+      exit_code = command.execute(ARGV.shift, @boxes, isOverride)
     when 'generate-product-repositories'
       command = GenerateProductRepositoriesCommand.new(ARGV, self, $out)
       exit_code = command.execute
@@ -574,7 +575,7 @@ EOF
   end
 
   # load mdbci boxes parameters from boxes.json
-  def LoadNodesProvider(configs)
+  def load_nodes_provider(configs)
     nodes = {}
     configs.keys.each do |node|
       nodes[node] = configs[node] if node != "aws_config" and node != "cookbook_path"
@@ -587,57 +588,6 @@ EOF
       raise "Box #{box} from node #{node[0]} not found in #{$session.boxes_dir}!" if box_params.nil?
       @nodesProvider = box_params["provider"].to_s
     end
-  end
-
-  def generate(name)
-    if name.nil?
-      path = "#{Dir.pwd}/default"
-    else
-      path = File.absolute_path(name.to_s)
-    end
-    #
-    # TODO: ExceptionHandler need to be refactored! Don't return 1 for error
-    begin
-      IO.read($session.configFile)
-    rescue
-      raise 'Instance configuration file not found!'
-    end
-    instanceConfigFile = $exception_handler.handle('INSTANCE configuration file not found') { IO.read($session.configFile) }
-    if instanceConfigFile.nil?
-      raise 'Instance configuration file invalid!'
-    end
-    @configs = $exception_handler.handle('INSTANCE configuration file invalid') { JSON.parse(instanceConfigFile) }
-    raise 'Template configuration file is empty!' if @configs.nil?
-
-    LoadNodesProvider configs
-    if @nodesProvider != 'mdbci'
-      GenerateCommand.new(ARGV, self, $out).generate(path, configs, boxes, isOverride, nodesProvider)
-      $out.info 'Generating config in ' + path
-    else
-      $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_template'
-      # TODO: dir already exist?
-      Dir.mkdir path unless File.exists? path
-      mdbci = File.new(path+'/mdbci_template', 'w')
-      mdbci.print $session.configFile
-      mdbci.close
-    end
-    # write nodes provider and template to configuration nodes dir file
-    provider_file = path+'/provider'
-    if !File.exist?(provider_file)
-      File.open(path+'/provider', 'w') { |f| f.write(@nodesProvider.to_s) }
-    else
-      raise 'Configuration \'provider\' template file don\'t exist'
-    end
-    if @nodesProvider != 'mdbci'
-      template_file = path+'/template'
-      if !File.exist?(template_file)
-        File.open(path+'/template', 'w') { |f| f.write(File.expand_path configFile) }
-      else
-        raise 'Configuration \'template\' file don\'t exist'
-      end
-    end
-
-    return 0
   end
 
   # copy ssh keys to config/node

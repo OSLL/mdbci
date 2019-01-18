@@ -390,9 +390,33 @@ end
     @ui.info("Global cookbook_path = #{cookbook_path}")
     @ui.info("Nodes provider = #{provider}")
     generate_vagrant_file(path, config, boxes, provider, cookbook_path)
-    if File.size?(File.join(path, 'Vagrantfile')).nil?
-      raise 'Generated Vagrantfile is empty! Please check configuration file and regenerate it.'
+    return unless File.size?(File.join(path, 'Vagrantfile')).nil?
+    raise 'Generated Vagrantfile is empty! Please check configuration file and regenerate it.'
+  end
+
+  def generate_provider_and_template_files(path)
+    provider_file = File.join(path, 'provider')
+    template_file = File.join(path, 'template')
+    raise 'Configuration \'provider\' file already exists' if File.exist?(provider_file)
+    raise 'Configuration \'template\' file already exists' if File.exist?(template_file)
+    File.open(provider_file, 'w') { |f| f.write(@env.nodesProvider.to_s) }
+    File.open(template_file, 'w') { |f| f.write(File.expand_path(@env.configFile)) }
+  end
+
+  def execute(name, boxes, override)
+    path = name.nil? ? File.join(Dir.pwd, 'default') : File.absolute_path(name.to_s)
+    begin
+      instance_config_file = IO.read(@env.configFile)
+      configs = JSON.parse(instance_config_file)
+    rescue IOError
+      raise 'Instance configuration file is invalid or not found!'
+    rescue JSON::ParserError
+      raise 'Instance configuration file invalid!'
     end
+    @env.load_nodes_provider(configs)
+    generate(path, configs, boxes, override, @env.nodesProvider)
+    @ui.info "Generating config in #{path}"
+    generate_provider_and_template_files(path)
     SUCCESS_RESULT
   end
 end
