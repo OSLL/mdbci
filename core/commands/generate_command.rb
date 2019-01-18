@@ -214,12 +214,12 @@ end
     repo = nil
     if !product['repo'].nil?
       repo_name = product['repo']
-      @ui.info "Repo name: #{repo_name}"
+      @ui.info("Repo name: #{repo_name}")
       unless @env.repos.knownRepo?(repo_name)
-        @ui.warning "Unknown key for repo #{repo_name} will be skipped"
+        @ui.warning("Unknown key for repo #{repo_name} will be skipped")
         return error_text
       end
-      @ui.info "Repo specified [#{repo_name}] (CORRECT), other product params will be ignored"
+      @ui.info("Repo specified [#{repo_name}] (CORRECT), other product params will be ignored")
       repo = @env.repos.getRepo(repo_name)
       product_name = @env.repos.productName(repo_name)
     else
@@ -231,15 +231,15 @@ end
                      else
                        {}
                      end
-    @ui.info "Recipe #{recipe_name}"
+    @ui.info("Recipe #{recipe_name}")
     make_role_json(name, product_config, recipe_name)
   end
   # rubocop:enable Metrics/MethodLength
 
   def check_path(path, override)
     if Dir.exist?(path) && !override
-      @ui.error "Folder already exists: #{path}"
-      @ui.error 'Please specify another name or delete'
+      @ui.error("Folder already exists: #{path}")
+      @ui.error('Please specify another name or delete')
       exit(-1)
     end
     FileUtils.rm_rf(path)
@@ -270,13 +270,13 @@ end
   end
 
   def print_node_info(node_params, box)
-    @ui.info "Requested memory #{node_params[:vm_mem]}"
-    @ui.info "Requested number of CPUs #{node_params[:vm_cpu]}"
+    @ui.info("Requested memory #{node_params[:vm_mem]}")
+    @ui.info("Requested number of CPUs #{node_params[:vm_cpu]}")
     if node_params[:provider] == 'aws'
-      @ui.info "AWS definition for host:#{node_params[:host]}, ami:#{node_params[:amiurl]}, "\
-               "user:#{node_params[:user]}, instance:#{node_params[:instance]}"
+      @ui.info("AWS definition for host:#{node_params[:host]}, ami:#{node_params[:amiurl]}, "\
+               "user:#{node_params[:user]}, instance:#{node_params[:instance]}")
     end
-    @ui.info "config.ssh.pty option is #{node_params[:ssh_pty]} for a box #{box}" unless node_params[:ssh_pty].nil?
+    @ui.info("config.ssh.pty option is #{node_params[:ssh_pty]} for a box #{box}") unless node_params[:ssh_pty].nil?
   end
 
   def generate_node_defenition(node_params, cookbook_path, path)
@@ -290,7 +290,7 @@ end
     when 'libvirt'
       get_libvirt_definition(cookbook_path, path, node_params)
     else
-      @ui.warning 'Configuration type invalid! It must be vbox, aws or libvirt type. Check it, please!'
+      @ui.warning('Configuration type invalid! It must be vbox, aws or libvirt type. Check it, please!')
       ''
     end
   end
@@ -309,7 +309,7 @@ end
     else
       product = { 'name' => 'packages' }
     end
-    @ui.info "Machine #{node_params[:name]} is provisioned by #{product}"
+    @ui.info("Machine #{node_params[:name]} is provisioned by #{product}")
     # box with mariadb, maxscale provision - create role
     role = get_role_description(node_params[:name], product, box)
     IO.write(GenerateCommand.role_file_name(path, node_params[:name]), role)
@@ -319,7 +319,7 @@ end
     if box_valid?(box, boxes)
       generate_node_defenition(node_params, cookbook_path, path)
     else
-      @ui.warning "Box #{box} is not installed or configured ->SKIPPING"
+      @ui.warning("Box #{box} is not installed or configured ->SKIPPING")
       ''
     end
   end
@@ -341,7 +341,7 @@ end
   # @param boxes a list of boxes known to the configuration
   # @raise RuntimeError if there is the error in the configuration.
   def check_provider_equality(nodes, boxes)
-    @ui.info 'Checking node provider equality'
+    @ui.info('Checking node provider equality')
     boxes_names = nodes.map do |node|
       node[1]['box'].to_s
     end.reject(&:empty?)
@@ -360,16 +360,16 @@ end
     vagrant = File.open(File.join(path, 'Vagrantfile'), 'w')
     vagrant.puts vagrant_file_header, vagrant_config_header
     if provider == 'aws'
-      @ui.info 'Generating AWS configuration'
+      @ui.info('Generating AWS configuration')
       path_to_keyfile, keypair_name = generate_key_pair path
       vagrant.puts aws_provider_config(@env.tool_config['aws'], path_to_keyfile, keypair_name)
     else
-      @ui.info 'Generating libvirt/VirtualBox configuration'
+      @ui.info('Generating libvirt/VirtualBox configuration')
       vagrant.puts provider_config
     end
     config.each do |node|
       unless node[1]['box'].nil?
-        @ui.info "Generating node definition for [#{node[0]}]"
+        @ui.info("Generating node definition for [#{node[0]}]")
         vagrant.puts node_definition(node, boxes, path, cookbook_path)
       end
     end
@@ -387,8 +387,8 @@ end
                     else
                       config['cookbook_path']
                     end
-    @ui.info "Global cookbook_path = #{cookbook_path}"
-    @ui.info "Nodes provider = #{provider}"
+    @ui.info("Global cookbook_path = #{cookbook_path}")
+    @ui.info("Nodes provider = #{provider}")
     generate_vagrant_file(path, config, boxes, provider, cookbook_path)
     if File.size?(File.join(path, 'Vagrantfile')).nil?
       raise 'Generated Vagrantfile is empty! Please check configuration file and regenerate it.'
