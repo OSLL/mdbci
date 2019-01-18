@@ -12,6 +12,7 @@ opts = GetoptLong.new(
   ['--command', '-c', GetoptLong::REQUIRED_ARGUMENT],
   ['--configuration-file', GetoptLong::REQUIRED_ARGUMENT],
   ['--field', '-f', GetoptLong::REQUIRED_ARGUMENT],
+  ['--force-distro', GetoptLong::REQUIRED_ARGUMENT],
   ['--help', GetoptLong::NO_ARGUMENT],
   ['--ipv6', GetoptLong::NO_ARGUMENT],
   ['--key', '-k', GetoptLong::REQUIRED_ARGUMENT],
@@ -139,6 +140,9 @@ begin
 
     when '--labels'
       session.labels = arg
+
+    when '--force-distro'
+      session.force_distro = arg
 
     else
       out.error 'Option is not supported: ' + opt

@@ -68,6 +68,7 @@ class Session
   attr_accessor :reinstall
   attr_accessor :recreate
   attr_accessor :labels
+  attr_accessor :force_distro
 
   PLATFORM = 'platform'
   VAGRANT_NO_PARALLEL = '--no-parallel'
