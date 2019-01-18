@@ -611,7 +611,7 @@ EOF
 
     LoadNodesProvider configs
     if @nodesProvider != 'mdbci'
-      GenerateCommand.generate(path, configs, boxes, isOverride, nodesProvider)
+      GenerateCommand.new(ARGV, self, $out).generate(path, configs, boxes, isOverride, nodesProvider)
       $out.info 'Generating config in ' + path
     else
       $out.info 'Using mdbci ppc64 box definition, generating config in ' + path + '/mdbci_template'
