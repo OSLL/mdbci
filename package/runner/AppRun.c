@@ -152,9 +152,6 @@ int main(int argc, char *argv[], char *envp[]) {
     }
     outargptrs[outargindex] = '\0';     // trailing null argument required by execvp()
 
-    char *current_working_directory = malloc(LINE_SIZE);
-    getcwd(current_working_directory, LINE_SIZE);
-
     // change directory
     size_t appdir_s = strlen(appdir);
     char *usr_in_appdir = malloc(appdir_s + 5);
@@ -214,8 +211,19 @@ int main(int argc, char *argv[], char *envp[]) {
     /* Otherwise may get errors because Python cannot write __pycache__ bytecode cache */
     putenv("PYTHONDONTWRITEBYTECODE=1");
 
+    old_env = getenv("SSL_CERT_FILE") ?: "";
+    printf("Environment: %s", old_env);
+    char* new_ssl_cert_file = calloc(appdir_s*2 + strlen("/cacert.pem"), sizeof(char));
+    if (strlen(old_env) == 0) {
+        format = "SSL_CERT_FILE=%s/cacert.pem";
+    } else {
+        format = old_env;
+    }
+    sprintf(new_ssl_cert_file, format, appdir);
+    putenv(new_ssl_cert_file);
+
     // Set called working directory to the OLD_CWD environment variable
-    SET_NEW_ENV(old_cwd, LINE_SIZE, "OLD_CWD=%s", current_working_directory);
+    SET_NEW_ENV(old_cwd, appdir_s + strlen("OLD_CWD="), "OLD_CWD=%s", appdir);
 
     // Notify that we are running inside the appimage
     putenv("APPIMAGE=true");
@@ -245,6 +253,6 @@ int main(int argc, char *argv[], char *envp[]) {
     free(new_gsettings_schema_dir);
     free(new_qt_plugin_path);
     free(old_cwd);
-    free(current_working_directory);
+    free(new_ssl_cert_file);
     return 0;
 }
