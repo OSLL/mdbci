@@ -283,7 +283,7 @@ end
 class DebianDependencyManager < DependencyManager
   def required_packages
     ['libvirt-daemon-system', 'build-essential', 'libxslt-dev',
-     'libxml2-dev', 'wget', 'git', 'cmake', 'rsync']
+     'libxml2-dev', 'libvirt-dev', 'wget', 'git', 'cmake', 'rsync']
   end
 
   def install_dependencies
@@ -314,6 +314,6 @@ end
 class UbuntuDependencyManager < DebianDependencyManager
   def required_packages
     ['libvirt-bin', 'build-essential', 'libxslt-dev',
-     'libxml2-dev', 'wget', 'git', 'cmake', 'rsync']
+     'libxml2-dev', 'libvirt-dev', 'wget', 'git', 'cmake', 'rsync']
   end
 end
