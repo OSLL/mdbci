@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'tmpdir'
 require_relative 'base_command'
 require_relative '../services/shell_commands'
 
@@ -235,6 +236,13 @@ class DependencyManager
   rescue Errno::ENOENT
     true
   end
+
+  # Generate the path to the temporary file to store the vagrant package
+  # @param extension [String] the name of the extension to add to the file
+  # @return [String]
+  def generate_downloaded_file_path(extension)
+    "#{File.join(Dir.tmpdir, VAGRANT_PACKAGE)}.#{extension}"
+  end
 end
 
 # Class that manages CentOS specific packages
@@ -265,11 +273,12 @@ class CentosDependencyManager < DependencyManager
   def install_vagrant
     return BaseCommand::SUCCESS_RESULT unless should_install_vagrant?
 
+    downloaded_file = generate_downloaded_file_path('rpm')
     result = run_sequence([
-                            "wget #{VAGRANT_URL}.rpm",
-                            "sudo yum install -y #{VAGRANT_PACKAGE}.rpm"
+                            "wget #{VAGRANT_URL}.rpm -O #{downloaded_file}",
+                            "sudo yum install -y #{downloaded_file}"
                           ])
-    run_command("rm #{VAGRANT_PACKAGE}.rpm")
+    run_command("rm #{downloaded_file}")
     result[:value].exitstatus
   end
 
@@ -301,11 +310,12 @@ class DebianDependencyManager < DependencyManager
   def install_vagrant
     return BaseCommand::SUCCESS_RESULT unless should_install_vagrant?
 
+    downloaded_file = generate_downloaded_file_path('deb')
     result = run_sequence([
-                            "wget #{VAGRANT_URL}.deb",
-                            "sudo dpkg -i #{VAGRANT_PACKAGE}.deb"
+                            "wget #{VAGRANT_URL}.deb -O #{downloaded_file}",
+                            "sudo dpkg -i #{downloaded_file}"
                           ])
-    run_command("rm #{VAGRANT_PACKAGE}.deb")
+    run_command("rm #{downloaded_file}")
     result[:value].exitstatus
   end
 end
