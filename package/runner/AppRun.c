@@ -152,6 +152,9 @@ int main(int argc, char *argv[], char *envp[]) {
     }
     outargptrs[outargindex] = '\0';     // trailing null argument required by execvp()
 
+    char *current_working_directory = malloc(LINE_SIZE);
+    getcwd(current_working_directory, LINE_SIZE);
+
     // change directory
     size_t appdir_s = strlen(appdir);
     char *usr_in_appdir = malloc(appdir_s + 5);
@@ -223,7 +226,7 @@ int main(int argc, char *argv[], char *envp[]) {
     putenv(new_ssl_cert_file);
 
     // Set called working directory to the OLD_CWD environment variable
-    SET_NEW_ENV(old_cwd, appdir_s + strlen("OLD_CWD="), "OLD_CWD=%s", appdir);
+    SET_NEW_ENV(old_cwd, strlen(current_working_directory) + strlen("OLD_CWD="), "OLD_CWD=%s", current_working_directory);
 
     // Notify that we are running inside the appimage
     putenv("APPIMAGE=true");
@@ -254,5 +257,6 @@ int main(int argc, char *argv[], char *envp[]) {
     free(new_qt_plugin_path);
     free(old_cwd);
     free(new_ssl_cert_file);
+    free(current_working_directory);
     return 0;
 }
