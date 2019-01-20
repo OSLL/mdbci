@@ -81,6 +81,7 @@ end
 
   # Vagrantfile for Vbox provider
   # rubocop:disable Metrics/MethodLength
+  # The method returns a template; decomposition will complicate the code.
   def get_virtualbox_definition(_cookbook_path, node_params)
     template = ERB.new <<-VBOX
       config.vm.define '<%= name %>' do |box|
@@ -106,6 +107,7 @@ end
 
   # Vagrantfile for Libvirt provider
   # rubocop:disable Metrics/MethodLength
+  # The method returns a template; decomposition will complicate the code.
   def get_libvirt_definition(_cookbook_path, path, node_params)
     node_params = node_params.merge(expand_path: File.expand_path(path), ipv6: @env.ipv6)
     template = ERB.new <<-LIBVIRT
@@ -135,6 +137,11 @@ end
   end
   # rubocop:enable Metrics/MethodLength
 
+  # Get the package manager name by the platform name.
+  #
+  # @param platform [String] name of the platform
+  # @return [String] name of the package manager
+  # @raise StandardError if platform is unknown.
   def get_package_manager_name(platform)
     case platform
     when 'ubuntu', 'debian' then 'apt'
@@ -144,6 +151,10 @@ end
     end
   end
 
+  # Convert the Hash to the String.
+  #
+  # @param hash [Hash] hash of the tags
+  # @return [String] converted hash in the format "{ 'key' => 'value', ... }"
   def generate_aws_tag(hash)
     vagrantfile_tags = hash.map { |key, value| "'#{key}' => '#{value}'" }.join(', ')
     "{ #{vagrantfile_tags} }"
@@ -151,6 +162,7 @@ end
 
   # Vagrantfile for AWS provider
   # rubocop:disable Metrics/MethodLength
+  # The method returns a template; decomposition will complicate the code.
   def get_aws_vms_definition(_cookbook_path, tags, node_params)
     node_params = node_params.merge(tags: tags)
     template = ERB.new <<-AWS
@@ -175,6 +187,14 @@ end
   end
   # rubocop:enable Metrics/MethodLength
 
+  # Make the list of the product parameters.
+  #
+  # @param product_name [String] name of the product for install
+  # @param product [Hash] parameters of the product to configure from configuration file
+  # @param box information about the box
+  # @param repo [String] repo
+  # @param error_text [String] error message in case of error
+  # @return [Hash] pretty formatted role description in JSON format.
   def make_product_config(product_name, product, box, repo, error_text)
     repo = @env.repos.findRepo(product_name, product, box) if repo.nil?
     return error_text if repo.nil?
@@ -188,6 +208,12 @@ end
     { "#{attribute_name}": config }
   end
 
+  # Make the list of the role parameters in the JSON-format.
+  #
+  # @param name [String] internal name of the machine specified in the template
+  # @param product_config [Hash] list of the product parameters
+  # @param recipe_name [String] name of the recipe
+  # @return [String] pretty formatted role description in JSON format.
   def make_role_json(name, product_config, recipe_name)
     role = {
       name: name,
@@ -203,12 +229,14 @@ end
     JSON.pretty_generate(role)
   end
 
-  # Generate the role description for the specified node
+  # Generate the role description for the specified node.
+  #
   # @param name [String] internal name of the machine specified in the template
-  # @param product [Hash] parameters of the product to configure
+  # @param product [Hash] parameters of the product to configure from configuration file
   # @param box information about the box
-  # @return [String] pretty formated role description in JSON format
+  # @return [String] pretty formatted role description in JSON format
   # rubocop:disable Metrics/MethodLength
+  # The method performs a single function; decomposition of the method will complicate the code.
   def get_role_description(name, product, box)
     error_text = "#NONE, due invalid repo name \n"
     repo = nil
@@ -236,6 +264,11 @@ end
   end
   # rubocop:enable Metrics/MethodLength
 
+  # Check for the existence of a path, create it if path is not exists or clear path
+  # if it is exists and override parameter is true.
+  #
+  # @param path [String] path of the configuration file
+  # @param override [Bool] clean directory if it is already exists.
   def check_path(path, override)
     if Dir.exist?(path) && !override
       @ui.error("Folder already exists: #{path}")
@@ -246,11 +279,21 @@ end
     Dir.mkdir(path)
   end
 
+  # Check for the box emptiness and existence of a box in the boxes list.
+  #
+  # @param box [String] name of the box
+  # @param boxes a list of boxes known to the configuration.
   def box_valid?(box, boxes)
     return false if box.empty?
     !boxes.getBox(box).nil?
   end
 
+  # Make a hash list of the node parameters by a node configuration and
+  # information of the box parameters.
+  #
+  # @param node [Array] information of the node from configuration file
+  # @param box_params [Hash] information of the box parameters
+  # @return [Hash] list of the node parameters.
   def make_node_params(node, box_params)
     params = {
       name: node[0].to_s,
@@ -269,6 +312,10 @@ end
                   end)
   end
 
+  # Log the information about the main parameters of the node.
+  #
+  # @param node_params [Hash] list of the node parameters
+  # @param box [String] name of the box.
   def print_node_info(node_params, box)
     @ui.info("Requested memory #{node_params[:vm_mem]}")
     @ui.info("Requested number of CPUs #{node_params[:vm_cpu]}")
@@ -279,6 +326,13 @@ end
     @ui.info("config.ssh.pty option is #{node_params[:ssh_pty]} for a box #{box}") unless node_params[:ssh_pty].nil?
   end
 
+  # Generate a node definition for the Vagrantfile, depending on the provider
+  # uses the appropriate generation method.
+  #
+  # @param node_params [Hash] list of the node parameters
+  # @param cookbook_path [String] path of the cookbook
+  # @param path [String] path of the configuration file
+  # @return [String] node definition for the Vagrantfile.
   def generate_node_defenition(node_params, cookbook_path, path)
     case node_params[:provider]
     when 'virtualbox'
@@ -295,7 +349,16 @@ end
     end
   end
 
+  # Make a list of node parameters, create the role and node_config files, generate
+  # node definition for the Vagrantfile.
+  #
+  # @param node [Array] internal name of the machine specified in the template
+  # @param boxes a list of boxes known to the configuration
+  # @param path [String] path of the configuration file
+  # @param cookbook_path [String] path of the cookbook
+  # @return [String] node definition for the Vagrantfile.
   # rubocop:disable Metrics/MethodLength
+  # Further decomposition of the method will complicate the code.
   def node_definition(node, boxes, path, cookbook_path)
     box = node[1]['box'].to_s
     unless box.empty?
@@ -325,6 +388,9 @@ end
   end
   # rubocop:enable Metrics/MethodLength
 
+  # Generate the key pair for the AWS.
+  #
+  # @param path [String] path of the configuration file.
   def generate_key_pair(path)
     full_path = File.expand_path(path)
     key_pair = @env.aws_service.generate_key_pair(full_path)
@@ -355,13 +421,21 @@ end
           'You can specify only nodes from one provider in the template.'
   end
 
+  # Generate a Vagrantfile.
+  #
+  # @param path [String] path of the configuration file
+  # @param config [Hash] value of the configuration file
+  # @param boxes a list of boxes known to the configuration
+  # @param provider [String] provider name of the nodes
+  # @param cookbook_path [String] path of the cookbook.
   # rubocop:disable Metrics/MethodLength
+  # The method performs a single function; decomposition of the method will complicate the code.
   def generate_vagrant_file(path, config, boxes, provider, cookbook_path)
     vagrant = File.open(File.join(path, 'Vagrantfile'), 'w')
     vagrant.puts vagrant_file_header, vagrant_config_header
     if provider == 'aws'
       @ui.info('Generating AWS configuration')
-      path_to_keyfile, keypair_name = generate_key_pair path
+      path_to_keyfile, keypair_name = generate_key_pair(path)
       vagrant.puts aws_provider_config(@env.tool_config['aws'], path_to_keyfile, keypair_name)
     else
       @ui.info('Generating libvirt/VirtualBox configuration')
@@ -378,6 +452,14 @@ end
   end
   # rubocop:enable Metrics/MethodLength
 
+  # Check parameters and generate a Vagrantfile.
+  #
+  # @param path [String] path of the configuration file
+  # @param config [Hash] value of the configuration file
+  # @param boxes a list of boxes known to the configuration
+  # @param override [Bool] clean directory if it is already exists
+  # @param provider [String] provider name of the nodes
+  # @raise StandardError if generated Vagrantfile is empty.
   def generate(path, config, boxes, override, provider)
     # TODO: MariaDb Version Validator
     check_path(path, override)
@@ -394,6 +476,10 @@ end
     raise 'Generated Vagrantfile is empty! Please check configuration file and regenerate it.'
   end
 
+  # Generate provider and template files in the configuration directory.
+  #
+  # @param path [String] configuration directory
+  # @raise StandardError if provider or template files already exists.
   def generate_provider_and_template_files(path)
     provider_file = File.join(path, 'provider')
     template_file = File.join(path, 'template')
@@ -403,18 +489,24 @@ end
     File.open(template_file, 'w') { |f| f.write(File.expand_path(@env.configFile)) }
   end
 
+  # Generate a configuration.
+  #
+  # @param name [String] name of the configuration file
+  # @param boxes a list of boxes known to the configuration
+  # @param override [Bool] clean directory if it is already exists
+  # @raise StandardError if instance configuration file is invalid or not found.
   def execute(name, boxes, override)
     path = name.nil? ? File.join(Dir.pwd, 'default') : File.absolute_path(name.to_s)
     begin
       instance_config_file = IO.read(@env.configFile)
-      configs = JSON.parse(instance_config_file)
+      config = JSON.parse(instance_config_file)
     rescue IOError
       raise 'Instance configuration file is invalid or not found!'
     rescue JSON::ParserError
       raise 'Instance configuration file invalid!'
     end
-    @env.load_nodes_provider(configs)
-    generate(path, configs, boxes, override, @env.nodesProvider)
+    @env.load_nodes_provider(config)
+    generate(path, config, boxes, override, @env.nodesProvider)
     @ui.info "Generating config in #{path}"
     generate_provider_and_template_files(path)
     SUCCESS_RESULT
