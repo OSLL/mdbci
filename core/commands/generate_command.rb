@@ -280,6 +280,20 @@ end
     true
   end
 
+  # Check for MDBCI node names defined in the template to be valid Ruby object names.
+  #
+  # @param config [Hash] value of the configuration file
+  # @return [Bool] true if all nodes names are valid, otherwise - false.
+  def check_nodes_names(config)
+    invalid_names = config.map do |node|
+      (node[0] =~ /^[a-zA-Z_]+[a-zA-Z_\d]*$/).nil? ? node[0] : nil
+    end.compact
+    return true if invalid_names.empty?
+    @ui.error("Invalid nodes names: #{invalid_names}. "\
+              'Nodes names defined in the template to be valid Ruby object names.')
+    false
+  end
+
   # Check for the box emptiness and existence of a box in the boxes list.
   #
   # @param box [String] name of the box
@@ -446,7 +460,7 @@ end
   # otherwise - ERROR_RESULT or ARGUMENT_ERROR_RESULT.
   def generate(path, config, boxes, override, provider)
     # TODO: MariaDb Version Validator
-    checks_result = check_path(path, override)
+    checks_result = check_path(path, override) && check_nodes_names(config)
     return ARGUMENT_ERROR_RESULT unless checks_result
     cookbook_path = if config['cookbook_path'].nil?
                       File.join(@env.mdbci_dir, 'recipes', 'cookbooks') # default cookbook path
