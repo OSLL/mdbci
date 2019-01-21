@@ -402,26 +402,7 @@ end
     [path_to_keyfile, key_pair.key_name]
   end
 
-  # Check that all boxes specified in the the template are identical.
-  #
-  # @param nodes [Array] list of nodes specified in template
-  # @param boxes a list of boxes known to the configuration
-  # @return [Bool] false if unable to detect the provider for all boxes or
-  # there are several providers in the template, otherwise - true.
-  def check_provider_equality(nodes, boxes)
-    @ui.info('Checking node provider equality')
-    boxes_names = nodes.map { |node| node[1]['box'].to_s }.reject(&:empty?)
-    providers = boxes_names.map { |box| boxes.getBox(box)['provider'].to_s }
-    if providers.empty?
-      @ui.error('Unable to detect the provider for all boxes. Please fix the template.')
-      return false
-    end
-    unique_providers = Set.new(providers)
-    return true if unique_providers.size == 1
-    @ui.error("There are several node providers defined in the template: #{unique_providers.to_a.join(', ')}.\n"\
-              'You can specify only nodes from one provider in the template.')
-    false
-  end
+
 
   # Generate a Vagrantfile.
   #
@@ -465,7 +446,7 @@ end
   # otherwise - ERROR_RESULT or ARGUMENT_ERROR_RESULT.
   def generate(path, config, boxes, override, provider)
     # TODO: MariaDb Version Validator
-    checks_result = check_path(path, override) && check_provider_equality(config, boxes)
+    checks_result = check_path(path, override)
     return ARGUMENT_ERROR_RESULT unless checks_result
     cookbook_path = if config['cookbook_path'].nil?
                       File.join(@env.mdbci_dir, 'recipes', 'cookbooks') # default cookbook path
@@ -483,14 +464,58 @@ end
   # Generate provider and template files in the configuration directory.
   #
   # @param path [String] configuration directory
+  # @param provider [String] nodes provider
   # @raise RuntimeError if provider or template files already exists.
-  def generate_provider_and_template_files(path)
+  def generate_provider_and_template_files(path, provider)
     provider_file = File.join(path, 'provider')
     template_file = File.join(path, 'template')
     raise 'Configuration \'provider\' file already exists' if File.exist?(provider_file)
     raise 'Configuration \'template\' file already exists' if File.exist?(template_file)
-    File.open(provider_file, 'w') { |f| f.write(@env.nodesProvider.to_s) }
+    File.open(provider_file, 'w') { |f| f.write(provider) }
     File.open(template_file, 'w') { |f| f.write(File.expand_path(@env.configFile)) }
+  end
+
+  # Check that all boxes specified in the the template are identical.
+  #
+  # @param providers [Array] list of nodes providers from config file
+  # @return [Bool] false if unable to detect the provider for all boxes or
+  # there are several providers in the template, otherwise - true.
+  def check_providers(providers)
+    if providers.empty?
+      @ui.error('Unable to detect the provider for all boxes. Please fix the template.')
+      return false
+    end
+    unique_providers = Set.new(providers)
+    return true if unique_providers.size == 1
+    @ui.error("There are several node providers defined in the template: #{unique_providers.to_a.join(', ')}.\n"\
+              'You can specify only nodes from one provider in the template.')
+    false
+  end
+
+  # Check that all boxes specified in the the template are exist in the boxes.json
+  # and all providers specified in the the template are identical.
+  # Save provider to the @nodes_provider if check successful.
+  #
+  # @param configs [Array] list of nodes specified in template
+  # @return [Bool] true if the result of passing all checks successful, otherwise - false.
+  def load_nodes_provider_and_check_it(configs)
+    nodes = configs.map { |node| %w[aws_config cookbook_path].include?(node[0]) ? nil : node }.compact.to_h
+    providers = nodes.map do |node_name, node_params|
+      box = node_params['box'].to_s
+      if box.empty?
+        @ui.error("Box in #{node_name} is not found")
+        return false
+      end
+      box_params = @env.boxes.getBox(box)
+      if box_params.nil?
+        @ui.error("Box #{box} from node #{node_name} not found in #{@env.boxes_dir}!")
+        return false
+      end
+      box_params['provider'].to_s
+    end
+    return false unless check_providers(providers)
+    @nodes_provider = providers.first
+    true
   end
 
   # Generate a configuration.
@@ -509,11 +534,12 @@ end
       @ui.error('Instance configuration file is invalid or not found!')
       return ERROR_RESULT
     end
-    @env.load_nodes_provider(config)
-    generate_result = generate(path, config, boxes, override, @env.nodesProvider)
+    nodes_checking_result = load_nodes_provider_and_check_it(config)
+    return ARGUMENT_ERROR_RESULT unless nodes_checking_result
+    generate_result = generate(path, config, boxes, override, @nodes_provider)
     return generate_result unless generate_result == SUCCESS_RESULT
     @ui.info "Generating config in #{path}"
-    generate_provider_and_template_files(path)
+    generate_provider_and_template_files(path, @nodes_provider)
     SUCCESS_RESULT
   end
 end

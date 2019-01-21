@@ -44,7 +44,6 @@ class Session
   attr_accessor :repo_dir
   attr_accessor :mdbciNodes # mdbci nodes
   attr_accessor :templateNodes
-  attr_accessor :nodesProvider # current configuration provider
   attr_accessor :attempts
   attr_accessor :boxes_dir
   attr_accessor :mdbciDir
@@ -572,22 +571,6 @@ EOF
       command.execute
     end
     return exit_code
-  end
-
-  # load mdbci boxes parameters from boxes.json
-  def load_nodes_provider(configs)
-    nodes = {}
-    configs.keys.each do |node|
-      nodes[node] = configs[node] if node != "aws_config" and node != "cookbook_path"
-    end
-    nodes.values.each do |node|
-      puts node
-      box = node['box'].to_s
-      raise "box in " + node.to_s + " is not found" if box.empty?
-      box_params = @boxes.getBox(box)
-      raise "Box #{box} from node #{node[0]} not found in #{$session.boxes_dir}!" if box_params.nil?
-      @nodesProvider = box_params["provider"].to_s
-    end
   end
 
   # copy ssh keys to config/node
