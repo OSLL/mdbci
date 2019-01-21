@@ -248,8 +248,8 @@ end
 # Class that manages CentOS specific packages
 class CentosDependencyManager < DependencyManager
   def required_packages
-    ['ceph-common', 'qemu-kvm', 'gcc', 'libvirt', 'libvirt-client',
-     'libvirt-devel', 'git', 'wget', 'rsync']
+    ['ceph-common', 'gcc', 'git', 'libvirt', 'libvirt-client',
+     'libvirt-devel','qemu-kvm', 'rsync' 'wget']
   end
 
   def install_dependencies
@@ -291,8 +291,8 @@ end
 # Class that manages Debian specific packages
 class DebianDependencyManager < DependencyManager
   def required_packages
-    ['libvirt-daemon-system', 'build-essential', 'libxslt-dev',
-     'libxml2-dev', 'libvirt-dev', 'wget', 'git', 'cmake', 'rsync']
+    ['build-essential', 'cmake', 'git', 'libvirt-daemon-system', 'libvirt-dev',
+     'libxml2-dev', 'libxslt-dev', 'qemu', 'rsync', 'wget']
   end
 
   def install_dependencies
@@ -323,7 +323,7 @@ end
 # Class that manages Ubuntu specific packages
 class UbuntuDependencyManager < DebianDependencyManager
   def required_packages
-    ['libvirt-bin', 'build-essential', 'libxslt-dev',
-     'libxml2-dev', 'libvirt-dev', 'wget', 'git', 'cmake', 'rsync']
+    ['build-essential', 'cmake', 'git', 'libvirt-bin', 'libvirt-dev',
+     'libxml2-dev', 'libxslt-dev', 'qemu', 'rsync', 'wget']
   end
 end
