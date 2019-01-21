@@ -75,8 +75,8 @@ Currently supports installation for Debian, Ubuntu, CentOS, RHEL.
     result = add_user_to_usergroup if result == SUCCESS_RESULT
     result = install_vagrant_plugins if result == SUCCESS_RESULT
     result = create_libvirt_pool if result == SUCCESS_RESULT
-    export_libvirt_default_uri
     if result == SUCCESS_RESULT
+      export_libvirt_default_uri
       @ui.info('Dependencies successfully installed.')
       @ui.info('Please restart your computer in order to apply changes.')
     end
@@ -99,7 +99,7 @@ Currently supports installation for Debian, Ubuntu, CentOS, RHEL.
     libvirt_groups = `getent group | grep libvirt | cut -d ":" -f1`.split("\n").join(',')
     if libvirt_groups.empty?
       @ui.error('Cannot add user to libvirt group. Libvirt group not found')
-      return BaseCommand::ERROR_RESULT
+      return ERROR_RESULT
     end
     run_command("sudo usermod -a -G #{libvirt_groups} $(whoami)")[:value].exitstatus
   end
