@@ -249,7 +249,7 @@ end
 class CentosDependencyManager < DependencyManager
   def required_packages
     ['ceph-common', 'gcc', 'git', 'libvirt', 'libvirt-client',
-     'libvirt-devel','qemu-kvm', 'rsync' 'wget']
+     'libvirt-devel', 'qemu', 'qemu-kvm', 'rsync' 'wget']
   end
 
   def install_dependencies
@@ -291,13 +291,16 @@ end
 # Class that manages Debian specific packages
 class DebianDependencyManager < DependencyManager
   def required_packages
-    ['build-essential', 'cmake', 'git', 'libvirt-daemon-system', 'libvirt-dev',
-     'libxml2-dev', 'libxslt-dev', 'qemu', 'rsync', 'wget']
+    ['build-essential', 'cmake', 'git', 'libvirt-daemon-system',
+     'libvirt-dev', 'libxml2-dev', 'libxslt-dev', 'qemu', 'qemu-kvm', 'rsync', 'wget']
   end
 
   def install_dependencies
     run_command('sudo apt-get update')
-    result = run_command("sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install #{required_packages.join(' ')}")
+    result = run_sequence([
+      "sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install #{required_packages.join(' ')}",
+      'sudo systemctl restart libvirtd.service'
+    ])
     return result[:value].exitstatus unless result[:value].success?
 
     install_vagrant
@@ -323,7 +326,7 @@ end
 # Class that manages Ubuntu specific packages
 class UbuntuDependencyManager < DebianDependencyManager
   def required_packages
-    ['build-essential', 'cmake', 'git', 'libvirt-bin', 'libvirt-dev',
-     'libxml2-dev', 'libxslt-dev', 'qemu', 'rsync', 'wget']
+    ['build-essential', 'cmake', 'dnsmasq', 'ebtables', 'git', 'libvirt-bin',
+     'libvirt-dev', 'libxml2-dev', 'libxslt-dev', 'qemu', 'qemu-kvm', 'rsync', 'wget']
   end
 end
