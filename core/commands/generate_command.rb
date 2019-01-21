@@ -141,7 +141,7 @@ end
   #
   # @param platform [String] name of the platform
   # @return [String] name of the package manager
-  # @raise StandardError if platform is unknown.
+  # @raise RuntimeError if platform is unknown.
   def get_package_manager_name(platform)
     case platform
     when 'ubuntu', 'debian' then 'apt'
@@ -268,15 +268,16 @@ end
   # if it is exists and override parameter is true.
   #
   # @param path [String] path of the configuration file
-  # @param override [Bool] clean directory if it is already exists.
+  # @param override [Bool] clean directory if it is already exists
+  # @return [Bool] false if directory path is already exists and override is false, otherwise - true.
   def check_path(path, override)
     if Dir.exist?(path) && !override
-      @ui.error("Folder already exists: #{path}")
-      @ui.error('Please specify another name or delete')
-      exit(-1)
+      @ui.error("Folder already exists: #{path}. Please specify another name or delete")
+      return false
     end
     FileUtils.rm_rf(path)
     Dir.mkdir(path)
+    true
   end
 
   # Check for the box emptiness and existence of a box in the boxes list.
@@ -405,20 +406,21 @@ end
   #
   # @param nodes [Array] list of nodes specified in template
   # @param boxes a list of boxes known to the configuration
-  # @raise RuntimeError if there is the error in the configuration.
+  # @return [Bool] false if unable to detect the provider for all boxes or
+  # there are several providers in the template, otherwise - true.
   def check_provider_equality(nodes, boxes)
     @ui.info('Checking node provider equality')
-    boxes_names = nodes.map do |node|
-      node[1]['box'].to_s
-    end.reject(&:empty?)
-    providers = boxes_names.map do |box|
-      boxes.getBox(box)['provider'].to_s
+    boxes_names = nodes.map { |node| node[1]['box'].to_s }.reject(&:empty?)
+    providers = boxes_names.map { |box| boxes.getBox(box)['provider'].to_s }
+    if providers.empty?
+      @ui.error('Unable to detect the provider for all boxes. Please fix the template.')
+      return false
     end
-    raise 'Unable to detect the provider for all boxes. Please fix the template.' if providers.empty?
     unique_providers = Set.new(providers)
-    return if unique_providers.size == 1
-    raise "There are several node providers defined in the template: #{unique_providers.to_a.join(', ')}.\n"\
-          'You can specify only nodes from one provider in the template.'
+    return true if unique_providers.size == 1
+    @ui.error("There are several node providers defined in the template: #{unique_providers.to_a.join(', ')}.\n"\
+              'You can specify only nodes from one provider in the template.')
+    false
   end
 
   # Generate a Vagrantfile.
@@ -459,11 +461,12 @@ end
   # @param boxes a list of boxes known to the configuration
   # @param override [Bool] clean directory if it is already exists
   # @param provider [String] provider name of the nodes
-  # @raise StandardError if generated Vagrantfile is empty.
+  # @return [Integer] SUCCESS_RESULT if the execution of the method passed without errors,
+  # otherwise - ERROR_RESULT or ARGUMENT_ERROR_RESULT.
   def generate(path, config, boxes, override, provider)
     # TODO: MariaDb Version Validator
-    check_path(path, override)
-    check_provider_equality(config, boxes)
+    checks_result = check_path(path, override) && check_provider_equality(config, boxes)
+    return ARGUMENT_ERROR_RESULT unless checks_result
     cookbook_path = if config['cookbook_path'].nil?
                       File.join(@env.mdbci_dir, 'recipes', 'cookbooks') # default cookbook path
                     else
@@ -472,14 +475,15 @@ end
     @ui.info("Global cookbook_path = #{cookbook_path}")
     @ui.info("Nodes provider = #{provider}")
     generate_vagrant_file(path, config, boxes, provider, cookbook_path)
-    return unless File.size?(File.join(path, 'Vagrantfile')).nil?
-    raise 'Generated Vagrantfile is empty! Please check configuration file and regenerate it.'
+    return SUCCESS_RESULT unless File.size?(File.join(path, 'Vagrantfile')).nil?
+    @ui.error('Generated Vagrantfile is empty! Please check configuration file and regenerate it.')
+    ERROR_RESULT
   end
 
   # Generate provider and template files in the configuration directory.
   #
   # @param path [String] configuration directory
-  # @raise StandardError if provider or template files already exists.
+  # @raise RuntimeError if provider or template files already exists.
   def generate_provider_and_template_files(path)
     provider_file = File.join(path, 'provider')
     template_file = File.join(path, 'template')
@@ -494,19 +498,20 @@ end
   # @param name [String] name of the configuration file
   # @param boxes a list of boxes known to the configuration
   # @param override [Bool] clean directory if it is already exists
-  # @raise StandardError if instance configuration file is invalid or not found.
+  # @return [Number] exit code for the command execution
+  # @raise RuntimeError if configuration file is invalid.
   def execute(name, boxes, override)
     path = name.nil? ? File.join(Dir.pwd, 'default') : File.absolute_path(name.to_s)
     begin
       instance_config_file = IO.read(@env.configFile)
       config = JSON.parse(instance_config_file)
-    rescue IOError
-      raise 'Instance configuration file is invalid or not found!'
-    rescue JSON::ParserError
-      raise 'Instance configuration file invalid!'
+    rescue IOError, JSON::ParserError
+      @ui.error('Instance configuration file is invalid or not found!')
+      return ERROR_RESULT
     end
     @env.load_nodes_provider(config)
-    generate(path, config, boxes, override, @env.nodesProvider)
+    generate_result = generate(path, config, boxes, override, @env.nodesProvider)
+    return generate_result unless generate_result == SUCCESS_RESULT
     @ui.info "Generating config in #{path}"
     generate_provider_and_template_files(path)
     SUCCESS_RESULT
