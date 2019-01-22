@@ -416,8 +416,6 @@ end
     [path_to_keyfile, key_pair.key_name]
   end
 
-
-
   # Generate a Vagrantfile.
   #
   # @param path [String] path of the configuration file
@@ -512,6 +510,8 @@ end
   #
   # @param configs [Array] list of nodes specified in template
   # @return [Bool] true if the result of passing all checks successful, otherwise - false.
+  # rubocop:disable Metrics/MethodLength
+  # The method performs a single function; decomposition of the method will complicate the code.
   def load_nodes_provider_and_check_it(configs)
     nodes = configs.map { |node| %w[aws_config cookbook_path].include?(node[0]) ? nil : node }.compact.to_h
     providers = nodes.map do |node_name, node_params|
@@ -531,6 +531,7 @@ end
     @nodes_provider = providers.first
     true
   end
+  # rubocop:enable Metrics/MethodLength
 
   # Generate a configuration.
   #
