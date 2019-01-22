@@ -30,7 +30,7 @@ OPTIONS:
 Specifies the number of times VM will be destroyed durintg the provisioning.
   --recreate:
 Specifies that existing VMs must be destroyed before the configuration of all target VMs.
-  -l, --labels [number]:
+  -l, --labels [string]:
 Specifies the list of desired labels. It allows to filter VMs based on the label presence.
 If any of the labels passed to the command match any label in the machine description, then this machine will be brought up and configured according to its configuration.
 Labels should be separated with commas, do not contain any whitespaces.
@@ -324,13 +324,10 @@ Labels should be separated with commas, do not contain any whitespaces.
     Dir.chdir(current_dir)
   end
 
-  def execute
-    begin
-      setup_command
-    rescue ArgumentError => error
-      @ui.warning error.message
-      return ARGUMENT_ERROR_RESULT
-    end
+  # Brings up nodes
+  #
+  # @return [Number] execution status
+  def up
     run_in_directory(@config.path) do
       store_network_config
       nodes_to_fix = setup_nodes(@config)
@@ -339,5 +336,19 @@ Labels should be separated with commas, do not contain any whitespaces.
     end
     generate_config_information(Dir.pwd, @config.path)
     SUCCESS_RESULT
+  end
+
+  def execute
+    if @env.show_help
+      show_help
+      return SUCCESS_RESULT
+    end
+    begin
+      setup_command
+    rescue ArgumentError => error
+      @ui.warning error.message
+      return ARGUMENT_ERROR_RESULT
+    end
+    up
   end
 end
