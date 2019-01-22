@@ -102,6 +102,7 @@ libvirt and VirtualBox boxes using low-level commands.
     end
     @ui.info("Virtual machines to destroy: #{vm_list.values.flatten}")
     return unless @ui.prompt('Do you want to continue? [y/n]')[0].casecmp('y').zero?
+
     vm_list.each do |provider, nodes|
       nodes.each { |node| destroy_machine(nil, nil, provider.to_s, node) }
     end
@@ -117,6 +118,7 @@ libvirt and VirtualBox boxes using low-level commands.
     @ui.info("Removing network settings file #{configuration.network_settings_file}")
     FileUtils.rm_f(configuration.network_settings_file)
     return if keep_template
+
     @ui.info("Removing template file #{configuration.template_path}")
     FileUtils.rm_f(configuration.template_path)
   end
@@ -137,6 +139,7 @@ libvirt and VirtualBox boxes using low-level commands.
   # @param configuration [Configuration] that we operate on.
   def destroy_aws_keypair(configuration)
     return unless configuration.aws_keypair_name?
+
     @ui.info "Destroying AWS key pair #{configuration.aws_keypair_name}"
     @aws_service.delete_key_pair(configuration.aws_keypair_name)
   end
@@ -184,6 +187,7 @@ libvirt and VirtualBox boxes using low-level commands.
                            "Unable to get list of snapshots for #{domain_name}")
     result[:output].split('\n').each do |snapshot|
       next if snapshot.chomp.empty?
+
       check_command("virsh snapshot-delete #{domain_name} #{snapshot}",
                     "Unable to delete snapshot #{snapshot} for #{domain_name} domain")
     end
@@ -193,6 +197,7 @@ libvirt and VirtualBox boxes using low-level commands.
                            "Unable to get machine's volumes for #{domain_name}")
     result[:output].split('\n').each do |volume|
       next if volume.chomp.empty?
+
       check_command("virsh vol-delete --pool default #{volume}",
                     "Unable to delete volume #{volume} for #{domain_name} domain")
     end
@@ -256,14 +261,15 @@ libvirt and VirtualBox boxes using low-level commands.
     configuration.node_names.each do |node_name|
       destroy_machine(configuration, node_name)
     end
-    if @env.labels.nil? && Configuration.config_directory?(@args.first)
-      remove_files(configuration, @env.keep_template)
-      destroy_aws_keypair(configuration)
-    end
+    return unless @env.labels.nil? && Configuration.config_directory?(@args.first)
+
+    remove_files(configuration, @env.keep_template)
+    destroy_aws_keypair(configuration)
   end
 
   def execute
     return ARGUMENT_ERROR_RESULT unless check_parameters
+
     @aws_service = @env.aws_service
     if @env.node_name || @env.list
       manage_destroy_by_node_name
