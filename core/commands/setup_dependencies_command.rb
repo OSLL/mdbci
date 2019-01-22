@@ -251,7 +251,7 @@ end
 class CentosDependencyManager < DependencyManager
   def required_packages
     ['ceph-common', 'gcc', 'git', 'libvirt', 'libvirt-client',
-     'libvirt-devel', 'qemu', 'qemu-kvm', 'rsync', 'wget']
+     'libvirt-devel', 'qemu-img', 'qemu-kvm', 'rsync', 'wget']
   end
 
   def install_dependencies
