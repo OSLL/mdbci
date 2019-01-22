@@ -127,7 +127,7 @@ libvirt and VirtualBox boxes using low-level commands.
   # @param node [String] node of the name to operate on
   def stop_machines(configuration)
     @ui.info 'Destroying the machines using vagrant'
-    check_command_in_dir("vagrant destroy -f #{configuration.node_name.join(' ')}",
+    check_command_in_dir("vagrant destroy -f #{configuration.node_names.join(' ')}",
                          configuration.path,
                          'Vagrant was unable to destroy existing nodes')
   end
@@ -252,7 +252,7 @@ libvirt and VirtualBox boxes using low-level commands.
   def manage_destroy_by_configuration
     configuration = Configuration.new(@args.first, @env.labels)
     remember_aws_instance_id if configuration.provider == 'aws'
-    stop_machines(configuration, node)
+    stop_machines(configuration)
     configuration.node_names.each do |node_name|
       destroy_machine(configuration, node_name)
     end
