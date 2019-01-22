@@ -295,7 +295,7 @@ class CentosDependencyManager < DependencyManager
 
     unless run_command('sudo yum install -y qemu')[:value].success?
       @ui.error("Cannot find whole package 'qemu'. Only 'qemu-img' and 'qemu-kvm' will be installed.")
-      @ui.error("You can try running 'sudo yum install -y epel-release' and retrying this command.")
+      @ui.error("You can try running 'sudo yum install epel-release' and retrying this command.")
       return BaseCommand::ERROR_RESULT
     end
     BaseCommand::SUCCESS_RESULT
