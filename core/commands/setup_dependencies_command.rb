@@ -29,7 +29,7 @@ After that 'default' VM pool created for libvirt and the current user added to t
 OPTIONS:
   --reinstall:
 Delete previously installed dependencies and VM pools
-  --force-distro:
+  --force-distro [Distro name]:
 Force to use installation method implemented for specific linux distribution.
 Currently supports installation for Debian, Ubuntu, CentOS, RHEL.
     HELP
@@ -57,6 +57,8 @@ Currently supports installation for Debian, Ubuntu, CentOS, RHEL.
     unless @dependency_manager
       @ui.error('Unsupported linux distribution.')
       @ui.error('Check Quickstart manual at https://github.com/mariadb-corporation/mdbci/blob/integration/docs/QUICKSTART.md')
+      @ui.error('You can try running with --force-distro option to force installation for specific linux distribution.')
+      @ui.error('Currently supports installation for Debian, Ubuntu, CentOS, RHEL.')
       return ERROR_RESULT
     end
     if @env.reinstall
@@ -249,7 +251,7 @@ end
 class CentosDependencyManager < DependencyManager
   def required_packages
     ['ceph-common', 'gcc', 'git', 'libvirt', 'libvirt-client',
-     'libvirt-devel', 'qemu', 'qemu-kvm', 'rsync' 'wget']
+     'libvirt-devel', 'qemu', 'qemu-kvm', 'rsync', 'wget']
   end
 
   def install_dependencies
@@ -298,9 +300,9 @@ class DebianDependencyManager < DependencyManager
   def install_dependencies
     run_command('sudo apt-get update')
     result = run_sequence([
-      "sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install #{required_packages.join(' ')}",
-      'sudo systemctl restart libvirtd.service'
-    ])
+                            "sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install #{required_packages.join(' ')}",
+                            'sudo systemctl restart libvirtd.service'
+                          ])
     return result[:value].exitstatus unless result[:value].success?
 
     install_vagrant
