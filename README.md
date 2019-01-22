@@ -9,6 +9,11 @@
 
 ## Requirements
 
+* glibc >= 2.14
+* fuse
+* fuse-libs - additional fuse libraries for CentOS
+* libfuse2 - additional fuse libraries for Ubuntu and Debian
+
 FUSE should be installed on all linux distributions as it's required to execute AppImage file.
 
 ```
@@ -18,9 +23,6 @@ sudo apt-get install -y libfuse2 fuse
 ```
 sudo yum install -y fuse-libs fuse
 ```
-
-* fuse-libs - additional fuse libraries for CentOS
-* libfuse2 - additional fuse libraries for Ubuntu and Debian
 
 You also may need to add current user to the `fuse` user group in case you are getting `fuse: failed to open /dev/fuse: Permission denied` error.
 
@@ -121,6 +123,10 @@ Template is a JSON document that describes a set of virtual machines.
   "mariadb_host": {
     "hostname": "mariadbhost",
     "box": "centos_7_libvirt",
+    "labels": [
+      "alpha",
+      "bravo"
+    ],
     "product": {
       "name": "mariadb",
       "version": "10.3",
@@ -131,6 +137,9 @@ Template is a JSON document that describes a set of virtual machines.
   "maxscal_host": {
     "hostname": "maxscalehost",
     "box": "centos_7_libvirt",
+    "labels": [
+      "alpha"
+    ],
     "product": {
       "name": "maxscale",
       "version": "2.3"
@@ -146,6 +155,8 @@ You can get the list of boxes using the `./mdbci show platforms` command.
 Then each host is setup with the product. The products will be installed on the machines. The mandatory fields for each product is it's name and version that is required to be installed.
 
 When installing a database you must also specify the name of the configuration file and the path to the folder where the file is stored. It is advised to use absolute path in `cnf_template_path` as the relative path is calculated from within the configuration directory.
+
+`labels` names groups of machines that could be brought up independently of other machines in the configuration file. A set of machines with the same labels will be created when calling `mdbci up` with `--labels` option.
 
 ### Configuration creation
 
@@ -170,6 +181,16 @@ It is advised to reduce this number to one as it is sufficient to catch most iss
 ```
 ./mdbci up --attempts 1 config
 ```
+
+The option `--recreate` specifies that existing VMs must be destroyed before the configuration of all target VMs. The destruction will be done with the help of reliable destroy command.
+
+The option `--labels` specifies the list of desired labels. It allows to filter VMs based on the label presence. If any of the labels passed to the command match any label in the machine description, then this machine will be brought up and configured according to it's configuration.
+
+Labels specified in the --labels option should be separated with commas, do not contain any whitespace. Examples:
+* one tag: `mdbci up config --labels alpha`,
+* several tags: `mdbci up config --labels alpha,beta,gamma`.
+
+If no machines matches the required set of labels, then no machine will be brought up.
 
 ### Using the virtual machines
 
