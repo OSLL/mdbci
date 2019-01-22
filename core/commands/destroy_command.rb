@@ -256,7 +256,7 @@ libvirt and VirtualBox boxes using low-level commands.
     configuration.node_names.each do |node_name|
       destroy_machine(configuration, node_name)
     end
-    if @env.labels == nil && Configuration.config_directory?(@args.first)
+    if @env.labels.nil? && Configuration.config_directory?(@args.first)
       remove_files(configuration, @env.keep_template)
       destroy_aws_keypair(configuration)
     end
@@ -275,7 +275,7 @@ libvirt and VirtualBox boxes using low-level commands.
 
   # Remember the instance id of aws virtual machines.
   def remember_aws_instance_id
-    @aws_instance_ids = @aws_service.instances_list
+    @aws_instance_ids = @aws_service&.instances_list || []
   end
 
   # Read the instance id of aws virtual machine from local vagrant directory.
