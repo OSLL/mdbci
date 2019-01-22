@@ -357,7 +357,7 @@ end
       get_virtualbox_definition(cookbook_path, node_params)
     when 'aws'
       tags = generate_aws_tag('hostname' => Socket.gethostname, 'username' => Etc.getlogin,
-                              'full_config_path' => File.expand_path(path), 'machinename' => name)
+                              'full_config_path' => File.expand_path(path), 'machinename' => node_params[:name])
       get_aws_vms_definition(cookbook_path, tags, node_params)
     when 'libvirt'
       get_libvirt_definition(cookbook_path, path, node_params)
