@@ -255,6 +255,7 @@ class CentosDependencyManager < DependencyManager
   end
 
   def install_dependencies
+    install_qemu
     required_packages.each do |package|
       unless installed?(package)
         result = run_command("sudo yum install -y #{package}")[:value]
@@ -287,6 +288,17 @@ class CentosDependencyManager < DependencyManager
   # Check if package is installed
   def installed?(package)
     run_command("yum list installed #{package}")[:value].success?
+  end
+
+  def install_qemu
+    return BaseCommand::SUCCESS_RESULT if installed?('qemu')
+
+    unless run_command('sudo yum install -y qemu')[:value].success?
+      @ui.error("Cannot find whole package 'qemu'. Only 'qemu-img' and 'qemu-kvm' will be installed.")
+      @ui.error("You can try running 'sudo yum install -y epel-release' and retrying this command.")
+      return BaseCommand::ERROR_RESULT
+    end
+    BaseCommand::SUCCESS_RESULT
   end
 end
 
