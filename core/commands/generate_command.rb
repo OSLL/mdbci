@@ -198,6 +198,7 @@ end
   def make_product_config(product_name, product, box, repo, error_text)
     repo = @env.repos.findRepo(product_name, product, box) if repo.nil?
     return error_text if repo.nil?
+
     config = { 'version': repo['version'], 'repo': repo['repo'], 'repo_key': repo['repo_key'] }
     if !product['cnf_template'].nil? && !product['cnf_template_path'].nil?
       config['cnf_template'] = product['cnf_template']
@@ -289,6 +290,7 @@ end
       (node[0] =~ /^[a-zA-Z_]+[a-zA-Z_\d]*$/).nil? ? node[0] : nil
     end.compact
     return true if invalid_names.empty?
+
     @ui.error("Invalid nodes names: #{invalid_names}. "\
               'Nodes names defined in the template to be valid Ruby object names.')
     false
@@ -300,6 +302,7 @@ end
   # @param boxes a list of boxes known to the configuration.
   def box_valid?(box, boxes)
     return false if box.empty?
+
     !boxes.getBox(box).nil?
   end
 
@@ -460,6 +463,7 @@ end
     # TODO: MariaDb Version Validator
     checks_result = check_path(path, override) && check_nodes_names(config)
     return ARGUMENT_ERROR_RESULT unless checks_result
+
     cookbook_path = if config['cookbook_path'].nil?
                       File.join(@env.mdbci_dir, 'recipes', 'cookbooks') # default cookbook path
                     else
@@ -469,6 +473,7 @@ end
     @ui.info("Nodes provider = #{provider}")
     generate_vagrant_file(path, config, boxes, provider, cookbook_path)
     return SUCCESS_RESULT unless File.size?(File.join(path, 'Vagrantfile')).nil?
+
     @ui.error('Generated Vagrantfile is empty! Please check configuration file and regenerate it.')
     ERROR_RESULT
   end
@@ -483,6 +488,7 @@ end
     template_file = File.join(path, 'template')
     raise 'Configuration \'provider\' file already exists' if File.exist?(provider_file)
     raise 'Configuration \'template\' file already exists' if File.exist?(template_file)
+
     File.open(provider_file, 'w') { |f| f.write(provider) }
     File.open(template_file, 'w') { |f| f.write(File.expand_path(@env.configFile)) }
   end
@@ -499,6 +505,7 @@ end
     end
     unique_providers = Set.new(providers)
     return true if unique_providers.size == 1
+
     @ui.error("There are several node providers defined in the template: #{unique_providers.to_a.join(', ')}.\n"\
               'You can specify only nodes from one provider in the template.')
     false
@@ -528,6 +535,7 @@ end
       box_params['provider'].to_s
     end
     return false unless check_providers(providers)
+
     @nodes_provider = providers.first
     true
   end
@@ -551,8 +559,10 @@ end
     end
     nodes_checking_result = load_nodes_provider_and_check_it(config)
     return ARGUMENT_ERROR_RESULT unless nodes_checking_result
+
     generate_result = generate(path, config, boxes, override, @nodes_provider)
     return generate_result unless generate_result == SUCCESS_RESULT
+
     @ui.info "Generating config in #{path}"
     generate_provider_and_template_files(path, @nodes_provider)
     SUCCESS_RESULT
