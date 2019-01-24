@@ -41,13 +41,6 @@ You can either destroy a single node:
 Or you can destroy all nodes:
   mdbci destroy configuration
 
-You can destroy nodes by name without the need for configuration file.
-As a name you can use any part of node name or regular expression:
-  mdbci destroy --node-name name
-
-You can view a list of all the virtual machines of all providers:
-  mdbci destroy --list
-
 In the latter case the command will remove the configuration folder,
 the network configuration file and the template. You can prevent
 destroy command from deleting the template file:
@@ -57,6 +50,19 @@ The command also deletes AWS key pair for corresponding configurations.
 
 After running the vagrant destroy this command also deletes the
 libvirt and VirtualBox boxes using low-level commands.
+
+You can destroy nodes by name without the need for configuration file.
+As a name you can use any part of node name or regular expression:
+  mdbci destroy --node-name name
+
+You can view a list of all the virtual machines of all providers:
+  mdbci destroy --list
+
+Specifies the list of desired labels. It allows to filter VMs based on the label presence.
+You can specify the list of labes to initiate destruction of virtual machines with those labels:
+  mdbci destroy --labels [string]
+If any of the labels passed to the command match any label in the machine description, then this machine will be brought up and configured according to its configuration.
+Labels should be separated with commas, do not contain any whitespaces.
     HELP
     @ui.out(info)
   end
