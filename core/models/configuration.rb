@@ -24,6 +24,7 @@ class Configuration
   def initialize(spec, labels = nil)
     @path, node = parse_spec(spec)
     raise ArgumentError, "Invalid path to the MDBCI configuration: #{spec}" unless self.class.config_directory?(@path)
+
     @provider = read_provider(@path)
     @template_path = read_template_path(@path)
     @template = read_template(@template_path)
@@ -53,6 +54,7 @@ class Configuration
   # @return [Array<String>] unique names of the boxes used in the configuration
   def box_names(node_name = '')
     return [@template[node_name]['box']] unless node_name.empty?
+
     @node_names.map do |name|
       @template[name]['box']
     end.uniq
@@ -76,7 +78,7 @@ class Configuration
       node = ''
       config_path = spec
     end
-    return File.absolute_path(config_path), node
+    [File.absolute_path(config_path), node]
   end
 
   # Selects relevant node names based on information provided to constructor
@@ -86,6 +88,7 @@ class Configuration
   def select_node_names(node)
     return [node] unless node.empty?
     return select_nodes_by_label unless @labels.empty?
+
     @template.select do |_, value|
       value.instance_of?(Hash)
     end.keys
@@ -99,13 +102,16 @@ class Configuration
     is_labels_set = false
     node_names = @template.select do |_, node_configuration|
       next unless node_configuration.instance_of?(Hash) && node_configuration['labels']
+
       is_labels_set = true
       @labels.any? do |desired_label|
         node_configuration['labels'].include?(desired_label)
       end
     end.keys
     raise(ArgumentError, 'Labels were not set in the template file') unless is_labels_set
+
     raise(ArgumentError, "Unable to find nodes matching labels: #{desired_labels.join(', ')}") if node_names.empty?
+
     node_names
   end
 
@@ -114,6 +120,7 @@ class Configuration
   def read_aws_keypair_name
     keypair_file_path = "#{@path}/#{AWS_KEYPAIR_NAME}"
     return '' unless File.exist?(keypair_file_path)
+
     File.read(keypair_file_path).chomp
   end
 
@@ -126,10 +133,12 @@ class Configuration
     unless File.exist?(provider_file_path)
       raise ArgumentError, "There is no provider configuration specified in #{config_path}."
     end
+
     provider = File.read(provider_file_path).strip
     if provider == 'mdbci'
       raise ArgumentError, 'You are using mdbci node template. Please generate valid one before running up command.'
     end
+
     provider
   end
 
@@ -143,6 +152,7 @@ class Configuration
     unless File.exist?(template_file_name_path)
       raise ArgumentError, "There is no template configuration specified in #{config_path}."
     end
+
     File.read(template_file_name_path)
   end
 
@@ -153,6 +163,7 @@ class Configuration
   # @return [Hash] data from the template JSON file
   def read_template(template_path)
     raise ArgumentError, "The template #{template_path} does not exist." unless File.exist?(template_path)
+
     JSON.parse(File.read(template_path))
   end
 end
