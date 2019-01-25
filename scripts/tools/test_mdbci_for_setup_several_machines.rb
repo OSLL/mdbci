@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 # Script setups several configurations and initiate them
 # at the same time. The script checks the ability and
@@ -20,8 +21,8 @@ require 'optparse'
 require 'workers'
 
 platforms = {
-    libvirt: %w[centos_7_libvirt ubuntu_xenial_libvirt debian_stretch_libvirt suse_15_libvirt],
-    aws: %w[centos_7_aws ubuntu_xenial_aws debian_stretch_aws suse_13_aws]
+  libvirt: %w[centos_7_libvirt ubuntu_xenial_libvirt debian_stretch_libvirt suse_15_libvirt],
+  aws: %w[centos_7_aws ubuntu_xenial_aws debian_stretch_aws suse_13_aws]
 }
 configs_count = { libvirt: 0, aws: 0 }
 vms_dir = File.expand_path('./test_dirs', __dir__)
@@ -29,12 +30,13 @@ mdbci = File.expand_path('../../mdbci', __dir__)
 nodes_count = 2
 selected_platforms = { libvirt: nil, aws: nil }
 
+# rubocop:disable Metrics/BlockLength
 OptionParser.new do |opts|
   opts.banner = 'Special script to test whether MDBCI can setup several '\
                 'vagrant libvirt and vagrant aws driven machines'
 
   opts.on('-h', '--help', 'Show help and exit') do
-    puts "Example of usage:\n./test_mdbci_for_setup_several_machines --libvirt=2"\
+    puts "Example of usage:\n./test_mdbci_for_setup_several_machines --libvirt=2 "\
          '--aws=1 -n3 --libvirt-box=centos_7_libvirt'
     puts opts
     exit
@@ -64,17 +66,20 @@ OptionParser.new do |opts|
     mdbci = File.expand_path(path)
   end
 end.parse!
+# rubocop:enable Metrics/BlockLength
 
 FileUtils.rm_rf(vms_dir)
 FileUtils.mkdir_p(vms_dir)
 
+# rubocop:disable Metrics/ParameterLists
 def write_configuration(selected_platforms, platforms, template_path, config_id, nodes_count, provider)
-  configuration = nodes_count.times.map do |node_num|
+  configuration = Array.new(nodes_count).map do |node_num|
     name = "config_#{config_id}_node_#{node_num}"
     [name, { hostname: name.delete('_'), box: selected_platforms[provider] || platforms[provider].sample }]
   end.to_h
   File.write(template_path, JSON.pretty_generate(configuration))
 end
+# rubocop:enable Metrics/ParameterLists
 
 puts 'Create JSON-templates'
 templates = []
