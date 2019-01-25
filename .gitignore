@@ -6,3 +6,4 @@ aws-config.yml
 #*#
 vms/
 repository_generator/*.log
+scripts/tools/test_dirs/
