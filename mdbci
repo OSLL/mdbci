@@ -42,6 +42,7 @@ require 'core/session'
 require 'core/node_product'
 require 'core/out'
 require 'core/exception_handler'
+require 'core/services/version'
 
 session = Session.new
 $session = session
@@ -159,7 +160,7 @@ rescue GetoptLong::MissingArgument => error
 end
 
 # Greeting user
-out.info 'MariaDb CI CLI'
+out.info "MariaDB CI CLI, version: #{Version.version(session.mdbci_dir, out)}"
 out.info "mdbci called with: #{ARGV.join(' ')}"
 session.initialize_services
 
