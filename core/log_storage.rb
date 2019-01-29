@@ -1,0 +1,34 @@
+# frozen_string_literal: true
+
+# Сlass provides storage of logs
+class LogStorage < Out
+  # @param configuration [Session] configuration object that can silence the output
+  def initialize(configuration)
+    super
+    @logs = []
+  end
+
+  def out(string)
+    return if string.nil?
+
+    @logs.push(string)
+  end
+
+  def prompt(string)
+    @logs.push("PROMPT: #{string} ")
+    ''
+  end
+
+  def print_to_stdout
+    @logs.each { |log_line| @stream.puts(log_line) }
+  end
+
+  private
+
+  def print_line(level, string)
+    return if string.nil?
+
+    timestamp = Time.now.strftime('%Y-%m-%dT%H:%M:%S')
+    @logs.push("#{timestamp} #{level}: #{string}")
+  end
+end
