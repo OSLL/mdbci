@@ -11,6 +11,7 @@ gem 'net-ssh'
 gem 'net-scp'
 gem 'workers'
 gem 'xdg'
+gem 'concurrent-ruby'
 
 group(:development) do
   gem 'pry'

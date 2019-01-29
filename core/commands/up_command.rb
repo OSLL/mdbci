@@ -28,6 +28,8 @@ mdbci up config/node - configure the specified node from the configuration.
 OPTIONS:
   --attempts [number]:
 Specifies the number of times VM will be destroyed durintg the provisioning.
+  --threads [number]:
+Specifies the number of threads for parallel configuration of virtual machines.
   --recreate:
 Specifies that existing VMs must be destroyed before the configuration of all target VMs.
   -l, --labels [string]:

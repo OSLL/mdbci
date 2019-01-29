@@ -4,6 +4,7 @@ require 'fileutils'
 require 'uri'
 require 'open3'
 require 'xdg'
+require 'concurrent'
 
 require_relative 'boxes_manager'
 require_relative 'clone'
@@ -70,6 +71,7 @@ class Session
   attr_accessor :labels
   attr_accessor :force_distro
   attr_accessor :cpu_count
+  attr_accessor :threads_count
 
   PLATFORM = 'platform'
   VAGRANT_NO_PARALLEL = '--no-parallel'
@@ -87,6 +89,7 @@ EOF
     @templateNodes = {}
     @keep_template = false
     @list = false
+    @threads_count = Concurrent.processor_count
   end
 
   # Fill in paths based on the provided configuration if they were

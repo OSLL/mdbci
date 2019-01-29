@@ -12,6 +12,7 @@ opts = GetoptLong.new(
   ['--command', '-c', GetoptLong::REQUIRED_ARGUMENT],
   ['--configuration-file', GetoptLong::REQUIRED_ARGUMENT],
   ['--cpu-count', GetoptLong::REQUIRED_ARGUMENT],
+  ['--threads', GetoptLong::REQUIRED_ARGUMENT],
   ['--field', '-f', GetoptLong::REQUIRED_ARGUMENT],
   ['--force-distro', GetoptLong::REQUIRED_ARGUMENT],
   ['--help', GetoptLong::NO_ARGUMENT],
@@ -91,6 +92,9 @@ begin
 
     when '--cpu-count'
       session.cpu_count = arg
+
+    when '--threads'
+      session.threads_count = arg.to_i
 
     when '--repo-dir'
       session.repo_dir = arg
