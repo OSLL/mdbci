@@ -128,7 +128,8 @@ end
         <% end %>
         box.vm.provider :libvirt do |qemu|
           qemu.driver = 'kvm'
-          qemu.cpus = '<%= vm_cpu %>'
+          qemu.cpu_mode = 'host-passthrough'
+          qemu.cpus = <%= vm_cpu %>
           qemu.memory = <%= vm_mem %>
         end
       end #  <-- End of Qemu definition for machine: <%= name %>
