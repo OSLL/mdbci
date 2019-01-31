@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-# Сlass provides storage of logs
+# Class provides storage of logs
 class LogStorage < Out
   # @param configuration [Session] configuration object that can silence the output
   def initialize(configuration)
-    super
+    super(configuration)
     @logs = []
   end
 
@@ -12,11 +12,6 @@ class LogStorage < Out
     return if string.nil?
 
     @logs.push(string)
-  end
-
-  def prompt(string)
-    @logs.push("PROMPT: #{string} ")
-    ''
   end
 
   def print_to_stdout
