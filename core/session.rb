@@ -187,7 +187,7 @@ EOF
     $out.info("Running #{cmd} on #{config[0]}/#{config[1]}")
     result = ShellCommands.run_command_in_dir($out, cmd, config[0])
     unless result[:value].success?
-      raise "command '#{cmd}' exit with non-zero code: #{exit_code}"
+      raise "command '#{cmd}' exit with non-zero code: #{result[:value].exitstatus}"
     end
     0
   end
