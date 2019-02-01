@@ -180,15 +180,17 @@ EOF
 
   def sudo(args)
     raise 'config name is required' if args.nil?
-    config = args.split('/')
-    raise 'config does not exists' unless Dir.exist?(config[0])
-    raise 'node name is required' if config[1].to_s.empty?
-    cmd = "vagrant ssh #{config[1]} -c '/usr/bin/sudo #{@command}'"
-    $out.info("Running #{cmd} on #{config[0]}/#{config[1]}")
-    result = ShellCommands.run_command_in_dir($out, cmd, config[0])
-    unless result[:value].success?
-      raise "command '#{cmd}' exit with non-zero code: #{result[:value].exitstatus}"
-    end
+
+    node_path = File.absolute_path(args)
+    nodes_path = File.dirname(node_path)
+    node_name = File.basename(node_path)
+    raise 'config does not exists' unless Dir.exist?(nodes_path)
+
+    cmd = "vagrant ssh #{node_name} -c '/usr/bin/sudo #{@command}'"
+    $out.info("Running #{cmd} on #{node_path}")
+    result = ShellCommands.run_command_in_dir($out, cmd, nodes_path)
+    raise "command '#{cmd}' exit with non-zero code: #{result[:value].exitstatus}" unless result[:value].success?
+
     0
   end
 
