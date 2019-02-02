@@ -85,7 +85,7 @@ Labels should be separated with commas, do not contain any whitespaces.
   # @return [Boolean]
   def node_running?(node)
     result = run_command("vagrant status #{node}")
-    status_regex = /^#{node}\s+(\S+)\s+(\S+)\s$/
+    status_regex = /^#{node}\s+(.+)\s+(\(.+\))?\s$/
     status = if result[:output] =~ status_regex
                result[:output].match(status_regex)[1]
              else
