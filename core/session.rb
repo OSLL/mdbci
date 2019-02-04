@@ -8,6 +8,7 @@ require 'xdg'
 require_relative 'boxes_manager'
 require_relative 'clone'
 require_relative 'commands/up_command'
+require_relative 'commands/sudo_command'
 require_relative 'commands/snapshot_command'
 require_relative 'commands/destroy_command'
 require_relative 'commands/generate_command'
@@ -175,22 +176,6 @@ EOF
       else
         raise "Cannot setup #{what}"
     end
-    0
-  end
-
-  def sudo(args)
-    raise 'config name is required' if args.nil?
-
-    node_path = File.absolute_path(args)
-    nodes_path = File.dirname(node_path)
-    node_name = File.basename(node_path)
-    raise 'config does not exists' unless Dir.exist?(nodes_path)
-
-    cmd = "vagrant ssh #{node_name} -c '/usr/bin/sudo #{@command}'"
-    $out.info("Running #{cmd} on #{node_path}")
-    result = ShellCommands.run_command_in_dir($out, cmd, nodes_path)
-    raise "command '#{cmd}' exit with non-zero code: #{result[:value].exitstatus}" unless result[:value].success?
-
     0
   end
 
@@ -561,7 +546,8 @@ EOF
     when 'ssh'
       exit_code = ssh(ARGV.shift)
     when 'sudo'
-      exit_code = sudo(ARGV.shift)
+      sudo = SudoCommand.new(ARGV, self, $out)
+      exit_code = sudo.execute
     when 'up'
       command = UpCommand.new([ARGV.shift], self, $out)
       exit_code = command.execute
