@@ -71,6 +71,7 @@ class SnapshotCommand < BaseCommand
     @nodes_directory_name = @path_to_nodes.to_s.split('/')[-1]
     @provider = File.read("#{@path_to_nodes}/provider")
     @nodes = get_nodes
+    @config = Configuration.new(@env.path_to_nodes)
   end
 
   # Parse arguments and get action name to perform.
@@ -266,6 +267,14 @@ class SnapshotCommand < BaseCommand
     end
   end
 
+  def ntp_service_name(box)
+    (box.downcase =~ /(ubuntu|debian)/).nil? ? 'ntpd' : 'ntp'
+  end
+
+  def box_by_node_name(node_name)
+    @config.template[node_name]['box']
+  end
+
   def revert_snapshot(node_name, snapshot_name)
     full_snapshot_name = "#{SNAPSHOT_GLOBAL_PREFIX}_#{snapshot_name}_#{@nodes_directory_name}_#{node_name}"
     @ui.info "Reverting node #{node_name} to snapshot #{full_snapshot_name}"
@@ -277,9 +286,10 @@ class SnapshotCommand < BaseCommand
       run_reliable_command("virsh snapshot-revert --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{full_snapshot_name}")
       pwd = Dir.pwd
       Dir.chdir @path_to_nodes
-      run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo service ntpd stop'")
+      ntp_service = ntp_service_name(box_by_node_name(node_name))
+      run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo /bin/systemctl stop #{ntp_service}.service'")
       run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo ntpdate 0.europe.pool.ntp.org'")
-      run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo service ntpd start'")
+      run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo /bin/systemctl start #{ntp_service}.service'")
       Dir.chdir pwd
     when DOCKER
       change_current_docker_snapshot(node_name, full_snapshot_name)

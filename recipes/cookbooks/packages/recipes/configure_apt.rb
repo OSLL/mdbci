@@ -6,7 +6,7 @@ if node[:platform_family] == 'debian' || node[:platform_family] == 'ubuntu'
   apt_update 'update'
 
   # Install required packages
-  %w(apt-transport-https dirmngr).each do |package_name|
+  %w(apt-transport-https dirmngr ntpdate).each do |package_name|
     package package_name do
       retries 2
       retry_delay 10
