@@ -8,7 +8,7 @@
 #
 
 # install additional packages for all platform
-%w(net-tools psmisc curl).each do |pkg|
+%w(net-tools psmisc curl ntpdate).each do |pkg|
   if node[:platform] == "linux"
     zypper_package pkg do
       retries 2
