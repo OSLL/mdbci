@@ -34,9 +34,7 @@ Specifies the command.
       raise ArgumentError, 'You must specify path to the mdbci configuration as a parameter.'
     end
 
-    @specification = @args.first
-    @config = Configuration.new(@specification)
-    raise ArgumentError, 'Config does not exists' unless Dir.exist?(@config.path)
+    @config = Configuration.new(@args.first)
   end
 
   def sudo
