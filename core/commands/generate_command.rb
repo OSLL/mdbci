@@ -193,7 +193,6 @@ end
   # @param product [Hash] parameters of the product to configure from configuration file
   # @param box information about the box
   # @param repo [String] repo
-  # @param error_text [String] error message in case of error
   # @return [Hash] pretty formatted role description in JSON format.
   def make_product_config(product_name, product, box, repo)
     repo = @env.repos.findRepo(product_name, product, box) if repo.nil?
@@ -449,12 +448,13 @@ end
   rescue RuntimeError => e
     @ui.error(e.message)
     @ui.error('Configuration is invalid')
+    @env.aws_service.delete_key_pair(keypair_name) if provider == 'aws'
+    vagrant.close
     FileUtils.rm_rf(path)
     ERROR_RESULT
   else
-    SUCCESS_RESULT
-  ensure
     vagrant.close
+    SUCCESS_RESULT
   end
   # rubocop:enable Metrics/MethodLength
 
