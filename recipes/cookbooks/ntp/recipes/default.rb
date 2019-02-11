@@ -19,6 +19,8 @@ else
   end
 end
 
+package('sntp') { action [:install] } if node['platform_family'] == 'rhel'
+
 service node[:ntp][:service] do
   service_name node[:ntp][:service]
   action [:enable,:start,:restart]

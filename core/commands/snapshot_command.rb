@@ -288,7 +288,7 @@ class SnapshotCommand < BaseCommand
       Dir.chdir @path_to_nodes
       ntp_service = ntp_service_name(box_by_node_name(node_name))
       run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo /bin/systemctl stop #{ntp_service}.service'")
-      run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo ntpdate 0.europe.pool.ntp.org'")
+      run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo sntp -s  0.europe.pool.ntp.org'")
       run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo /bin/systemctl start #{ntp_service}.service'")
       Dir.chdir pwd
     when DOCKER
