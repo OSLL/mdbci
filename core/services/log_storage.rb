@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative '../out'
+
 # Class provides storage of logs
 class LogStorage < Out
   # @param configuration [Session] configuration object that can silence the output
