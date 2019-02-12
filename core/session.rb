@@ -89,7 +89,7 @@ EOF
     @templateNodes = {}
     @keep_template = false
     @list = false
-    @threads_count = Concurrent.processor_count
+    @threads_count = Concurrent.physical_processor_count
   end
 
   # Fill in paths based on the provided configuration if they were
