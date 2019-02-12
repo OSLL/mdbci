@@ -276,7 +276,7 @@ Labels should be separated with commas, do not contain any whitespaces.
       need_fix = true
     end
     broken_result = broken_node?(node, @ui)
-    unconfigured_result = unconfigured_node?(node, @ui)
+    unconfigured_result = !broken_result && unconfigured_node?(node, @ui)
     @ui.error "Node '#{node}' was not brought up" if broken_result
     @ui.error "Node '#{node}' was not configured" if unconfigured_result
     return [false, logger] if broken_result || unconfigured_result
