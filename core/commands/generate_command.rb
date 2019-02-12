@@ -179,7 +179,6 @@ end
           aws.ami = '<%= amiurl %>'
           aws.tags = <%= tags %>
           aws.instance_type = '<%= instance %>'
-          aws.block_device_mapping = [{ 'DeviceName' => '/dev/sda', 'Ebs.VolumeSize' => 100 }]
           override.ssh.username = '<%= user %>'
         end
       end #  <-- End of AWS definition for machine: <%= name %>
