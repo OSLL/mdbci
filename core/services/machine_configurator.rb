@@ -24,7 +24,7 @@ class MachineConfigurator
   # extra files into the provision directory making runtime configuration of Chef scripts possible.
   # @param extra_files [Array<Array<String>>] pairs of source and target paths.
   # @param logger [Out] logger to log information to
-  def configure(machine, config_name, logger, extra_files = [], sudo_password = '', chef_version = '14.7.17')
+  def configure(machine, config_name, logger = @log, extra_files = [], sudo_password = '', chef_version = '14.7.17')
     logger.info("Configuring machine #{machine['network']} with #{config_name}")
     within_ssh_session(machine) do |connection|
       install_chef_on_server(connection, sudo_password, chef_version, logger)
