@@ -38,12 +38,18 @@ class Out
     gets.strip
   end
 
-  protected
+  private
 
   def print_line(level, string)
     return if @configuration.isSilent || string.nil?
 
     timestamp = Time.now.strftime('%Y-%m-%dT%H:%M:%S')
-    @stream.puts("#{timestamp} #{level}: #{string}")
+    print_raw_line("#{timestamp} #{level}: #{string}")
+  end
+
+  protected
+
+  def print_raw_line(string)
+    @stream.puts(string)
   end
 end

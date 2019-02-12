@@ -20,12 +20,7 @@ class LogStorage < Out
     @logs.each { |log_line| @stream.puts(log_line) }
   end
 
-  protected
-
-  def print_line(level, string)
-    return if string.nil?
-
-    timestamp = Time.now.strftime('%Y-%m-%dT%H:%M:%S')
-    @logs.push("#{timestamp} #{level}: #{string}")
+  def print_raw_line(string)
+    @logs.push(string)
   end
 end
