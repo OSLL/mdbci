@@ -257,7 +257,7 @@ Labels should be separated with commas, do not contain any whitespaces.
   # Get the logger. Depending on the number of threads returns a unique logger or @ui.
   #
   # @return [Out] logger.
-  def node_logger
+  def retrieve_logger_for_node
     @env.threads_count > 1 ? LogStorage.new(@config) : @ui
   end
 
@@ -266,7 +266,7 @@ Labels should be separated with commas, do not contain any whitespaces.
   # @param node [String] name of node which needs to be up
   # @return [Array<Bool, Out>] up result and log history.
   def up_node(node)
-    logger = node_logger
+    logger = retrieve_logger_for_node
     need_fix = false
     @attempts.times do |attempt|
       @ui.info "Brought up and configure node #{node}. Attempt #{attempt + 1}"
