@@ -38,7 +38,7 @@ class Out
     gets.strip
   end
 
-  private
+  protected
 
   def print_line(level, string)
     return if @configuration.isSilent || string.nil?

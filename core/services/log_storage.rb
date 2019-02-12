@@ -20,7 +20,7 @@ class LogStorage < Out
     @logs.each { |log_line| @stream.puts(log_line) }
   end
 
-  private
+  protected
 
   def print_line(level, string)
     return if string.nil?
