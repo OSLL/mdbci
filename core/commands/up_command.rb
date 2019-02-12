@@ -269,7 +269,7 @@ Labels should be separated with commas, do not contain any whitespaces.
     logger = retrieve_logger_for_node
     need_fix = false
     @attempts.times do |attempt|
-      @ui.info "Brought up and configure node #{node}. Attempt #{attempt + 1}"
+      @ui.info "Brought up and configured node #{node}. Attempt #{attempt + 1}"
       up_node_result = bring_up_and_configure(node, @config.provider, need_fix, logger)
       break if up_node_result
 
