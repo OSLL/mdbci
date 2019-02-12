@@ -267,12 +267,9 @@ class SnapshotCommand < BaseCommand
     end
   end
 
-  def ntp_service_name(box)
+  def ntp_service_name(node_name)
+    box = @config.template[node_name]['box']
     (box.downcase =~ /(ubuntu|debian)/).nil? ? 'ntpd' : 'ntp'
-  end
-
-  def box_by_node_name(node_name)
-    @config.template[node_name]['box']
   end
 
   def revert_snapshot(node_name, snapshot_name)
@@ -286,7 +283,7 @@ class SnapshotCommand < BaseCommand
       run_reliable_command("virsh snapshot-revert --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{full_snapshot_name}")
       pwd = Dir.pwd
       Dir.chdir @path_to_nodes
-      ntp_service = ntp_service_name(box_by_node_name(node_name))
+      ntp_service = ntp_service_name(node_name)
       run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo /bin/systemctl stop #{ntp_service}.service'")
       run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo sntp -s  0.europe.pool.ntp.org'")
       run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo /bin/systemctl start #{ntp_service}.service'")
