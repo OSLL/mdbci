@@ -47,7 +47,7 @@ class MachineConfigurator
     end
   end
 
-  def sudo_exec(connection, sudo_password, command, logger)
+  def sudo_exec(connection, sudo_password, command, logger = @log)
     ssh_exec(connection, "sudo -S #{command}", logger, sudo_password)
   end
 
