@@ -7,7 +7,7 @@ require_relative '../services/machine_configurator'
 require_relative '../services/network_config'
 require_relative 'generate_command'
 require_relative 'destroy_command'
-require_relative '../log_storage'
+require_relative '../services/log_storage'
 
 # The command sets up the environment specified in the configuration file.
 class UpCommand < BaseCommand
