@@ -244,45 +244,51 @@ Labels should be separated with commas, do not contain any whitespaces.
   # Create and configure node, or recreate if it needs to fix.
   #
   # @param node [String] name of node which needs to be configured
-  # @param provider [String] name of the provider to use
-  # @param fix [Bool] node needs to fixed
   # @param logger [Out] logger to log information to
   # @return [Bool] configuration result
-  def bring_up_and_configure(node, provider, fix, logger)
-    destroy_node(node, logger) if fix || (node_running?(node, logger) && @env.recreate)
-    bring_up_machine(provider, logger, node) unless node_running?(node, logger)
-    node_running?(node, logger) ? configure(node, logger) : false
+  def bring_up_and_configure(node, logger)
+    force_recreate = false
+    @attempts.times do |attempt|
+      @ui.info "Brought up and configured node #{node}. Attempt #{attempt + 1}"
+      destroy_node(node, logger) if force_recreate
+      bring_up_machine(@config.provider, logger, node) unless node_running?(node, logger)
+      unless node_running?(node, logger)
+        force_recreate = true
+        next
+      end
+      return true if configure(node, logger)
+    end
+    false
   end
 
   # Get the logger. Depending on the number of threads returns a unique logger or @ui.
   #
   # @return [Out] logger.
   def retrieve_logger_for_node
-    @env.threads_count > 1 ? LogStorage.new(@config) : @ui
+    @env.threads_count > 1 ? LogStorage.new(@env) : @ui
   end
 
   # Brings up node.
   #
   # @param node [String] name of node which needs to be up
   # @return [Array<Bool, Out>] up result and log history.
+  # rubocop:disable Style/IfUnlessModifier
   def up_node(node)
     logger = retrieve_logger_for_node
-    need_fix = false
-    @attempts.times do |attempt|
-      @ui.info "Brought up and configured node #{node}. Attempt #{attempt + 1}"
-      up_node_result = bring_up_and_configure(node, @config.provider, need_fix, logger)
-      break if up_node_result
-
-      need_fix = true
+    if @env.recreate || !node_running?(node, logger)
+      bring_up_and_configure(node, logger)
     end
-    broken_result = broken_node?(node, @ui)
-    unconfigured_result = !broken_result && unconfigured_node?(node, @ui)
-    @ui.error "Node '#{node}' was not brought up" if broken_result
-    @ui.error "Node '#{node}' was not configured" if unconfigured_result
-    return [false, logger] if broken_result || unconfigured_result
+    if broken_node?(node, @ui)
+      @ui.error "Node '#{node}' was not brought up"
+      return [false, logger]
+    elsif unconfigured_node?(node, @ui)
+      @ui.error "Node '#{node}' was not configured"
+      return [false, logger]
+    end
 
     [true, logger]
   end
+  # rubocop:enable Style/IfUnlessModifier
 
   # Brings up nodes
   #
