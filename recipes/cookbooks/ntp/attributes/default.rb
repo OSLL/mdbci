@@ -5,6 +5,11 @@ when "ubuntu","debian"
 when "redhat","centos","fedora"
   default[:ntp][:service] = "ntpd"
   default[:ntp][:root_group] = "root"
+  platform_version = node['platform_version'].split('.').first
+  if %w(6 7).include?(platform_version)
+    default[:centos_repo_baseurl] = "http://ftp.heanet.ie/pub/centos/#{platform_version}/os/x86_64/"
+    default[:centos_repo_gpgkey] = "http://ftp.heanet.ie/pub/centos/#{platform_version}/os/x86_64/RPM-GPG-KEY-CentOS-#{platform_version}"
+  end
 when "freebsd"
   default[:ntp][:service] = "ntpd"
   default[:ntp][:root_group] = "wheel"
