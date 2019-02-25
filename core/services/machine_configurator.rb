@@ -16,21 +16,22 @@ class MachineConfigurator
   def run_command(machine, command)
     @log.info("Running command '#{command}' on the '#{machine['network']}' machine")
     within_ssh_session(machine) do |connection|
-      ssh_exec(connection, command)
+      ssh_exec(connection, command, @log)
     end
   end
 
   # Upload chef scripts onto the machine and configure it using specified role. The method is able to transfer
   # extra files into the provision directory making runtime configuration of Chef scripts possible.
   # @param extra_files [Array<Array<String>>] pairs of source and target paths.
-  def configure(machine, config_name, extra_files = [], sudo_password = '', chef_version = '14.7.17')
-    @log.info("Configuring machine #{machine['network']} with #{config_name}")
+  # @param logger [Out] logger to log information to
+  def configure(machine, config_name, logger = @log, extra_files = [], sudo_password = '', chef_version = '14.7.17')
+    logger.info("Configuring machine #{machine['network']} with #{config_name}")
     within_ssh_session(machine) do |connection|
-      install_chef_on_server(connection, sudo_password, chef_version)
+      install_chef_on_server(connection, sudo_password, chef_version, logger)
       remote_dir = '/tmp/provision'
-      copy_chef_files(connection, remote_dir, sudo_password, extra_files)
-      run_chef_solo(config_name, connection, remote_dir, sudo_password)
-      sudo_exec(connection, sudo_password, "rm -rf #{remote_dir}")
+      copy_chef_files(connection, remote_dir, sudo_password, extra_files, logger)
+      run_chef_solo(config_name, connection, remote_dir, sudo_password, logger)
+      sudo_exec(connection, sudo_password, "rm -rf #{remote_dir}", logger)
     end
   end
 
@@ -46,26 +47,26 @@ class MachineConfigurator
     end
   end
 
-  def sudo_exec(connection, sudo_password, command)
-    ssh_exec(connection, "sudo -S #{command}", sudo_password)
+  def sudo_exec(connection, sudo_password, command, logger = @log)
+    ssh_exec(connection, "sudo -S #{command}", logger, sudo_password)
   end
 
   # rubocop:disable Metrics/MethodLength
-  def ssh_exec(connection, command, sudo_password = '')
-    @log.info("Running '#{command}' on the remote server")
+  def ssh_exec(connection, command, logger, sudo_password = '')
+    logger.info("Running '#{command}' on the remote server")
     output = ''
     connection.open_channel do |channel, _success|
       channel.on_data do |_, data|
         converted_data = data.force_encoding('UTF-8')
-        log_printable_lines(converted_data)
+        log_printable_lines(converted_data, logger)
         output += "#{converted_data}\n"
       end
       channel.on_extended_data do |ch, _, data|
         if data =~ /^\[sudo\] password for /
-          @log.debug('ssh: providing sudo password')
+          logger.debug('ssh: providing sudo password')
           ch.send_data "#{sudo_password}\n"
         else
-          @log.debug("ssh error: #{data}")
+          logger.debug("ssh error: #{data}")
         end
       end
       channel.exec(command)
@@ -86,51 +87,53 @@ class MachineConfigurator
 
   private
 
-  def log_printable_lines(lines)
+  def log_printable_lines(lines, logger)
     lines.split("\n").map(&:chomp)
          .select { |line| line =~ /\p{Graph}+/mu }
          .each do |line|
-      @log.debug("ssh: #{line}")
+      logger.debug("ssh: #{line}")
     end
   end
 
-  def install_chef_on_server(connection, sudo_password, chef_version)
-    @log.info("Installing Chef #{chef_version} on the server.")
-    output = ssh_exec(connection, 'chef-solo --version')
+  def install_chef_on_server(connection, sudo_password, chef_version, logger)
+    logger.info("Installing Chef #{chef_version} on the server.")
+    output = ssh_exec(connection, 'chef-solo --version', logger)
     if output.include?(chef_version)
-      @log.info("Chef #{chef_version} is already installed on the server.")
+      logger.info("Chef #{chef_version} is already installed on the server.")
       return
     end
-    output = ssh_exec(connection, 'which curl')
+    output = ssh_exec(connection, 'which curl', logger)
     if output.strip.empty?
-      ssh_exec(connection, 'wget https://www.chef.io/chef/install.sh --output-document install.sh')
+      ssh_exec(connection, 'wget https://www.chef.io/chef/install.sh --output-document install.sh', logger)
     else
-      ssh_exec(connection, 'curl -s -L https://www.chef.io/chef/install.sh --output install.sh')
+      ssh_exec(connection, 'curl -s -L https://www.chef.io/chef/install.sh --output install.sh', logger)
     end
-    output = ssh_exec(connection, 'cat /etc/os-release | grep "openSUSE Leap 15.0"')
+    output = ssh_exec(connection, 'cat /etc/os-release | grep "openSUSE Leap 15.0"', logger)
     if output.strip.empty?
-      sudo_exec(connection, sudo_password, "bash install.sh -v #{chef_version}")  
+      sudo_exec(connection, sudo_password, "bash install.sh -v #{chef_version}", logger)
     else
-      sudo_exec(connection, sudo_password, "bash install.sh -l https://packages.chef.io/files/stable/chef/14.7.17/sles/12/chef-14.7.17-1.sles12.x86_64.rpm")
+      sudo_exec(connection, sudo_password,
+                "bash install.sh -l https://packages.chef.io/files/stable/chef/14.7.17/sles/12/chef-14.7.17-1.sles12.x86_64.rpm",
+                logger)
     end
-    ssh_exec(connection, 'rm install.sh')
+    ssh_exec(connection, 'rm install.sh', logger)
   end
 
-  def copy_chef_files(connection, remote_dir, sudo_password, extra_files)
-    @log.info('Copying chef files to the server.')
-    sudo_exec(connection, sudo_password, "rm -rf #{remote_dir}")
-    ssh_exec(connection, "mkdir -p #{remote_dir}")
+  def copy_chef_files(connection, remote_dir, sudo_password, extra_files, logger)
+    logger.info('Copying chef files to the server.')
+    sudo_exec(connection, sudo_password, "rm -rf #{remote_dir}", logger)
+    ssh_exec(connection, "mkdir -p #{remote_dir}", logger)
     %w[configs cookbooks roles solo.rb]
       .map { |name| ["#{@root_path}/#{name}", name] }
       .select { |path, _| File.exist?(path) }
       .concat(extra_files)
       .each do |source, target|
-      @log.debug("Uploading #{source} to #{target}")
+      logger.debug("Uploading #{source} to #{target}")
       upload_file(connection, source, "#{remote_dir}/#{target}")
     end
   end
 
-  def run_chef_solo(config_name, connection, remote_dir, sudo_password)
-    sudo_exec(connection, sudo_password, "chef-solo -c #{remote_dir}/solo.rb -j #{remote_dir}/configs/#{config_name}")
+  def run_chef_solo(config_name, connection, remote_dir, sudo_password, logger)
+    sudo_exec(connection, sudo_password, "chef-solo -c #{remote_dir}/solo.rb -j #{remote_dir}/configs/#{config_name}", logger)
   end
 end

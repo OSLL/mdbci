@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 require_relative 'base_command'
-require_relative '../docker_manager'
 require_relative '../models/configuration'
 require_relative '../services/shell_commands'
 require_relative '../services/machine_configurator'
 require_relative '../services/network_config'
 require_relative 'generate_command'
 require_relative 'destroy_command'
+require_relative '../services/log_storage'
 
 # The command sets up the environment specified in the configuration file.
 class UpCommand < BaseCommand
@@ -17,9 +17,10 @@ class UpCommand < BaseCommand
     'Setup environment as specified in the configuration.'
   end
 
+  # rubocop:disable Metrics/MethodLength
   def show_help
     info = <<-HELP
-'up' starts virtual machines in the specified condfiguration.
+'up' starts virtual machines in the specified configuration.
 
 mdbci up config - configure all VMs in the specified configuration.
 
@@ -28,15 +29,19 @@ mdbci up config/node - configure the specified node from the configuration.
 OPTIONS:
   --attempts [number]:
 Specifies the number of times VM will be destroyed durintg the provisioning.
+  --threads [number]:
+Specifies the number of threads for parallel configuration of virtual machines.
   --recreate:
 Specifies that existing VMs must be destroyed before the configuration of all target VMs.
   -l, --labels [string]:
 Specifies the list of desired labels. It allows to filter VMs based on the label presence.
-If any of the labels passed to the command match any label in the machine description, then this machine will be brought up and configured according to its configuration.
-Labels should be separated with commas, do not contain any whitespaces.
+If any of the labels passed to the command match any label in the machine description,
+then this machine will be brought up and configured according to its configuration.
+Labels should be separated with commas and should not contain any whitespaces.
     HELP
     @ui.info(info)
   end
+  # rubocop:enable Metrics/MethodLength
 
   VAGRANT_NO_PARALLEL = '--no-parallel'
 
@@ -56,47 +61,35 @@ Labels should be separated with commas, do not contain any whitespaces.
     @config = Configuration.new(@specification, @env.labels)
   end
 
-  # Generate docker images, so they will not be loaded during production
-  #
-  # @param config [Hash] configuration read from the template
-  # @param nodes_directory [String] path to the directory where they are located
-  def generate_docker_images(config, nodes_directory)
-    @ui.info 'Generating docker images.'
-    config.each do |node|
-      next if node[1]['box'].nil?
-
-      DockerManager.build_image("#{nodes_directory}/#{node[0]}", node[1]['box'])
-    end
-  end
-
   # Generate flags based upon the configuration
   #
   # @param provider [String] name of the provider to work with
   # @return [String] flags that should be passed to Vagrant commands
   def generate_vagrant_run_flags(provider)
     flags = []
-    flags.push(VAGRANT_NO_PARALLEL) if %w[aws docker].include?(provider)
+    flags.push(VAGRANT_NO_PARALLEL) if provider == 'aws'
     flags.uniq.join(' ')
   end
 
   # Check whether node is running or not.
   #
   # @param node [String] name of the node to get status from.
+  # @param logger [Out] logger to log information to
   # @return [Boolean]
-  def node_running?(node)
-    result = run_command("vagrant status #{node}")
+  def node_running?(node, logger)
+    result = run_command("vagrant status #{node}", {}, logger)
     status_regex = /^#{node}\s+(.+)\s+(\(.+\))?\s$/
     status = if result[:output] =~ status_regex
                result[:output].match(status_regex)[1]
              else
                'UNKNOWN'
              end
-    @ui.info "Node '#{node}' status: #{status}"
+    logger.info("Node '#{node}' status: #{status}")
     if status&.include?('running')
-      @ui.info "Node '#{node}' is running."
+      logger.info("Node '#{node}' is running.")
       true
     else
-      @ui.info "Node '#{node}' is not running."
+      logger.info("Node '#{node}' is not running.")
       false
     end
   end
@@ -104,16 +97,18 @@ Labels should be separated with commas, do not contain any whitespaces.
   # Check whether chef was successfully installed on the machine or not
   #
   # @param node [String] name of the node to check.
+  # @param logger [Out] logger to log information to
   # @return [Boolean]
-  def chef_installed?(node)
+  def chef_installed?(node, logger)
     result = run_command("vagrant ssh #{node} -c "\
-                         '"test -e /var/chef/cache/chef-stacktrace.out && printf FOUND || printf NOT_FOUND"')
+                         '"test -e /var/chef/cache/chef-stacktrace.out && printf FOUND || printf NOT_FOUND"',
+                         {}, logger)
     chef_stacktrace = result[:output]
     if chef_stacktrace == 'FOUND'
-      @ui.error "Chef on node '#{node}' was installed with error."
+      logger.error("Chef on node '#{node}' was installed with error.")
       false
     else
-      @ui.info "Chef on node '#{node}' was successfully installed."
+      logger.info("Chef on node '#{node}' was successfully installed.")
       true
     end
   end
@@ -121,154 +116,95 @@ Labels should be separated with commas, do not contain any whitespaces.
   # Check whether chef have provisioned the server or not
   #
   # @param node [String] name of the node to check
+  # @param logger [Out] logger to log information to
   # return [Boolean]
-  def node_provisioned?(node)
+  def node_provisioned?(node, logger)
     result = run_command("vagrant ssh #{node} -c"\
-                         '"test -e /var/mdbci/provisioned && printf PROVISIONED || printf NOT"')
+                         '"test -e /var/mdbci/provisioned && printf PROVISIONED || printf NOT"',
+                         {}, logger)
     provision_file = result[:output]
     if provision_file == 'PROVISIONED'
-      @ui.info "Node '#{node}' was configured."
+      logger.info("Node '#{node}' was configured.")
       true
     else
-      @ui.error "Node '#{node}' is not configured."
+      logger.error("Node '#{node}' is not configured.")
       false
     end
   end
 
   # Split list of nodes between running and halt ones
-  # @param nodes [Array<String] name of nodes to check
-  # @return [Array<String>, Array<String>] nodes that are running and those that are not
-  def running_and_halt_nodes(nodes)
-    nodes.partition(&method(:node_running?))
-  end
-
-  # Check that all specified nodes are configured and brought up.
-  # Return list of nodes that needs to be re-created or re-provisioned.
   #
-  # @param nodes [Array<String>] name of nodes that should be checked.
-  # @return [Array<String>, Array<String>] nodes to recreate and nodes to re-provision.
-  def check_nodes(nodes)
-    recreate = []
-    reconfigure = []
-    nodes.each do |node|
-      unless node_running?(node) && chef_installed?(node)
-        recreate.push node
-        next
-      end
-      reconfigure.push(node) unless node_provisioned?(node)
-    end
-    [recreate, reconfigure]
+  # @param nodes [Array<String] name of nodes to check
+  # @param logger [Out] logger to log information to.
+  # @return [Array<String>, Array<String>] nodes that are running and those that are not
+  def running_and_halt_nodes(nodes, logger)
+    nodes.partition { |node| node_running?(node, logger) }
   end
 
-  # Configure nodes using the chef-solo and their respected role
-  # @param nodes [Array<String>] names of nodes that should be configured
-  # @return [Array<String>] list of nodes that we not successfully configured
-  def configure_nodes(nodes)
-    nodes.reject(&method(:configure))
+  # Check that specified node is brought up.
+  #
+  # @param node [String] name of node that should be checked.
+  # @param logger [Out] logger to log information to.
+  # @return [Bool] true if node needs to be re-created.
+  def broken_node?(node, logger)
+    !(node_running?(node, logger) && chef_installed?(node, logger))
+  end
+
+  # Check that specified node is configured.
+  #
+  # @param node [String] name of node that should be checked.
+  # @param logger [Out] logger to log information to.
+  # @return [Bool] true if node needs to be re-provisioned.
+  def unconfigured_node?(node, logger)
+    return false if broken_node?(node, logger)
+
+    !node_provisioned?(node, logger)
   end
 
   # Configure single node using the chef-solo respected role
-  # @param node[String] name of the node
+  #
+  # @param node [String] name of the node
+  # @param logger [Out] logger to log information to
   # @return [Boolean] whether we were successful or not
-  def configure(node)
+  def configure(node, logger)
     @network_config.add_nodes([node])
     solo_config = "#{node}-config.json"
     role_file = GenerateCommand.role_file_name(@config.path, node)
     unless File.exist?(role_file)
-      @ui.info("Machine '#{node}' should not be configured. Skipping")
+      logger.info("Machine '#{node}' should not be configured. Skipping.")
       return true
     end
     extra_files = [
       [role_file, "roles/#{node}.json"],
       [GenerateCommand.node_config_file_name(@config.path, node), "configs/#{solo_config}"]
     ]
-    @machine_configurator.configure(@network_config[node], solo_config, extra_files)
-    node_provisioned?(node)
+    @machine_configurator.configure(@network_config[node], solo_config, logger, extra_files)
+    node_provisioned?(node, logger)
   end
 
   # Bring up whole configuration or a machine up.
   #
   # @param provider [String] name of the provider to use.
-  # @param node_name [String] node name to bring up. It can be empty if we need to bring
+  # @param logger [Out] logger to log information to
+  # @param node [String] node name to bring up. It can be empty if we need to bring
   # the whole configuration up.
-  # @return [Array<String>] list of node names that should be checked
-  def bring_up_machines(provider, node_name = '')
-    @ui.info "Bringing up #{(node_name.empty? ? 'configuration ' : 'node ')} #{@specification}"
+  # @return result of the run_command_and_log()
+  def bring_up_machine(provider, logger, node = '')
+    logger.info("Bringing up #{(node.empty? ? 'configuration ' : 'node ')} #{@specification}")
     vagrant_flags = generate_vagrant_run_flags(provider)
-    run_command_and_log("vagrant up #{vagrant_flags} --provider=#{provider} #{node_name}", true)
-  end
-
-  # Destroy and then create specified nodes.
-  #
-  # @param nodes [Array<String>] list of nodes that should be re-created
-  # @param provider [String] name of virtual box provider
-  def recreate(nodes, provider)
-    nodes.each do |node|
-      @ui.info "Destroying '#{node}' node."
-      DestroyCommand.execute(["#{@config.path}/#{node}"], @env, @ui, keep_template: true)
-      bring_up_machines(provider, node)
-    end
-  end
-
-  # Check that nodes were brougt up and configured. If they were not
-  # configured, then try to reconfigure them
-  #
-  # @param nodes_to_check [Array<String>] list of nodes to check
-  # @return [Array<String>] list of nodes that are still misconfigured.
-  def check_and_configure_nodes(nodes_to_check)
-    running_nodes, halt_nodes = running_and_halt_nodes(nodes_to_check)
-    unconfigured_nodes = configure_nodes(running_nodes)
-    halt_nodes.concat(configure_nodes(unconfigured_nodes))
-  end
-
-  # Starts and configurats mathing nodes from configuration file
-  #
-  # @param config [Configuration] configuration that should be run
-  # @param node [String] name of the node to bring up
-  # @return [Array<String>] list of nodes that should be fixed
-  def setup_nodes(config)
-    generate_docker_images(config.template, '.') if config.provider == 'docker'
-    nodes_to_check = config.node_names
-  rescue ArgumentError => e
-    @ui.error(e.message)
-    ERROR_RESULT
-  else
-    brougt_up_nodes = start_disabled_nodes(config.provider, nodes_to_check)
-    check_and_configure_nodes(brougt_up_nodes)
-  end
-
-  # Try to fix nodes that were not brought up. Try to reconfigure them.
-  # If any operation fails, try to repair them several times.
-  #
-  # @param nodes_to_fix [Array<String>] list of node names to fix.
-  # @param nodes_provider [String] name of the provider.
-  # @return [Boolean]
-  def fix_nodes(nodes_to_fix, nodes_provider)
-    @attempts.times do |attempt|
-      @ui.info "Checking that nodes were brought up. Attempt #{attempt + 1}"
-      recreate(nodes_to_fix, nodes_provider)
-      nodes_to_fix = check_and_configure_nodes(nodes_to_fix)
-      break if nodes_to_fix.empty?
-    end
-
-    broken_nodes, unconfigured_nodes = check_nodes(nodes_to_fix)
-    unless broken_nodes.empty? && unconfigured_nodes.empty?
-      @ui.error "The following nodes were not brought up: #{broken_nodes.join(', ')}"
-      @ui.error "The following nodes were not configured: #{unconfigured_nodes.join(', ')}"
-      return false
-    end
-    true
+    run_command_and_log("vagrant up #{vagrant_flags} --provider=#{provider} #{node}", true, {}, logger)
   end
 
   # Provide information for the end-user where to find the required information
+  #
   # @param working_directory [String] path to the current working directory
   # @param config_path [String] path to the configuration
   def generate_config_information(working_directory, config_path)
     network_config_path = "#{config_path}#{Configuration::NETWORK_FILE_SUFFIX}"
-    @ui.info 'All nodes were brought up and configured.'
-    @ui.info "DIR_PWD=#{working_directory}"
-    @ui.info "CONF_PATH=#{config_path}"
-    @ui.info "Generating #{network_config_path} file"
+    @ui.info('All nodes were brought up and configured.')
+    @ui.info("DIR_PWD=#{working_directory}")
+    @ui.info("CONF_PATH=#{config_path}")
+    @ui.info("Generating #{network_config_path} file")
     File.open(network_config_path, 'w') do |file|
       @network_config.each_pair do |node_name, config|
         config.each_pair do |key, value|
@@ -278,37 +214,19 @@ Labels should be separated with commas, do not contain any whitespaces.
     end
   end
 
-  # Forcefully destroys given nodes
+  # Forcefully destroys given node
   #
-  # @param node_names [Array<String>] List with names of nodes which needs to be destroyed
-  def destroy_nodes(node_names)
-    @ui.info 'Destroying existing nodes.'
-    node_names.each do |node|
-      DestroyCommand.execute(["#{@config.path}/#{node}"], @env, @ui, keep_template: true)
-    end
-  end
-
-  # Starts shutdown nodes, restarts running nodes when up command called with --recreate option
-  #
-  # @param provider [String] name of the provider to use.
-  # @param node_names [Arrat<String>] List of nodes to start
-  # @return [Array<String>] List of nodes that were brought up
-  def start_disabled_nodes(provider, node_names)
-    running_nodes, halt_nodes = running_and_halt_nodes(node_names)
-    if @env.recreate
-      destroy_nodes(running_nodes)
-      halt_nodes = halt_nodes.concat(running_nodes)
-    end
-    halt_nodes.each do |node|
-      bring_up_machines(provider, node)
-    end
-    halt_nodes
+  # @param node [String] name of node which needs to be destroyed
+  # @param logger [Out] logger to log information to
+  def destroy_node(node, logger)
+    logger.info("Destroying '#{node}' node.")
+    DestroyCommand.execute(["#{@config.path}/#{node}"], @env, logger, keep_template: true)
   end
 
   # Restores network configuration of nodes that were already brought up
   def store_network_config
     @network_config = NetworkConfig.new(@config, @ui)
-    running_nodes = running_and_halt_nodes(@config.node_names)[0]
+    running_nodes = running_and_halt_nodes(@config.node_names, @ui)[0]
     @network_config.add_nodes(running_nodes)
   end
 
@@ -324,15 +242,71 @@ Labels should be separated with commas, do not contain any whitespaces.
     Dir.chdir(current_dir)
   end
 
+  # Create and configure node, or recreate if it needs to fix.
+  #
+  # @param node [String] name of node which needs to be configured
+  # @param logger [Out] logger to log information to
+  # @return [Bool] configuration result
+  def bring_up_and_configure(node, logger)
+    force_recreate = false
+    @attempts.times do |attempt|
+      @ui.info("Bring up and configure node #{node}. Attempt #{attempt + 1}.")
+      destroy_node(node, logger) if force_recreate
+      bring_up_machine(@config.provider, logger, node) unless node_running?(node, logger)
+      unless node_running?(node, logger)
+        force_recreate = true
+        next
+      end
+      return true if configure(node, logger)
+    end
+    false
+  end
+
+  # Get the logger. Depending on the number of threads returns a unique logger or @ui.
+  #
+  # @return [Out] logger.
+  def retrieve_logger_for_node
+    @env.threads_count > 1 ? LogStorage.new(@env) : @ui
+  end
+
+  # Brings up node.
+  #
+  # @param node [String] name of node which needs to be up
+  # @return [Array<Bool, Out>] up result and log history.
+  # rubocop:disable Style/IfUnlessModifier
+  def up_node(node)
+    logger = retrieve_logger_for_node
+    if @env.recreate || !node_running?(node, logger)
+      bring_up_and_configure(node, logger)
+    end
+    if broken_node?(node, @ui)
+      @ui.error("Node '#{node}' was not brought up")
+      return [false, logger]
+    elsif unconfigured_node?(node, @ui)
+      @ui.error("Node '#{node}' was not configured")
+      return [false, logger]
+    end
+
+    [true, logger]
+  end
+  # rubocop:enable Style/IfUnlessModifier
+
   # Brings up nodes
   #
   # @return [Number] execution status
   def up
+    nodes = @config.node_names
+  rescue ArgumentError => e
+    @ui.error(e.message)
+    ERROR_RESULT
+  else
     run_in_directory(@config.path) do
       store_network_config
-      nodes_to_fix = setup_nodes(@config)
-      return ERROR_RESULT if nodes_to_fix == ERROR_RESULT
-      return ERROR_RESULT unless fix_nodes(nodes_to_fix, @config.provider)
+      up_results = nodes.each_slice(@env.threads_count).to_a.flat_map do |nodes_group|
+        Workers.map(nodes_group) { |node| up_node(node) }
+      end
+      up_results.each { |up_result| up_result[1].print_to_stdout } if @env.threads_count > 1
+      return ERROR_RESULT unless up_results.detect { |up_result| !up_result[0] }.nil?
     end
     generate_config_information(Dir.pwd, @config.path)
     SUCCESS_RESULT

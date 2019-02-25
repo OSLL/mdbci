@@ -74,8 +74,8 @@ module ShellCommands
   # rubocop:enable Metrics/MethodLength
 
   # Wrapper method for the module method
-  def run_command_and_log(command, show_notifications = false, options = {}, env = ShellCommands.environment)
-    ShellCommands.run_command_and_log(@ui, command, show_notifications, options, env)
+  def run_command_and_log(command, show_notifications = false, options = {}, logger = @ui, env = ShellCommands.environment)
+    ShellCommands.run_command_and_log(logger, command, show_notifications, options, env)
   end
 
   # Run the command, gather the standard output and save the process results
@@ -93,8 +93,8 @@ module ShellCommands
   end
 
   # Wrapper method for the module method
-  def run_command(command, options = {}, env = ShellCommands.environment)
-    ShellCommands.run_command(@ui, command, options, env)
+  def run_command(command, options = {}, logger = @ui, env = ShellCommands.environment)
+    ShellCommands.run_command(logger, command, options, env)
   end
 
   # Execute the command, log stdout and stderr.
