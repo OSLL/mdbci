@@ -20,7 +20,7 @@ class UpCommand < BaseCommand
   # rubocop:disable Metrics/MethodLength
   def show_help
     info = <<-HELP
-'up' starts virtual machines in the specified condfiguration.
+'up' starts virtual machines in the specified configuration.
 
 mdbci up config - configure all VMs in the specified configuration.
 
@@ -35,8 +35,9 @@ Specifies the number of threads for parallel configuration of virtual machines.
 Specifies that existing VMs must be destroyed before the configuration of all target VMs.
   -l, --labels [string]:
 Specifies the list of desired labels. It allows to filter VMs based on the label presence.
-If any of the labels passed to the command match any label in the machine description, then this machine will be brought up and configured according to its configuration.
-Labels should be separated with commas, do not contain any whitespaces.
+If any of the labels passed to the command match any label in the machine description,
+then this machine will be brought up and configured according to its configuration.
+Labels should be separated with commas and should not contain any whitespaces.
     HELP
     @ui.info(info)
   end
@@ -83,12 +84,12 @@ Labels should be separated with commas, do not contain any whitespaces.
              else
                'UNKNOWN'
              end
-    logger.info "Node '#{node}' status: #{status}"
+    logger.info("Node '#{node}' status: #{status}")
     if status&.include?('running')
-      logger.info "Node '#{node}' is running."
+      logger.info("Node '#{node}' is running.")
       true
     else
-      logger.info "Node '#{node}' is not running."
+      logger.info("Node '#{node}' is not running.")
       false
     end
   end
@@ -104,10 +105,10 @@ Labels should be separated with commas, do not contain any whitespaces.
                          {}, logger)
     chef_stacktrace = result[:output]
     if chef_stacktrace == 'FOUND'
-      logger.error "Chef on node '#{node}' was installed with error."
+      logger.error("Chef on node '#{node}' was installed with error.")
       false
     else
-      logger.info "Chef on node '#{node}' was successfully installed."
+      logger.info("Chef on node '#{node}' was successfully installed.")
       true
     end
   end
@@ -123,10 +124,10 @@ Labels should be separated with commas, do not contain any whitespaces.
                          {}, logger)
     provision_file = result[:output]
     if provision_file == 'PROVISIONED'
-      logger.info "Node '#{node}' was configured."
+      logger.info("Node '#{node}' was configured.")
       true
     else
-      logger.error "Node '#{node}' is not configured."
+      logger.error("Node '#{node}' is not configured.")
       false
     end
   end
@@ -170,7 +171,7 @@ Labels should be separated with commas, do not contain any whitespaces.
     solo_config = "#{node}-config.json"
     role_file = GenerateCommand.role_file_name(@config.path, node)
     unless File.exist?(role_file)
-      logger.info("Machine '#{node}' should not be configured. Skipping")
+      logger.info("Machine '#{node}' should not be configured. Skipping.")
       return true
     end
     extra_files = [
@@ -189,7 +190,7 @@ Labels should be separated with commas, do not contain any whitespaces.
   # the whole configuration up.
   # @return result of the run_command_and_log()
   def bring_up_machine(provider, logger, node = '')
-    logger.info "Bringing up #{(node.empty? ? 'configuration ' : 'node ')} #{@specification}"
+    logger.info("Bringing up #{(node.empty? ? 'configuration ' : 'node ')} #{@specification}")
     vagrant_flags = generate_vagrant_run_flags(provider)
     run_command_and_log("vagrant up #{vagrant_flags} --provider=#{provider} #{node}", true, {}, logger)
   end
@@ -200,10 +201,10 @@ Labels should be separated with commas, do not contain any whitespaces.
   # @param config_path [String] path to the configuration
   def generate_config_information(working_directory, config_path)
     network_config_path = "#{config_path}#{Configuration::NETWORK_FILE_SUFFIX}"
-    @ui.info 'All nodes were brought up and configured.'
-    @ui.info "DIR_PWD=#{working_directory}"
-    @ui.info "CONF_PATH=#{config_path}"
-    @ui.info "Generating #{network_config_path} file"
+    @ui.info('All nodes were brought up and configured.')
+    @ui.info("DIR_PWD=#{working_directory}")
+    @ui.info("CONF_PATH=#{config_path}")
+    @ui.info("Generating #{network_config_path} file")
     File.open(network_config_path, 'w') do |file|
       @network_config.each_pair do |node_name, config|
         config.each_pair do |key, value|
@@ -218,7 +219,7 @@ Labels should be separated with commas, do not contain any whitespaces.
   # @param node [String] name of node which needs to be destroyed
   # @param logger [Out] logger to log information to
   def destroy_node(node, logger)
-    logger.info "Destroying '#{node}' node."
+    logger.info("Destroying '#{node}' node.")
     DestroyCommand.execute(["#{@config.path}/#{node}"], @env, logger, keep_template: true)
   end
 
@@ -249,7 +250,7 @@ Labels should be separated with commas, do not contain any whitespaces.
   def bring_up_and_configure(node, logger)
     force_recreate = false
     @attempts.times do |attempt|
-      @ui.info "Brought up and configured node #{node}. Attempt #{attempt + 1}"
+      @ui.info("Bring up and configure node #{node}. Attempt #{attempt + 1}.")
       destroy_node(node, logger) if force_recreate
       bring_up_machine(@config.provider, logger, node) unless node_running?(node, logger)
       unless node_running?(node, logger)
@@ -279,10 +280,10 @@ Labels should be separated with commas, do not contain any whitespaces.
       bring_up_and_configure(node, logger)
     end
     if broken_node?(node, @ui)
-      @ui.error "Node '#{node}' was not brought up"
+      @ui.error("Node '#{node}' was not brought up")
       return [false, logger]
     elsif unconfigured_node?(node, @ui)
-      @ui.error "Node '#{node}' was not configured"
+      @ui.error("Node '#{node}' was not configured")
       return [false, logger]
     end
 
