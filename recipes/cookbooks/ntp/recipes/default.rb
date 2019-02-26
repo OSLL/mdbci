@@ -19,7 +19,21 @@ else
   end
 end
 
-package('sntp') { action [:install] } if node['platform_family'] == 'rhel'
+# Install sntp package on the CentOS 7 and RHEL 7
+if node['platform_family'] == 'rhel' && node['platform_version'].split('.').first == '7'
+  if node[:platform] == 'redhat'
+    yum_repository "centos" do
+      description "Centos repo"
+      baseurl node[:centos_repo_baseurl]
+      enabled true
+      gpgcheck true
+      gpgkey node[:centos_repo_gpgkey]
+      action :add
+    end
+  end
+
+  package('sntp') { action [:install] }
+end
 
 service node[:ntp][:service] do
   service_name node[:ntp][:service]

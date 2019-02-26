@@ -14,3 +14,11 @@ else
 end
 
 default[:ntp][:servers] = ["0.pool.ntp.org", "1.pool.ntp.org", "2.pool.ntp.org", "3.pool.ntp.org"]
+
+if %w[redhat fedora].include?(node['platform'])
+  platform_version = node['platform_version'].split('.').first
+  if %w[6 7].include?(platform_version)
+    default[:centos_repo_baseurl] = "http://ftp.heanet.ie/pub/centos/#{platform_version}/os/x86_64/"
+    default[:centos_repo_gpgkey] = "http://ftp.heanet.ie/pub/centos/#{platform_version}/os/x86_64/RPM-GPG-KEY-CentOS-#{platform_version}"
+  end
+end
