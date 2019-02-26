@@ -267,18 +267,27 @@ class SnapshotCommand < BaseCommand
     end
   end
 
+  # Returns the ntp service name (ntp or ntpd) depending on the node system.
+  #
+  # @param node_name [String] the name of the node
+  # @return [String] ntp service name.
   def ntp_service_name(node_name)
     box = @config.template[node_name]['box']
     (box.downcase =~ /(ubuntu|debian)/).nil? ? 'ntpd' : 'ntp'
   end
 
+  # Creates a command string to sync time on the node.
+  #
+  # @param node_name [String] the name of the node on which needs to sync time
+  # @return [String] result command string.
   def sync_node_time_command(node_name)
     box = @config.template[node_name]['box']
-    if box.downcase =~ /(rhel_6|centos_6)/
-      'ntpdate'
-    else
-      'sntp -s'
-    end + ' 0.europe.pool.ntp.org'
+    command = if box.downcase =~ /(rhel_6|centos_6)/
+                'ntpdate'
+              else
+                'sntp -s'
+              end
+    "#{command} 0.europe.pool.ntp.org"
   end
 
   # Creates a command string to turn off and on the service.
