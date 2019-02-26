@@ -61,10 +61,18 @@ class AwsService
     describe_instances[:reservations].map do |reservation|
       reservation[:instances].map do |instance|
         next nil if !%w[running pending].include?(instance[:state][:name]) || instance[:tags].nil?
+
         node_name = instance[:tags].find { |tag| tag[:key] == 'machinename' }[:value]
         { instance_id: instance[:instance_id], node_name: node_name }
       end
     end.flatten.compact
+  end
+
+  # Get the device name by ami
+  # @param [String] ami ami
+  # @return [String] device name, for example: /dev/sda1.
+  def device_name_for_ami(ami)
+    @client.describe_images(image_ids: [ami]).images.first.root_device_name
   end
 
   # Check whether instance with the specified id running or not.

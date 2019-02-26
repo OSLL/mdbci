@@ -179,6 +179,7 @@ end
           aws.ami = '<%= amiurl %>'
           aws.tags = <%= tags %>
           aws.instance_type = '<%= instance %>'
+          aws.block_device_mapping = [{ 'DeviceName' => '<%= device_name %>', 'Ebs.VolumeSize' => 100 }]
           override.ssh.username = '<%= user %>'
         end
       end #  <-- End of AWS definition for machine: <%= name %>
@@ -311,6 +312,8 @@ end
   # @param node [Array] information of the node from configuration file
   # @param box_params [Hash] information of the box parameters
   # @return [Hash] list of the node parameters.
+  # rubocop:disable Metrics/MethodLength
+  # Further decomposition of the method will complicate the code.
   def make_node_params(node, box_params)
     params = {
       name: node[0].to_s,
@@ -322,12 +325,14 @@ end
     params[:ssh_pty] = box_params['ssh_pty'] == 'true' unless box_params['ssh_pty'].nil?
     params.merge!(if params[:provider] == 'aws'
                     { amiurl: box_params['ami'].to_s, user: box_params['user'].to_s,
-                      instance: box_params['default_instance_type'].to_s }
+                      instance: box_params['default_instance_type'].to_s,
+                      device_name: @aws_service.device_name_for_ami(box_params['ami'].to_s) }
                   else
                     { boxurl: box_params['box'].to_s, platform: box_params['platform'].to_s,
                       platform_version: box_params['platform_version'].to_s }
                   end)
   end
+  # rubocop:enable Metrics/MethodLength
 
   # Log the information about the main parameters of the node.
   #
@@ -555,7 +560,10 @@ end
   # @param override [Bool] clean directory if it is already exists
   # @return [Number] exit code for the command execution
   # @raise RuntimeError if configuration file is invalid.
+  # rubocop:disable Metrics/MethodLength
+  # Further decomposition of the method will complicate the code.
   def execute(name, boxes, override)
+    @aws_service = @env.aws_service
     path = name.nil? ? File.join(Dir.pwd, 'default') : File.absolute_path(name.to_s)
     begin
       instance_config_file = IO.read(@env.configFile)
@@ -574,4 +582,5 @@ end
     generate_provider_and_template_files(path, @nodes_provider)
     SUCCESS_RESULT
   end
+  # rubocop:enable Metrics/MethodLength
 end
