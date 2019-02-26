@@ -274,7 +274,11 @@ class SnapshotCommand < BaseCommand
 
   def sync_node_time_command(node_name)
     box = @config.template[node_name]['box']
-    ((box.downcase =~ /(rhel_6|centos_6)/).nil? ? 'sntp -s' : 'ntpdate') + ' 0.europe.pool.ntp.org'
+    if (box.downcase =~ /(rhel_6|centos_6)/).nil?
+      'sntp -s'
+    else
+      'ntpdate'
+    end + ' 0.europe.pool.ntp.org'
   end
 
   def change_service_state(node_name, ntp_service, state)
