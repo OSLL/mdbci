@@ -88,7 +88,7 @@ end
         box.vm.box = '<%= boxurl %>'
         box.vm.hostname = '<%= host %>'
         <% if ssh_pty %>
-           box.ssh.pty = true
+           box.ssh.pty = <%= ssh_pty %>
         <% end %>
         <% if template_path %>
            box.vm.synced_folder '<%= template_path %>', '/home/vagrant/cnf_templates'
@@ -116,7 +116,7 @@ end
         box.vm.box = '<%= boxurl %>'
         box.vm.hostname = '<%= host %>'
         <% if ssh_pty %>
-          box.ssh.pty = true
+          box.ssh.pty = <%= ssh_pty %>
         <% end %>
         <% if template_path %>
           box.vm.synced_folder '<%= template_path %>', '/home/vagrant/cnf_templates', type:'rsync'
@@ -170,15 +170,15 @@ end
       #  --> Begin definition for machine: <%= name %>
       config.vm.define '<%= name %>' do |box|
         <% if ssh_pty %>
-          box.ssh.pty = true
+          box.ssh.pty = <%= ssh_pty %>
         <% end %>
         <% if template_path %>
           box.vm.synced_folder '<%=template_path %>', '/home/vagrant/cnf_templates', type: 'rsync'
         <% end %>
         box.vm.provider :aws do |aws, override|
-          aws.ami = '<%= amiurl %>'
+          aws.ami = '<%= ami %>'
           aws.tags = <%= tags %>
-          aws.instance_type = '<%= instance %>'
+          aws.instance_type = '<%= default_instance_type %>'
           <% if device_name %>
             aws.block_device_mapping = [{ 'DeviceName' => '<%= device_name %>', 'Ebs.VolumeSize' => 100 }]
           <% end %>
@@ -308,47 +308,22 @@ end
     !boxes.getBox(box).nil?
   end
 
-  # Make a hash list of, generic for all providers, node parameters by a node configuration and
+  # Make a hash list of node parameters by a node configuration and
   # information of the box parameters.
   #
   # @param node [Array] information of the node from configuration file
   # @param box_params [Hash] information of the box parameters
   # @return [Hash] list of the node parameters.
-  def make_generic_node_params(node, box_params)
-    params = {
+  def make_node_params(node, box_params)
+    symbolic_box_params = Hash[box_params.map { |k, v| [k.to_sym, v] }]
+    # Rename the `box` field to the `boxurl` to avoid overlapping variables
+    symbolic_box_params[:boxurl] = symbolic_box_params.delete(:box)
+    {
       name: node[0].to_s,
       host: node[1]['hostname'].to_s,
       vm_mem: node[1]['memory_size'].nil? ? '1024' : node[1]['memory_size'].to_s,
-      vm_cpu: (@env.cpu_count || node[1]['cpu_count'] || '1').to_s,
-      provider: box_params['provider'].to_s
-    }
-    params[:ssh_pty] = box_params['ssh_pty'] == 'true' unless box_params['ssh_pty'].nil?
-    params
-  end
-
-  # Make a hash list of the provider-specific node parameters by a information of the box parameters.
-  #
-  # @param box_params [Hash] information of the box parameters
-  # @return [Hash] list of the node parameters.
-  def make_provider_specific_node_params(box_params)
-    if box_params['provider'] == 'aws'
-      { amiurl: box_params['ami'].to_s, user: box_params['user'].to_s,
-        instance: box_params['default_instance_type'].to_s,
-        device_name: @aws_service.device_name_for_ami(box_params['ami'].to_s) }
-    else
-      { boxurl: box_params['box'].to_s, platform: box_params['platform'].to_s,
-        platform_version: box_params['platform_version'].to_s }
-    end
-  end
-
-  # Make a hash list of the node parameters by a node configuration and
-  # information of the box parameters. Includes generic and provider-specific node parameters.
-  #
-  # @param node [Array] information of the node from configuration file
-  # @param box_params [Hash] information of the box parameters
-  # @return [Hash] list of the node parameters.
-  def make_node_params(node, box_params)
-    make_generic_node_params(node, box_params).merge(make_provider_specific_node_params(box_params))
+      vm_cpu: (@env.cpu_count || node[1]['cpu_count'] || '1').to_s
+    }.merge(symbolic_box_params)
   end
 
   # Log the information about the main parameters of the node.
@@ -379,6 +354,7 @@ end
     when 'aws'
       tags = generate_aws_tag('hostname' => Socket.gethostname, 'username' => Etc.getlogin,
                               'full_config_path' => File.expand_path(path), 'machinename' => node_params[:name])
+      node_params[:device_name] = @aws_service.device_name_for_ami(node_params[:ami])
       get_aws_vms_definition(cookbook_path, tags, node_params)
     when 'libvirt'
       get_libvirt_definition(cookbook_path, path, node_params)
