@@ -106,9 +106,9 @@ class Node
   # @return [String] Node IP address
   def get_aws_node_ip(is_private)
     remote_command = if is_private
-                       "curl #{AWS_METADATA_URL}/local-ipv4"
+                       "curl -s #{AWS_METADATA_URL}/local-ipv4"
                      else
-                       "curl #{AWS_METADATA_URL}/public-ipv4"
+                       "curl -s #{AWS_METADATA_URL}/public-ipv4"
                      end
     result = run_command_in_dir("vagrant ssh #{@name} -c '#{remote_command}'", @config.path)
     raise "#{remote_command} exited with non 0 exit code" unless result[:value].success?
