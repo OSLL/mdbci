@@ -308,15 +308,13 @@ end
     !boxes.getBox(box).nil?
   end
 
-  # Make a hash list of the node parameters by a node configuration and
+  # Make a hash list of, generic for all providers, node parameters by a node configuration and
   # information of the box parameters.
   #
   # @param node [Array] information of the node from configuration file
   # @param box_params [Hash] information of the box parameters
   # @return [Hash] list of the node parameters.
-  # rubocop:disable Metrics/MethodLength
-  # Further decomposition of the method will complicate the code.
-  def make_node_params(node, box_params)
+  def make_generic_node_params(node, box_params)
     params = {
       name: node[0].to_s,
       host: node[1]['hostname'].to_s,
@@ -325,16 +323,33 @@ end
       provider: box_params['provider'].to_s
     }
     params[:ssh_pty] = box_params['ssh_pty'] == 'true' unless box_params['ssh_pty'].nil?
-    params.merge!(if params[:provider] == 'aws'
-                    { amiurl: box_params['ami'].to_s, user: box_params['user'].to_s,
-                      instance: box_params['default_instance_type'].to_s,
-                      device_name: @aws_service.device_name_for_ami(box_params['ami'].to_s) }
-                  else
-                    { boxurl: box_params['box'].to_s, platform: box_params['platform'].to_s,
-                      platform_version: box_params['platform_version'].to_s }
-                  end)
+    params
   end
-  # rubocop:enable Metrics/MethodLength
+
+  # Make a hash list of the provider-specific node parameters by a information of the box parameters.
+  #
+  # @param box_params [Hash] information of the box parameters
+  # @return [Hash] list of the node parameters.
+  def make_provider_specific_node_params(box_params)
+    if box_params['provider'] == 'aws'
+      { amiurl: box_params['ami'].to_s, user: box_params['user'].to_s,
+        instance: box_params['default_instance_type'].to_s,
+        device_name: @aws_service.device_name_for_ami(box_params['ami'].to_s) }
+    else
+      { boxurl: box_params['box'].to_s, platform: box_params['platform'].to_s,
+        platform_version: box_params['platform_version'].to_s }
+    end
+  end
+
+  # Make a hash list of the node parameters by a node configuration and
+  # information of the box parameters. Includes generic and provider-specific node parameters.
+  #
+  # @param node [Array] information of the node from configuration file
+  # @param box_params [Hash] information of the box parameters
+  # @return [Hash] list of the node parameters.
+  def make_node_params(node, box_params)
+    make_generic_node_params(node, box_params).merge(make_provider_specific_node_params(box_params))
+  end
 
   # Log the information about the main parameters of the node.
   #
