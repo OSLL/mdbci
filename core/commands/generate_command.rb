@@ -85,10 +85,10 @@ end
   def get_virtualbox_definition(_cookbook_path, node_params)
     template = ERB.new <<-VBOX
       config.vm.define '<%= name %>' do |box|
-        box.vm.box = '<%= boxurl %>'
+        box.vm.box = '<%= box %>'
         box.vm.hostname = '<%= host %>'
         <% if ssh_pty %>
-           box.ssh.pty = true
+           box.ssh.pty = <%= ssh_pty %>
         <% end %>
         <% if template_path %>
            box.vm.synced_folder '<%= template_path %>', '/home/vagrant/cnf_templates'
@@ -113,10 +113,10 @@ end
     template = ERB.new <<-LIBVIRT
       #  --> Begin definition for machine: <%= name %>
       config.vm.define '<%= name %>' do |box|
-        box.vm.box = '<%= boxurl %>'
+        box.vm.box = '<%= box %>'
         box.vm.hostname = '<%= host %>'
         <% if ssh_pty %>
-          box.ssh.pty = true
+          box.ssh.pty = <%= ssh_pty %>
         <% end %>
         <% if template_path %>
           box.vm.synced_folder '<%= template_path %>', '/home/vagrant/cnf_templates', type:'rsync'
@@ -170,15 +170,18 @@ end
       #  --> Begin definition for machine: <%= name %>
       config.vm.define '<%= name %>' do |box|
         <% if ssh_pty %>
-          box.ssh.pty = true
+          box.ssh.pty = <%= ssh_pty %>
         <% end %>
         <% if template_path %>
           box.vm.synced_folder '<%=template_path %>', '/home/vagrant/cnf_templates', type: 'rsync'
         <% end %>
         box.vm.provider :aws do |aws, override|
-          aws.ami = '<%= amiurl %>'
+          aws.ami = '<%= ami %>'
           aws.tags = <%= tags %>
-          aws.instance_type = '<%= instance %>'
+          aws.instance_type = '<%= default_instance_type %>'
+          <% if device_name %>
+            aws.block_device_mapping = [{ 'DeviceName' => '<%= device_name %>', 'Ebs.VolumeSize' => 100 }]
+          <% end %>
           override.ssh.username = '<%= user %>'
         end
       end #  <-- End of AWS definition for machine: <%= name %>
@@ -305,28 +308,20 @@ end
     !boxes.getBox(box).nil?
   end
 
-  # Make a hash list of the node parameters by a node configuration and
+  # Make a hash list of node parameters by a node configuration and
   # information of the box parameters.
   #
   # @param node [Array] information of the node from configuration file
   # @param box_params [Hash] information of the box parameters
   # @return [Hash] list of the node parameters.
   def make_node_params(node, box_params)
-    params = {
+    symbolic_box_params = Hash[box_params.map { |k, v| [k.to_sym, v] }]
+    {
       name: node[0].to_s,
       host: node[1]['hostname'].to_s,
       vm_mem: node[1]['memory_size'].nil? ? '1024' : node[1]['memory_size'].to_s,
-      vm_cpu: (@env.cpu_count || node[1]['cpu_count'] || '1').to_s,
-      provider: box_params['provider'].to_s
-    }
-    params[:ssh_pty] = box_params['ssh_pty'] == 'true' unless box_params['ssh_pty'].nil?
-    params.merge!(if params[:provider] == 'aws'
-                    { amiurl: box_params['ami'].to_s, user: box_params['user'].to_s,
-                      instance: box_params['default_instance_type'].to_s }
-                  else
-                    { boxurl: box_params['box'].to_s, platform: box_params['platform'].to_s,
-                      platform_version: box_params['platform_version'].to_s }
-                  end)
+      vm_cpu: (@env.cpu_count || node[1]['cpu_count'] || '1').to_s
+    }.merge(symbolic_box_params)
   end
 
   # Log the information about the main parameters of the node.
@@ -357,6 +352,7 @@ end
     when 'aws'
       tags = generate_aws_tag('hostname' => Socket.gethostname, 'username' => Etc.getlogin,
                               'full_config_path' => File.expand_path(path), 'machinename' => node_params[:name])
+      node_params[:device_name] = @aws_service.device_name_for_ami(node_params[:ami])
       get_aws_vms_definition(cookbook_path, tags, node_params)
     when 'libvirt'
       get_libvirt_definition(cookbook_path, path, node_params)
@@ -555,7 +551,10 @@ end
   # @param override [Bool] clean directory if it is already exists
   # @return [Number] exit code for the command execution
   # @raise RuntimeError if configuration file is invalid.
+  # rubocop:disable Metrics/MethodLength
+  # Further decomposition of the method will complicate the code.
   def execute(name, boxes, override)
+    @aws_service = @env.aws_service
     path = name.nil? ? File.join(Dir.pwd, 'default') : File.absolute_path(name.to_s)
     begin
       instance_config_file = IO.read(@env.configFile)
@@ -574,4 +573,5 @@ end
     generate_provider_and_template_files(path, @nodes_provider)
     SUCCESS_RESULT
   end
+  # rubocop:enable Metrics/MethodLength
 end
