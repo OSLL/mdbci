@@ -85,7 +85,7 @@ end
   def get_virtualbox_definition(_cookbook_path, node_params)
     template = ERB.new <<-VBOX
       config.vm.define '<%= name %>' do |box|
-        box.vm.box = '<%= boxurl %>'
+        box.vm.box = '<%= box %>'
         box.vm.hostname = '<%= host %>'
         <% if ssh_pty %>
            box.ssh.pty = <%= ssh_pty %>
@@ -113,7 +113,7 @@ end
     template = ERB.new <<-LIBVIRT
       #  --> Begin definition for machine: <%= name %>
       config.vm.define '<%= name %>' do |box|
-        box.vm.box = '<%= boxurl %>'
+        box.vm.box = '<%= box %>'
         box.vm.hostname = '<%= host %>'
         <% if ssh_pty %>
           box.ssh.pty = <%= ssh_pty %>
@@ -316,8 +316,6 @@ end
   # @return [Hash] list of the node parameters.
   def make_node_params(node, box_params)
     symbolic_box_params = Hash[box_params.map { |k, v| [k.to_sym, v] }]
-    # Rename the `box` field to the `boxurl` to avoid overlapping variables
-    symbolic_box_params[:boxurl] = symbolic_box_params.delete(:box)
     {
       name: node[0].to_s,
       host: node[1]['hostname'].to_s,
