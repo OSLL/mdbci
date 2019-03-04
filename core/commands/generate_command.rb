@@ -206,6 +206,8 @@ end
       config['cnf_template'] = product['cnf_template']
       config['cnf_template_path'] = product['cnf_template_path']
     end
+    repo_file_name = @env.repos.repo_file_name(product_name)
+    config['repo_file_name'] = repo_file_name unless repo_file_name.nil?
     config['node_name'] = product['node_name'] unless product['node_name'].nil?
     attribute_name = @env.repos.attribute_name(product_name)
     { "#{attribute_name}": config }
