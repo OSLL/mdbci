@@ -15,6 +15,8 @@ end
 system 'echo Maxscale version: ' + node['maxscale']['version']
 system 'echo Maxscale repo: ' + node['maxscale']['repo']
 system 'echo Maxscale repo key: ' + node['maxscale']['repo_key']
+
+repo_file_name = node['maxscale']['repo_file_name']
 #
 # MariaDB Maxscale repos
 #
@@ -37,7 +39,7 @@ case node[:platform_family]
   when "rhel", "fedora", "centos"
 
     # Add the repo
-    template "/etc/yum.repos.d/maxscale.repo" do
+    template "/etc/yum.repos.d/#{repo_file_name}.repo" do
       source "mdbci.maxscale.rhel.erb"
       action :create
     end
@@ -45,7 +47,7 @@ case node[:platform_family]
   when "suse", "opensuse", "sles"
 
     # Add the repo
-    template "/etc/zypp/repos.d/maxscale.repo" do
+    template "/etc/zypp/repos.d/#{repo_file_name}.repo" do
       source "mdbci.maxscale.suse.erb"
       action :create
     end
@@ -55,10 +57,10 @@ case node[:platform_family]
     end
 
     execute "Removing maxscale repo (it will be recreated right after removing)" do
-      command "rm /etc/zypp/repos.d/maxscale.repo"
+      command "rm /etc/zypp/repos.d/#{repo_file_name}.repo"
     end
 
-    template "/etc/zypp/repos.d/maxscale.repo" do
+    template "/etc/zypp/repos.d/#{repo_file_name}.repo" do
       source "mdbci.maxscale.suse.erb"
       action :create
     end

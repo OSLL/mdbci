@@ -19,7 +19,8 @@ class RepoManager
     'maxscale_ci' => {
       recipe: 'mariadb-maxscale::install_maxscale',
       name: 'maxscale',
-      repository: 'maxscale_ci'
+      repository: 'maxscale_ci',
+      repo_file_name: 'maxscale_ci'
     },
     'mysql' => {
       recipe: 'mysql::install_community',
@@ -50,6 +51,11 @@ class RepoManager
   # Get the recipe name for the product
   def recipe_name(product)
     PRODUCT_ATTRIBUTES[product][:recipe]
+  end
+
+  # Get the repo file name for the product
+  def repo_file_name(product)
+    PRODUCT_ATTRIBUTES[product][:repo_file_name]
   end
 
   # Get the attribute name for the product
