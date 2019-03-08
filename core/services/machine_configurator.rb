@@ -7,6 +7,10 @@ require 'net/scp'
 # Class allows to configure a specified machine using the chef-solo,
 # MDBCI coockbooks and roles.
 class MachineConfigurator
+  # On sles_12_aws, the first attempt at installation deletes the originally
+  # installed old version of the Chef, the installation is performed at the second attempt
+  CHEF_INSTALLATION_ATTEMPTS = 2
+
   def initialize(logger, root_path = File.expand_path('../../../recipes', __FILE__))
     @log = logger
     @root_path = root_path
@@ -95,10 +99,18 @@ class MachineConfigurator
     end
   end
 
+  # Check whether Chef is installed the correct version on the machine
+  # @param connection [Connection] ssh connection to use
+  # @param chef_version [String] required version of Chef
+  # @param logger [Out] logger to log information to
+  # @return [Boolean] true if Chef of the required version is installed, otherwise - false
+  def chef_installed?(connection, chef_version, logger)
+    ssh_exec(connection, 'chef-solo --version', logger).include?(chef_version)
+  end
+
   def install_chef_on_server(connection, sudo_password, chef_version, logger)
     logger.info("Installing Chef #{chef_version} on the server.")
-    output = ssh_exec(connection, 'chef-solo --version', logger)
-    if output.include?(chef_version)
+    if chef_installed?(connection, chef_version, logger)
       logger.info("Chef #{chef_version} is already installed on the server.")
       return
     end
@@ -109,12 +121,16 @@ class MachineConfigurator
       ssh_exec(connection, 'curl -s -L https://www.chef.io/chef/install.sh --output install.sh', logger)
     end
     output = ssh_exec(connection, 'cat /etc/os-release | grep "openSUSE Leap 15.0"', logger)
-    if output.strip.empty?
-      sudo_exec(connection, sudo_password, "bash install.sh -v #{chef_version}", logger)
-    else
-      sudo_exec(connection, sudo_password,
-                "bash install.sh -l https://packages.chef.io/files/stable/chef/14.7.17/sles/12/chef-14.7.17-1.sles12.x86_64.rpm",
-                logger)
+    chef_install_command = if output.strip.empty?
+                             "bash install.sh -v #{chef_version}"
+                           else
+                             'bash install.sh -l '\
+                             'https://packages.chef.io/files/stable/chef/14.7.17/sles/12/chef-14.7.17-1.sles12.x86_64.rpm'
+                           end
+    CHEF_INSTALLATION_ATTEMPTS.times do
+      break if chef_installed?(connection, chef_version, logger)
+
+      sudo_exec(connection, sudo_password, chef_install_command, logger)
     end
     ssh_exec(connection, 'rm install.sh', logger)
   end
