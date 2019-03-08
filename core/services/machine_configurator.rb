@@ -99,6 +99,11 @@ class MachineConfigurator
     end
   end
 
+  # Check whether Chef is installed the correct version on the machine
+  # @param connection [Connection] ssh connection to use
+  # @param chef_version [String] required version of Chef
+  # @param logger [Out] logger to log information to
+  # @return [Boolean] true if Chef of the required version is installed, otherwise - false
   def chef_installed?(connection, chef_version, logger)
     ssh_exec(connection, 'chef-solo --version', logger).include?(chef_version)
   end
