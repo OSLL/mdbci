@@ -118,7 +118,8 @@
     "default_instance_type": "m1.medium",
     "platform": "rhel",
     "platform_version": "6",
-    "extra_vagrant_output": "true"
+    "extra_vagrant_output": "true",
+    "configure_subscription_manager": "true"
   },
   "rhel_7_aws" : {
     "provider": "aws",
@@ -126,7 +127,8 @@
     "user": "ec2-user",
     "default_instance_type": "m3.medium",
     "platform": "rhel",
-    "platform_version": "7"
+    "platform_version": "7",
+    "configure_subscription_manager": "true"
   },
   "sles_11_aws" : {
     "provider": "aws",
