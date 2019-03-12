@@ -67,9 +67,9 @@ Or you can configure specified product (for example, AWS):
 
   def input_rhel_subscription_credentials
     {
-      login: read_topic('Please input login for Red Hat Subscription-Manager'),
-      password: read_topic('Please input password for Red Hat Subscription-Manager'),
-      pool_id: read_topic('Please input pool id for Red Hat Subscription-Manager')
+      'username' => read_topic('Please input username for Red Hat Subscription-Manager'),
+      'password' => read_topic('Please input password for Red Hat Subscription-Manager'),
+      'pool_id' => read_topic('Please input pool id for Red Hat Subscription-Manager')
     }
   end
 
@@ -100,7 +100,7 @@ Or you can configure specified product (for example, AWS):
       @ui.error('You have provided inappropriate information.')
       return nil unless read_topic('Try again?', 'y').casecmp('y').zero?
     end
-    { access_key_id: key_id, secret_access_key: secret_key, region: region }
+    { 'access_key_id' => key_id, 'secret_access_key' => secret_key, 'region' => region }
   end
 
   # Ask user to input non-empty string as value

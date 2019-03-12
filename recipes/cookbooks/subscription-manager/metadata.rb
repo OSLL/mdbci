@@ -1,0 +1,6 @@
+name             'subscription-manager'
+maintainer       'mariadb-corporation'
+maintainer_email 'evgeny.vlasov@fruct.org'
+license          'All rights reserved'
+description      'Configure Red Hat subscription'
+version          '0.1.0'
