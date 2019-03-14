@@ -218,19 +218,35 @@ end
   # @param product_config [Hash] list of the product parameters
   # @param recipe_name [String] name of the recipe
   # @return [String] pretty formatted role description in JSON format.
-  def make_role_json(name, product_config, recipe_name)
-    role = {
-      name: name,
-      default_attributes: {},
-      override_attributes: product_config,
-      json_class: 'Chef::Role',
-      description: '',
-      chef_type: 'role',
-      run_list: ['recipe[mdbci_provision_mark::remove_mark]',
-                 "recipe[#{recipe_name}]",
-                 'recipe[mdbci_provision_mark::default]']
-    }
+  def make_role_json(name, product_config, recipe_name, subscription_manager_params)
+    run_list = ['recipe[mdbci_provision_mark::remove_mark]',
+                "recipe[#{recipe_name}]",
+                'recipe[mdbci_provision_mark::default]']
+    if subscription_manager_params[:need_configure]
+      run_list.insert(1, subscription_manager_params[:recipe_name])
+      product_config = product_config.merge(subscription_manager_params[:credentials])
+    end
+    role = { name: name,
+             default_attributes: {},
+             override_attributes: product_config,
+             json_class: 'Chef::Role',
+             description: '',
+             chef_type: 'role',
+             run_list: run_list }
     JSON.pretty_generate(role)
+  end
+
+  def make_subscription_manager_params(box_params, credentials)
+    return { need_configure: false } unless box_params['configure_subscription_manager'] == 'true'
+
+    if credentials.nil?
+      @ui.error('RHEL credentials for Red Hat Subscription-Manager are not configured')
+      return { need_configure: false }
+    end
+
+    { need_configure: true,
+      recipe_name: 'recipe[subscription-manager]',
+      credentials: credentials }
   end
 
   # Generate the role description for the specified node.
@@ -241,7 +257,7 @@ end
   # @return [String] pretty formatted role description in JSON format
   # rubocop:disable Metrics/MethodLength
   # The method performs a single function; decomposition of the method will complicate the code.
-  def get_role_description(name, product, box)
+  def get_role_description(name, product, boxes, box)
     error_text = "#NONE, due invalid repo name \n"
     repo = nil
     if !product['repo'].nil?
@@ -264,7 +280,8 @@ end
                        {}
                      end
     @ui.info("Recipe #{recipe_name}")
-    make_role_json(name, product_config, recipe_name)
+    subscription_manager_params = make_subscription_manager_params(boxes.getBox(box), @env.rhel_credentials)
+    make_role_json(name, product_config, recipe_name, subscription_manager_params)
   end
   # rubocop:enable Metrics/MethodLength
 
@@ -388,7 +405,7 @@ end
     end
     @ui.info("Machine #{node_params[:name]} is provisioned by #{product}")
     # box with mariadb, maxscale provision - create role
-    role = get_role_description(node_params[:name], product, box)
+    role = get_role_description(node_params[:name], product, boxes, box)
     IO.write(GenerateCommand.role_file_name(path, node_params[:name]), role)
     IO.write(GenerateCommand.node_config_file_name(path, node_params[:name]),
              JSON.pretty_generate('run_list' => ["role[#{node_params[:name]}]"]))

@@ -66,6 +66,7 @@ class Session
   attr_accessor :ipv6
   attr_reader :aws_service
   attr_reader :tool_config
+  attr_reader :rhel_credentials
   attr_accessor :show_help
   attr_accessor :reinstall
   attr_accessor :recreate
@@ -119,6 +120,7 @@ EOF
     if @tool_config['aws']
       @aws_service = AwsService.new(@tool_config['aws'], $out)
     end
+    @rhel_credentials = @tool_config['rhel'] if @tool_config['rhel']
   end
 
   # Search for a configuration file in all known configuration locations that include
