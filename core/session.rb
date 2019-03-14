@@ -526,7 +526,7 @@ EOF
       exit_code = destroy.execute
     when 'generate'
       command = GenerateCommand.new(ARGV, self, $out)
-      exit_code = command.execute(ARGV.shift, @boxes, isOverride)
+      exit_code = command.execute(ARGV.shift, isOverride)
     when 'generate-product-repositories'
       command = GenerateProductRepositoriesCommand.new(ARGV, self, $out)
       exit_code = command.execute
