@@ -120,9 +120,8 @@ end
         <% end %>
         <% if template_path %>
           box.vm.synced_folder '<%= template_path %>', '/home/vagrant/cnf_templates', type:'rsync'
-        <% else %>
-          box.vm.synced_folder '<%= expand_path %>', '/vagrant', type: 'rsync'
         <% end %>
+        box.vm.synced_folder '<%= expand_path %>', '/vagrant', type: 'rsync'
         <% if ipv6 %>
           box.vm.network :public_network, :dev => 'virbr0', :mode => 'bridge', :type => 'bridge'
         <% end %>
