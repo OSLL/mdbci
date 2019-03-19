@@ -68,8 +68,7 @@ Or you can configure specified product (for example, AWS):
   def input_rhel_subscription_credentials
     {
       'username' => read_topic('Please input username for Red Hat Subscription-Manager'),
-      'password' => read_topic('Please input password for Red Hat Subscription-Manager'),
-      'pool_id' => read_topic('Please input pool id for Red Hat Subscription-Manager')
+      'password' => read_topic('Please input password for Red Hat Subscription-Manager')
     }
   end
 

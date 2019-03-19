@@ -4,8 +4,12 @@ execute 'Register the system' do
           "--password #{node['subscription-manager']['password']}"
 end
 
-execute 'Attach a subscription from a specific pool' do
-  command "subscription-manager attach --pool=#{node['subscription-manager']['pool_id']}"
+execute 'Setting a Service Level Preference' do
+  command 'subscription-manager service-level --set=self-support'
+end
+
+execute 'Attach a subscription' do
+  command 'subscription-manager attach --auto'
 end
 
 execute 'Enable available repositories' do

@@ -221,7 +221,7 @@ end
   # @param product_config [Hash] list of the product parameters
   # @param recipe_name [String] name of the recipe
   # @param subscription_manager_params [Hash] subscription manager params
-  # in format { need_configure, recipe_name, credentials }
+  # in format { need_configure, recipe_name, credentials, attribute_name }
   # @return [String] pretty formatted role description in JSON format.
   def make_role_json(name, product_config, recipe_name, subscription_manager_params)
     run_list = ['recipe[mdbci_provision_mark::remove_mark]',
@@ -229,7 +229,9 @@ end
                 'recipe[mdbci_provision_mark::default]']
     if subscription_manager_params[:need_configure]
       run_list.insert(1, subscription_manager_params[:recipe_name])
-      product_config = product_config.merge(subscription_manager_params[:credentials])
+      product_config = product_config.merge(
+        subscription_manager_params[:attribute_name] => subscription_manager_params[:credentials]
+      )
     end
     role = { name: name,
              default_attributes: {},
@@ -245,7 +247,7 @@ end
   #
   # @param box_params [Hash] information of the box parameters
   # @param credentials [Hash] information of the box credentials
-  # @return [Hash] subscription manager params in format { need_configure, recipe_name, credentials }
+  # @return [Hash] subscription manager params in format { need_configure, recipe_name, credentials, attribute_name }
   # for generating role JSON-file.
   def make_subscription_manager_params(box_params, credentials)
     return { need_configure: false } unless box_params['configure_subscription_manager'] == 'true'
@@ -257,6 +259,7 @@ end
 
     { need_configure: true,
       recipe_name: 'recipe[subscription-manager]',
+      attribute_name: 'subscription-manager',
       credentials: credentials }
   end
 
