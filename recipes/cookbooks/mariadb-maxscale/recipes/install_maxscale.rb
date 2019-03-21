@@ -123,5 +123,7 @@ when "windows"
   end
 else
   package 'maxscale'
-  package 'maxscale-experimental'
+  package 'maxscale-experimental' do
+    ignore_failure MaxScale.is_older_than?(node['maxscale']['version'], '2.2')
+  end
 end
