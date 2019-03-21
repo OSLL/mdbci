@@ -221,13 +221,13 @@ end
   # @param product_config [Hash] list of the product parameters
   # @param recipe_name [String] name of the recipe
   # @param subscription_manager_params [Hash] subscription manager params
-  # in format { need_configure, recipe_name, credentials, attribute_name }
+  # in format { recipe_name, credentials, attribute_name }
   # @return [String] pretty formatted role description in JSON format.
   def make_role_json(name, product_config, recipe_name, subscription_manager_params)
     run_list = ['recipe[mdbci_provision_mark::remove_mark]',
                 "recipe[#{recipe_name}]",
                 'recipe[mdbci_provision_mark::default]']
-    if subscription_manager_params[:need_configure]
+    unless subscription_manager_params.empty?
       run_list.insert(1, subscription_manager_params[:recipe_name])
       product_config = product_config.merge(
         subscription_manager_params[:attribute_name] => subscription_manager_params[:credentials]
@@ -247,18 +247,15 @@ end
   #
   # @param box_params [Hash] information of the box parameters
   # @param credentials [Hash] information of the box credentials
-  # @return [Hash] subscription manager params in format { need_configure, recipe_name, credentials, attribute_name }
+  # @return [Hash] subscription manager params in format { recipe_name, credentials, attribute_name }
   # for generating role JSON-file.
+  # @raise RuntimeError if RHEL credentials for Red Hat Subscription-Manager are not configured.
   def make_subscription_manager_params(box_params, credentials)
-    return { need_configure: false } unless box_params['configure_subscription_manager'] == 'true'
+    return {} unless box_params['configure_subscription_manager'] == 'true'
 
-    if credentials.nil?
-      @ui.error('RHEL credentials for Red Hat Subscription-Manager are not configured')
-      return { need_configure: false }
-    end
+    raise 'RHEL credentials for Red Hat Subscription-Manager are not configured' if credentials.nil?
 
-    { need_configure: true,
-      recipe_name: 'recipe[subscription-manager]',
+    { recipe_name: 'recipe[subscription-manager]',
       attribute_name: 'subscription-manager',
       credentials: credentials }
   end
