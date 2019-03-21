@@ -5,7 +5,7 @@ execute 'Register the system' do
 end
 
 execute 'Setting a Service Level Preference' do
-  command 'subscription-manager service-level --set=self-support'
+  command 'subscription-manager service-level --set="Self-Support"'
 end
 
 execute 'Attach a subscription' do
