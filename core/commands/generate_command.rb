@@ -268,11 +268,10 @@ end
   # @param name [String] internal name of the machine specified in the template
   # @param product [Hash] parameters of the product to configure from configuration file
   # @param box [String] name of the box
-  # @param box_params [Hash] information of the box parameters
   # @return [String] pretty formatted role description in JSON format
   # rubocop:disable Metrics/MethodLength
   # The method performs a single function; decomposition of the method will complicate the code.
-  def get_role_description(name, product, box, box_params)
+  def get_role_description(name, product, box)
     error_text = "#NONE, due invalid repo name \n"
     repo = nil
     if !product['repo'].nil?
@@ -295,7 +294,7 @@ end
                        {}
                      end
     @ui.info("Recipe #{recipe_name}")
-    subscription_manager_params = make_subscription_manager_params(box_params, @env.rhel_credentials)
+    subscription_manager_params = make_subscription_manager_params(@boxes.getBox(box), @env.rhel_credentials)
     make_role_json(name, product_config, recipe_name, subscription_manager_params)
   end
   # rubocop:enable Metrics/MethodLength
@@ -418,7 +417,7 @@ end
     end
     @ui.info("Machine #{node_params[:name]} is provisioned by #{product}")
     # box with mariadb, maxscale provision - create role
-    role = get_role_description(node_params[:name], product, box, @boxes.getBox(box))
+    role = get_role_description(node_params[:name], product, box)
     IO.write(GenerateCommand.role_file_name(path, node_params[:name]), role)
     IO.write(GenerateCommand.node_config_file_name(path, node_params[:name]),
              JSON.pretty_generate('run_list' => ["role[#{node_params[:name]}]"]))
