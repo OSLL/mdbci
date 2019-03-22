@@ -4,7 +4,6 @@ require_relative '../node'
 
 # Network configurator for vagrant nodes
 class NetworkConfig
-  include ShellCommands
 
   def initialize(config, logger)
     @config = config
