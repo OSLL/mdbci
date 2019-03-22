@@ -215,7 +215,7 @@ Labels should be separated with commas and should not contain any whitespaces.
 
   # Provide information to the users about which labels are running right now
   def generate_label_information_file
-    labels_config_path = "#{@config.path}#{Configuration::LABELS_FILE_SUFFIX}"
+    labels_config_path = "#{@config.path}#{Configuration::LABELS_INFO_FILE_SUFFIX}"
     @ui.info("Generating labels information file, '#{labels_config_path}'")
     File.write(labels_config_path, @network_config.active_labels.sort.join(','))
   end

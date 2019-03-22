@@ -11,7 +11,7 @@ class Configuration
   attr_reader :template_path
 
   NETWORK_FILE_SUFFIX = '_network_config'
-  LABELS_FILE_SUFFIX = '_configured_labels'
+  LABELS_INFO_FILE_SUFFIX = '_configured_labels'
   AWS_KEYPAIR_NAME = 'maxscale.keypair_name'
 
   # Checks whether provided path is a directory containing configurations.
@@ -43,6 +43,11 @@ class Configuration
   # Provide a path to the network settings configuration file.
   def network_settings_file
     "#{@path}#{NETWORK_FILE_SUFFIX}"
+  end
+
+  # Provide a path to the configured label information file.
+  def labels_information_file
+    "#{@path}#{LABELS_INFO_FILE_SUFFIX}"
   end
 
   # Check whether configuration has the keypair name or not.
