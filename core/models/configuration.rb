@@ -11,6 +11,7 @@ class Configuration
   attr_reader :template_path
 
   NETWORK_FILE_SUFFIX = '_network_config'
+  LABELS_FILE_SUFFIX = '_configured_labels'
   AWS_KEYPAIR_NAME = 'maxscale.keypair_name'
 
   # Checks whether provided path is a directory containing configurations.
@@ -66,6 +67,21 @@ class Configuration
     end.uniq
   end
 
+  # Get the lists of nodes that correspond to each label
+  #
+  # @return [Hash] the hash containing arrays of node names
+  def nodes_by_label
+    result = Hash.new { |hash, key| hash[key] = [] }
+    @node_configurations.each do |name, config|
+      next unless config.key?('labels')
+
+      config['labels'].each do |label|
+        result[label].push(name)
+      end
+    end
+    result
+  end
+
   private
 
   # Method parses configuration/node specification and extracts path to the
@@ -104,7 +120,7 @@ class Configuration
   def select_nodes_by_label
     labels_set = false
     node_names = @node_configurations.select do |_, node_configuration|
-      next unless node_configuration.key?['labels']
+      next unless node_configuration.key?('labels')
 
       labels_set = true
       @labels.any? do |desired_label|

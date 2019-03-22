@@ -198,12 +198,11 @@ Labels should be separated with commas and should not contain any whitespaces.
   # Provide information for the end-user where to find the required information
   #
   # @param working_directory [String] path to the current working directory
-  # @param config_path [String] path to the configuration
-  def generate_config_information(working_directory, config_path)
-    network_config_path = "#{config_path}#{Configuration::NETWORK_FILE_SUFFIX}"
+  def generate_config_information(working_directory)
+    network_config_path = "#{@config.path}#{Configuration::NETWORK_FILE_SUFFIX}"
     @ui.info('All nodes were brought up and configured.')
     @ui.info("DIR_PWD=#{working_directory}")
-    @ui.info("CONF_PATH=#{config_path}")
+    @ui.info("CONF_PATH=#{@config.path}")
     @ui.info("Generating #{network_config_path} file")
     File.open(network_config_path, 'w') do |file|
       @network_config.each_pair do |node_name, config|
@@ -212,6 +211,13 @@ Labels should be separated with commas and should not contain any whitespaces.
         end
       end
     end
+  end
+
+  # Provide information to the users about which labels are running right now
+  def generate_label_information_file
+    labels_config_path = "#{@config.path}#{Configuration::LABELS_FILE_SUFFIX}"
+    @ui.info("Generating labels information file, '#{labels_config_path}'")
+    File.write(labels_config_path, @network_config.active_labels.sort.join(','))
   end
 
   # Forcefully destroys given node
@@ -296,10 +302,6 @@ Labels should be separated with commas and should not contain any whitespaces.
   # @return [Number] execution status
   def up
     nodes = @config.node_names
-  rescue ArgumentError => e
-    @ui.error(e.message)
-    ERROR_RESULT
-  else
     run_in_directory(@config.path) do
       store_network_config
       up_results = nodes.each_slice(@env.threads_count).to_a.flat_map do |nodes_group|
@@ -308,7 +310,8 @@ Labels should be separated with commas and should not contain any whitespaces.
       up_results.each { |up_result| up_result[1].print_to_stdout } if @env.threads_count > 1
       return ERROR_RESULT unless up_results.detect { |up_result| !up_result[0] }.nil?
     end
-    generate_config_information(Dir.pwd, @config.path)
+    generate_config_information(Dir.pwd)
+    generate_label_information_file
     SUCCESS_RESULT
   end
 
@@ -319,10 +322,11 @@ Labels should be separated with commas and should not contain any whitespaces.
     end
     begin
       setup_command
+      up
     rescue ArgumentError => error
-      @ui.warning error.message
+      @ui.error error.message
+      @ui.error error.backtrace.join("\n")
       return ARGUMENT_ERROR_RESULT
     end
-    up
   end
 end
