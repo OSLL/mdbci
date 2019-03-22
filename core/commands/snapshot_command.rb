@@ -272,7 +272,7 @@ class SnapshotCommand < BaseCommand
   # @param node_name [String] the name of the node
   # @return [String] ntp service name.
   def ntp_service_name(node_name)
-    box = @config.template[node_name]['box']
+    box = @config.node_configurations[node_name]['box']
     (box.downcase =~ /(ubuntu|debian)/).nil? ? 'ntpd' : 'ntp'
   end
 
@@ -281,7 +281,7 @@ class SnapshotCommand < BaseCommand
   # @param node_name [String] the name of the node on which needs to sync time
   # @return [String] result command string.
   def sync_node_time_command(node_name)
-    box = @config.template[node_name]['box']
+    box = @config.node_configurations[node_name]['box']
     command = if box.downcase =~ /(rhel_6|centos_6)/
                 'ntpdate'
               else
@@ -297,7 +297,7 @@ class SnapshotCommand < BaseCommand
   # @param state [String] new state of service (`start` or `stop`)
   # @return [String] result command string.
   def change_service_state_command(node_name, ntp_service, state)
-    box = @config.template[node_name]['box']
+    box = @config.node_configurations[node_name]['box']
     return "/bin/systemctl #{state} #{ntp_service}.service" if (box.downcase =~ /(rhel_6|centos_6)/).nil?
 
     "service #{ntp_service} #{state}"
