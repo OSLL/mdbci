@@ -54,7 +54,7 @@ class NetworkConfig
       'keyfile' => get_keyfile(node),
       'private_ip' => get_private_ip(node),
       'whoami' => get_whoami(node),
-      'hostname' => @config.template[node]['hostname']
+      'hostname' => @config.node_configurations[node]['hostname']
     }
   end
 
@@ -63,6 +63,7 @@ class NetworkConfig
   #
   # @param [Array<String>] names of node to add
   def add_nodes(node_names)
+
     node_names.each do |name|
       @nodes[name] = Node.new(@config, name) if @config.node_names.include?(name)
     end
