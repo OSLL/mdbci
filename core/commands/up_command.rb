@@ -205,13 +205,7 @@ Labels should be separated with commas and should not contain any whitespaces.
     @ui.info("DIR_PWD=#{working_directory}")
     @ui.info("CONF_PATH=#{@config.path}")
     @ui.info("Generating #{network_config_path} file")
-    File.open(network_config_path, 'w') do |file|
-      @network_config.each_pair do |node_name, config|
-        config.each_pair do |key, value|
-          file.puts("#{node_name}_#{key}=#{value}")
-        end
-      end
-    end
+    File.write(network_config_path, @network_config.ini_format)
   end
 
   # Provide information to the users about which labels are running right now

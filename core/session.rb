@@ -18,6 +18,7 @@ require_relative 'commands/help_command'
 require_relative 'commands/configure_command'
 require_relative 'commands/deploy_command'
 require_relative 'commands/setup_dependencies_command'
+require_relative 'commands/show_network_config_command'
 require_relative 'constants'
 require_relative 'docker_manager'
 require_relative 'helper'
@@ -442,7 +443,7 @@ EOF
     },
     network_config: {
       description: 'Write host network configuration to the file',
-      action: ->(*params) { printConfigurationNetworkInfoToFile(*params) }
+      action: ->(*params) { ShowNetworkConfigCommand.execute(params, self, $out) }
     },
     platforms: {
       description: 'List all known platforms',

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../node'
+require 'stringio'
 
 # Network configurator for vagrant nodes
 class NetworkConfig
@@ -81,5 +82,19 @@ class NetworkConfig
     @config.nodes_by_label.select do |_, nodes|
       nodes.all? { |node| @nodes.key?(node) }
     end.keys
+  end
+
+  # Convert the network configuration into the INI-style configuration
+  #
+  # @return [String] INI-style representation of the network configuration
+  def ini_format
+    StringIO.open do |buffer|
+      each_pair do |node_name, config|
+        config.each_pair do |key, value|
+          buffer.puts("#{node_name}_#{key}=#{value}")
+        end
+      end
+      buffer.string
+    end
   end
 end
