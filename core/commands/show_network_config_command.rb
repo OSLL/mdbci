@@ -54,6 +54,7 @@ The last command currently will place only the configuration for the specified n
     network_config.add_nodes(@configuration.node_names)
     File.write(@configuration.network_settings_file, network_config.ini_format)
     @ui.info("Wrote network configuration file to #{@configuration.network_settings_file}")
+    SUCCESS_RESULT
   rescue RuntimeError => error
     @ui.error('Unable to create new network configuration file')
     @ui.error(error.message)
