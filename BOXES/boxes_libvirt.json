@@ -87,5 +87,12 @@
     "box": "elastic/sles-12-x86_64",
     "platform": "sles",
     "platform_version": "12"
+  },
+  "rhel_8_libvirt": {
+    "provider": "libvirt",
+    "box": "custom-rhel-8-beta-1",
+    "platform": "rhel",
+    "platform_version": "8",
+    "configure_subscription_manager": "true"
   }
 }
