@@ -28,16 +28,18 @@ require_relative 'out'
 require_relative 'repo_manager'
 require_relative 'services/aws_service'
 require_relative 'services/shell_commands'
+require_relative 'services/box_definitions'
 
 # Currently it is the GOD object that contains configuration and manages the commands that should be run.
 # These responsibilites should be split between several classes.
 class Session
   attr_accessor :boxes
+  attr_reader :box_definitions
   attr_accessor :configs
   attr_accessor :configuration_file
   attr_accessor :versions
   attr_accessor :configFile
-  attr_accessor :boxesFile
+  attr_accessor :boxes_location
   attr_accessor :boxName
   attr_accessor :field
   attr_accessor :isOverride
@@ -121,6 +123,7 @@ EOF
       @aws_service = AwsService.new(@tool_config['aws'], $out)
     end
     @rhel_credentials = @tool_config['rhel']
+    @box_definitions = BoxDefinitions.new(@boxes_location)
   end
 
   # Search for a configuration file in all known configuration locations that include
