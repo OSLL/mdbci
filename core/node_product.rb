@@ -244,13 +244,13 @@ class NodeProduct
           raise "Box parameter is not found for #{node[0]}" if box.empty?
           mdbci_params = $session.box_definitions.get_box(box)
           raise "Box is not found for #{node[0]}" if mdbci_params.nil?
-          platform = $session.boxes.platformKey(box).split('^')
-          packages = validate_product(platform[0], products)
+          platform = $session.box_definitions.get_box(box)['platform']
+          packages = validate_product(platform, products)
           version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
-          raise "Product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}" if packages.nil?
-          $out.info "Install #{$session.nodeProduct} repo to #{platform[0]}"
+          raise "Product #{$session.nodeProduct} #{version} not found for platform #{platform}" if packages.nil?
+          $out.info "Install #{$session.nodeProduct} repo to #{platform}"
           # execute command
-          command = install_product_to_mdbci_cmd(platform[0], packages)
+          command = install_product_to_mdbci_cmd(platform, packages)
           cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
           $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
           result = ShellCommands.run_command($out, command)
@@ -264,16 +264,16 @@ class NodeProduct
         box = mdbci_node[1]['box'].to_s
         raise "Box parameter is not found for #{args[1]}/#{args[0]}" if box.empty?
         mdbci_params = $session.box_definitions.get_box(box)
-        platform = $session.boxes.platformKey(box).split('^')
-        packages = validate_product(platform[0], products)
+        platform = $session.box_definitions.get_box(box)['platform']
+        packages = validate_product(platform, products)
         if packages == nil
           version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
-          $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}"
+          $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform}"
           exit_code = 1
         end
-        $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0].to_s
+        $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
         # execute command
-        command = install_product_to_mdbci_cmd(platform[0], packages)
+        command = install_product_to_mdbci_cmd(platform, packages)
         cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
         $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
         result = ShellCommands.run_command($out, command)
