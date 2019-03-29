@@ -30,14 +30,28 @@ class BoxDefinitions
 
   # Get the definition for the specified box
   # @param box_name [String] the name of the box to get definition for
+  # @return [Hash] box definition
   def get_box(box_name)
-    unless @boxes.key?(box_name)
-      raise "The specified box definition can not be found: #{box_name}"
-    end
+    check_box(box_name)
     @boxes[box_name]
   end
 
+  # Get the full platform key for the specified box
+  # @param box_name [String] the name of the box
+  # @return [String] the key for the platform
+  def platform_key(box_name)
+    check_box(box_name)
+    box = @boxes[box_name]
+    "#{box['platform']}^#{box['platform_version']}"
+  end
+
   private
+
+  def check_box(box_name)
+    unless @boxes.key?(box_name)
+      raise "The specified box definition can not be found: #{box_name}"
+    end
+  end
 
   # @param extra_path [String] path to the
   def find_boxes_files(extra_path)

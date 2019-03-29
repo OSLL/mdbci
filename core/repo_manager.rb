@@ -65,10 +65,10 @@ class RepoManager
 
   def findRepo(product_name, product, box)
     $out.info('Looking for repo')
-    version = (product['version'].nil? ? 'default' : product['version']);
-    box_info = $session.box_definitions.get_box(box)
+    version = product['version'].nil? ? 'default' : product['version']
+    repository_key = $session.box_definitions.platform_key(box)
     repository_name = PRODUCT_ATTRIBUTES[product_name][:repository]
-    repo_key = "#{repository_name}@#{version}+#{box_info['platform']}^#{box_info['platform_version']}"
+    repo_key = "#{repository_name}@#{version}+#{repository_key}"
     repo = @repos[repo_key]
     $out.info("Repo key is '#{repo_key}': #{repo.nil? ? 'Not found' : 'Found'}")
     repo

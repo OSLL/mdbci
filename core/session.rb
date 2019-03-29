@@ -293,11 +293,6 @@ EOF
     result[:output]
   end
 
-  def platformKey(box_name)
-    key = $session.boxes.boxesManager.keys.select { |value| value == box_name }
-    key.nil? ? "UNKNOWN" : $session.boxes.boxesManager[key[0]]['platform']+'^'+$session.boxes.boxesManager[key[0]]['platform_version']
-  end
-
   def showBoxKeys
     values = Array.new
     $session.boxes.boxesManager.values.each do |value|

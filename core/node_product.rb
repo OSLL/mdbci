@@ -59,7 +59,7 @@ class NodeProduct
           raise "Box parameter is not found in #{node[0]}"if box.empty?
           mdbci_params = $session.box_definitions.get_box(box)
           raise "Box #{box} is not found" if mdbci_params.nil?
-          full_platform = $session.platformKey(box)
+          full_platform = $session.box_definitions.platform_key(box)
           raise "Platform for box #{box} is not found" if full_platform == "UNKNOWN"
           # get product repo
           if $session.nodeProduct == 'maxscale'
@@ -84,7 +84,7 @@ class NodeProduct
         raise "Box parameter is not found in defenition of node #{args[0]}/#{args[1]}" if box.empty?
         mdbci_params = $session.box_definitions.get_box(box)
         raise "Box #{box} is not found" if mdbci_params.nil?
-        full_platform = $session.platformKey(box)
+        full_platform = $session.box_definitions.platform_key(box)
         raise "Platform for box #{box} is not found" if full_platform == "UNKNOWN"
         # get product repo
         if $session.nodeProduct == 'maxscale'
