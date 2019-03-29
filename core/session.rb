@@ -22,6 +22,7 @@ require_relative 'commands/show_network_config_command'
 require_relative 'constants'
 require_relative 'docker_manager'
 require_relative 'helper'
+require_relative 'models/configuration'
 require_relative 'models/tool_configuration'
 require_relative 'network'
 require_relative 'out'
@@ -384,13 +385,17 @@ EOF
   end
 
 
-  def showBoxNameByPath(path = nil)
+  def show_box_name_in_configuration(path = nil)
     if path.nil?
-      $out.warning 'Please specify the path to the nodes configuration as a parameter'
+      $out.warning('Please specify the path to the nodes configuration as a parameter')
       return 2
     end
-    boxName = $session.boxes.getBoxNameByPath(path)
-    $out.out boxName
+    configuration = Configuration.new(path)
+    if configuration.node_names.size != 1
+      $out.warning('Please specify the node to get configuration from')
+      return 2
+    end
+    $out.out(configuration.box_names(configuration.node_names.first))
     0
   end
 
@@ -412,7 +417,7 @@ EOF
   SHOW_COMMAND_ACTIONS = {
     box: {
       description: 'Show box name based on the path to the configuration file',
-      action: ->(*params) { showBoxNameByPath(*params) }
+      action: ->(*params) { show_box_name_in_configuration(*params) }
     },
     boxes: {
       description: 'List available boxes',
