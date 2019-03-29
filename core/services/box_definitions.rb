@@ -45,6 +45,14 @@ class BoxDefinitions
     "#{box['platform']}^#{box['platform_version']}"
   end
 
+  # Get the list of unique values for the specified field
+  # @param field [String] name of the field
+  # @return [Array<String>] unique values of the boxes
+  def unique_values(field)
+    values = @boxes.values.map { |box| box[field] }
+    values.compact.uniq.sort
+  end
+
   private
 
   def check_box(box_name)

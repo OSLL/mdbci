@@ -293,15 +293,12 @@ EOF
     result[:output]
   end
 
-  def showBoxKeys
-    values = Array.new
-    $session.boxes.boxesManager.values.each do |value|
-      values.push value[$session.field] if value[$session.field]
+  def show_box_keys
+    if @field.nil? || @field.empty?
+      $out.error('Please specify the field to get summarized data')
+      return 1
     end
-    if values.empty?
-      raise "box key #{$session.field} is not found"
-    end
-    puts values.uniq
+    puts @box_definitions.unique_values(@field)
     0
   end
 
@@ -427,7 +424,7 @@ EOF
     },
     boxkeys: {
       description: 'Show keys for all configured boxes',
-      action: ->(*) { showBoxKeys }
+      action: ->(*) { show_box_keys }
     },
     keyfile: {
       description: 'Show box key file to access it',
