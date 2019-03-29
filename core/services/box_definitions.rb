@@ -28,6 +28,15 @@ class BoxDefinitions
     end
   end
 
+  # Get the definition for the specified box
+  # @param box_name [String] the name of the box to get definition for
+  def get_box(box_name)
+    unless @boxes.key?(box_name)
+      raise "The specified box definition can not be found: #{box_name}"
+    end
+    @boxes[box_name]
+  end
+
   private
 
   # @param extra_path [String] path to the
