@@ -57,7 +57,7 @@ class NodeProduct
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           raise "Box parameter is not found in #{node[0]}"if box.empty?
-          mdbci_params = $session.boxes.getBox(box)
+          mdbci_params = $session.box_definitions.get_box(box)
           raise "Box #{box} is not found" if mdbci_params.nil?
           full_platform = $session.platformKey(box)
           raise "Platform for box #{box} is not found" if full_platform == "UNKNOWN"
@@ -82,7 +82,7 @@ class NodeProduct
         raise "Node #{args[1]} is not found in #{args[0]}" if mdbci_node.nil?
         box = mdbci_node[1]['box'].to_s
         raise "Box parameter is not found in defenition of node #{args[0]}/#{args[1]}" if box.empty?
-        mdbci_params = $session.boxes.getBox(box)
+        mdbci_params = $session.box_definitions.get_box(box)
         raise "Box #{box} is not found" if mdbci_params.nil?
         full_platform = $session.platformKey(box)
         raise "Platform for box #{box} is not found" if full_platform == "UNKNOWN"
@@ -242,7 +242,7 @@ class NodeProduct
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           raise "Box parameter is not found for #{node[0]}" if box.empty?
-          mdbci_params = $session.boxes.getBox(box)
+          mdbci_params = $session.box_definitions.get_box(box)
           raise "Box is not found for #{node[0]}" if mdbci_params.nil?
           platform = $session.boxes.platformKey(box).split('^')
           packages = validate_product(platform[0], products)
@@ -263,7 +263,7 @@ class NodeProduct
         raise "node #{args[1]} not found in #{args[0]}" if mdbci_node.nil?
         box = mdbci_node[1]['box'].to_s
         raise "Box parameter is not found for #{args[1]}/#{args[0]}" if box.empty?
-        mdbci_params = $session.boxes.getBox(box)
+        mdbci_params = $session.box_definitions.get_box(box)
         platform = $session.boxes.platformKey(box).split('^')
         packages = validate_product(platform[0], products)
         if packages == nil

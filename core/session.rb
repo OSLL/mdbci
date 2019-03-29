@@ -274,7 +274,7 @@ EOF
     box = node[1]['box'].to_s
     raise "Box: #{box} is empty" if box.empty?
 
-    box_params = $session.boxes.getBox(box)
+    box_params = $session.box_definitions.get_box(box)
     cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + $mdbci_exec_dir.to_s+'/KEYS/'+box_params['keyfile'].to_s + " "\
                     + box_params['user'].to_s + "@"\
                     + box_params['IP'].to_s + " "\
@@ -376,7 +376,7 @@ EOF
   end
 
   def findBoxField(boxName, field)
-    box = $session.boxes.getBox(boxName)
+    box = $session.box_definitions.get_box(boxName)
     if box == nil
       raise "Box #{boxName} is not found"
     end
@@ -588,7 +588,7 @@ EOF
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           raise "Box empty in node: #{node}" unless !box.empty?
-          mdbci_params = $session.boxes.getBox(box)
+          mdbci_params = $session.box_definitions.get_box(box)
           #
           keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(@keyFile) }
           # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
@@ -611,7 +611,7 @@ EOF
 
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
-          mdbci_params = $session.boxes.getBox(box)
+          mdbci_params = $session.box_definitions.get_box(box)
           #
           keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(@keyFile) }
           # add to the end of the authorized_keys file in ~/.ssh directory
@@ -677,7 +677,7 @@ EOF
   def showProvider(name=nil)
     exit_code = 1
     if $session.boxes.boxesManager.has_key?(name)
-      box_params = $session.boxes.getBox(name)
+      box_params = $session.box_definitions.get_box(name)
       provider = box_params["provider"].to_s
       $out.out provider
       exit_code = 0
@@ -736,7 +736,7 @@ EOF
     node = templateNodes.find { |elem| elem[0].to_s == name }
     box = node[1]['box'].to_s
     if $session.boxes.boxesManager.has_key?(box)
-      box_params = $session.boxes.getBox(box)
+      box_params = $session.box_definitions.get_box(box)
       platform = box_params[PLATFORM].to_s+'^'+box_params['platform_version'].to_s
       return platform
     else
