@@ -31,6 +31,7 @@ class SnapshotCommand < BaseCommand
   SNAPSHOT_ALREADY_EXISTS = 'snapshot already exists'
   SNAPSHOT_NOT_EXISTS = 'snapshot does not exist'
   SNAPSHOTS_NOT_FOUND = 'snapshots does not exist for this node (create it with "snapshot take..." command)'
+  VIRSH_CAN_NOT_SNAPSHOT_REVERT = 'virsh can not revert the state of the machine'
 
   HELP_OPTION = '--help'
   NODE_NAME_OPTION = '--node-name'
@@ -309,11 +310,14 @@ class SnapshotCommand < BaseCommand
     snapshots = get_snapshots(node_name)
     raise SNAPSHOTS_NOT_FOUND if snapshots.empty?
     raise SNAPSHOT_NOT_EXISTS unless snapshots.include? full_snapshot_name
+
     case @provider
     when LIBVIRT
-      run_reliable_command("virsh snapshot-revert --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{full_snapshot_name}")
       pwd = Dir.pwd
       Dir.chdir @path_to_nodes
+      run_reliable_command("virsh snapshot-revert --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{full_snapshot_name}")
+      raise VIRSH_CAN_NOT_SNAPSHOT_REVERT unless UpCommand.node_running?(node_name, @ui)
+
       ntp_service = ntp_service_name(node_name)
       run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo #{change_service_state_command(node_name, ntp_service, 'stop')}'")
       run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo #{sync_node_time_command(node_name)}'")
