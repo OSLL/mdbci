@@ -14,3 +14,10 @@ template node['chrony']['config_file'][node['platform']] do
   source 'chrony.conf.erb'
   notifies :restart, resources(service: node['chrony']['service'][node['platform']])
 end
+
+template '/usr/local/bin/synchronize_time.sh' do
+  owner 'root'
+  group 'root'
+  mode '0755'
+  source 'synchronize_time.sh.erb'
+end

@@ -24,4 +24,4 @@ end
 
 include_recipe 'packages::setup_resolved'
 include_recipe 'packages::configure_apt'
-include_recipe 'ntp::default'
+include_recipe 'chrony::default'
