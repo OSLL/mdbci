@@ -2,7 +2,7 @@
 
 require_relative 'shell_commands'
 
-# This is the mixin that executes vagrant commands.
+# This is the module that executes vagrant commands.
 module VagrantCommands
 
   # Check whether node is running or not.
@@ -27,10 +27,5 @@ module VagrantCommands
       logger.info("Node '#{node}' is not running.")
       false
     end
-  end
-
-  # Wrapper method for the node_running? module method
-  def node_running?(node, logger, nodes_path = Dir.pwd)
-    VagrantCommands.node_running?(node, logger, nodes_path)
   end
 end

@@ -13,7 +13,6 @@ require_relative '../services/log_storage'
 # The command sets up the environment specified in the configuration file.
 class UpCommand < BaseCommand
   include ShellCommands
-  include VagrantCommands
 
   def self.synopsis
     'Setup environment as specified in the configuration.'
@@ -118,7 +117,7 @@ Labels should be separated with commas and should not contain any whitespaces.
   # @param logger [Out] logger to log information to.
   # @return [Array<String>, Array<String>] nodes that are running and those that are not
   def running_and_halt_nodes(nodes, logger)
-    nodes.partition { |node| node_running?(node, logger) }
+    nodes.partition { |node| VagrantCommands.node_running?(node, logger) }
   end
 
   # Check that specified node is brought up.
@@ -127,7 +126,7 @@ Labels should be separated with commas and should not contain any whitespaces.
   # @param logger [Out] logger to log information to.
   # @return [Bool] true if node needs to be re-created.
   def broken_node?(node, logger)
-    !(node_running?(node, logger) && chef_installed?(node, logger))
+    !(VagrantCommands.node_running?(node, logger) && chef_installed?(node, logger))
   end
 
   # Check that specified node is configured.
@@ -232,8 +231,8 @@ Labels should be separated with commas and should not contain any whitespaces.
     @attempts.times do |attempt|
       @ui.info("Bring up and configure node #{node}. Attempt #{attempt + 1}.")
       destroy_node(node, logger) if force_recreate
-      bring_up_machine(@config.provider, logger, node) unless node_running?(node, logger)
-      unless node_running?(node, logger)
+      bring_up_machine(@config.provider, logger, node) unless VagrantCommands.node_running?(node, logger)
+      unless VagrantCommands.node_running?(node, logger)
         force_recreate = true
         next
       end
@@ -256,7 +255,7 @@ Labels should be separated with commas and should not contain any whitespaces.
   # rubocop:disable Style/IfUnlessModifier
   def up_node(node)
     logger = retrieve_logger_for_node
-    if @env.recreate || !node_running?(node, logger)
+    if @env.recreate || !VagrantCommands.node_running?(node, logger)
       bring_up_and_configure(node, logger)
     end
     if broken_node?(node, @ui)
