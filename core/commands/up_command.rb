@@ -3,6 +3,7 @@
 require_relative 'base_command'
 require_relative '../models/configuration'
 require_relative '../services/shell_commands'
+require_relative '../services/vagrant_commands'
 require_relative '../services/machine_configurator'
 require_relative '../services/network_config'
 require_relative 'generate_command'
@@ -72,29 +73,6 @@ Labels should be separated with commas and should not contain any whitespaces.
     flags.uniq.join(' ')
   end
 
-  # Check whether node is running or not.
-  #
-  # @param node [String] name of the node to get status from.
-  # @param logger [Out] logger to log information to
-  # @return [Boolean]
-  def node_running?(node, logger)
-    result = run_command("vagrant status #{node}", {}, logger)
-    status_regex = /^#{node}\s+(.+)\s+(\(.+\))?\s$/
-    status = if result[:output] =~ status_regex
-               result[:output].match(status_regex)[1]
-             else
-               'UNKNOWN'
-             end
-    logger.info("Node '#{node}' status: #{status}")
-    if status&.include?('running')
-      logger.info("Node '#{node}' is running.")
-      true
-    else
-      logger.info("Node '#{node}' is not running.")
-      false
-    end
-  end
-
   # Check whether chef was successfully installed on the machine or not
   #
   # @param node [String] name of the node to check.
@@ -139,7 +117,7 @@ Labels should be separated with commas and should not contain any whitespaces.
   # @param logger [Out] logger to log information to.
   # @return [Array<String>, Array<String>] nodes that are running and those that are not
   def running_and_halt_nodes(nodes, logger)
-    nodes.partition { |node| node_running?(node, logger) }
+    nodes.partition { |node| VagrantCommands.node_running?(node, logger) }
   end
 
   # Check that specified node is brought up.
@@ -148,7 +126,7 @@ Labels should be separated with commas and should not contain any whitespaces.
   # @param logger [Out] logger to log information to.
   # @return [Bool] true if node needs to be re-created.
   def broken_node?(node, logger)
-    !(node_running?(node, logger) && chef_installed?(node, logger))
+    !(VagrantCommands.node_running?(node, logger) && chef_installed?(node, logger))
   end
 
   # Check that specified node is configured.
@@ -253,8 +231,8 @@ Labels should be separated with commas and should not contain any whitespaces.
     @attempts.times do |attempt|
       @ui.info("Bring up and configure node #{node}. Attempt #{attempt + 1}.")
       destroy_node(node, logger) if force_recreate
-      bring_up_machine(@config.provider, logger, node) unless node_running?(node, logger)
-      unless node_running?(node, logger)
+      bring_up_machine(@config.provider, logger, node) unless VagrantCommands.node_running?(node, logger)
+      unless VagrantCommands.node_running?(node, logger)
         force_recreate = true
         next
       end
@@ -277,7 +255,7 @@ Labels should be separated with commas and should not contain any whitespaces.
   # rubocop:disable Style/IfUnlessModifier
   def up_node(node)
     logger = retrieve_logger_for_node
-    if @env.recreate || !node_running?(node, logger)
+    if @env.recreate || !VagrantCommands.node_running?(node, logger)
       bring_up_and_configure(node, logger)
     end
     if broken_node?(node, @ui)
