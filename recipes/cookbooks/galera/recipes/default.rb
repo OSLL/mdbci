@@ -1,7 +1,7 @@
 require 'shellwords'
 
 include_recipe "galera::galera_repos"
-include_recipe "ntp::default"
+include_recipe "chrony::default"
 
 # Install default packages
 %w[
