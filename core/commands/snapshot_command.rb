@@ -4,10 +4,12 @@ require 'open3'
 require_relative 'base_command'
 require_relative '../constants'
 require_relative '../services/shell_commands'
+require_relative '../services/vagrant_commands'
 
 # Snapshot command allows to manage snapshots of virtual environments for configurations.
 class SnapshotCommand < BaseCommand
   include ShellCommands
+  include VagrantCommands
 
   SNAPSHOT_ACTION_REQUIRED = 'snapshot action is required (take, revert, delete, list)'
 
@@ -313,11 +315,11 @@ class SnapshotCommand < BaseCommand
 
     case @provider
     when LIBVIRT
+      run_reliable_command("virsh snapshot-revert --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{full_snapshot_name}")
+      raise VIRSH_CAN_NOT_SNAPSHOT_REVERT unless node_running?(node_name, @ui, @path_to_nodes)
+
       pwd = Dir.pwd
       Dir.chdir @path_to_nodes
-      run_reliable_command("virsh snapshot-revert --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{full_snapshot_name}")
-      raise VIRSH_CAN_NOT_SNAPSHOT_REVERT unless UpCommand.node_running?(node_name, @ui)
-
       ntp_service = ntp_service_name(node_name)
       run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo #{change_service_state_command(node_name, ntp_service, 'stop')}'")
       run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo #{sync_node_time_command(node_name)}'")

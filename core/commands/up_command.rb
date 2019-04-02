@@ -3,6 +3,7 @@
 require_relative 'base_command'
 require_relative '../models/configuration'
 require_relative '../services/shell_commands'
+require_relative '../services/vagrant_commands'
 require_relative '../services/machine_configurator'
 require_relative '../services/network_config'
 require_relative 'generate_command'
@@ -12,6 +13,7 @@ require_relative '../services/log_storage'
 # The command sets up the environment specified in the configuration file.
 class UpCommand < BaseCommand
   include ShellCommands
+  include VagrantCommands
 
   def self.synopsis
     'Setup environment as specified in the configuration.'
@@ -70,38 +72,6 @@ Labels should be separated with commas and should not contain any whitespaces.
     flags = []
     flags.push(VAGRANT_NO_PARALLEL) if provider == 'aws'
     flags.uniq.join(' ')
-  end
-
-  # Check whether node is running or not.
-  #
-  # @param node [String] name of the node to get status from.
-  # @param logger [Out] logger to log information to
-  # @return [Boolean]
-  def self.node_running?(node, logger)
-    result = ShellCommands.run_command(logger, "vagrant status #{node}", {})
-    status_regex = /^#{node}\s+(.+)\s+(\(.+\))?\s$/
-    status = if result[:output] =~ status_regex
-               result[:output].match(status_regex)[1]
-             else
-               'UNKNOWN'
-             end
-    logger.info("Node '#{node}' status: #{status}")
-    if status&.include?('running')
-      logger.info("Node '#{node}' is running.")
-      true
-    else
-      logger.info("Node '#{node}' is not running.")
-      false
-    end
-  end
-
-  # Check whether node is running or not.
-  #
-  # @param node [String] name of the node to get status from.
-  # @param logger [Out] logger to log information to
-  # @return [Boolean]
-  def node_running?(node, logger)
-    UpCommand.node_running?(node, logger)
   end
 
   # Check whether chef was successfully installed on the machine or not
