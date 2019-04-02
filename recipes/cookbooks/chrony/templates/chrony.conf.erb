@@ -19,7 +19,7 @@
 # fails they will be discarded.  Thus under some circumstances it is
 # better to use IP numbers than host names.
 
-<% node['chrony']['servers'].each do |server, options| %>
+<% node[:chrony][:servers].each do |server, options| %>
   <%= "server #{server} #{options}" %>
 <% end %>
 
