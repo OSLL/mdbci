@@ -1,5 +1,9 @@
-package 'chrony' do
-  action [:install]
+if node[:platform] == 'linux'
+  zypper_package 'chrony'
+else
+  package 'chrony' do
+    action [:install]
+  end
 end
 
 service node['chrony']['service'][node['platform']] do

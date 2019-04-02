@@ -5,7 +5,9 @@ default['chrony']['config_file'] = {
   'centos' => '/etc/chrony.conf',
   'redhat' => '/etc/chrony.conf',
   'debian' => '/etc/chrony/chrony.conf',
-  'ubuntu' => '/etc/chrony/chrony.conf'
+  'ubuntu' => '/etc/chrony/chrony.conf',
+  'linux' => '/etc/chrony.conf',
+  'suse' => '/etc/chrony.conf'
 }
 
 # Default configuration arrays
@@ -18,7 +20,9 @@ default['chrony']['service'] = {
   'centos' => 'chronyd',
   'redhat' => 'chronyd',
   'debian' => 'chrony',
-  'ubuntu' => 'chrony'
+  'ubuntu' => 'chrony',
+  'linux' => 'chronyd',
+  'suse' => 'chronyd'
 }
 
 # If chrony service is restarted when config file changes
