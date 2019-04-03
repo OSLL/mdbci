@@ -6,7 +6,7 @@ description       'Galera coockbook'
 version           '0.0.1'
 recipe            'install_galera', 'Installs gallera'
 
-depends           'ntp'
+depends           'chrony'
 depends           'packages'
 
 supports          'redhat'

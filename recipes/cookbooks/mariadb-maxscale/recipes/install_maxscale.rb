@@ -1,4 +1,4 @@
-include_recipe "ntp::default"
+include_recipe "chrony::default"
 include_recipe "mariadb-maxscale::maxscale_repos"
 
 # Turn off SElinux

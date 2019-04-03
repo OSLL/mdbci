@@ -4,5 +4,5 @@ source 'https://supermarket.chef.io'
 
 metadata
 
-cookbook 'ntp', path: '../ntp'
+cookbook 'chrony', path: '../chrony'
 cookbook 'packages', path: '../packages'
