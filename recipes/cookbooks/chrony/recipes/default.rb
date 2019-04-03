@@ -10,6 +10,10 @@ else
   package 'chrony'
 end
 
+link '/etc/localtime' do
+  to '/usr/share/zoneinfo/Europe/Paris'
+end
+
 service node[:chrony][:service] do
   supports restart: true, status: true, reload: true
   action %i[enable start]
