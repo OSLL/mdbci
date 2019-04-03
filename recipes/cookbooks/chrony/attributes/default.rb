@@ -10,7 +10,10 @@ default[:chrony][:config_file] = case node[:platform]
 
 # Default configuration arrays
 default[:chrony][:servers] = {
-  '0.europe.pool.ntp.org': 'offline minpoll 8'
+  '0.europe.pool.ntp.org' => 'offline minpoll 8',
+  '1.europe.pool.ntp.org' => 'offline minpoll 8',
+  '2.europe.pool.ntp.org' => 'offline minpoll 8',
+  '3.europe.pool.ntp.org' => 'offline minpoll 8'
 }
 
 # Chrony service
