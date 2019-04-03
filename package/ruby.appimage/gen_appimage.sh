@@ -81,7 +81,7 @@ mkdir -p $APP_DIR
 # the source directory
 pushd $BUILD_DIR
 
-RUBY_VERSION=2.5.1
+RUBY_VERSION=2.6.2
 RUBY_SHORT_VERSION=$(echo $RUBY_VERSION | awk -F. '{print $1"."$2}')
 RUBY_DIR=ruby-$RUBY_VERSION
 if [ -d $RUBY_DIR ]; then
