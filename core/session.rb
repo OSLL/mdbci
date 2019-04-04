@@ -304,21 +304,18 @@ EOF
   end
 
   # show boxes with platform and version
-  def showBoxes
+  def show_boxes
     if @boxPlatform.nil?
-      $out.warning 'Required parameter --platform is not defined.'
-      $out.info 'Full command specification:'
-      $out.info './mdbci show boxes --platform PLATFORM [--platform-version VERSION]'
+      $out.warning('Required parameter --platform is not defined.')
+      $out.info('Full command specification:')
+      $out.info('./mdbci show boxes --platform PLATFORM [--platform-version VERSION]')
       return 1
     end
     # check for undefined box platform
-    some_box = @boxes.boxesManager.find { |box| box[1]['platform'] == @boxPlatform }
+    some_box = @box_definitions.find { |_, definition| definition['platform'] == @boxPlatform }
     if some_box.nil?
-      $out.warning "Platform #{@boxPlatform} is not supported!"
+      $out.error("Platform #{@boxPlatform} is not supported!")
       return 1
-    end
-    if @boxPlatformVersion.nil?
-      $out.warning 'Optional paremeter --platform-version is not defined'
     end
 
     platform_name = if @boxPlatformVersion.nil?
@@ -326,16 +323,13 @@ EOF
                     else
                       "#{@boxPlatform}^#{@boxPlatformVersion}"
                     end
-    $out.info "List of boxes for the #{platform_name} platform:"
-    boxes_found = false
-    @boxes.boxesManager.each do |box, params|
-      if params['platform'] == @boxPlatform && (
-           @boxPlatformVersion.nil? || params['platform_version'] == @boxPlatformVersion)
-        $out.out box
-        boxes_found = true
-      end
+    $out.info("List of boxes for the #{platform_name} platform:")
+    boxes = @box_definitions.select do |_, definition|
+      definition['platform'] == @boxPlatform &&
+        (@boxPlatformVersion.nil? || definition['platform_version'] == @boxPlatformVersion)
     end
-    boxes_found ? 0 : 1
+    boxes.each { |name, _| $out.out(name) }
+    boxes.size != 0
   end
 
   def showBoxField
@@ -396,7 +390,7 @@ EOF
     },
     boxes: {
       description: 'List available boxes',
-      action: ->(*) { showBoxes }
+      action: ->(*) { show_boxes }
     },
     boxinfo: {
       description: 'Show the field value of the box configuration',

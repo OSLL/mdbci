@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
 require 'find'
+require 'forwardable'
 
 # The list of BoxDefinitions that are configured in the application
 class BoxDefinitions
+  extend Forwardable
+
   # The list of the directories to search data in. The last directory takes presence over the first one
   BOX_DIRECTORIES = [
     File.expand_path('../../config/boxes/', __dir__),
@@ -28,6 +31,11 @@ class BoxDefinitions
     end
   end
 
+  # Make each_definition a delegation to the each method
+  def_delegator :@boxes, :each, :each_definition
+  def_delegator :@boxes, :find, :find
+  def_delegator :@boxes, :select, :select
+
   # Get the definition for the specified box
   # @param box_name [String] the name of the box to get definition for
   # @return [Hash] box definition
@@ -51,11 +59,6 @@ class BoxDefinitions
   def unique_values(field)
     values = @boxes.values.map { |box| box[field] }
     values.compact.uniq.sort
-  end
-
-  # The iterator for the box definitions it yields the box name and it's definition
-  def each_definition(&block)
-    @boxes.each(&block)
   end
 
   private
