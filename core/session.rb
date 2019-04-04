@@ -434,7 +434,7 @@ EOF
     },
     versions: {
       description: 'List boxes versions for specified platform',
-      action: ->(*) { showBoxesPlatformVersions }
+      action: ->(*) { show_platform_versions }
     }
   }.freeze
 
@@ -652,41 +652,24 @@ EOF
   end
 
   # print boxes platform versions by platform name
-  def showBoxesPlatformVersions
-    exit_code = 0
-    if $session.boxPlatform == nil
-      raise "Specify parameter --platforms and try again"
+  def show_platform_versions
+    if @boxPlatform.nil?
+      $out.warning('Please specify the platform via --platform flag.')
+      return false
     end
 
-    # check for supported platforms
-    some_platform = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
-    if some_platform.nil?
-      raise "Platform #{$session.boxPlatform} is not supported!"
+    boxes = @box_definitions.select do |_, definition|
+      definition['platform'] == @boxPlatform
+    end
+    if boxes.size.zero?
+      $out.error("The platform #{@boxPlatform} is not supported.")
+      return false
     end
 
-    $out.info "Supported versions for #{$session.boxPlatform}:"
-
-    boxes_versions = getBoxesPlatformVersions($session.boxPlatform, $session.boxes.boxesManager)
-
-    # output platforms versions
-    boxes_versions.each { |version| $out.out version }
-    return exit_code
-  end
-
-  def getBoxesPlatformVersions(boxPlatform, boxesManager)
-    boxes_versions = Array.new
-    # get boxes platform versions
-    boxesManager.each do |box, params|
-      next if params['platform'] != boxPlatform # skip unknown platform
-      if !(params.has_value?(boxPlatform))
-        raise "#{boxPlatform} has 0 supported versions! Please check box platform!"
-      end
-      box_platform_version = params['platform_version']
-      boxes_versions.push(box_platform_version)
-    end
-
-    boxes_versions = boxes_versions.uniq # delete duplicates values
-    return boxes_versions
+    $out.info("Supported versions for #{@boxPlatform}")
+    versions = boxes.map { |_, definition| definition['platform_version'] }.uniq
+    $out.out(versions)
+    true
   end
 
   # load node platform by name
