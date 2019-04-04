@@ -1,4 +1,3 @@
-require_relative 'boxes_manager'
 require_relative 'constants'
 
 TEMPLATE_COOKBOOK_PATH = 'cookbook_path'

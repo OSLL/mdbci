@@ -113,10 +113,18 @@ class Configuration
   # @param node [String] specific node
   # @return [Array<String>] list of relevant node names
   def select_node_names(node)
-    return [node] unless node.empty?
+    all_nodes = @node_configurations.keys
+    unless node.empty?
+      unless all_nodes.include?(node)
+        raise "The specified node '#{node}' does not exist in configuration. Available nodes: #{all_nodes.join(', ')}"
+      end
+
+      return [node]
+    end
+
     return select_nodes_by_label unless @labels.empty?
 
-    @node_configurations.keys
+    all_nodes
   end
 
   # Select nodes from the template file that have given labels

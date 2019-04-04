@@ -32,7 +32,7 @@ class Network
   def self.getBoxParameters(node_param)
     box = node_param['box'].to_s
     raise "Can not find box parameter for node #{node_name}" if box.empty?
-    box_params = $session.boxes.getBox(box)
+    box_params = $session.box_definitions.get_box(box)
     raise "Can not find box #{box} node #{node_param} in #{dir}" if box_params.empty?
     return box_params
   end
@@ -177,7 +177,7 @@ class Network
     if box.empty?
       raise "Can not read box parameter of node #{directory}"
     end
-    box_params = $session.boxes.getBox(box)
+    box_params = $session.box_definitions.get_box(box)
     result["node"] = node[0].to_s
     result[param] = box_params[param].to_s
  ##   $out.info 'Node: ' + node[0].to_s

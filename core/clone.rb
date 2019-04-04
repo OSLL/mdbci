@@ -109,7 +109,7 @@ class Clone
       $out.info "making clone of node: #{path_to_nodes}/#{node_name}"
       new_docker_image_name = create_docker_node_clone(path_to_nodes, node_name, new_path_to_nodes)
       old_box_name = get_box_name_from_node(path_to_nodes, node_name)
-      old_box_definition = $session.boxes.getBox(old_box_name)
+      old_box_definition = $session.box_definitions.get_box(old_box_name)
       add_to_fake_docker_boxes(fake_boxes_file, new_docker_image_name, old_box_definition)
       $out.info "cloning is done, new docker image name: #{new_docker_image_name}"
       change_box_in_docker_template(path_to_new_template, node_name, new_docker_image_name)

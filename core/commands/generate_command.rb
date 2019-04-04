@@ -256,7 +256,7 @@ end
   # @param box [String] name of the box
   # @return [Bool] true if box needs to be subscribed, otherwise - false.
   def need_subscription_manager_credentials?(box)
-    @boxes.getBox(box)['configure_subscription_manager'] == 'true'
+    @boxes.get_box(box)['configure_subscription_manager'] == 'true'
   end
 
   # Generate the role description for the specified node.
@@ -331,7 +331,7 @@ end
   def box_valid?(box)
     return false if box.empty?
 
-    !@boxes.getBox(box).nil?
+    !@boxes.get_box(box).nil?
   end
 
   # Make a hash list of node parameters by a node configuration and
@@ -400,7 +400,7 @@ end
   def node_definition(node, path, cookbook_path)
     box = node[1]['box'].to_s
     unless box.empty?
-      node_params = make_node_params(node, @boxes.getBox(box))
+      node_params = make_node_params(node, @boxes.get_box(box))
       print_node_info(node_params, box)
     end
     provisioned = !node[1]['product'].nil?
@@ -543,8 +543,6 @@ end
   #
   # @param configs [Array] list of nodes specified in template
   # @return [Bool] true if the result of passing all checks successful, otherwise - false.
-  # rubocop:disable Metrics/MethodLength
-  # The method performs a single function; decomposition of the method will complicate the code.
   def load_nodes_provider_and_check_it(configs)
     nodes = configs.map { |node| %w[aws_config cookbook_path].include?(node[0]) ? nil : node }.compact.to_h
     providers = nodes.map do |node_name, node_params|
@@ -553,11 +551,8 @@ end
         @ui.error("Box in #{node_name} is not found")
         return false
       end
-      box_params = @boxes.getBox(box)
-      if box_params.nil?
-        @ui.error("Box #{box} from node #{node_name} not found in #{@env.boxes_dir}!")
-        return false
-      end
+
+      box_params = @boxes.get_box(box)
       box_params['provider'].to_s
     end
     return false unless check_providers(providers)
@@ -565,7 +560,6 @@ end
     @nodes_provider = providers.first
     true
   end
-  # rubocop:enable Metrics/MethodLength
 
   # Set required parameters as instance variables,
   # defines the path for generating the configuration, parse the config JSON-file.
@@ -575,7 +569,7 @@ end
   # @raise RuntimeError if configuration file is invalid.
   def setup_command(name)
     @aws_service = @env.aws_service
-    @boxes = @env.boxes
+    @boxes = @env.box_definitions
     path = name.nil? ? File.join(Dir.pwd, 'default') : File.absolute_path(name.to_s)
     begin
       instance_config_file = IO.read(@env.configFile)

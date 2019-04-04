@@ -6,7 +6,6 @@ require 'open3'
 require 'xdg'
 require 'concurrent'
 
-require_relative 'boxes_manager'
 require_relative 'clone'
 require_relative 'commands/up_command'
 require_relative 'commands/sudo_command'
@@ -22,22 +21,24 @@ require_relative 'commands/show_network_config_command'
 require_relative 'constants'
 require_relative 'docker_manager'
 require_relative 'helper'
+require_relative 'models/configuration'
 require_relative 'models/tool_configuration'
 require_relative 'network'
 require_relative 'out'
 require_relative 'repo_manager'
 require_relative 'services/aws_service'
 require_relative 'services/shell_commands'
+require_relative 'services/box_definitions'
 
 # Currently it is the GOD object that contains configuration and manages the commands that should be run.
 # These responsibilites should be split between several classes.
 class Session
-  attr_accessor :boxes
+  attr_reader :box_definitions
   attr_accessor :configs
   attr_accessor :configuration_file
   attr_accessor :versions
   attr_accessor :configFile
-  attr_accessor :boxesFile
+  attr_accessor :boxes_location
   attr_accessor :boxName
   attr_accessor :field
   attr_accessor :isOverride
@@ -48,7 +49,6 @@ class Session
   attr_accessor :mdbciNodes # mdbci nodes
   attr_accessor :templateNodes
   attr_accessor :attempts
-  attr_accessor :boxes_dir
   attr_accessor :mdbciDir
   attr_accessor :mdbci_dir
   attr_accessor :starting_dir
@@ -104,15 +104,12 @@ EOF
       File.join(XDG['CONFIG_HOME'].to_s, 'mdbci'),
       File.join(@mdbci_dir, 'config')
     ]
-    @boxes_dir = File.join(@mdbci_dir, 'BOXES') unless @boxes_dir
     @repo_dir = find_configuration('repo.d') unless @repo_dir
   end
 
   # Method initializes services that depend on the parsed configuration
   def initialize_services
     fill_paths
-    $out.info("Load Boxes from #{@boxes_dir}")
-    @boxes = BoxesManager.new(@boxes_dir)
     $out.info('Load MDBCI configuration file')
     @tool_config = ToolConfiguration.load
     $out.info("Load Repos from #{@repo_dir}")
@@ -121,6 +118,7 @@ EOF
       @aws_service = AwsService.new(@tool_config['aws'], $out)
     end
     @rhel_credentials = @tool_config['rhel']
+    @box_definitions = BoxDefinitions.new(@boxes_location)
   end
 
   # Search for a configuration file in all known configuration locations that include
@@ -156,33 +154,28 @@ EOF
 
   def setup(what)
     case what
-      when 'boxes'
-        $out.info 'Adding boxes to vagrant'
-        raise 'Cannot load boxes: directory does not exist' unless Dir.exist?(@boxes_dir) && File.directory?(@boxes_dir)
-        @boxes.boxesManager.each do |key, value|
-          next if value['provider'] == "aws" # skip 'aws' block
-          # TODO: add aws dummy box
-          # vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
+    when 'boxes'
+      $out.info('Adding boxes to vagrant')
+      @box_definitions.each_definition do |name, definition|
+        next if %w[aws mdbci].include?(definition['provider'])
 
-          next if value['provider'] == "mdbci" # skip 'mdbci' block
-          if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
-            puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
-            shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
-          else
-            puts "vagrant box add --provider #{value['provider']} "+value['box'].to_s
-            shell = "vagrant box add --provider #{value['provider']} "+value['box'].to_s
-          end
-          result = ShellCommands.run_command_and_log($out, "#{shell} 2>&1")
-          command_output = result[:output]
-          # just one soft exception - box already exist
-          if !result[:value].success? && command_output[/attempting to add already exists/].nil?
-            raise "failed command: #{shell}"
-          end
+        command = if definition['box'] =~ URI::REGEXP
+                    "vagrant box add #{name} #{definition['box']}"
+                  else
+                    "vagrant box add --provider #{definition['provider']} #{definition['box']}"
+                  end
+        result = ShellCommands.run_command_and_log($out, "#{command} 2>&1")
+
+        if !result[:value].success? && !result[:output].include?('already exists')
+          $out.error("Unable to add the box #{name} to the Vagrant")
+          return 1
         end
-      else
-        raise "Cannot setup #{what}"
+      end
+      0
+    else
+      $out.error("Do not know how to setup #{what}")
+      1
     end
-    0
   end
 
   # load template nodes
@@ -271,7 +264,7 @@ EOF
     box = node[1]['box'].to_s
     raise "Box: #{box} is empty" if box.empty?
 
-    box_params = $session.boxes.getBox(box)
+    box_params = $session.box_definitions.get_box(box)
     cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + $mdbci_exec_dir.to_s+'/KEYS/'+box_params['keyfile'].to_s + " "\
                     + box_params['user'].to_s + "@"\
                     + box_params['IP'].to_s + " "\
@@ -290,64 +283,33 @@ EOF
     result[:output]
   end
 
-  def platformKey(box_name)
-    key = $session.boxes.boxesManager.keys.select { |value| value == box_name }
-    key.nil? ? "UNKNOWN" : $session.boxes.boxesManager[key[0]]['platform']+'^'+$session.boxes.boxesManager[key[0]]['platform_version']
-  end
-
-  def showBoxKeys
-    values = Array.new
-    $session.boxes.boxesManager.values.each do |value|
-      values.push value[$session.field] if value[$session.field]
+  def show_box_keys
+    if @field.nil? || @field.empty?
+      $out.error('Please specify the field to get summarized data')
+      return 1
     end
-    if values.empty?
-      raise "box key #{$session.field} is not found"
-    end
-    puts values.uniq
+    $out.out(@box_definitions.unique_values(@field))
     0
   end
 
-  def getPlatfroms
-    if !@boxes.boxesManager.empty?
-      platforms = Array.new
-      @boxes.boxesManager.each do |box|
-        platforms.push box[1][PLATFORM]
-      end
-      platforms.uniq
-    else
-      raise 'Boxes are not found'
-    end
-  end
-
-  def showPlatforms
-    exit_code = 1
-    begin
-      $out.out @boxes.boxesManager.keys
-      exit_code = 0
-    rescue
-      $out.error "check boxes configuration and try again"
-      exit_code = 1
-    end
-    $out.out getPlatfroms
-    return exit_code
+  def show_platforms
+    $out.out(@box_definitions.unique_values('platform'))
+    0
   end
 
   # show boxes with platform and version
-  def showBoxes
+  def show_boxes
     if @boxPlatform.nil?
-      $out.warning 'Required parameter --platform is not defined.'
-      $out.info 'Full command specification:'
-      $out.info './mdbci show boxes --platform PLATFORM [--platform-version VERSION]'
+      $out.warning('Required parameter --platform is not defined.')
+      $out.info('Full command specification:')
+      $out.info('./mdbci show boxes --platform PLATFORM [--platform-version VERSION]')
       return 1
     end
     # check for undefined box platform
-    some_box = @boxes.boxesManager.find { |box| box[1]['platform'] == @boxPlatform }
+    some_box = @box_definitions.find { |_, definition| definition['platform'] == @boxPlatform }
     if some_box.nil?
-      $out.warning "Platform #{@boxPlatform} is not supported!"
+      $out.error("Platform #{@boxPlatform} is not supported!")
       return 1
-    end
-    if @boxPlatformVersion.nil?
-      $out.warning 'Optional paremeter --platform-version is not defined'
     end
 
     platform_name = if @boxPlatformVersion.nil?
@@ -355,16 +317,13 @@ EOF
                     else
                       "#{@boxPlatform}^#{@boxPlatformVersion}"
                     end
-    $out.info "List of boxes for the #{platform_name} platform:"
-    boxes_found = false
-    @boxes.boxesManager.each do |box, params|
-      if params['platform'] == @boxPlatform && (
-           @boxPlatformVersion.nil? || params['platform_version'] == @boxPlatformVersion)
-        $out.out box
-        boxes_found = true
-      end
+    $out.info("List of boxes for the #{platform_name} platform:")
+    boxes = @box_definitions.select do |_, definition|
+      definition['platform'] == @boxPlatform &&
+        (@boxPlatformVersion.nil? || definition['platform_version'] == @boxPlatformVersion)
     end
-    boxes_found ? 0 : 1
+    boxes.each { |name, _| $out.out(name) }
+    boxes.size != 0
   end
 
   def showBoxField
@@ -373,7 +332,7 @@ EOF
   end
 
   def findBoxField(boxName, field)
-    box = $session.boxes.getBox(boxName)
+    box = $session.box_definitions.get_box(boxName)
     if box == nil
       raise "Box #{boxName} is not found"
     end
@@ -389,13 +348,17 @@ EOF
   end
 
 
-  def showBoxNameByPath(path = nil)
+  def show_box_name_in_configuration(path = nil)
     if path.nil?
-      $out.warning 'Please specify the path to the nodes configuration as a parameter'
+      $out.warning('Please specify the path to the nodes configuration as a parameter')
       return 2
     end
-    boxName = $session.boxes.getBoxNameByPath(path)
-    $out.out boxName
+    configuration = Configuration.new(path)
+    if configuration.node_names.size != 1
+      $out.warning('Please specify the node to get configuration from')
+      return 2
+    end
+    $out.out(configuration.box_names(configuration.node_names.first))
     0
   end
 
@@ -417,11 +380,11 @@ EOF
   SHOW_COMMAND_ACTIONS = {
     box: {
       description: 'Show box name based on the path to the configuration file',
-      action: ->(*params) { showBoxNameByPath(*params) }
+      action: ->(*params) { show_box_name_in_configuration(*params) }
     },
     boxes: {
       description: 'List available boxes',
-      action: ->(*) { showBoxes }
+      action: ->(*) { show_boxes }
     },
     boxinfo: {
       description: 'Show the field value of the box configuration',
@@ -429,7 +392,7 @@ EOF
     },
     boxkeys: {
       description: 'Show keys for all configured boxes',
-      action: ->(*) { showBoxKeys }
+      action: ->(*) { show_box_keys }
     },
     keyfile: {
       description: 'Show box key file to access it',
@@ -449,7 +412,7 @@ EOF
     },
     platforms: {
       description: 'List all known platforms',
-      action: ->(*) { showPlatforms }
+      action: ->(*) { show_platforms }
     },
     private_ip: {
       description: 'Show private ip address of the box',
@@ -457,7 +420,7 @@ EOF
     },
     provider: {
       description: 'Show provider for the specified box',
-      action: ->(*params) { showProvider(*params) }
+      action: ->(*params) { show_provider(*params) }
     },
     repos: {
       description: 'List all configured repositories',
@@ -465,7 +428,7 @@ EOF
     },
     versions: {
       description: 'List boxes versions for specified platform',
-      action: ->(*) { showBoxesPlatformVersions }
+      action: ->(*) { show_platform_versions }
     }
   }.freeze
 
@@ -585,7 +548,7 @@ EOF
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           raise "Box empty in node: #{node}" unless !box.empty?
-          mdbci_params = $session.boxes.getBox(box)
+          mdbci_params = $session.box_definitions.get_box(box)
           #
           keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(@keyFile) }
           # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
@@ -608,7 +571,7 @@ EOF
 
         box = mdbci_node[1]['box'].to_s
         if !box.empty?
-          mdbci_params = $session.boxes.getBox(box)
+          mdbci_params = $session.box_definitions.get_box(box)
           #
           keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(@keyFile) }
           # add to the end of the authorized_keys file in ~/.ssh directory
@@ -671,75 +634,36 @@ EOF
     Dir.chdir pwd
   end
 
-  def showProvider(name=nil)
-    exit_code = 1
-    if $session.boxes.boxesManager.has_key?(name)
-      box_params = $session.boxes.getBox(name)
-      provider = box_params["provider"].to_s
-      $out.out provider
-      exit_code = 0
-    else
-      exit_code = 1
-      $out.warning name.to_s+" box does not exist! Please, check box name!"
+  def show_provider(name=nil)
+    begin
+      box_definition = @box_definitions.get_box(name)
+      $out.out(box_definition['provider'])
+      true
+    rescue ArgumentError => error
+      $out.error(error.message)
+      false
     end
-    return exit_code
   end
 
   # print boxes platform versions by platform name
-  def showBoxesPlatformVersions
-    exit_code = 0
-    if $session.boxPlatform == nil
-      raise "Specify parameter --platforms and try again"
+  def show_platform_versions
+    if @boxPlatform.nil?
+      $out.warning('Please specify the platform via --platform flag.')
+      return false
     end
 
-    # check for supported platforms
-    some_platform = $session.boxes.boxesManager.find { |box| box[1]['platform'] == $session.boxPlatform }
-    if some_platform.nil?
-      raise "Platform #{$session.boxPlatform} is not supported!"
+    boxes = @box_definitions.select do |_, definition|
+      definition['platform'] == @boxPlatform
+    end
+    if boxes.size.zero?
+      $out.error("The platform #{@boxPlatform} is not supported.")
+      return false
     end
 
-    $out.info "Supported versions for #{$session.boxPlatform}:"
-
-    boxes_versions = getBoxesPlatformVersions($session.boxPlatform, $session.boxes.boxesManager)
-
-    # output platforms versions
-    boxes_versions.each { |version| $out.out version }
-    return exit_code
-  end
-
-  def getBoxesPlatformVersions(boxPlatform, boxesManager)
-    boxes_versions = Array.new
-    # get boxes platform versions
-    boxesManager.each do |box, params|
-      next if params['platform'] != boxPlatform # skip unknown platform
-      if !(params.has_value?(boxPlatform))
-        raise "#{boxPlatform} has 0 supported versions! Please check box platform!"
-      end
-      box_platform_version = params['platform_version']
-      boxes_versions.push(box_platform_version)
-    end
-
-    boxes_versions = boxes_versions.uniq # delete duplicates values
-    return boxes_versions
-  end
-
-  # load node platform by name
-  def loadNodePlatform(name)
-    pwd = Dir.pwd
-    # template file
-    templateFile = $exception_handler.handle('Template nodes file not found') { IO.read(pwd.to_s+'/template') }
-    templateNodes = $exception_handler.handle('Template configuration file invalid') { JSON.parse(IO.read(templateFile)) }
-    #
-    node = templateNodes.find { |elem| elem[0].to_s == name }
-    box = node[1]['box'].to_s
-    if $session.boxes.boxesManager.has_key?(box)
-      box_params = $session.boxes.getBox(box)
-      platform = box_params[PLATFORM].to_s+'^'+box_params['platform_version'].to_s
-      return platform
-    else
-      $out.warning name.to_s+" platform does not exist! Please, check box name!"
-    end
-
+    $out.info("Supported versions for #{@boxPlatform}")
+    versions = boxes.map { |_, definition| definition['platform_version'] }.uniq
+    $out.out(versions)
+    true
   end
 
   def checkRelevanceNetworkConfig(filename)

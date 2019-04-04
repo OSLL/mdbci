@@ -57,7 +57,6 @@ Labels should be separated with commas and should not contain any whitespaces.
 
     @specification = @args.first
     @attempts = @env.attempts&.to_i || 5
-    @box_manager = @env.boxes
     @machine_configurator = MachineConfigurator.new(@ui)
     @config = Configuration.new(@specification, @env.labels)
     Workers.pool.resize(@env.threads_count)
