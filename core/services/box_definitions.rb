@@ -53,6 +53,11 @@ class BoxDefinitions
     values.compact.uniq.sort
   end
 
+  # The iterator for the box definitions it yields the box name and it's definition
+  def each_definition(&block)
+    @boxes.each(&block)
+  end
+
   private
 
   def check_box(box_name)

@@ -160,33 +160,28 @@ EOF
 
   def setup(what)
     case what
-      when 'boxes'
-        $out.info 'Adding boxes to vagrant'
-        raise 'Cannot load boxes: directory does not exist' unless Dir.exist?(@boxes_dir) && File.directory?(@boxes_dir)
-        @boxes.boxesManager.each do |key, value|
-          next if value['provider'] == "aws" # skip 'aws' block
-          # TODO: add aws dummy box
-          # vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
+    when 'boxes'
+      $out.info('Adding boxes to vagrant')
+      @box_definitions.each_definition do |name, definition|
+        next if %w[aws mdbci].include?(definition['provider'])
 
-          next if value['provider'] == "mdbci" # skip 'mdbci' block
-          if value['box'].to_s =~ URI::regexp # THERE CAN BE DONE CUSTOM EXCEPTION
-            puts 'vagrant box add '+key.to_s+' '+value['box'].to_s
-            shell = 'vagrant box add '+key.to_s+' '+value['box'].to_s
-          else
-            puts "vagrant box add --provider #{value['provider']} "+value['box'].to_s
-            shell = "vagrant box add --provider #{value['provider']} "+value['box'].to_s
-          end
-          result = ShellCommands.run_command_and_log($out, "#{shell} 2>&1")
-          command_output = result[:output]
-          # just one soft exception - box already exist
-          if !result[:value].success? && command_output[/attempting to add already exists/].nil?
-            raise "failed command: #{shell}"
-          end
+        command = if definition['box'] =~ URI::REGEXP
+                    "vagrant box add #{name} #{definition['box']}"
+                  else
+                    "vagrant box add --provider #{definition['provider']} #{definition['box']}"
+                  end
+        result = ShellCommands.run_command_and_log($out, "#{command} 2>&1")
+
+        if !result[:value].success? && !result[:output].include?('already exists')
+          $out.error("Unable to add the box #{name} to the Vagrant")
+          return 1
         end
-      else
-        raise "Cannot setup #{what}"
+      end
+      0
+    else
+      $out.error("Do not know how to setup #{what}")
+      1
     end
-    0
   end
 
   # load template nodes
