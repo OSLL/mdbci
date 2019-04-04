@@ -108,7 +108,7 @@ class NodeProduct
       if args[1].nil? # No node argument, copy keys to all nodes
         raise "0 nodes found in #{args[0]}" if $session.templateNodes.empty?
         $session.templateNodes.each do |node|
-          full_platform = $session.loadNodePlatform(node[0].to_s)
+          full_platform = load_node_platform(node[0].to_s)
           raise "platform for node #{node[0]} not found" if full_platform.nil?
           # get product repo
           if $session.nodeProduct == 'maxscale'
@@ -127,7 +127,7 @@ class NodeProduct
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
         raise "node #{args[1]} not found in #{args[0]}" if node == nil
-        full_platform = $session.loadNodePlatform(node[0].to_s)
+        full_platform = load_node_platform(node[0].to_s)
         raise "Platform for node #{args[1]} not found" if full_platform.nil?
         # get product repo
         if $session.nodeProduct == 'maxscale'
@@ -287,7 +287,7 @@ class NodeProduct
       if args[1].nil? # No node argument, copy keys to all nodes
         raise "nodes not  found in #{args[0]}" if $session.templateNodes.empty?
         $session.templateNodes.each do |node|
-          platform = $session.loadNodePlatform(node[0].to_s).split('^')
+          platform = load_node_platform(node[0].to_s).split('^')
           packages = validate_product(platform[0], products)
           version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
           raise "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}" if packages.nil?
@@ -302,7 +302,7 @@ class NodeProduct
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
         raise "node #{args[1]} not found in #{args[0]}" if node.nil?
-        platform = $session.loadNodePlatform(node[0].to_s).split('^')
+        platform = load_node_platform(node[0].to_s).split('^')
         packages = validate_product(platform[0], products)
         raise "product #{$session.nodeProduct} not found for platform #{platform[0]}" if packages.nil?
         $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
@@ -347,4 +347,22 @@ class NodeProduct
     cmd_install_product
   end
 
+
+  # load node platform by name
+  def self.load_node_platform(name)
+    pwd = Dir.pwd
+    # template file
+    templateFile = $exception_handler.handle('Template nodes file not found') { IO.read(pwd.to_s+'/template') }
+    templateNodes = $exception_handler.handle('Template configuration file invalid') { JSON.parse(IO.read(templateFile)) }
+    #
+    node = templateNodes.find { |elem| elem[0].to_s == name }
+    box = node[1]['box'].to_s
+    if $session.boxes.boxesManager.has_key?(box)
+      box_params = $session.box_definitions.get_box(box)
+      platform = box_params[PLATFORM].to_s+'^'+box_params['platform_version'].to_s
+      return platform
+    else
+      $out.warning name.to_s+" platform does not exist! Please, check box name!"
+    end
+  end
 end

@@ -672,25 +672,6 @@ EOF
     true
   end
 
-  # load node platform by name
-  def loadNodePlatform(name)
-    pwd = Dir.pwd
-    # template file
-    templateFile = $exception_handler.handle('Template nodes file not found') { IO.read(pwd.to_s+'/template') }
-    templateNodes = $exception_handler.handle('Template configuration file invalid') { JSON.parse(IO.read(templateFile)) }
-    #
-    node = templateNodes.find { |elem| elem[0].to_s == name }
-    box = node[1]['box'].to_s
-    if $session.boxes.boxesManager.has_key?(box)
-      box_params = $session.box_definitions.get_box(box)
-      platform = box_params[PLATFORM].to_s+'^'+box_params['platform_version'].to_s
-      return platform
-    else
-      $out.warning name.to_s+" platform does not exist! Please, check box name!"
-    end
-
-  end
-
   def checkRelevanceNetworkConfig(filename)
     system 'scripts/check_network_config.sh ' + filename
   end
