@@ -350,19 +350,18 @@ class NodeProduct
 
   # load node platform by name
   def self.load_node_platform(name)
-    pwd = Dir.pwd
-    # template file
-    templateFile = $exception_handler.handle('Template nodes file not found') { IO.read(pwd.to_s+'/template') }
-    templateNodes = $exception_handler.handle('Template configuration file invalid') { JSON.parse(IO.read(templateFile)) }
-    #
-    node = templateNodes.find { |elem| elem[0].to_s == name }
-    box = node[1]['box'].to_s
-    if $session.boxes.boxesManager.has_key?(box)
-      box_params = $session.box_definitions.get_box(box)
-      platform = box_params[PLATFORM].to_s+'^'+box_params['platform_version'].to_s
-      return platform
-    else
-      $out.warning name.to_s+" platform does not exist! Please, check box name!"
+    begin
+      template_file = File.read('template')
+    rescue RuntimeError
+      raise 'Template nodes file not found'
     end
+    begin
+      template_nodes = JSON.parse(File.read(template_file))
+    rescue RuntimeError
+      raise 'Template configuration file is invalid'
+    end
+
+    node_definition = template_nodes.find { |node| node[0].to_s == name }
+    $session.box_definitions.platform_key(node_definition[1]['box'])
   end
 end
