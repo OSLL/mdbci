@@ -220,18 +220,16 @@ end
   # @param name [String] internal name of the machine specified in the template
   # @param product_config [Hash] list of the product parameters
   # @param recipe_name [String] name of the recipe
-  # @param subscription_manager_params [Hash] subscription manager params
+  # @param box [String] name of the box
   # in format { recipe_name, credentials, attribute_name }
   # @return [String] pretty formatted role description in JSON format.
-  def make_role_json(name, product_config, recipe_name, subscription_manager_params)
+  def make_role_json(name, product_config, recipe_name, box)
     run_list = ['recipe[mdbci_provision_mark::remove_mark]',
                 "recipe[#{recipe_name}]",
                 'recipe[mdbci_provision_mark::default]']
-    unless subscription_manager_params.empty?
-      run_list.insert(1, subscription_manager_params[:recipe_name])
-      product_config = product_config.merge(
-        subscription_manager_params[:attribute_name] => subscription_manager_params[:credentials]
-      )
+    if need_subscription_manager_credentials?(box)
+      run_list.insert(1, 'recipe[subscription-manager]')
+      product_config = product_config.merge('subscription-manager': retrieve_subscription_credentials)
     end
     role = { name: name,
              default_attributes: {},
@@ -243,21 +241,22 @@ end
     JSON.pretty_generate(role)
   end
 
-  # Generate the subscription manager params for generating role JSON-file.
+  # Returns the credentials for subscription manager.
   #
-  # @param box_params [Hash] information of the box parameters
-  # @param credentials [Hash] information of the box credentials
-  # @return [Hash] subscription manager params in format { recipe_name, credentials, attribute_name }
-  # for generating role JSON-file.
+  # @return [Hash] subscription manager credentials.
   # @raise RuntimeError if RHEL credentials for Red Hat Subscription-Manager are not configured.
-  def make_subscription_manager_params(box_params, credentials)
-    return {} unless box_params['configure_subscription_manager'] == 'true'
+  def retrieve_subscription_credentials
+    raise 'RHEL credentials for Red Hat Subscription-Manager are not configured' if @env.rhel_credentials.nil?
 
-    raise 'RHEL credentials for Red Hat Subscription-Manager are not configured' if credentials.nil?
+    @env.rhel_credentials
+  end
 
-    { recipe_name: 'recipe[subscription-manager]',
-      attribute_name: 'subscription-manager',
-      credentials: credentials }
+  # Check whether box needs to be subscribed or not.
+  #
+  # @param box [String] name of the box
+  # @return [Bool] true if box needs to be subscribed, otherwise - false.
+  def need_subscription_manager_credentials?(box)
+    @boxes.getBox(box)['configure_subscription_manager'] == 'true'
   end
 
   # Generate the role description for the specified node.
@@ -291,8 +290,7 @@ end
                        {}
                      end
     @ui.info("Recipe #{recipe_name}")
-    subscription_manager_params = make_subscription_manager_params(@boxes.getBox(box), @env.rhel_credentials)
-    make_role_json(name, product_config, recipe_name, subscription_manager_params)
+    make_role_json(name, product_config, recipe_name, box)
   end
   # rubocop:enable Metrics/MethodLength
 
