@@ -64,9 +64,7 @@ class BoxDefinitions
   private
 
   def check_box(box_name)
-    unless @boxes.key?(box_name)
-      raise ArgumentError, "The specified box definition can not be found: #{box_name}"
-    end
+    raise ArgumentError, "The specified box definition can not be found: #{box_name}" unless @boxes.key?(box_name)
   end
 
   # @param extra_path [String] path to the
