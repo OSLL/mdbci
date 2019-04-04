@@ -1,3 +1,5 @@
+return if node[:platform_family] == 'suse' && node[:platform_version].to_i < 15
+
 if node[:platform] == 'linux'
   zypper_package 'ntp' do
     action :remove
