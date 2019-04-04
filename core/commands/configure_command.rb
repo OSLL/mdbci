@@ -18,10 +18,10 @@ class ConfigureCommand < BaseCommand
     info = <<-HELP
 'configure' command creates configuration for MDBCI to use AWS and RHEL subscription.
 
-You can configure all products (AWS and RHEL):
+You can configure AWS and RHEL credentials:
   mdbci configure
 
-Or you can configure specified product (for example, AWS):
+Or you can configure only AWS or only RHEL credentials (for example, AWS):
   mdbci configure --product aws
     HELP
     @ui.info(info)
