@@ -294,33 +294,13 @@ EOF
       $out.error('Please specify the field to get summarized data')
       return 1
     end
-    puts @box_definitions.unique_values(@field)
+    $out.out(@box_definitions.unique_values(@field))
     0
   end
 
-  def getPlatfroms
-    if !@boxes.boxesManager.empty?
-      platforms = Array.new
-      @boxes.boxesManager.each do |box|
-        platforms.push box[1][PLATFORM]
-      end
-      platforms.uniq
-    else
-      raise 'Boxes are not found'
-    end
-  end
-
-  def showPlatforms
-    exit_code = 1
-    begin
-      $out.out @boxes.boxesManager.keys
-      exit_code = 0
-    rescue
-      $out.error "check boxes configuration and try again"
-      exit_code = 1
-    end
-    $out.out getPlatfroms
-    return exit_code
+  def show_platforms
+    $out.out(@box_definitions.unique_values('platform'))
+    0
   end
 
   # show boxes with platform and version
@@ -444,7 +424,7 @@ EOF
     },
     platforms: {
       description: 'List all known platforms',
-      action: ->(*) { showPlatforms }
+      action: ->(*) { show_platforms }
     },
     private_ip: {
       description: 'Show private ip address of the box',
