@@ -6,7 +6,6 @@ require 'open3'
 require 'xdg'
 require 'concurrent'
 
-require_relative 'boxes_manager'
 require_relative 'clone'
 require_relative 'commands/up_command'
 require_relative 'commands/sudo_command'
@@ -34,7 +33,6 @@ require_relative 'services/box_definitions'
 # Currently it is the GOD object that contains configuration and manages the commands that should be run.
 # These responsibilites should be split between several classes.
 class Session
-  attr_accessor :boxes
   attr_reader :box_definitions
   attr_accessor :configs
   attr_accessor :configuration_file
@@ -51,7 +49,6 @@ class Session
   attr_accessor :mdbciNodes # mdbci nodes
   attr_accessor :templateNodes
   attr_accessor :attempts
-  attr_accessor :boxes_dir
   attr_accessor :mdbciDir
   attr_accessor :mdbci_dir
   attr_accessor :starting_dir
@@ -107,15 +104,12 @@ EOF
       File.join(XDG['CONFIG_HOME'].to_s, 'mdbci'),
       File.join(@mdbci_dir, 'config')
     ]
-    @boxes_dir = File.join(@mdbci_dir, 'BOXES') unless @boxes_dir
     @repo_dir = find_configuration('repo.d') unless @repo_dir
   end
 
   # Method initializes services that depend on the parsed configuration
   def initialize_services
     fill_paths
-    $out.info("Load Boxes from #{@boxes_dir}")
-    @boxes = BoxesManager.new(@boxes_dir)
     $out.info('Load MDBCI configuration file')
     @tool_config = ToolConfiguration.load
     $out.info("Load Repos from #{@repo_dir}")
