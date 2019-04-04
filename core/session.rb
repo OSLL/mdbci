@@ -120,7 +120,7 @@ EOF
     if @tool_config['aws']
       @aws_service = AwsService.new(@tool_config['aws'], $out)
     end
-    @rhel_credentials = @tool_config['rhel'] if @tool_config['rhel']
+    @rhel_credentials = @tool_config['rhel']
   end
 
   # Search for a configuration file in all known configuration locations that include
