@@ -16,6 +16,7 @@ require_relative 'commands/generate_command'
 require_relative 'commands/generate_product_repositories_command'
 require_relative 'commands/help_command'
 require_relative 'commands/configure_command'
+require_relative 'commands/configure_network_command'
 require_relative 'commands/deploy_command'
 require_relative 'commands/setup_dependencies_command'
 require_relative 'constants'
@@ -534,6 +535,8 @@ EOF
       exit_code = NodeProduct.install_product(ARGV.shift)
     when 'public_keys'
       exit_code = publicKeys(ARGV.shift)
+    when 'public_keys_ssh'
+      exit_code = ConfigureNetworkCommand.publicKeysSsh(ARGV.shift)
     when 'setup'
       exit_code = setup(ARGV.shift)
     when 'setup-dependencies'
