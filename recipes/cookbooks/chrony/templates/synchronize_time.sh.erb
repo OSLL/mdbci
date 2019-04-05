@@ -1,3 +1,13 @@
 #!/bin/bash
 
 sudo chronyc -a makestep
+
+while true
+do
+  unsynchronized_sources=$(chronyc sources | grep 0ns | wc -l)
+  if [[ ${unsynchronized_sources} -le 2 ]]; then
+    break
+  fi
+
+  sleep 1
+done;
