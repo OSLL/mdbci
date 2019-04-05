@@ -569,9 +569,9 @@ EOF
     pwd = Dir.pwd
 
     raise 'Configuration name is required' if args.nil?
-
+    
     args = args.split('/')
-
+    p args
     # mdbci box
     if File.exist?(args[0]+'/mdbci_template')
       loadMdbciNodes args[0]
@@ -640,6 +640,10 @@ EOF
           keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!") { File.read(@keyFile) }
           # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
           cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
+          unless File.exist?('Vagrantfile')
+            cmd = 'cd '+node.name.to_s+ ';'+
+            'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
+          end
           $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
           result = ShellCommands.run_command_and_log($out, cmd)
           unless result[:value].success?
@@ -657,6 +661,10 @@ EOF
         keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!") { File.read(@keyFile) }
         # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
         cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
+        unless File.exist?('Vagrantfile')
+          cmd = 'cd '+node.name.to_s+ ';'+
+          'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
+        end
         $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
         result = ShellCommands.run_command_and_log($out, cmd)
         unless result[:value].success?
