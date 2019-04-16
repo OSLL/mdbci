@@ -127,3 +127,19 @@ else
     ignore_failure MaxScale.is_older_than?(node['maxscale']['version'], '2.2')
   end
 end
+
+# Allow read access for the maxscale user to /etc/shadow
+case node[:platform_family]
+when "rhel", "centos"
+  # root owns the file on RHEL/CentOS
+  execute "make maxscale a part of the root group" do
+    command "usermod -a -G root maxscale"
+  end
+  # The file also has 000 permissions, make it group readable like it is on DEB systems
+  execute "make /etc/shadow group readable" do
+    command "chmod g+r /etc/shadow"
+  end
+when "debian", "ubuntu", "suse", "opensuse"
+  execute "make maxscale a part of the shadow group" do
+    command "usermod -a -G shadow maxscale"
+  end
