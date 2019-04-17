@@ -5,7 +5,7 @@ include_recipe "mariadb-maxscale::maxscale_repos"
 if node[:platform] == "centos" and node["platform_version"].to_f >= 6.0
   # TODO: centos7 don't have selinux
   bash 'Turn off SElinux on CentOS >= 6.0' do
-  code <<-EOF
+    code <<-EOF
     selinuxenabled && flag=enabled || flag=disabled
     if [[ $flag == 'enabled' ]];
     then
@@ -24,73 +24,73 @@ end  # Turn off SElinux
 
 # check and install iptables
 case node[:platform_family]
-  when "debian", "ubuntu"
-    execute "Install iptables-persistent" do
-      command "DEBIAN_FRONTEND=noninteractive apt-get -y install iptables-persistent"
-    end
-  when "rhel", "fedora", "centos"
-    if ((node[:platform] == "centos" or node[:platform] == "rhel" or node[:platform] == "redhat") and node[:platform_version].to_f >= 7.0)
-      bash 'Install and configure iptables' do
+when "debian", "ubuntu"
+  execute "Install iptables-persistent" do
+    command "DEBIAN_FRONTEND=noninteractive apt-get -y install iptables-persistent"
+  end
+when "rhel", "fedora", "centos"
+  if ((node[:platform] == "centos" or node[:platform] == "rhel" or node[:platform] == "redhat") and node[:platform_version].to_f >= 7.0)
+    bash 'Install and configure iptables' do
       code <<-EOF
         yum --assumeyes install iptables-services
         systemctl start iptables
         systemctl enable iptables
       EOF
-      end
-    else
-      bash 'Configure iptables' do
+    end
+  else
+    bash 'Configure iptables' do
       code <<-EOF
         /sbin/service start iptables
         chkconfig iptables on
       EOF
-      end
     end
-  when "suse"
-    execute "Install iptables and SuSEfirewall2" do
-      command "zypper install -y iptables"
-      command "zypper install -y SuSEfirewall2"
-    end
+  end
+when "suse"
+  execute "Install iptables and SuSEfirewall2" do
+    command "zypper install -y iptables"
+    command "zypper install -y SuSEfirewall2"
+  end
 end
 
 # iptables rules
 case node[:platform_family]
-  when "debian", "ubuntu", "rhel", "fedora", "centos", "suse", "opensuse"
-    ["3306", "4006", "4008", "4009", "4016", "5306", "4442", "6444", "6603"].each do |port|
-      execute "Open port #{port}" do
-        command "iptables -I INPUT -p tcp -m tcp --dport "+ port +" -j ACCEPT"
-	command "iptables -I INPUT -p tcp --dport "+ port +" -j ACCEPT -m state --state NEW"
-      end
+when "debian", "ubuntu", "rhel", "fedora", "centos", "suse", "opensuse"
+  ["3306", "4006", "4008", "4009", "4016", "5306", "4442", "6444", "6603"].each do |port|
+    execute "Open port #{port}" do
+      command "iptables -I INPUT -p tcp -m tcp --dport "+ port +" -j ACCEPT"
+      command "iptables -I INPUT -p tcp --dport "+ port +" -j ACCEPT -m state --state NEW"
     end
+  end
 end # iptables rules
 
 # TODO: check saving iptables rules after reboot
 # save iptables rules
 case node[:platform_family]
-  when "debian", "ubuntu"
-    execute "Save iptables rules" do
-      command "iptables-save > /etc/iptables/rules.v4"
-      #command "/usr/sbin/service iptables-persistent save"
-    end
-  when "rhel", "centos", "fedora"
-    if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
-      bash 'Save iptables rules on CentOS 7' do
+when "debian", "ubuntu"
+  execute "Save iptables rules" do
+    command "iptables-save > /etc/iptables/rules.v4"
+    #command "/usr/sbin/service iptables-persistent save"
+  end
+when "rhel", "centos", "fedora"
+  if node[:platform] == "centos" and node["platform_version"].to_f >= 7.0
+    bash 'Save iptables rules on CentOS 7' do
       code <<-EOF
         # TODO: use firewalld
         iptables-save > /etc/sysconfig/iptables
       EOF
-      end
-    else
-      bash 'Save iptables rules on CentOS >= 6.0' do
+    end
+  else
+    bash 'Save iptables rules on CentOS >= 6.0' do
       code <<-EOF
         /sbin/service iptables save
       EOF
-      end
     end
-    # service iptables restart
-  when "suse", "opensuse"
-    execute "Save iptables rules" do
-      command "iptables-save > /etc/sysconfig/iptables"
-    end
+  end
+# service iptables restart
+when "suse", "opensuse"
+  execute "Save iptables rules" do
+    command "iptables-save > /etc/sysconfig/iptables"
+  end
 end # save iptables rules
 
 # Install bind-utils/dnsutils for nslookup
@@ -126,4 +126,21 @@ else
   package 'maxscale-experimental' do
     ignore_failure MaxScale.is_older_than?(node['maxscale']['version'], '2.2')
   end
+end
+
+# Allow read access for the maxscale user to /etc/shadow
+shadow_group = case node[:platform_family]
+               when "rhel", "centos"
+                 "root"
+               when "debian", "ubuntu", "suse", "opensuse"
+                 "shadow"
+               end
+
+group shadow_group do
+  append true
+  members ["maxscale"]
+end
+
+file "/etc/shadow" do
+  mode "640"
 end
