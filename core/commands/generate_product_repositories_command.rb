@@ -307,7 +307,7 @@ In order to specify the number of retries for repository configuration use --att
     parse_repository(
       config['path'], config['key'], product,
       extract_field(:version, version_regexp),
-      append_url(%w[centos rhel sles], :platform),
+      append_url(%w[centos rhel sles opensuse], :platform),
       extract_field(:platform_version, %r{^(\p{Digit}+)\/?$}),
       append_url(%w[x86_64]),
       lambda do |release, _|
@@ -499,7 +499,8 @@ In order to specify the number of retries for repository configuration use --att
     'el' => %w[centos rhel],
     'sles' => %w[sles],
     'centos' => %w[centos],
-    'rhel' => %w[rhel]
+    'rhel' => %w[rhel],
+    'opensuse' => %w[opensuse]
   }.freeze
   def split_rpm_platforms
     lambda do |release, links|
