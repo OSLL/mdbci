@@ -129,17 +129,18 @@ else
 end
 
 # Allow read access for the maxscale user to /etc/shadow
-case node[:platform_family]
-when "rhel", "centos"
-  # root owns the file on RHEL/CentOS
-  execute "make maxscale a part of the root group" do
-    command "usermod -a -G root maxscale"
-  end
-  # The file also has 000 permissions, make it group readable like it is on DEB systems
-  execute "make /etc/shadow group readable" do
-    command "chmod g+r /etc/shadow"
-  end
-when "debian", "ubuntu", "suse", "opensuse"
-  execute "make maxscale a part of the shadow group" do
-    command "usermod -a -G shadow maxscale"
-  end
+shadow_group = case node[:platform_family]
+               when "rhel", "centos"
+                 "root"
+               when "debian", "ubuntu", "suse", "opensuse"
+                 "shadow"
+               end
+
+group shadow_group do
+  append true
+  members ["maxscale"]
+end
+
+file "/etc/shadow" do
+  mode "640"
+end
