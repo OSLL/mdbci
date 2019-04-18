@@ -15,15 +15,14 @@ class ConfigureNetworkCommand
     unless Dir.exists? args[0]
       raise "Directory with nodes does not exists: #{args[0]}"
     end
-    
+
     configurationDir = Dir.new(args[0])
-    network = load_nodes_from_dir(configurationDir)
-    
-    if network.nodes.empty?
-      raise "No aws, vbox, libvirt, docker nodes found in #{args[0]}"
-    end
-  
+
     if args[1].nil? # No node argument, copy keys to all nodes
+      network = load_nodes_from_dir(configurationDir)
+      if network.nodes.empty?
+        raise "No aws, vbox, libvirt, docker nodes found in #{args[0]}"
+      end
       if labels.nil? # No label, copy keys to all nodes
         network.nodes.each do |node|
           machine = parse_node(node, configurationDir.path)
@@ -40,9 +39,15 @@ class ConfigureNetworkCommand
         end
       end
     else # Copy keys to select node
-      node = network.nodes.find { |elem| elem.name == args[1] }
-      machine = parse_node(node, configurationDir.path)
-      exit_code = upload_ssh_file(machine, keyFile, mc)
+      pathNode = configurationDir.entries.find { |elem| elem == args[1] }
+      unless pathNode.nil?
+        network = Network.new
+        network.loadNodes configurationDir.path + '/' + pathNode
+        machine = parse_node(network.nodes[0], configurationDir.path)
+        exit_code = upload_ssh_file(machine, keyFile, mc)
+      else
+        raise "No such node with name #{args[1]} in #{args[0]}"
+      end
     end   
     exit_code
   end
@@ -67,7 +72,7 @@ class ConfigureNetworkCommand
     end
     exit_code
   end
-  
+
   # Parse information about machine
   # @param node [Node] node object
   # @param pathConfiguration [String] path directory with configuration
@@ -79,7 +84,7 @@ class ConfigureNetworkCommand
     machine = {"whoami" => config.configs[node.name]["whoami"], "network" => config.configs[node.name]["network"],
                "keyfile" => config.configs[node.name]["keyfile"] }
   end
-  
+
   #load all nodes from directory with configuration
   # @param configurationDir [Dir] directory with configuration
   def self.load_nodes_from_dir(configurationDir)
