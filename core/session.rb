@@ -534,8 +534,6 @@ EOF
     when 'install_product'
       exit_code = NodeProduct.install_product(ARGV.shift)
     when 'public_keys'
-      exit_code = publicKeys(ARGV.shift)
-    when 'public_keys_ssh'
       exit_code = ConfigureNetworkCommand.publicKeysSsh(ARGV.shift, @keyFile, @labels, $out)
     when 'setup'
       exit_code = setup(ARGV.shift)
@@ -565,118 +563,6 @@ EOF
       command.execute
     end
     return exit_code
-  end
-
-  # copy ssh keys to config/node
-  def publicKeys(args)
-    pwd = Dir.pwd
-
-    raise 'Configuration name is required' if args.nil?
-    
-    args = args.split('/')
-    p args
-    # mdbci box
-    if File.exist?(args[0]+'/mdbci_template')
-      loadMdbciNodes args[0]
-      if args[1].nil? # read ip for all nodes
-        if $session.mdbciNodes.empty?
-          raise "MDBCI nodes not found in #{args[0]}"
-        end
-        $session.mdbciNodes.each do |node|
-          box = node[1]['box'].to_s
-          raise "Box empty in node: #{node}" unless !box.empty?
-          mdbci_params = $session.boxes.getBox(box)
-          #
-          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(@keyFile) }
-          # add keyfile_content to the end of the authorized_keys file in ~/.ssh directory
-          command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
-          cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + $mdbci_exec_dir.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
-                          + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
-                          + "\"" + command + "\""
-          $out.info 'Copy '+@keyFile.to_s+' to '+node[0].to_s
-          result = ShellCommands.run_command_and_log($out, cmd)
-          unless result[:value].success?
-            raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
-          end
-        end
-      else
-        mdbci_node = @mdbciNodes.find { |elem| elem[0].to_s == args[1] }
-
-        if mdbci_node.nil?
-          raise "No such node with name #{args[1]} in #{args[0]}"
-        end
-
-        box = mdbci_node[1]['box'].to_s
-        if !box.empty?
-          mdbci_params = $session.boxes.getBox(box)
-          #
-          keyfile_content = $exception_handler.handle("Keyfile not found! Check keyfile path!") { File.read(@keyFile) }
-          # add to the end of the authorized_keys file in ~/.ssh directory
-          command = 'echo \''+keyfile_content+'\' >> /home/'+mdbci_params['user']+'/.ssh/authorized_keys'
-          cmd = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ' + $mdbci_exec_dir.to_s+'/KEYS/'+mdbci_params['keyfile'].to_s + " "\
-                          + mdbci_params['user'].to_s + "@" + mdbci_params['IP'].to_s + " "\
-                          + "\"" + command + "\""
-          $out.info 'Copy '+@keyFile.to_s+' to '+mdbci_node[0].to_s
-          result = ShellCommands.run_command_and_log($out, cmd)
-          unless result[:value].success?
-            raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
-          end
-        else
-          raise "Wrong box parameter in node: #{args[1]}"
-        end
-      end
-    else # aws, vbox, libvirt, docker nodes
-
-      unless Dir.exists? args[0]
-        raise "Directory with nodes does not exists: #{args[0]}"
-      end
-
-      network = Network.new
-      network.loadNodes args[0] # load nodes from dir
-
-      if network.nodes.empty?
-        raise "No aws, vbox, libvirt, docker nodes found in #{args[0]}"
-      end
-
-      if args[1].nil? # No node argument, copy keys to all nodes
-        network.nodes.each do |node|
-          keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!") { File.read(@keyFile) }
-          # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
-          cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
-          unless File.exist?('Vagrantfile')
-            cmd = 'cd '+node.name.to_s+ ';'+
-            'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
-          end
-          $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
-          result = ShellCommands.run_command_and_log($out, cmd)
-          unless result[:value].success?
-            raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
-          end
-        end
-      else
-        node = network.nodes.find { |elem| elem.name == args[1] }
-
-        if node.nil?
-          raise "No such node with name #{args[1]} in #{args[0]}"
-        end
-
-        #
-        keyfile_content = $exception_handler.handle("Keyfile not found! Check path to it!") { File.read(@keyFile) }
-        # add keyfile content to the end of the authorized_keys file in ~/.ssh directory
-        cmd = 'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
-        unless File.exist?('Vagrantfile')
-          cmd = 'cd '+node.name.to_s+ ';'+
-          'vagrant ssh '+node.name.to_s+' -c "echo \''+keyfile_content+'\' >> ~/.ssh/authorized_keys"'
-        end
-        $out.info 'Copy '+@keyFile.to_s+' to '+node.name.to_s+'.'
-        result = ShellCommands.run_command_and_log($out, cmd)
-        unless result[:value].success?
-          raise "command #{cmd} exit with non-zero code: #{$?.exitstatus}"
-        end
-      end
-    end
-
-    Dir.chdir pwd
   end
 
   def showProvider(name=nil)
