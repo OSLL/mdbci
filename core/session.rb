@@ -534,7 +534,7 @@ EOF
     when 'install_product'
       exit_code = NodeProduct.install_product(ARGV.shift)
     when 'public_keys'
-      exit_code = ConfigureNetworkCommand.publicKeysSsh(ARGV.shift, @keyFile, @labels, $out)
+      exit_code = ConfigureNetworkCommand.publicKeys(ARGV.shift, @keyFile, @labels, $out)
     when 'setup'
       exit_code = setup(ARGV.shift)
     when 'setup-dependencies'
