@@ -14,7 +14,6 @@ gem 'xdg'
 gem 'concurrent-ruby'
 gem 'iniparse'
 gem 'ostruct'
-gem 'ssh'
 
 group(:development) do
   gem 'pry'

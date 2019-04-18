@@ -536,7 +536,7 @@ EOF
     when 'public_keys'
       exit_code = publicKeys(ARGV.shift)
     when 'public_keys_ssh'
-      exit_code = ConfigureNetworkCommand.publicKeysSsh(ARGV.shift)
+      exit_code = ConfigureNetworkCommand.publicKeysSsh(ARGV.shift, @keyFile, @labels, $out)
     when 'setup'
       exit_code = setup(ARGV.shift)
     when 'setup-dependencies'
