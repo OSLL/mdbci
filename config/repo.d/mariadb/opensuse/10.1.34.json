@@ -1,0 +1,10 @@
+[
+  {
+    "repo": "http://yum.mariadb.org/10.1.34/opensuse/42/x86_64/",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform": "opensuse",
+    "platform_version": "42",
+    "product": "mariadb",
+    "version": "10.1.34"
+  }
+]

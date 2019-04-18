@@ -1,0 +1,10 @@
+[
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/2.3.3/sles/12/x86_64/",
+    "repo_key": "https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY",
+    "platform": "sles",
+    "platform_version": "12",
+    "product": "maxscale",
+    "version": "2.3.3"
+  }
+]

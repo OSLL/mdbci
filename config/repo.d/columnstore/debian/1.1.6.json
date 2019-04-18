@@ -1,0 +1,18 @@
+[
+  {
+    "repo": "https://downloads.mariadb.com/ColumnStore/1.1.6/repo/debian8",
+    "repo_key": "AD0DEAFDA41F5C14",
+    "platform": "debian",
+    "platform_version": "jessie",
+    "product": "columnstore",
+    "version": "1.1.6"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/ColumnStore/1.1.6/repo/debian9",
+    "repo_key": "AD0DEAFDA41F5C14",
+    "platform": "debian",
+    "platform_version": "stretch",
+    "product": "columnstore",
+    "version": "1.1.6"
+  }
+]

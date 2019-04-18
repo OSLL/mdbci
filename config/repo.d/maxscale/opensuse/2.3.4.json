@@ -1,0 +1,10 @@
+[
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/2.3.4/opensuse/15/x86_64/",
+    "repo_key": "https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY",
+    "platform": "opensuse",
+    "platform_version": "15",
+    "product": "maxscale",
+    "version": "2.3.4"
+  }
+]

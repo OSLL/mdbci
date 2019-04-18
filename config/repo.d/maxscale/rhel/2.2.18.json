@@ -1,0 +1,18 @@
+[
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/2.2.18/rhel/6/x86_64/",
+    "repo_key": "https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY",
+    "platform": "rhel",
+    "platform_version": "6",
+    "product": "maxscale",
+    "version": "2.2.18"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/2.2.18/rhel/7/x86_64/",
+    "repo_key": "https://downloads.mariadb.com/MaxScale/MariaDB-MaxScale-GPG-KEY",
+    "platform": "rhel",
+    "platform_version": "7",
+    "product": "maxscale",
+    "version": "2.2.18"
+  }
+]
