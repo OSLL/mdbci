@@ -16,6 +16,14 @@
     "version": "8.0"
   },
   {
+    "repo": "deb http://repo.mysql.com/apt/ubuntu cosmic mysql-8.0",
+    "repo_key": "5072E1F5",
+    "platform": "ubuntu",
+    "platform_version": "cosmic",
+    "product": "mysql",
+    "version": "8.0"
+  },
+  {
     "repo": "deb http://repo.mysql.com/apt/ubuntu trusty mysql-8.0",
     "repo_key": "5072E1F5",
     "platform": "ubuntu",

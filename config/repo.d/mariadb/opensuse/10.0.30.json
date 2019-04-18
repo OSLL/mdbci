@@ -1,0 +1,18 @@
+[
+  {
+    "repo": "http://yum.mariadb.org/10.0.30/opensuse/13/x86_64/",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform": "opensuse",
+    "platform_version": "13",
+    "product": "mariadb",
+    "version": "10.0.30"
+  },
+  {
+    "repo": "http://yum.mariadb.org/10.0.30/opensuse/42/x86_64/",
+    "repo_key": "https://yum.mariadb.org/RPM-GPG-KEY-MariaDB",
+    "platform": "opensuse",
+    "platform_version": "42",
+    "product": "mariadb",
+    "version": "10.0.30"
+  }
+]

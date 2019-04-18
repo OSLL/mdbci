@@ -14,13 +14,5 @@
     "platform_version": "stretch",
     "product": "maxscale",
     "version": "latest"
-  },
-  {
-    "repo": "https://downloads.mariadb.com/MaxScale/latest/debian wheezy main",
-    "repo_key": "135659e928c12247",
-    "platform": "debian",
-    "platform_version": "wheezy",
-    "product": "maxscale",
-    "version": "latest"
   }
 ]
