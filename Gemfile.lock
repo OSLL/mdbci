@@ -18,7 +18,6 @@ GEM
     coderay (1.1.2)
     concurrent-ruby (1.1.4)
     diff-lcs (1.3)
-    iniparse (1.4.4)
     ipaddress (0.8.3)
     jaro_winkler (1.5.2)
     jmespath (1.4.0)
@@ -31,11 +30,9 @@ GEM
     net-ssh (4.2.0)
     nokogiri (1.8.2)
       mini_portile2 (~> 2.3.0)
-    ostruct (0.1.0)
-    parallel (1.12.1)
-    parser (2.5.3.0)
+    parallel (1.14.0)
+    parser (2.6.2.0)
       ast (~> 2.4.0)
-    powerpack (0.1.2)
     pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
@@ -45,6 +42,7 @@ GEM
     pry-doc (1.0.0)
       pry (~> 0.11)
       yard (~> 0.9.11)
+    psych (3.1.0)
     rainbow (3.0.0)
     rake (12.3.1)
     rspec (3.8.0)
@@ -60,16 +58,16 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.8.0)
     rspec-support (3.8.0)
-    rubocop (0.62.0)
+    rubocop (0.66.0)
       jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)
       parser (>= 2.5, != 2.5.1.1)
-      powerpack (~> 0.1)
+      psych (>= 3.1.0)
       rainbow (>= 2.2.2, < 4.0)
       ruby-progressbar (~> 1.7)
-      unicode-display_width (~> 1.4.0)
+      unicode-display_width (>= 1.4.0, < 1.6)
     ruby-progressbar (1.10.0)
-    unicode-display_width (1.4.1)
+    unicode-display_width (1.5.0)
     workers (0.6.1)
     xdg (2.2.3)
     yard (0.9.16)
@@ -81,13 +79,11 @@ DEPENDENCIES
   aws-sdk-ec2
   bundler
   concurrent-ruby
-  iniparse
   ipaddress
   json-schema (= 2.6.2)
   net-scp
   net-ssh
   nokogiri
-  ostruct
   pry
   pry-byebug
   pry-doc

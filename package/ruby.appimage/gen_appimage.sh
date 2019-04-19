@@ -47,7 +47,7 @@ fi
 # App name, used by generate_appimage.
 if [ "$#" -eq 0 ]; then
     APP=ruby
-    VERSION=2.5.1
+    VERSION=2.6.2
     EXTRA_APP=false
 elif [ "$#" -eq 2 ]; then
     APP=$1
@@ -81,7 +81,7 @@ mkdir -p $APP_DIR
 # the source directory
 pushd $BUILD_DIR
 
-RUBY_VERSION=2.5.1
+RUBY_VERSION=2.6.2
 RUBY_SHORT_VERSION=$(echo $RUBY_VERSION | awk -F. '{print $1"."$2}')
 RUBY_DIR=ruby-$RUBY_VERSION
 if [ -d $RUBY_DIR ]; then

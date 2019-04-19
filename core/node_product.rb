@@ -57,9 +57,9 @@ class NodeProduct
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           raise "Box parameter is not found in #{node[0]}"if box.empty?
-          mdbci_params = $session.boxes.getBox(box)
+          mdbci_params = $session.box_definitions.get_box(box)
           raise "Box #{box} is not found" if mdbci_params.nil?
-          full_platform = $session.platformKey(box)
+          full_platform = $session.box_definitions.platform_key(box)
           raise "Platform for box #{box} is not found" if full_platform == "UNKNOWN"
           # get product repo
           if $session.nodeProduct == 'maxscale'
@@ -82,9 +82,9 @@ class NodeProduct
         raise "Node #{args[1]} is not found in #{args[0]}" if mdbci_node.nil?
         box = mdbci_node[1]['box'].to_s
         raise "Box parameter is not found in defenition of node #{args[0]}/#{args[1]}" if box.empty?
-        mdbci_params = $session.boxes.getBox(box)
+        mdbci_params = $session.box_definitions.get_box(box)
         raise "Box #{box} is not found" if mdbci_params.nil?
-        full_platform = $session.platformKey(box)
+        full_platform = $session.box_definitions.platform_key(box)
         raise "Platform for box #{box} is not found" if full_platform == "UNKNOWN"
         # get product repo
         if $session.nodeProduct == 'maxscale'
@@ -108,7 +108,7 @@ class NodeProduct
       if args[1].nil? # No node argument, copy keys to all nodes
         raise "0 nodes found in #{args[0]}" if $session.templateNodes.empty?
         $session.templateNodes.each do |node|
-          full_platform = $session.loadNodePlatform(node[0].to_s)
+          full_platform = load_node_platform(node[0].to_s)
           raise "platform for node #{node[0]} not found" if full_platform.nil?
           # get product repo
           if $session.nodeProduct == 'maxscale'
@@ -127,7 +127,7 @@ class NodeProduct
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
         raise "node #{args[1]} not found in #{args[0]}" if node == nil
-        full_platform = $session.loadNodePlatform(node[0].to_s)
+        full_platform = load_node_platform(node[0].to_s)
         raise "Platform for node #{args[1]} not found" if full_platform.nil?
         # get product repo
         if $session.nodeProduct == 'maxscale'
@@ -242,15 +242,15 @@ class NodeProduct
         $session.mdbciNodes.each do |node|
           box = node[1]['box'].to_s
           raise "Box parameter is not found for #{node[0]}" if box.empty?
-          mdbci_params = $session.boxes.getBox(box)
+          mdbci_params = $session.box_definitions.get_box(box)
           raise "Box is not found for #{node[0]}" if mdbci_params.nil?
-          platform = $session.boxes.platformKey(box).split('^')
-          packages = validate_product(platform[0], products)
+          platform = $session.box_definitions.get_box(box)['platform']
+          packages = validate_product(platform, products)
           version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
-          raise "Product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}" if packages.nil?
-          $out.info "Install #{$session.nodeProduct} repo to #{platform[0]}"
+          raise "Product #{$session.nodeProduct} #{version} not found for platform #{platform}" if packages.nil?
+          $out.info "Install #{$session.nodeProduct} repo to #{platform}"
           # execute command
-          command = install_product_to_mdbci_cmd(platform[0], packages)
+          command = install_product_to_mdbci_cmd(platform, packages)
           cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
           $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
           result = ShellCommands.run_command($out, command)
@@ -263,17 +263,17 @@ class NodeProduct
         raise "node #{args[1]} not found in #{args[0]}" if mdbci_node.nil?
         box = mdbci_node[1]['box'].to_s
         raise "Box parameter is not found for #{args[1]}/#{args[0]}" if box.empty?
-        mdbci_params = $session.boxes.getBox(box)
-        platform = $session.boxes.platformKey(box).split('^')
-        packages = validate_product(platform[0], products)
+        mdbci_params = $session.box_definitions.get_box(box)
+        platform = $session.box_definitions.get_box(box)['platform']
+        packages = validate_product(platform, products)
         if packages == nil
           version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
-          $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}"
+          $out.error "product #{$session.nodeProduct} #{version} not found for platform #{platform}"
           exit_code = 1
         end
-        $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform[0].to_s
+        $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
         # execute command
-        command = install_product_to_mdbci_cmd(platform[0], packages)
+        command = install_product_to_mdbci_cmd(platform, packages)
         cmd = "ssh -i #{$mdbci_exec_dir}/KEYS/#{mdbci_params['keyfile']} #{mdbci_params['user']}@#{mdbci_params['IP']} '#{command}'"
         $out.info 'Running ['+cmd+'] on '+args[0].to_s+'/'+args[1].to_s
         result = ShellCommands.run_command($out, command)
@@ -287,7 +287,7 @@ class NodeProduct
       if args[1].nil? # No node argument, copy keys to all nodes
         raise "nodes not  found in #{args[0]}" if $session.templateNodes.empty?
         $session.templateNodes.each do |node|
-          platform = $session.loadNodePlatform(node[0].to_s).split('^')
+          platform = load_node_platform(node[0].to_s).split('^')
           packages = validate_product(platform[0], products)
           version = $session.productVersion != nil ? ' with version ' + $session.productVersion : '(maybe you need to specify version)'
           raise "product #{$session.nodeProduct} #{version} not found for platform #{platform[0]}" if packages.nil?
@@ -302,7 +302,7 @@ class NodeProduct
       else
         node = $session.templateNodes.find { |elem| elem[0].to_s == args[1] }
         raise "node #{args[1]} not found in #{args[0]}" if node.nil?
-        platform = $session.loadNodePlatform(node[0].to_s).split('^')
+        platform = load_node_platform(node[0].to_s).split('^')
         packages = validate_product(platform[0], products)
         raise "product #{$session.nodeProduct} not found for platform #{platform[0]}" if packages.nil?
         $out.info 'Install '+$session.nodeProduct.to_s+' product to '+platform.to_s
@@ -347,4 +347,21 @@ class NodeProduct
     cmd_install_product
   end
 
+
+  # load node platform by name
+  def self.load_node_platform(name)
+    begin
+      template_file = File.read('template')
+    rescue RuntimeError
+      raise 'Template nodes file not found'
+    end
+    begin
+      template_nodes = JSON.parse(File.read(template_file))
+    rescue RuntimeError
+      raise 'Template configuration file is invalid'
+    end
+
+    node_definition = template_nodes.find { |node| node[0].to_s == name }
+    $session.box_definitions.platform_key(node_definition[1]['box'])
+  end
 end

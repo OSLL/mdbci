@@ -12,7 +12,6 @@ CREATE TABLE test_run (
   cmake_flags TEXT,
   maxscale_source VARCHAR(256) DEFAULT "NOT FOUND",
   logs_dir VARCHAR(256) DEFAULT NULL,
-  test_time FLOAT DEFAULT 0,
   PRIMARY KEY(id)
 );
 
@@ -21,6 +20,8 @@ CREATE TABLE results (
   test VARCHAR(256),
   result INT,
   core_dump_path VARCHAR(500),
+  leak_summary LONGTEXT,
+  test_time FLOAT,
   FOREIGN KEY (id) REFERENCES test_run(id)
 );
 
@@ -79,4 +80,4 @@ CREATE TABLE sysbench_results (
 CREATE TABLE db_metadata (
   version INT
 );
-INSERT INTO db_metadata (version) VALUES (8);
+INSERT INTO db_metadata (version) VALUES (9);

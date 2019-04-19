@@ -1,0 +1,26 @@
+[
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/beta/ubuntu bionic main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "bionic",
+    "product": "maxscale",
+    "version": "beta"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/beta/ubuntu trusty main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "trusty",
+    "product": "maxscale",
+    "version": "beta"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/MaxScale/beta/ubuntu xenial main",
+    "repo_key": "135659e928c12247",
+    "platform": "ubuntu",
+    "platform_version": "xenial",
+    "product": "maxscale",
+    "version": "beta"
+  }
+]

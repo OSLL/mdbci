@@ -43,7 +43,7 @@ class BaseCommand
   # Creates new instance of command and executes it
   #
   # @return [Number] exit code of the executed command
-  def self.execute(args, env, logger, options)
+  def self.execute(args, env, logger, options = {})
     command = new(args, env, logger, options)
     command.execute
   end

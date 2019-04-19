@@ -1,0 +1,16 @@
+#!/bin/bash
+
+sudo systemctl stop chronyd
+sudo chronyd -q 'server 0.europe.pool.ntp.org iburst' 2>/dev/null || true
+sudo systemctl start chronyd || true
+sudo systemctl start chronyd || true
+
+while true
+do
+  unsynchronized_sources=$(chronyc sources | grep 0ns | wc -l)
+  if [[ ${unsynchronized_sources} -le 2 ]]; then
+    break
+  fi
+
+  sleep 1
+done;

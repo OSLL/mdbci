@@ -4,6 +4,7 @@ require 'open3'
 require_relative 'base_command'
 require_relative '../constants'
 require_relative '../services/shell_commands'
+require_relative '../services/vagrant_commands'
 
 # Snapshot command allows to manage snapshots of virtual environments for configurations.
 class SnapshotCommand < BaseCommand
@@ -31,6 +32,7 @@ class SnapshotCommand < BaseCommand
   SNAPSHOT_ALREADY_EXISTS = 'snapshot already exists'
   SNAPSHOT_NOT_EXISTS = 'snapshot does not exist'
   SNAPSHOTS_NOT_FOUND = 'snapshots does not exist for this node (create it with "snapshot take..." command)'
+  VIRSH_CAN_NOT_SNAPSHOT_REVERT = 'virsh can not revert the state of the machine'
 
   HELP_OPTION = '--help'
   NODE_NAME_OPTION = '--node-name'
@@ -267,57 +269,21 @@ class SnapshotCommand < BaseCommand
     end
   end
 
-  # Returns the ntp service name (ntp or ntpd) depending on the node system.
-  #
-  # @param node_name [String] the name of the node
-  # @return [String] ntp service name.
-  def ntp_service_name(node_name)
-    box = @config.template[node_name]['box']
-    (box.downcase =~ /(ubuntu|debian)/).nil? ? 'ntpd' : 'ntp'
-  end
-
-  # Creates a command string to sync time on the node.
-  #
-  # @param node_name [String] the name of the node on which needs to sync time
-  # @return [String] result command string.
-  def sync_node_time_command(node_name)
-    box = @config.template[node_name]['box']
-    command = if box.downcase =~ /(rhel_6|centos_6)/
-                'ntpdate'
-              else
-                'sntp -s'
-              end
-    "#{command} 0.europe.pool.ntp.org"
-  end
-
-  # Creates a command string to turn off and on the service.
-  #
-  # @param node_name [String] the name of the node on which needs to change the status of the service
-  # @param ntp_service [String] the name of the service that needs to be changed
-  # @param state [String] new state of service (`start` or `stop`)
-  # @return [String] result command string.
-  def change_service_state_command(node_name, ntp_service, state)
-    box = @config.template[node_name]['box']
-    return "/bin/systemctl #{state} #{ntp_service}.service" if (box.downcase =~ /(rhel_6|centos_6)/).nil?
-
-    "service #{ntp_service} #{state}"
-  end
-
   def revert_snapshot(node_name, snapshot_name)
     full_snapshot_name = "#{SNAPSHOT_GLOBAL_PREFIX}_#{snapshot_name}_#{@nodes_directory_name}_#{node_name}"
     @ui.info "Reverting node #{node_name} to snapshot #{full_snapshot_name}"
     snapshots = get_snapshots(node_name)
     raise SNAPSHOTS_NOT_FOUND if snapshots.empty?
     raise SNAPSHOT_NOT_EXISTS unless snapshots.include? full_snapshot_name
+
     case @provider
     when LIBVIRT
       run_reliable_command("virsh snapshot-revert --domain #{@nodes_directory_name}_#{node_name} --snapshotname #{full_snapshot_name}")
+      raise VIRSH_CAN_NOT_SNAPSHOT_REVERT unless VagrantCommands.node_running?(node_name, @ui, @path_to_nodes)
+
       pwd = Dir.pwd
       Dir.chdir @path_to_nodes
-      ntp_service = ntp_service_name(node_name)
-      run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo #{change_service_state_command(node_name, ntp_service, 'stop')}'")
-      run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo #{sync_node_time_command(node_name)}'")
-      run_reliable_command("vagrant ssh #{node_name} -c '/usr/bin/sudo #{change_service_state_command(node_name, ntp_service, 'start')}'")
+      run_reliable_command("vagrant ssh #{node_name} -c '/usr/local/bin/synchronize_time.sh'")
       Dir.chdir pwd
     when DOCKER
       change_current_docker_snapshot(node_name, full_snapshot_name)

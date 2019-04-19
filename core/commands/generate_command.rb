@@ -120,9 +120,8 @@ end
         <% end %>
         <% if template_path %>
           box.vm.synced_folder '<%= template_path %>', '/home/vagrant/cnf_templates', type:'rsync'
-        <% else %>
-          box.vm.synced_folder '<%= expand_path %>', '/vagrant', type: 'rsync'
         <% end %>
+        box.vm.synced_folder '<%= expand_path %>', '/vagrant', type: 'rsync'
         <% if ipv6 %>
           box.vm.network :public_network, :dev => 'virbr0', :mode => 'bridge', :type => 'bridge'
         <% end %>
@@ -197,6 +196,8 @@ end
   # @param box information about the box
   # @param repo [String] repo
   # @return [Hash] pretty formatted role description in JSON format.
+  # rubocop:disable Metrics/CyclomaticComplexity
+  # Further decomposition of the method will complicate the code.
   def make_product_config(product_name, product, box, repo)
     repo = @env.repos.findRepo(product_name, product, box) if repo.nil?
     raise "Repo for product #{product['name']} #{product['version']} for #{box} not found" if repo.nil?
@@ -212,33 +213,57 @@ end
     attribute_name = @env.repos.attribute_name(product_name)
     { "#{attribute_name}": config }
   end
+  # rubocop:enable Metrics/CyclomaticComplexity
 
   # Make the list of the role parameters in the JSON-format.
   #
   # @param name [String] internal name of the machine specified in the template
   # @param product_config [Hash] list of the product parameters
   # @param recipe_name [String] name of the recipe
+  # @param box [String] name of the box
+  # in format { recipe_name, credentials, attribute_name }
   # @return [String] pretty formatted role description in JSON format.
-  def make_role_json(name, product_config, recipe_name)
-    role = {
-      name: name,
-      default_attributes: {},
-      override_attributes: product_config,
-      json_class: 'Chef::Role',
-      description: '',
-      chef_type: 'role',
-      run_list: ['recipe[mdbci_provision_mark::remove_mark]',
-                 "recipe[#{recipe_name}]",
-                 'recipe[mdbci_provision_mark::default]']
-    }
+  def make_role_json(name, product_config, recipe_name, box)
+    run_list = ['recipe[mdbci_provision_mark::remove_mark]',
+                "recipe[#{recipe_name}]",
+                'recipe[mdbci_provision_mark::default]']
+    if need_subscription_manager_credentials?(box)
+      run_list.insert(1, 'recipe[subscription-manager]')
+      product_config = product_config.merge('subscription-manager': retrieve_subscription_credentials)
+    end
+    role = { name: name,
+             default_attributes: {},
+             override_attributes: product_config,
+             json_class: 'Chef::Role',
+             description: '',
+             chef_type: 'role',
+             run_list: run_list }
     JSON.pretty_generate(role)
+  end
+
+  # Returns the credentials for subscription manager.
+  #
+  # @return [Hash] subscription manager credentials.
+  # @raise RuntimeError if RHEL credentials for Red Hat Subscription-Manager are not configured.
+  def retrieve_subscription_credentials
+    raise 'RHEL credentials for Red Hat Subscription-Manager are not configured' if @env.rhel_credentials.nil?
+
+    @env.rhel_credentials
+  end
+
+  # Check whether box needs to be subscribed or not.
+  #
+  # @param box [String] name of the box
+  # @return [Bool] true if box needs to be subscribed, otherwise - false.
+  def need_subscription_manager_credentials?(box)
+    @boxes.get_box(box)['configure_subscription_manager'] == 'true'
   end
 
   # Generate the role description for the specified node.
   #
   # @param name [String] internal name of the machine specified in the template
   # @param product [Hash] parameters of the product to configure from configuration file
-  # @param box information about the box
+  # @param box [String] name of the box
   # @return [String] pretty formatted role description in JSON format
   # rubocop:disable Metrics/MethodLength
   # The method performs a single function; decomposition of the method will complicate the code.
@@ -265,7 +290,7 @@ end
                        {}
                      end
     @ui.info("Recipe #{recipe_name}")
-    make_role_json(name, product_config, recipe_name)
+    make_role_json(name, product_config, recipe_name, box)
   end
   # rubocop:enable Metrics/MethodLength
 
@@ -303,11 +328,10 @@ end
   # Check for the box emptiness and existence of a box in the boxes list.
   #
   # @param box [String] name of the box
-  # @param boxes a list of boxes known to the configuration.
-  def box_valid?(box, boxes)
+  def box_valid?(box)
     return false if box.empty?
 
-    !boxes.getBox(box).nil?
+    !@boxes.get_box(box).nil?
   end
 
   # Make a hash list of node parameters by a node configuration and
@@ -368,16 +392,15 @@ end
   # node definition for the Vagrantfile.
   #
   # @param node [Array] internal name of the machine specified in the template
-  # @param boxes a list of boxes known to the configuration
   # @param path [String] path of the configuration file
   # @param cookbook_path [String] path of the cookbook
   # @return [String] node definition for the Vagrantfile.
   # rubocop:disable Metrics/MethodLength
   # Further decomposition of the method will complicate the code.
-  def node_definition(node, boxes, path, cookbook_path)
+  def node_definition(node, path, cookbook_path)
     box = node[1]['box'].to_s
     unless box.empty?
-      node_params = make_node_params(node, boxes.getBox(box))
+      node_params = make_node_params(node, @boxes.get_box(box))
       print_node_info(node_params, box)
     end
     provisioned = !node[1]['product'].nil?
@@ -394,7 +417,7 @@ end
     IO.write(GenerateCommand.node_config_file_name(path, node_params[:name]),
              JSON.pretty_generate('run_list' => ["role[#{node_params[:name]}]"]))
     # generate node definition
-    if box_valid?(box, boxes)
+    if box_valid?(box)
       generate_node_defenition(node_params, cookbook_path, path)
     else
       @ui.warning("Box #{box} is not installed or configured ->SKIPPING")
@@ -420,12 +443,11 @@ end
   #
   # @param path [String] path of the configuration file
   # @param config [Hash] value of the configuration file
-  # @param boxes a list of boxes known to the configuration
   # @param provider [String] provider name of the nodes
   # @param cookbook_path [String] path of the cookbook.
   # rubocop:disable Metrics/MethodLength
   # The method performs a single function; decomposition of the method will complicate the code.
-  def generate_vagrant_file(path, config, boxes, provider, cookbook_path)
+  def generate_vagrant_file(path, config, provider, cookbook_path)
     vagrant = File.open(File.join(path, 'Vagrantfile'), 'w')
     vagrant.puts vagrant_file_header, vagrant_config_header
     if provider == 'aws'
@@ -439,7 +461,7 @@ end
     config.each do |node|
       unless node[1]['box'].nil?
         @ui.info("Generating node definition for [#{node[0]}]")
-        vagrant.puts node_definition(node, boxes, path, cookbook_path)
+        vagrant.puts node_definition(node, path, cookbook_path)
       end
     end
     vagrant.puts vagrant_config_footer
@@ -459,12 +481,11 @@ end
   #
   # @param path [String] path of the configuration file
   # @param config [Hash] value of the configuration file
-  # @param boxes a list of boxes known to the configuration
   # @param override [Bool] clean directory if it is already exists
   # @param provider [String] provider name of the nodes
   # @return [Integer] SUCCESS_RESULT if the execution of the method passed without errors,
   # otherwise - ERROR_RESULT or ARGUMENT_ERROR_RESULT.
-  def generate(path, config, boxes, override, provider)
+  def generate(path, config, override, provider)
     # TODO: MariaDb Version Validator
     checks_result = check_path(path, override) && check_nodes_names(config)
     return ARGUMENT_ERROR_RESULT unless checks_result
@@ -476,7 +497,7 @@ end
                     end
     @ui.info("Global cookbook_path = #{cookbook_path}")
     @ui.info("Nodes provider = #{provider}")
-    return ERROR_RESULT if generate_vagrant_file(path, config, boxes, provider, cookbook_path) == ERROR_RESULT
+    return ERROR_RESULT if generate_vagrant_file(path, config, provider, cookbook_path) == ERROR_RESULT
     return SUCCESS_RESULT unless File.size?(File.join(path, 'Vagrantfile')).nil?
 
     @ui.error('Generated Vagrantfile is empty! Please check configuration file and regenerate it.')
@@ -522,8 +543,6 @@ end
   #
   # @param configs [Array] list of nodes specified in template
   # @return [Bool] true if the result of passing all checks successful, otherwise - false.
-  # rubocop:disable Metrics/MethodLength
-  # The method performs a single function; decomposition of the method will complicate the code.
   def load_nodes_provider_and_check_it(configs)
     nodes = configs.map { |node| %w[aws_config cookbook_path].include?(node[0]) ? nil : node }.compact.to_h
     providers = nodes.map do |node_name, node_params|
@@ -532,11 +551,8 @@ end
         @ui.error("Box in #{node_name} is not found")
         return false
       end
-      box_params = @env.boxes.getBox(box)
-      if box_params.nil?
-        @ui.error("Box #{box} from node #{node_name} not found in #{@env.boxes_dir}!")
-        return false
-      end
+
+      box_params = @boxes.get_box(box)
       box_params['provider'].to_s
     end
     return false unless check_providers(providers)
@@ -544,36 +560,46 @@ end
     @nodes_provider = providers.first
     true
   end
-  # rubocop:enable Metrics/MethodLength
 
-  # Generate a configuration.
+  # Set required parameters as instance variables,
+  # defines the path for generating the configuration, parse the config JSON-file.
   #
   # @param name [String] name of the configuration file
-  # @param boxes a list of boxes known to the configuration
-  # @param override [Bool] clean directory if it is already exists
-  # @return [Number] exit code for the command execution
+  # @return [Array<String, Hash>] path and config hash
   # @raise RuntimeError if configuration file is invalid.
-  # rubocop:disable Metrics/MethodLength
-  # Further decomposition of the method will complicate the code.
-  def execute(name, boxes, override)
+  def setup_command(name)
     @aws_service = @env.aws_service
+    @boxes = @env.box_definitions
     path = name.nil? ? File.join(Dir.pwd, 'default') : File.absolute_path(name.to_s)
     begin
       instance_config_file = IO.read(@env.configFile)
       config = JSON.parse(instance_config_file)
     rescue IOError, JSON::ParserError
-      @ui.error('Instance configuration file is invalid or not found!')
+      raise('Instance configuration file is invalid or not found!')
+    end
+    [path, config]
+  end
+
+  # Generate a configuration.
+  #
+  # @param name [String] name of the configuration file
+  # @param override [Bool] clean directory if it is already exists
+  # @return [Number] exit code for the command execution
+  def execute(name, override)
+    begin
+      path, config = setup_command(name)
+    rescue RuntimeError => error
+      @ui.error(error.message)
       return ERROR_RESULT
     end
     nodes_checking_result = load_nodes_provider_and_check_it(config)
     return ARGUMENT_ERROR_RESULT unless nodes_checking_result
 
-    generate_result = generate(path, config, boxes, override, @nodes_provider)
+    generate_result = generate(path, config, override, @nodes_provider)
     return generate_result unless generate_result == SUCCESS_RESULT
 
     @ui.info "Generating config in #{path}"
     generate_provider_and_template_files(path, @nodes_provider)
     SUCCESS_RESULT
   end
-  # rubocop:enable Metrics/MethodLength
 end

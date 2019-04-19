@@ -3,6 +3,7 @@
 require_relative 'base_command'
 require_relative '../models/configuration'
 require_relative '../services/shell_commands'
+require_relative '../services/vagrant_commands'
 require_relative '../services/machine_configurator'
 require_relative '../services/network_config'
 require_relative 'generate_command'
@@ -56,9 +57,9 @@ Labels should be separated with commas and should not contain any whitespaces.
 
     @specification = @args.first
     @attempts = @env.attempts&.to_i || 5
-    @box_manager = @env.boxes
     @machine_configurator = MachineConfigurator.new(@ui)
     @config = Configuration.new(@specification, @env.labels)
+    Workers.pool.resize(@env.threads_count)
   end
 
   # Generate flags based upon the configuration
@@ -69,29 +70,6 @@ Labels should be separated with commas and should not contain any whitespaces.
     flags = []
     flags.push(VAGRANT_NO_PARALLEL) if provider == 'aws'
     flags.uniq.join(' ')
-  end
-
-  # Check whether node is running or not.
-  #
-  # @param node [String] name of the node to get status from.
-  # @param logger [Out] logger to log information to
-  # @return [Boolean]
-  def node_running?(node, logger)
-    result = run_command("vagrant status #{node}", {}, logger)
-    status_regex = /^#{node}\s+(.+)\s+(\(.+\))?\s$/
-    status = if result[:output] =~ status_regex
-               result[:output].match(status_regex)[1]
-             else
-               'UNKNOWN'
-             end
-    logger.info("Node '#{node}' status: #{status}")
-    if status&.include?('running')
-      logger.info("Node '#{node}' is running.")
-      true
-    else
-      logger.info("Node '#{node}' is not running.")
-      false
-    end
   end
 
   # Check whether chef was successfully installed on the machine or not
@@ -138,7 +116,7 @@ Labels should be separated with commas and should not contain any whitespaces.
   # @param logger [Out] logger to log information to.
   # @return [Array<String>, Array<String>] nodes that are running and those that are not
   def running_and_halt_nodes(nodes, logger)
-    nodes.partition { |node| node_running?(node, logger) }
+    nodes.partition { |node| VagrantCommands.node_running?(node, logger) }
   end
 
   # Check that specified node is brought up.
@@ -147,7 +125,7 @@ Labels should be separated with commas and should not contain any whitespaces.
   # @param logger [Out] logger to log information to.
   # @return [Bool] true if node needs to be re-created.
   def broken_node?(node, logger)
-    !(node_running?(node, logger) && chef_installed?(node, logger))
+    !(VagrantCommands.node_running?(node, logger) && chef_installed?(node, logger))
   end
 
   # Check that specified node is configured.
@@ -198,20 +176,20 @@ Labels should be separated with commas and should not contain any whitespaces.
   # Provide information for the end-user where to find the required information
   #
   # @param working_directory [String] path to the current working directory
-  # @param config_path [String] path to the configuration
-  def generate_config_information(working_directory, config_path)
-    network_config_path = "#{config_path}#{Configuration::NETWORK_FILE_SUFFIX}"
+  def generate_config_information(working_directory)
+    network_config_path = "#{@config.path}#{Configuration::NETWORK_FILE_SUFFIX}"
     @ui.info('All nodes were brought up and configured.')
     @ui.info("DIR_PWD=#{working_directory}")
-    @ui.info("CONF_PATH=#{config_path}")
+    @ui.info("CONF_PATH=#{@config.path}")
     @ui.info("Generating #{network_config_path} file")
-    File.open(network_config_path, 'w') do |file|
-      @network_config.each_pair do |node_name, config|
-        config.each_pair do |key, value|
-          file.puts("#{node_name}_#{key}=#{value}")
-        end
-      end
-    end
+    File.write(network_config_path, @network_config.ini_format)
+  end
+
+  # Provide information to the users about which labels are running right now
+  def generate_label_information_file
+    labels_config_path = "#{@config.path}#{Configuration::LABELS_INFO_FILE_SUFFIX}"
+    @ui.info("Generating labels information file, '#{labels_config_path}'")
+    File.write(labels_config_path, @network_config.active_labels.sort.join(','))
   end
 
   # Forcefully destroys given node
@@ -252,8 +230,8 @@ Labels should be separated with commas and should not contain any whitespaces.
     @attempts.times do |attempt|
       @ui.info("Bring up and configure node #{node}. Attempt #{attempt + 1}.")
       destroy_node(node, logger) if force_recreate
-      bring_up_machine(@config.provider, logger, node) unless node_running?(node, logger)
-      unless node_running?(node, logger)
+      bring_up_machine(@config.provider, logger, node) unless VagrantCommands.node_running?(node, logger)
+      unless VagrantCommands.node_running?(node, logger)
         force_recreate = true
         next
       end
@@ -276,7 +254,7 @@ Labels should be separated with commas and should not contain any whitespaces.
   # rubocop:disable Style/IfUnlessModifier
   def up_node(node)
     logger = retrieve_logger_for_node
-    if @env.recreate || !node_running?(node, logger)
+    if @env.recreate || !VagrantCommands.node_running?(node, logger)
       bring_up_and_configure(node, logger)
     end
     if broken_node?(node, @ui)
@@ -296,19 +274,14 @@ Labels should be separated with commas and should not contain any whitespaces.
   # @return [Number] execution status
   def up
     nodes = @config.node_names
-  rescue ArgumentError => e
-    @ui.error(e.message)
-    ERROR_RESULT
-  else
     run_in_directory(@config.path) do
       store_network_config
-      up_results = nodes.each_slice(@env.threads_count).to_a.flat_map do |nodes_group|
-        Workers.map(nodes_group) { |node| up_node(node) }
-      end
+      up_results = Workers.map(nodes) { |node| up_node(node) }
       up_results.each { |up_result| up_result[1].print_to_stdout } if @env.threads_count > 1
       return ERROR_RESULT unless up_results.detect { |up_result| !up_result[0] }.nil?
     end
-    generate_config_information(Dir.pwd, @config.path)
+    generate_config_information(Dir.pwd)
+    generate_label_information_file
     SUCCESS_RESULT
   end
 
@@ -319,10 +292,11 @@ Labels should be separated with commas and should not contain any whitespaces.
     end
     begin
       setup_command
+      up
     rescue ArgumentError => error
-      @ui.warning error.message
+      @ui.error error.message
+      @ui.error error.backtrace.join("\n")
       return ARGUMENT_ERROR_RESULT
     end
-    up
   end
 end

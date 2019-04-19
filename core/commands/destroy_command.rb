@@ -61,7 +61,8 @@ You can view a list of all the virtual machines of all providers:
 Specifies the list of desired labels. It allows to filter VMs based on the label presence.
 You can specify the list of labes to initiate destruction of virtual machines with those labels:
   mdbci destroy --labels [string]
-If any of the labels passed to the command match any label in the machine description, then this machine will be brought up and configured according to its configuration.
+If any of the labels passed to the command match any label in the machine description, then this
+machine will be brought up and configured according to its configuration.
 Labels should be separated with commas, do not contain any whitespaces.
     HELP
     @ui.out(info)
@@ -123,6 +124,8 @@ Labels should be separated with commas, do not contain any whitespaces.
     FileUtils.rm_rf(configuration.path)
     @ui.info("Removing network settings file #{configuration.network_settings_file}")
     FileUtils.rm_f(configuration.network_settings_file)
+    @ui.info("Removing label information file #{configuration.labels_information_file}")
+    FileUtils.rm_f(configuration.labels_information_file)
     return if keep_template
 
     @ui.info("Removing template file #{configuration.template_path}")
@@ -132,7 +135,6 @@ Labels should be separated with commas, do not contain any whitespaces.
   # Stop machines specified in the configuration or in a node
   #
   # @param configuration [Configuration] that we operate on
-  # @param node [String] node of the name to operate on
   def stop_machines(configuration)
     @ui.info 'Destroying the machines using vagrant'
     check_command_in_dir("vagrant destroy -f #{configuration.node_names.join(' ')}",

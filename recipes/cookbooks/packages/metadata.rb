@@ -9,4 +9,4 @@ version          '0.1.1'
 recipe           'install', 'Installs all required packages'
 recipe           'configure_apt', 'Configures the apt to allow HTTPS-based repositories'
 
-depends          'ntp'
+depends          'chrony'

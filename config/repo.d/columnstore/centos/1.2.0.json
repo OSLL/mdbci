@@ -1,0 +1,18 @@
+[
+  {
+    "repo": "https://downloads.mariadb.com/ColumnStore/1.2.0/yum/centos/6/x86_64/",
+    "repo_key": "https://downloads.mariadb.com/ColumnStore/MariaDB-ColumnStore.gpg.key",
+    "platform": "centos",
+    "platform_version": "6",
+    "product": "columnstore",
+    "version": "1.2.0"
+  },
+  {
+    "repo": "https://downloads.mariadb.com/ColumnStore/1.2.0/yum/centos/7/x86_64/",
+    "repo_key": "https://downloads.mariadb.com/ColumnStore/MariaDB-ColumnStore.gpg.key",
+    "platform": "centos",
+    "platform_version": "7",
+    "product": "columnstore",
+    "version": "1.2.0"
+  }
+]
