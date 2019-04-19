@@ -531,16 +531,14 @@ EOF
     return exit_code
   end
 
-  def showProvider(name=nil)
-    exit_code = 1
-    if $session.boxes.boxesManager.has_key?(name)
-      box_params = $session.boxes.getBox(name)
-      provider = box_params["provider"].to_s
-      $out.out provider
-      exit_code = 0
-    else
-      exit_code = 1
-      $out.warning name.to_s+" box does not exist! Please, check box name!"
+  def show_provider(name=nil)
+    begin
+      box_definition = @box_definitions.get_box(name)
+      $out.out(box_definition['provider'])
+      true
+    rescue ArgumentError => error
+      $out.error(error.message)
+      false
     end
   end
 
