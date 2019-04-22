@@ -1,5 +1,4 @@
 {
-  "cookbook_path" : "../recipes/cookbooks/",
   "node_000" :
   {
     "hostname" : "node_000",
