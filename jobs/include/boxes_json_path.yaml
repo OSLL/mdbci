@@ -1,4 +1,0 @@
-string:
-  name: BOXES_JSON_PATH
-  default: $HOME/mdbci-boxes/BOXES
-  description: 'Directory for boxes descriptions.'

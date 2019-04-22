@@ -1,3 +1,0 @@
-string:
-  name: TEST_SET
-  description:  'Test set (all tests will be executed if this is field empty)'

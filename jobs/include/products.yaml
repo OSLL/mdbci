@@ -1,5 +1,0 @@
-choice:
-  name: product
-  choices:
-      - mariadb
-      - mysql

@@ -1,7 +1,0 @@
-$DEFAULT_CONTENT
-
-Test run $name:
-
-DB: $product $version
-Maxscale: $target
-OS: $box

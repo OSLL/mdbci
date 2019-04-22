@@ -1,5 +1,0 @@
-git:
-  url: $MDBCI_REPOSITORY
-  branches:
-    - $LAST_MODIFIED_BRANCH
-  wipe-workspace: false
