@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require_relative 'base_command'
+require_relative '../services/vagrant_configuration_generator'
+require_relative '../services/docker_configuration_generator'
 
 # Command acs as the gatekeeper for two generators: Vagrant-based configurator
 # and Docker-based configurator
@@ -14,9 +16,11 @@ class GenerateCommand < BaseCommand
     return check_result unless check_result == SUCCESS_RESULT
 
     if determine_template_type == :vagrant
-      command = VagrantConfigurationGenerator.new(@args, @env, @ui)
-      command.execute(@args.first, @env.override)
+      generator = VagrantConfigurationGenerator.new(@args, @env, @ui)
+      generator.execute(@args.first, @env.override)
     else
+      generator = DockerConfigurationGenerator.new(@configuration_path, @template_file, @template, @env, @ui)
+      generator.generate_config
       SUCCESS_RESULT
     end
   end
@@ -30,9 +34,9 @@ class GenerateCommand < BaseCommand
       return ARGUMENT_ERROR_RESULT
     end
 
-    @configuration_directory = File.expand_path(@args.first)
-    if Dir.exist?(@configuration_directory) && !@env.override
-      @ui.error("The specified directory '#{@configuration_directory}' already exist. Will not continue to generate.")
+    @configuration_path = File.expand_path(@args.first)
+    if Dir.exist?(@configuration_path) && !@env.override
+      @ui.error("The specified directory '#{@configuration_path}' already exist. Will not continue to generate.")
       return ARGUMENT_ERROR_RESULT
     end
 
@@ -44,17 +48,17 @@ class GenerateCommand < BaseCommand
 
   # Read the template file and notify if file does not exist or incorrect
   def read_template
-    template_file = File.expand_path(@env.template_file)
-    unless File.exist?(template_file)
-      @ui.error("The specified template file '#{template_file}' does not exist. Please specify correct path.")
+    @template_file = File.expand_path(@env.template_file)
+    unless File.exist?(@template_file)
+      @ui.error("The specified template file '#{@template_file}' does not exist. Please specify correct path.")
       return ARGUMENT_ERROR_RESULT
     end
 
     begin
-      instance_config_file = File.read(template_file)
+      instance_config_file = File.read(@template_file)
       @template = JSON.parse(instance_config_file)
     rescue IOError, JSON::ParserError => error
-      @ui.error("The configuration file '#{template_file}' is not valid. Error: #{error.message}")
+      @ui.error("The configuration file '#{@template_file}' is not valid. Error: #{error.message}")
       return ARGUMENT_ERROR_RESULT
     end
     SUCCESS_RESULT
