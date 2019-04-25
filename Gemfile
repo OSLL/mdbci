@@ -12,6 +12,7 @@ gem 'net-scp'
 gem 'workers'
 gem 'xdg'
 gem 'concurrent-ruby'
+gem 'iniparse'
 
 group(:development) do
   gem 'pry'
