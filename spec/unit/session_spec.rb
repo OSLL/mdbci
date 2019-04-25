@@ -31,8 +31,8 @@ describe 'Session' do
 
     it 'Check template loading...' do
       session = Session.new
-      session.configFile = 'spec/test_machine_configurations/galera-cnf-template.json'
-      nodes = JSON.parse(IO.read(session.configFile))
+      session.template_file = 'spec/test_machine_configurations/galera-cnf-template.json'
+      nodes = JSON.parse(IO.read(session.template_file))
       expect(nodes).not_to be_empty
       expect(nodes.size).to eq(7)
     end

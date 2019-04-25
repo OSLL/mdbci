@@ -516,7 +516,7 @@ end
     raise 'Configuration \'template\' file already exists' if File.exist?(template_file)
 
     File.open(provider_file, 'w') { |f| f.write(provider) }
-    File.open(template_file, 'w') { |f| f.write(File.expand_path(@env.configFile)) }
+    File.open(template_file, 'w') { |f| f.write(File.expand_path(@env.template_file)) }
   end
 
   # Check that all boxes specified in the the template are identical.
@@ -572,7 +572,7 @@ end
     @boxes = @env.box_definitions
     path = name.nil? ? File.join(Dir.pwd, 'default') : File.absolute_path(name.to_s)
     begin
-      instance_config_file = IO.read(@env.configFile)
+      instance_config_file = IO.read(@env.template_file)
       config = JSON.parse(instance_config_file)
     rescue IOError, JSON::ParserError
       raise('Instance configuration file is invalid or not found!')

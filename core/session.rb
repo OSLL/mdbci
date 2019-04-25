@@ -38,7 +38,7 @@ class Session
   attr_accessor :configs
   attr_accessor :configuration_file
   attr_accessor :versions
-  attr_accessor :configFile
+  attr_accessor :template_file
   attr_accessor :boxes_location
   attr_accessor :boxName
   attr_accessor :field
@@ -364,14 +364,14 @@ EOF
   end
 
   def validate_template
-    raise 'Template must be specified!' unless $session.configFile
+    raise 'Template must be specified!' unless $session.template_file
     begin
       schema = JSON.parse(File.read 'templates/schemas/template.json')
-      json = JSON.parse(File.read $session.configFile)
+      json = JSON.parse(File.read $session.template_file)
       JSON::Validator.validate!(schema, json)
-      $out.info "Template #{$session.configFile} is valid"
+      $out.info "Template #{$session.template_file} is valid"
     rescue JSON::Schema::ValidationError => e
-      $out.error "Template #{$session.configFile} is NOT valid"
+      $out.error "Template #{$session.template_file} is NOT valid"
       raise e.message
     end
     return 0

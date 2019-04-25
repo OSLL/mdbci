@@ -20,7 +20,7 @@ describe 'Network' do
     boxesPath = './BOXES'
     $session.boxes = BoxesManager.new boxesPath
     reposPath = './config/repo.d'
-    $session.configFile='instance.json'
+    $session.template_file='instance.json'
     $session.awsConfigFile='aws-config.yml'
     $session.repos = RepoManager.new reposPath
     $session.checkConfig

@@ -119,9 +119,9 @@ class Clone
   def generate_docker_machines(path_to_template, new_path_to_nodes)
     boxes = $session.boxes
     $session.boxes = BoxesManager.new 'BOXES'
-    $session.configFile = path_to_template
+    $session.template_file = path_to_template
     $session.generate new_path_to_nodes
-    $session.configFile = nil
+    $session.template_file = nil
     $session.boxes = boxes
   end
 
