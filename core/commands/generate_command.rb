@@ -8,7 +8,7 @@ class GenerateCommand < BaseCommand
   end
 
   def execute
-    command = GenerateVagrantConfigurationCommand.new(@args, @env, @ui)
+    command = VagrantConfigurationGenerator.new(@args, @env, @ui)
     command.execute(@args.shift, @env.isOverride)
   end
 end

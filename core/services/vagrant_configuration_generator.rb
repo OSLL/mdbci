@@ -8,13 +8,13 @@ require 'securerandom'
 require 'socket'
 require 'erb'
 require 'set'
-require_relative 'base_command'
+require_relative '../commands/base_command'
 require_relative '../out'
 require_relative '../models/configuration.rb'
 require_relative '../services/shell_commands'
 
-# Command generates
-class GenerateVagrantConfigurationCommand < BaseCommand
+# The class generates the MDBCI configuration for use in pair with the Vagrant backend
+class VagrantConfigurationGenerator < BaseCommand
   def self.synopsis
     'Generate a configuration based on the template.'
   end
