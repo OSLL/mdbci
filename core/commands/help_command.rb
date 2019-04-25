@@ -2,7 +2,7 @@
 
 require 'erb'
 require_relative 'destroy_command'
-require_relative 'generate_command'
+require_relative 'generate_vagrant_configuration_command'
 require_relative 'snapshot_command'
 require_relative 'up_command'
 require_relative 'generate_product_repositories_command'
@@ -24,7 +24,7 @@ class HelpCommand < BaseCommand
     'configure' => ConfigureCommand.synopsis,
     'deploy-examples' => DeployCommand.synopsis,
     'destroy' => DestroyCommand.synopsis,
-    'generate' => GenerateCommand.synopsis,
+    'generate' => GenerateVagrantConfigurationCommand.synopsis,
     'generate-product-repositories' => GenerateProductRepositoriesCommand.synopsis,
     'help' => HelpCommand.synopsis,
     'install_product' => 'Install a product onto the configuration node.',

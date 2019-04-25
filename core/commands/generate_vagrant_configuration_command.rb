@@ -14,7 +14,7 @@ require_relative '../models/configuration.rb'
 require_relative '../services/shell_commands'
 
 # Command generates
-class GenerateCommand < BaseCommand
+class GenerateVagrantConfigurationCommand < BaseCommand
   def self.synopsis
     'Generate a configuration based on the template.'
   end
@@ -413,8 +413,8 @@ end
     @ui.info("Machine #{node_params[:name]} is provisioned by #{product}")
     # box with mariadb, maxscale provision - create role
     role = get_role_description(node_params[:name], product, box)
-    IO.write(GenerateCommand.role_file_name(path, node_params[:name]), role)
-    IO.write(GenerateCommand.node_config_file_name(path, node_params[:name]),
+    IO.write(self.class.role_file_name(path, node_params[:name]), role)
+    IO.write(self.class.node_config_file_name(path, node_params[:name]),
              JSON.pretty_generate('run_list' => ["role[#{node_params[:name]}]"]))
     # generate node definition
     if box_valid?(box)

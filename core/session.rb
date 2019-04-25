@@ -11,7 +11,7 @@ require_relative 'commands/up_command'
 require_relative 'commands/sudo_command'
 require_relative 'commands/snapshot_command'
 require_relative 'commands/destroy_command'
-require_relative 'commands/generate_command'
+require_relative 'commands/generate_vagrant_configuration_command'
 require_relative 'commands/generate_product_repositories_command'
 require_relative 'commands/help_command'
 require_relative 'commands/configure_command'
@@ -489,7 +489,7 @@ EOF
       destroy = DestroyCommand.new(ARGV, self, $out)
       exit_code = destroy.execute
     when 'generate'
-      command = GenerateCommand.new(ARGV, self, $out)
+      command = GenerateVagrantConfigurationCommand.new(ARGV, self, $out)
       exit_code = command.execute(ARGV.shift, isOverride)
     when 'generate-product-repositories'
       command = GenerateProductRepositoriesCommand.new(ARGV, self, $out)

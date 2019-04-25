@@ -6,7 +6,7 @@ require_relative '../services/shell_commands'
 require_relative '../services/vagrant_commands'
 require_relative '../services/machine_configurator'
 require_relative '../services/network_config'
-require_relative 'generate_command'
+require_relative 'generate_vagrant_configuration_command'
 require_relative 'destroy_command'
 require_relative '../services/log_storage'
 
@@ -147,14 +147,14 @@ Labels should be separated with commas and should not contain any whitespaces.
   def configure(node, logger)
     @network_config.add_nodes([node])
     solo_config = "#{node}-config.json"
-    role_file = GenerateCommand.role_file_name(@config.path, node)
+    role_file = GenerateVagrantConfigurationCommand.role_file_name(@config.path, node)
     unless File.exist?(role_file)
       logger.info("Machine '#{node}' should not be configured. Skipping.")
       return true
     end
     extra_files = [
       [role_file, "roles/#{node}.json"],
-      [GenerateCommand.node_config_file_name(@config.path, node), "configs/#{solo_config}"]
+      [GenerateVagrantConfigurationCommand.node_config_file_name(@config.path, node), "configs/#{solo_config}"]
     ]
     @machine_configurator.configure(@network_config[node], solo_config, logger, extra_files)
     node_provisioned?(node, logger)
