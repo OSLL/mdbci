@@ -1,4 +1,0 @@
-string:
-  name: KEYS_JSON_PATH
-  default: $HOME/mdbci-boxes/KEYS
-  description: 'Directory for keys descriptions.'

@@ -1,9 +1,0 @@
-extended-choice:
-  name: MDBCI_BRANCH
-  description: "MDBCI branch"
-  type: 'PT_SINGLE_SELECT'
-  property-file: /home/vagranttest/mdbci_jenkins_config/branch_list
-  property-key: branch_name
-  default-property-file: $WORKSPACE/last_modified_branch
-  default-property-key: LAST_MODIFIED_BRANCH
-
