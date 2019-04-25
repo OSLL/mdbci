@@ -84,7 +84,7 @@ begin
       session.field = arg unless arg.empty?
 
     when '--override'
-      session.isOverride = true
+      session.override = true
 
     when '--command'
       session.command = arg

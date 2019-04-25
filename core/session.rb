@@ -42,7 +42,7 @@ class Session
   attr_accessor :boxes_location
   attr_accessor :boxName
   attr_accessor :field
-  attr_accessor :isOverride
+  attr_accessor :override
   attr_accessor :isSilent
   attr_accessor :command
   attr_accessor :repos
