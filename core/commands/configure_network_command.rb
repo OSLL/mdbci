@@ -84,10 +84,10 @@ mdbci public_keys --key location/keyfile.file --labels label config
   # upload ssh keyfile
   # param ssh [Connection] ssh connection to use
   def upload_file(ssh)
-    output = ssh.exec!('cat .ssh/authorized_keys')
+    output = ssh.exec!('cat ~/.ssh/authorized_keys')
     keyfile_content = File.read(@keyfile)
-    ssh.exec!('mkdir .ssh') if output == "cat: .ssh/authorized_keys: No such file or directory\n"
-    ssh.exec!("echo '#{keyfile_content}' >> .ssh/authorized_keys") unless output.include? keyfile_content
+    ssh.exec!('mkdir ~/.ssh') if output.include? "No such file or directory\n"
+    ssh.exec!("echo '#{keyfile_content}' >> ~/.ssh/authorized_keys") unless output.include? keyfile_content
   end
 
   # Parse information about machine
