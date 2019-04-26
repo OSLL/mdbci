@@ -12,7 +12,8 @@ class ConfigureNetworkCommand < BaseCommand
       show_help
       return SUCCESS_RESULT
     end
-    init
+    return ARGUMENT_ERROR_RESULT if init == ARGUMENT_ERROR_RESULT
+
     exit_code = SUCCESS_RESULT
     nodes = @mdbci_config.node_configurations
     nodes.each do |node|
@@ -48,7 +49,17 @@ mdbci public_keys --key location/keyfile.file --labels label config
 
     @mdbci_config = Configuration.new(@args, @env.labels)
     @keyfile = @env.keyFile
-    @network_config = NetworkConfigFile.new(@mdbci_config.network_settings_file)
+    unless File.exist? @keyfile
+      @ui.error "Invalid path to ssh key\n"
+      return ARGUMENT_ERROR_RESULT
+    end
+    begin
+      @network_config = NetworkConfigFile.new(@mdbci_config.network_settings_file)
+    rescue StandardError
+      @ui.error "File network configuration not found\n"
+      return ARGUMENT_ERROR_RESULT
+    end
+    SUCCESS_RESULT
   end
 
   # Connect to the specified machine
