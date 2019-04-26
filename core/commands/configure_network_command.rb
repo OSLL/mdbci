@@ -15,13 +15,11 @@ class ConfigureNetworkCommand < BaseCommand
     init
     exit_code = SUCCESS_RESULT
     nodes = @mdbci_config.node_configurations
-    raise "No aws, vbox, libvirt, docker nodes found in #{@args[0]}" if nodes.empty?
-
     nodes.each do |node|
       next unless @mdbci_config.node_names.include? node[1]['hostname']
 
       machine = parse_node(node[1])
-      code = upload_ssh_file(machine)
+      code = connection(machine)
       exit_code = ERROR_RESULT if code == ERROR_RESULT
     end
     exit_code
@@ -53,9 +51,9 @@ mdbci public_keys --key location/keyfile.file --labels label config
     @network_config = NetworkConfigFile.new(@mdbci_config.network_settings_file)
   end
 
-  # Connect to the specified machine and upload ssh keyfile
+  # Connect to the specified machine
   # @param machine [Hash] information about machine to connect
-  def upload_ssh_file(machine)
+  def connection(machine)
     exit_code = SUCCESS_RESULT
     options = Net::SSH.configuration_for(machine['network'], true)
     options[:auth_methods] = %w[publickey none]
@@ -63,13 +61,31 @@ mdbci public_keys --key location/keyfile.file --labels label config
     options[:keys] = [machine['keyfile']]
     begin
       Net::SSH.start(machine['network'], machine['whoami'], options) do |ssh|
-        ssh.scp.upload!(@keyfile, '.ssh/authorized_keys', recursive: false)
+        upload_file(ssh)
       end
-    rescue StandardError
-      @ui.info "Could not connection to machine with name #{machine['name']}\n"
-      exit_code = ERROR_RESULT
+    #rescue StandardError
+      #@ui.info "Could not connection to machine with name #{machine['name']}\n"
+      #exit_code = ERROR_RESULT
     end
     exit_code
+  end
+
+  # upload ssh keyfile
+  # param ssh [Connection] ssh connection to use
+  def upload_file(ssh)
+    output = ssh.exec!('cat .ssh/authorized_keys')
+    keyfile_content = File.read(@keyfile)
+    if output == "cat: .ssh/authorized_keys: No such file or directory\n" || output.nil?
+      ssh.scp.upload!(@keyfile, '.ssh/authorized_keys', recursive: false)
+    else
+      unless output.include? keyfile_content
+        file = File.new(@mdbci_config.path + '_authorized_keys', 'a+')
+        file.puts(output + '\n' + keyfile_content)
+        ssh.scp.upload!(file.path, '.ssh/authorized_keys', recursive: false)
+        file.close
+        File.delete(file.path)
+      end
+    end
   end
 
   # Parse information about machine
