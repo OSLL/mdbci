@@ -142,7 +142,7 @@ class Configuration
     end.keys
     raise(ArgumentError, 'Labels were not set in the template file') unless labels_set
 
-    raise(ArgumentError, "Unable to find nodes matching labels: #{desired_labels.join(', ')}") if node_names.empty?
+    raise(ArgumentError, "Unable to find nodes matching labels: #{@labels.join(', ')}") if node_names.empty?
 
     node_names
   end
