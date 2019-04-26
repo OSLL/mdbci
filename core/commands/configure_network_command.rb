@@ -63,9 +63,9 @@ mdbci public_keys --key location/keyfile.file --labels label config
       Net::SSH.start(machine['network'], machine['whoami'], options) do |ssh|
         upload_file(ssh)
       end
-    #rescue StandardError
-      #@ui.info "Could not connection to machine with name #{machine['name']}\n"
-      #exit_code = ERROR_RESULT
+    rescue StandardError
+      @ui.info "Could not connection to machine with name #{machine['name']}\n"
+      exit_code = ERROR_RESULT
     end
     exit_code
   end
@@ -80,8 +80,8 @@ mdbci public_keys --key location/keyfile.file --labels label config
     else
       unless output.include? keyfile_content
         file = File.new(@mdbci_config.path + '_authorized_keys', 'a+')
-        file.puts(output + '\n' + keyfile_content)
-        ssh.scp.upload!(file.path, '.ssh/authorized_keys', recursive: false)
+        file.puts(output + keyfile_content)
+        sh.scp.upload!(file.path, '.ssh/authorized_keys', recursive: false)
         file.close
         File.delete(file.path)
       end
