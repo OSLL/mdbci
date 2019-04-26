@@ -20,7 +20,7 @@ class ConfigureNetworkCommand < BaseCommand
       next unless @mdbci_config.node_names.include? node[1]['hostname']
 
       machine = parse_node(node[1])
-      code = connection(machine)
+      code = connection_to_machine(machine)
       exit_code = ERROR_RESULT if code == ERROR_RESULT
     end
     exit_code
@@ -64,7 +64,7 @@ mdbci public_keys --key location/keyfile.file --labels label config
 
   # Connect to the specified machine
   # @param machine [Hash] information about machine to connect
-  def connection(machine)
+  def connection_to_machine(machine)
     exit_code = SUCCESS_RESULT
     options = Net::SSH.configuration_for(machine['network'], true)
     options[:auth_methods] = %w[publickey none]
