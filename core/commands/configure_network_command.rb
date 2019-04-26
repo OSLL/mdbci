@@ -20,7 +20,7 @@ class ConfigureNetworkCommand < BaseCommand
       next unless @mdbci_config.node_names.include? node[1]['hostname']
 
       machine = parse_node(node[1])
-      code = configure_server_shh_key(machine)
+      code = configure_server_ssh_key(machine)
       exit_code = ERROR_RESULT if code == ERROR_RESULT
     end
     exit_code
@@ -28,15 +28,15 @@ class ConfigureNetworkCommand < BaseCommand
 
   def show_help
     info = <<-HELP
-'public_keys' command allows you to copy the ssh key for the entire configuration.
-You must specify the location of the ssh key using --key:
-mdbci public_keys --key location/keyfile.file config
+ 'public_keys' command allows you to copy the ssh key for the entire configuration.
+ You must specify the location of the ssh key using --key:
+ mdbci public_keys --key location/keyfile.file config
 
-You can copy the ssh key for a specific node by specifying it with:
-mdbci public_keys --key location/keyfile.file config/node
+ You can copy the ssh key for a specific node by specifying it with:
+ mdbci public_keys --key location/keyfile.file config/node
 
-You can copy the ssh key for nodes that correspond to the selected tags:
-mdbci public_keys --key location/keyfile.file --labels label config
+ You can copy the ssh key for nodes that correspond to the selected tags:
+ mdbci public_keys --key location/keyfile.file --labels label config
     HELP
     @ui.info(info)
   end
@@ -64,7 +64,7 @@ mdbci public_keys --key location/keyfile.file --labels label config
 
   # Connect and add ssh key on server
   # @param machine [Hash] information about machine to connect
-  def configure_server_shh_key(machine)
+  def configure_server_ssh_key(machine)
     exit_code = SUCCESS_RESULT
     options = Net::SSH.configuration_for(machine['network'], true)
     options[:auth_methods] = %w[publickey none]
