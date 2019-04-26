@@ -5,7 +5,7 @@ require_relative '../services/machine_configurator'
 require 'net/ssh'
 
 # This class loads ssh keys to configuration or selected nodes.
-class ConfigureNetworkCommand < BaseCommand
+class PublicKeysCommand < BaseCommand
   # This method is called whenever the command is executed
   def execute
     exit_code = SUCCESS_RESULT

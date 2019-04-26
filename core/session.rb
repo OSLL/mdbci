@@ -15,7 +15,7 @@ require_relative 'commands/generate_command'
 require_relative 'commands/generate_product_repositories_command'
 require_relative 'commands/help_command'
 require_relative 'commands/configure_command'
-require_relative 'commands/configure_network_command'
+require_relative 'commands/public_keys_command'
 require_relative 'commands/deploy_command'
 require_relative 'commands/setup_dependencies_command'
 require_relative 'commands/show_network_config_command'
@@ -500,7 +500,7 @@ EOF
     when 'install_product'
       exit_code = NodeProduct.install_product(ARGV.shift)
     when 'public_keys'
-      command = ConfigureNetworkCommand.new(ARGV, self, $out)
+      command = PublicKeysCommand.new(ARGV, self, $out)
       exit_code = command.execute
     when 'setup'
       exit_code = setup(ARGV.shift)
