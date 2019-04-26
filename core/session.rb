@@ -500,7 +500,7 @@ EOF
     when 'install_product'
       exit_code = NodeProduct.install_product(ARGV.shift)
     when 'public_keys'
-      command = ConfigureNetworkCommand.new(ARGV.shift, self, $out)
+      command = ConfigureNetworkCommand.new(ARGV, self, $out)
       exit_code = command.execute
     when 'setup'
       exit_code = setup(ARGV.shift)

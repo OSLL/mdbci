@@ -8,19 +8,19 @@ require 'net/ssh'
 class ConfigureNetworkCommand < BaseCommand
   # This method is called whenever the command is executed
   def execute
+    exit_code = SUCCESS_RESULT
     if @env.show_help
       show_help
       return SUCCESS_RESULT
     end
     return ARGUMENT_ERROR_RESULT if init == ARGUMENT_ERROR_RESULT
 
-    exit_code = SUCCESS_RESULT
     nodes = @mdbci_config.node_configurations
     nodes.each do |node|
       next unless @mdbci_config.node_names.include? node[1]['hostname']
 
       machine = parse_node(node[1])
-      code = сonfigure_server_shh_key(machine)
+      code = configure_server_shh_key(machine)
       exit_code = ERROR_RESULT if code == ERROR_RESULT
     end
     exit_code
@@ -47,7 +47,7 @@ mdbci public_keys --key location/keyfile.file --labels label config
   def init
     raise 'Configuration name is required' if @args.nil?
 
-    @mdbci_config = Configuration.new(@args, @env.labels)
+    @mdbci_config = Configuration.new(@args[0], @env.labels)
     @keyfile = @env.keyFile
     unless File.exist? @keyfile
       @ui.error "Invalid path to ssh key\n"
@@ -64,7 +64,7 @@ mdbci public_keys --key location/keyfile.file --labels label config
 
   # Connect and add ssh key on server
   # @param machine [Hash] information about machine to connect
-  def сonfigure_server_shh_key(machine)
+  def configure_server_shh_key(machine)
     exit_code = SUCCESS_RESULT
     options = Net::SSH.configuration_for(machine['network'], true)
     options[:auth_methods] = %w[publickey none]
