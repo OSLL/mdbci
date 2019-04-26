@@ -78,13 +78,7 @@ mdbci public_keys --key location/keyfile.file --labels label config
     if output == "cat: .ssh/authorized_keys: No such file or directory\n" || output.nil?
       ssh.scp.upload!(@keyfile, '.ssh/authorized_keys', recursive: false)
     else
-      unless output.include? keyfile_content
-        file = File.new(@mdbci_config.path + '_authorized_keys', 'a+')
-        file.puts(output + keyfile_content)
-        sh.scp.upload!(file.path, '.ssh/authorized_keys', recursive: false)
-        file.close
-        File.delete(file.path)
-      end
+      ssh.exec!("echo '#{keyfile_content}' >> .ssh/authorized_keys") unless output.include? keyfile_content
     end
   end
 
