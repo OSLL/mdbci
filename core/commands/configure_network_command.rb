@@ -19,7 +19,7 @@ class ConfigureNetworkCommand < BaseCommand
     nodes.each do |node|
       next unless @mdbci_config.node_names.include? node[1]['hostname']
 
-      machine = parse_node(node[1])
+      machine = setup_ssh_key(node[1])
       code = configure_server_ssh_key(machine)
       exit_code = ERROR_RESULT if code == ERROR_RESULT
     end
@@ -90,9 +90,9 @@ class ConfigureNetworkCommand < BaseCommand
     ssh.exec!("echo '#{keyfile_content}' >> ~/.ssh/authorized_keys") unless output.include? keyfile_content
   end
 
-  # Parse information about machine
+  # Setup ssh key data
   # @param node [Node] node object
-  def parse_node(node)
+  def setup_ssh_key(node)
     { 'whoami' => @network_config.configs[node['hostname']]['whoami'],
       'network' => @network_config.configs[node['hostname']]['network'],
       'keyfile' => @network_config.configs[node['hostname']]['keyfile'],
