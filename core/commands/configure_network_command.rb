@@ -20,7 +20,7 @@ class ConfigureNetworkCommand < BaseCommand
       next unless @mdbci_config.node_names.include? node[1]['hostname']
 
       machine = parse_node(node[1])
-      code = connection_to_machine(machine)
+      code = сonfigure_server_shh_key(machine)
       exit_code = ERROR_RESULT if code == ERROR_RESULT
     end
     exit_code
@@ -62,9 +62,9 @@ mdbci public_keys --key location/keyfile.file --labels label config
     SUCCESS_RESULT
   end
 
-  # Connect to the specified machine
+  # Connect and add ssh key on server
   # @param machine [Hash] information about machine to connect
-  def connection_to_machine(machine)
+  def сonfigure_server_shh_key(machine)
     exit_code = SUCCESS_RESULT
     options = Net::SSH.configuration_for(machine['network'], true)
     options[:auth_methods] = %w[publickey none]
@@ -72,7 +72,7 @@ mdbci public_keys --key location/keyfile.file --labels label config
     options[:keys] = [machine['keyfile']]
     begin
       Net::SSH.start(machine['network'], machine['whoami'], options) do |ssh|
-        upload_file(ssh)
+        add_key(ssh)
       end
     rescue StandardError
       @ui.info "Could not connection to machine with name #{machine['name']}\n"
@@ -81,9 +81,9 @@ mdbci public_keys --key location/keyfile.file --labels label config
     exit_code
   end
 
-  # upload ssh keyfile
+  # Adds ssh key to the specified server
   # param ssh [Connection] ssh connection to use
-  def upload_file(ssh)
+  def add_key(ssh)
     output = ssh.exec!('cat ~/.ssh/authorized_keys')
     keyfile_content = File.read(@keyfile)
     ssh.exec!('mkdir ~/.ssh') if output.include? "No such file or directory\n"
