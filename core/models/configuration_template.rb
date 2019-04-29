@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
+require 'forwardable'
+
 # The representation of the template file that provides tools to get information out of it
 class ConfigurationTemplate
   attr_reader :template_type
+  extend Forwardable
+  def_delegator :@node_configurations, :each, :each_node
 
   def initialize(template_path)
     @template_path = template_path
