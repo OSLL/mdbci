@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
+require_relative '../models/return_codes'
+
 # The basis for all the command that can be executed.
 # It partially mimics the Command interface from Vagrant.
 # @see https://github.com/hashicorp/vagrant/blob/master/lib/vagrant/plugin/v2/command.rb
 class BaseCommand
-  SUCCESS_RESULT = 0
-  ERROR_RESULT = 1
-  ARGUMENT_ERROR_RESULT = 2
+  include ReturnCodes
 
   # The method should return brief description of the command.
   # It should be less than 60 characters long. It will be used
