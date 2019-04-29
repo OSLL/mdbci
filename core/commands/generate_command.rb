@@ -21,7 +21,6 @@ class GenerateCommand < BaseCommand
     else
       generator = DockerConfigurationGenerator.new(@configuration_path, @template_file, @template, @env, @ui)
       generator.generate_config
-      SUCCESS_RESULT
     end
   end
 
