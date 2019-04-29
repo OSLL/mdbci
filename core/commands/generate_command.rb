@@ -3,6 +3,7 @@
 require_relative 'base_command'
 require_relative '../services/vagrant_configuration_generator'
 require_relative '../services/docker_configuration_generator'
+require_relative '../models/configuration_template'
 
 # Command acs as the gatekeeper for two generators: Vagrant-based configurator
 # and Docker-based configurator
@@ -15,7 +16,7 @@ class GenerateCommand < BaseCommand
     check_result = setup_command
     return check_result unless check_result == SUCCESS_RESULT
 
-    if determine_template_type == :vagrant
+    if @template.template_type == :vagrant
       generator = VagrantConfigurationGenerator.new(@args, @env, @ui)
       generator.execute(@args.first, @env.override)
     else
@@ -48,33 +49,12 @@ class GenerateCommand < BaseCommand
   # Read the template file and notify if file does not exist or incorrect
   def read_template
     @template_file = File.expand_path(@env.template_file)
-    unless File.exist?(@template_file)
-      @ui.error("The specified template file '#{@template_file}' does not exist. Please specify correct path.")
-      return ARGUMENT_ERROR_RESULT
-    end
-
     begin
-      instance_config_file = File.read(@template_file)
-      @template = JSON.parse(instance_config_file)
-    rescue IOError, JSON::ParserError => error
-      @ui.error("The configuration file '#{@template_file}' is not valid. Error: #{error.message}")
-      return ARGUMENT_ERROR_RESULT
-    end
-    SUCCESS_RESULT
-  end
-
-  # Method analyses the structure of the template
-  # @returns [Symbol] type of the template: vagrant or docker
-  def determine_template_type
-    node_configurations = @template.select do |_, element|
-      element.instance_of?(Hash) &&
-        element.key?('box')
-    end
-    target_boxes = node_configurations.map { |_, node| node['box'] }
-    if target_boxes.include?('docker')
-      :docker
-    else
-      :vagrant
+      @template = ConfigurationTemplate.new(@template_file)
+      SUCCESS_RESULT
+    rescue RuntimeError => error
+      @ui.error("Unable to read template file. Error: #{error.message}")
+      ARGUMENT_ERROR_RESULT
     end
   end
 end
