@@ -491,7 +491,7 @@ end
     return ARGUMENT_ERROR_RESULT unless checks_result
 
     cookbook_path = if config['cookbook_path'].nil?
-                      File.join(@env.mdbci_dir, 'recipes', 'cookbooks') # default cookbook path
+                      File.join(@env.mdbci_dir, 'assets', 'chef-recipes', 'cookbooks') # default cookbook path
                     else
                       config['cookbook_path']
                     end
