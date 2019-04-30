@@ -16,7 +16,16 @@ class DockerConfigurationGenerator
   end
 
   def generate_config
-    create_configuration_directory
+    result = make_generation_steps
+    if result != SUCCESS_RESULT
+      delete_configuration_directory
+    end
+    result
+  end
+
+  def make_generation_steps
+    result = create_configuration_directory
+    return result if result != SUCCESS_RESULT
     copy_configuration_files
   end
 
@@ -62,5 +71,12 @@ class DockerConfigurationGenerator
       return ERROR_RESULT
     end
     SUCCESS_RESULT
+  end
+
+  def delete_configuration_directory
+    FileUtils.rm_rf(@configuration_path)
+    if Dir.exist?(@configuration_path)
+      @ui.error("Unable to remove the destination directory '#{@configuration_path}'")
+    end
   end
 end
