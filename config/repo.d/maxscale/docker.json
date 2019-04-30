@@ -2,14 +2,14 @@
   {
     "platform": "docker",
     "platform_version": "latest",
-    "product": "maxscale"
+    "product": "maxscale",
     "version": "2.2",
     "repo": "mariadb/maxscale:2.2"
   },
   {
     "platform": "docker",
     "platform_version": "latest",
-    "product": "mariadb"
+    "product": "mariadb",
     "version": "2.1",
     "repo": "mariadb/maxscale:2.1"
   }

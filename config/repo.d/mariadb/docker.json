@@ -2,21 +2,21 @@
   {
     "platform": "docker",
     "platform_version": "latest",
-    "product": "mariadb"
+    "product": "mariadb",
     "version": "10.3",
     "repo": "mariadb/server:10.3"
   },
   {
     "platform": "docker",
     "platform_version": "latest",
-    "product": "mariadb"
+    "product": "mariadb",
     "version": "10.2",
     "repo": "mariadb/server:10.3"
   },
   {
     "platform": "docker",
     "platform_version": "latest",
-    "product": "mariadb"
+    "product": "mariadb",
     "version": "10.1",
     "repo": "mariadb/server:10.3"
   }
