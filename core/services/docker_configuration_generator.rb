@@ -1,11 +1,24 @@
 # frozen_string_literal: true
 
 require 'fileutils'
+require 'find'
+require 'yaml'
 require_relative '../models/return_codes'
 
 # The class generates the MDBCI configuration for the use in pair with Docker backend
 class DockerConfigurationGenerator
   include ReturnCodes
+
+  DEFAULT_DEPLOY_OPTIONS = {
+    'mode' => 'global',
+    'restart_policy' => 'none',
+    'resources' => {
+      'limits' => {
+        'cpus' => '2',
+        'memory' => '1024MB'
+      }
+    }
+  }.freeze
 
   def initialize(configuration_path, template_file, template, env, logger)
     @template_file = template_file
@@ -13,20 +26,30 @@ class DockerConfigurationGenerator
     @template = template
     @env = env
     @ui = logger
+    @docker_configs = File.join(env.mdbci_dir, 'assets', 'docker-configs')
+    @configuration = Hash.new { |hash, key| hash[key] = {} }
+    @configuration['version'] = '3.7'
   end
 
   def generate_config
     result = make_generation_steps
-    if result != SUCCESS_RESULT
-      delete_configuration_directory
-    end
+    delete_configuration_directory unless result == SUCCESS_RESULT
     result
+  end
+
+  def delete_configuration_directory
+    FileUtils.rm_rf(@configuration_path)
+    @ui.error("Unable to remove the destination directory '#{@configuration_path}'") if Dir.exist?(@configuration_path)
   end
 
   def make_generation_steps
     result = create_configuration_directory
-    return result if result != SUCCESS_RESULT
-    copy_configuration_files
+    return result unless result == SUCCESS_RESULT
+
+    result = copy_configuration_files
+    return result unless result == SUCCESS_RESULT
+
+    generate_full_configuration
   end
 
   def create_configuration_directory
@@ -41,26 +64,59 @@ class DockerConfigurationGenerator
 
   def copy_configuration_files
     @ui.info('Copying configuration files')
-    service_config_path = File.join(@configuration_path, 'configs')
-    FileUtils.mkdir_p(service_config_path)
     @template.each_node do |node_name, node|
-      @ui.info("Copying configuration file for the node '#{node_name}'")
-      result = copy_product_config_file(node, File.join(service_config_path, "#{node_name}.cnf"))
-      return result if result != SUCCESS_RESULT
+      @ui.info("Copying configuration files for the node '#{node_name}'")
+      unless node.key?('product')
+        @ui.error("The node '#{node_name}' does not specify the product to be installed")
+        return ERROR_RESULT
+      end
+      result = setup_docker_product_image(node_name, node['product'])
+      return result unless result == SUCCESS_RESULT
+
+      copy_node_config_files(node_name, node['product'])
     end
-    SUCCESS_RESULT
   rescue SystemCallError => error
     @ui.error("Error while copying configuration files into '#{service_config_path}'")
     @ui.error("Error message: #{error.message}")
     ERROR_RESULT
   end
 
-  def copy_product_config_file(node, result_file)
-    unless node.key?('product')
-      @ui.error("The node '#{node_name}' does not specify the product to be installed")
+  ENVIRONMENT_OPTIONS = {
+    'mariadb' => {
+      'MYSQL_RANDOM_ROOT_PASSWORD' => 'true'
+    }
+  }.freeze
+
+  def setup_docker_product_image(node_name, product)
+    image = @env.repos.find_repository(product['name'], product, 'docker')
+    if image.nil?
+      @ui.error("Unable to find Docker-image for the product specified in '#{node_name}'")
       return ERROR_RESULT
     end
-    product = node['product']
+    @configuration['services'][node_name] = {
+      'image' => image,
+      'deploy' => DEFAULT_DEPLOY_OPTIONS,
+      'configs' => []
+    }
+    if ENVIRONMENT_OPTIONS.key?(product['name'])
+      @configuration['services'][node_name]['environment'] = ENVIRONMENT_OPTIONS[product['name']]
+    end
+    SUCCESS_RESULT
+  end
+
+  def copy_node_config_files(node_name, product)
+    service_config_path = File.join(@configuration_path, 'configs', node_name)
+    FileUtils.mkdir_p(service_config_path)
+    config_file_path = File.join(service_config_path, "#{node_name}.cnf")
+    result = copy_product_config_file(node_name, product, config_file_path)
+    return result unless result == SUCCESS_RESULT
+
+    init_files_path = File.join(@configuration_path, 'initialization', node_name)
+    FileUtils.mkdir_p(init_files_path)
+    copy_initialization_files(node_name, product, init_files_path)
+  end
+
+  def copy_product_config_file(node_name, product, result_file)
     if product.key?('cnf_template') && product.key?('cnf_template_path')
       FileUtils.cp(File.join(File.expand_path(product['cnf_template_path'], File.dirname(@template_file)),
                              product['cnf_template']), result_file)
@@ -70,13 +126,67 @@ class DockerConfigurationGenerator
       @ui.error("You must provide path to configuration file in 'cnf_template' and 'cnf_template_path'.")
       return ERROR_RESULT
     end
+    save_service_configuration_file(node_name, product, result_file)
+  end
+
+  CONFIGURATION_LOCATIONS = {
+    'mariadb' => '/etc/mysql/my.cnf',
+    'maxscale' => '/etc/maxscale.cnf'
+  }.freeze
+
+  def save_service_configuration_file(node_name, product, result_file)
+    unless CONFIGURATION_LOCATIONS.key?(product['name'])
+      @ui.error("Do not know where the configuration file must be placed for node '#{node_name}'")
+      return ERROR_RESULT
+    end
+
+    add_service_configuration_file(node_name, result_file, "#{node_name}_config",
+                                   CONFIGURATION_LOCATIONS[product['name']])
     SUCCESS_RESULT
   end
 
-  def delete_configuration_directory
-    FileUtils.rm_rf(@configuration_path)
-    if Dir.exist?(@configuration_path)
-      @ui.error("Unable to remove the destination directory '#{@configuration_path}'")
+  INITIALIZATION_LOCATIONS = {
+    'mariadb' => '/docker-entrypoint-initdb.d/'
+  }.freeze
+
+  def copy_initialization_files(node_name, product, init_files_path)
+    Find.find(File.join(@docker_configs, product['name'])).with_index do |file, index|
+      next unless File.file?(file)
+
+      result_file = File.join(init_files_path, File.basename(file))
+      FileUtils.cp(file, result_file)
+
+      unless INITIALIZATION_LOCATIONS.key?(product['name'])
+        @ui.error("Do not know how to configure initialization of product #{product['name']}")
+        return ERROR_RESULT
+      end
+
+      add_service_configuration_file(node_name, result_file, "#{node_name}_#{index}_init",
+                                     File.join(INITIALIZATION_LOCATIONS[product['name']], File.basename(file)))
     end
+    SUCCESS_RESULT
+  end
+
+  def add_service_configuration_file(service_name, file, configuration_key, target_file_name)
+    @configuration['configs'][configuration_key] = {
+      'file' => file
+    }
+
+    @configuration['services'][service_name]['configs'].append(
+      'source' => configuration_key,
+      'target' => target_file_name
+    )
+  end
+
+  def generate_full_configuration
+    @ui.info('Generating Docker Swarm configuration file')
+    configuration_contents = YAML.dump(@configuration)
+    configuration_file = File.join(@configuration_path, 'full-configuration.yaml')
+    File.write(configuration_file, configuration_contents)
+    SUCCESS_RESULT
+  rescue IOError => error
+    @ui.error("Unable to write configuration file '#{configuration_file}'.")
+    @ui.error("Error message: #{error.message}")
+    ERROR_RESULT
   end
 end
