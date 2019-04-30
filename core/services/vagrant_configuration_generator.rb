@@ -199,7 +199,7 @@ end
   # rubocop:disable Metrics/CyclomaticComplexity
   # Further decomposition of the method will complicate the code.
   def make_product_config(product_name, product, box, repo)
-    repo = @env.repos.findRepo(product_name, product, box) if repo.nil?
+    repo = @env.repos.find_repository(product_name, product, box) if repo.nil?
     raise "Repo for product #{product['name']} #{product['version']} for #{box} not found" if repo.nil?
 
     config = { 'version': repo['version'], 'repo': repo['repo'], 'repo_key': repo['repo_key'] }

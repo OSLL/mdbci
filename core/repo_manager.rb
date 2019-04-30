@@ -63,7 +63,7 @@ class RepoManager
     PRODUCT_ATTRIBUTES[product][:name]
   end
 
-  def findRepo(product_name, product, box)
+  def find_repository(product_name, product, box)
     $out.info('Looking for repo')
     version = product['version'].nil? ? 'default' : product['version']
     repository_key = $session.box_definitions.platform_key(box)
