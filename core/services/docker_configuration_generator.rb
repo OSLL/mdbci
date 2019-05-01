@@ -11,7 +11,9 @@ class DockerConfigurationGenerator
 
   DEFAULT_DEPLOY_OPTIONS = {
     'mode' => 'global',
-    'restart_policy' => 'none',
+    'restart_policy' => {
+      'condition' => 'none'
+    },
     'resources' => {
       'limits' => {
         'cpus' => '2',
@@ -46,7 +48,7 @@ class DockerConfigurationGenerator
     result = create_configuration_directory
     return result unless result == SUCCESS_RESULT
 
-    result = copy_configuration_files
+    result = setup_nodes_configuration
     return result unless result == SUCCESS_RESULT
 
     generate_full_configuration
@@ -62,23 +64,28 @@ class DockerConfigurationGenerator
     ERROR_RESULT
   end
 
-  def copy_configuration_files
-    @ui.info('Copying configuration files')
+  def setup_nodes_configuration
+    @ui.info('Copying node configuration files')
     @template.each_node do |node_name, node|
-      @ui.info("Copying configuration files for the node '#{node_name}'")
-      unless node.key?('product')
-        @ui.error("The node '#{node_name}' does not specify the product to be installed")
-        return ERROR_RESULT
-      end
-      result = setup_docker_product_image(node_name, node['product'])
-      return result unless result == SUCCESS_RESULT
-
-      copy_node_config_files(node_name, node['product'])
+      setup_node_configuration(node_name, node)
     end
+    SUCCESS_RESULT
   rescue SystemCallError => error
-    @ui.error("Error while copying configuration files into '#{service_config_path}'")
-    @ui.error("Error message: #{error.message}")
+    @ui.error('Error while copying configuration files')
+    @ui.error("Error message: #{error}")
     ERROR_RESULT
+  end
+
+  def setup_node_configuration(node_name, node)
+    @ui.info("Configuring the node '#{node_name}'")
+    unless node.key?('product')
+      @ui.error("The node '#{node_name}' does not specify the product to be installed")
+      return ERROR_RESULT
+    end
+    result = setup_docker_product_image(node_name, node['product'])
+    return result unless result == SUCCESS_RESULT
+
+    copy_node_config_files(node_name, node['product'])
   end
 
   ENVIRONMENT_OPTIONS = {
@@ -94,7 +101,7 @@ class DockerConfigurationGenerator
       return ERROR_RESULT
     end
     @configuration['services'][node_name] = {
-      'image' => image,
+      'image' => image['repo'],
       'deploy' => DEFAULT_DEPLOY_OPTIONS,
       'configs' => []
     }
@@ -117,6 +124,7 @@ class DockerConfigurationGenerator
   end
 
   def copy_product_config_file(node_name, product, result_file)
+    @ui.info("Copying configuration file for the node '#{node_name}'")
     if product.key?('cnf_template') && product.key?('cnf_template_path')
       FileUtils.cp(File.join(File.expand_path(product['cnf_template_path'], File.dirname(@template_file)),
                              product['cnf_template']), result_file)
@@ -150,6 +158,7 @@ class DockerConfigurationGenerator
   }.freeze
 
   def copy_initialization_files(node_name, product, init_files_path)
+    @ui.info("Copying initialization files for the node '#{node_name}'")
     Find.find(File.join(@docker_configs, product['name'])).with_index do |file, index|
       next unless File.file?(file)
 
@@ -172,7 +181,7 @@ class DockerConfigurationGenerator
       'file' => file
     }
 
-    @configuration['services'][service_name]['configs'].append(
+    @configuration['services'][service_name]['configs'].push(
       'source' => configuration_key,
       'target' => target_file_name
     )
