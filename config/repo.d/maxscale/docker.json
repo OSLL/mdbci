@@ -9,7 +9,7 @@
   {
     "platform": "docker",
     "platform_version": "latest",
-    "product": "mariadb",
+    "product": "maxscale",
     "version": "2.1",
     "repo": "mariadb/maxscale:2.1"
   }
