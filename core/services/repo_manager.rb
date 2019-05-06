@@ -1,6 +1,8 @@
 require 'json'
+require_relative '../models/return_codes'
 
 class RepoManager
+  include ReturnCodes
 
   attr_accessor :repos
   attr_accessor :recipes  # product => recipe
@@ -43,9 +45,25 @@ class RepoManager
     }
   }
 
-  def initialize(path)
-    @repos= Hash.new
-    lookup(path)
+  # The list of the directories to search data in. The last directory takes presence over the first one
+  BOX_DIRECTORIES = [
+    File.expand_path('../../config/repo.d/', __dir__),
+    File.join(XDG['CONFIG_HOME'].to_s, 'mdbci', 'repo.d')
+  ].freeze
+
+  def initialize(logger, extra_path = nil)
+    @ui = logger
+    if !extra_path.nil? && !File.exist?(extra_path)
+      raise ArgumentError, "The specified repository definition path is absent: '#{extra_path}'"
+    end
+
+    @repos = Hash.new
+    paths = Array.new(BOX_DIRECTORIES).push(extra_path).compact
+    paths.each do |path|
+      lookup(path)
+    end
+    raise 'Repositories was not found' if @repos.empty?
+    @ui.info("Loaded repos: #{@repos.size.to_s}")
   end
 
   # Get the recipe name for the product
@@ -64,13 +82,13 @@ class RepoManager
   end
 
   def find_repository(product_name, product, box)
-    $out.info('Looking for repo')
+    @ui.info('Looking for repo')
     version = product['version'].nil? ? 'default' : product['version']
     repository_key = $session.box_definitions.platform_key(box)
     repository_name = PRODUCT_ATTRIBUTES[product_name][:repository]
     repo_key = "#{repository_name}@#{version}+#{repository_key}"
     repo = @repos[repo_key]
-    $out.info("Repo key is '#{repo_key}': #{repo.nil? ? 'Not found' : 'Found'}")
+    @ui.info("Repo key is '#{repo_key}': #{repo.nil? ? 'Not found' : 'Found'}")
     repo
   end
 
@@ -88,12 +106,10 @@ class RepoManager
   end
 
   def lookup(path)
-    $out.info 'Looking up for repos '+path
+    @ui.info("Looking up for repos in '#{path}'")
     Dir.glob(path+'/**/*.json', File::FNM_DOTMATCH) do |f|
       addRepo(f)
     end
-    raise 'Repositories was not found' if @repos.empty?
-    $out.info 'Loaded repos: ' + @repos.size.to_s
   end
 
   def knownRepo?(repo)
@@ -113,7 +129,6 @@ class RepoManager
   end
 
   def addRepo(file)
-    #$out.info 'Processing '+file.to_s
     begin
       repo = JSON.parse(IO.read(file))
 

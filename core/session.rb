@@ -104,16 +104,15 @@ EOF
       File.join(XDG['CONFIG_HOME'].to_s, 'mdbci'),
       File.join(@mdbci_dir, 'config')
     ]
-    @repo_dir = find_configuration('repo.d') unless @repo_dir
   end
 
   # Method initializes services that depend on the parsed configuration
   def initialize_services
     fill_paths
-    $out.info('Load MDBCI configuration file')
+    $out.info('Loading MDBCI configuration file')
     @tool_config = ToolConfiguration.load
-    $out.info("Load Repos from #{@repo_dir}")
-    @repos = RepoManager.new(@repo_dir)
+    $out.info('Loading repository configuration files')
+    @repos = RepoManager.new($out, @repo_dir)
     if @tool_config['aws']
       @aws_service = AwsService.new(@tool_config['aws'], $out)
     end
