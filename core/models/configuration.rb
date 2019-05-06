@@ -49,7 +49,6 @@ class Configuration
     File.join(path, 'docker-configuration.yaml')
   end
 
-
   def initialize(spec, labels = nil)
     @path, node = parse_spec(spec)
     raise ArgumentError, "Invalid path to the MDBCI configuration: #{spec}" unless self.class.config_directory?(@path)
@@ -58,6 +57,7 @@ class Configuration
     @template_path = read_template_path(@path)
     @node_configurations = extract_node_configurations(read_template(@template_path))
     @aws_keypair_name = read_aws_keypair_name
+    @docker_configuration = read_docker_configuration
     @labels = labels.nil? ? [] : labels.split(',')
     @node_names = select_node_names(node)
   end
@@ -107,6 +107,24 @@ class Configuration
       end
     end
     result
+  end
+
+  # Check whether configuration has a valid Docker Swarm configuration file or not
+  # @return [Boolean] true if the configuration is present
+  def docker_configuration?
+    !@docker_configuration.empty?
+  end
+
+  # Provide a copy of the Docker configuration for further modification
+  # @return [Hash] a full Docker Swarm configuration
+  def docker_configuration
+    Marshal.load(Marshal.dump(@docker_configuration))
+  end
+
+  # Provide a path to the partial Docker configuration that can be used for swarm Management
+  # @return [String] path to the partial configuration
+  def docker_partial_configuration
+    File.join(@path, 'docker-partial-configuration.yaml')
   end
 
   private
@@ -205,6 +223,16 @@ class Configuration
     end
 
     provider
+  end
+
+  # Read the Docker Swarm full configuration file for futher processing
+  # If file does not present, return the empty string
+  # @return [Hash] the processed hash
+  def read_docker_configuration
+    config_file = self.class.docker_configuration(@path)
+    return {} unless File.exist?(config_file)
+
+    YAML.load_file(config_file).freeze
   end
 
   # Read template path from the configuration
