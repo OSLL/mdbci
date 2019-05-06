@@ -23,10 +23,32 @@ class Configuration
     !path.nil? &&
       !path.empty? &&
       Dir.exist?(path) &&
-      File.exist?("#{path}/template") &&
-      File.exist?("#{path}/provider") &&
-      File.exist?("#{path}/Vagrantfile")
+      File.exist?(File.join(path, 'template')) &&
+      File.exist?(File.join(path, 'provider')) &&
+      (
+        File.exist?(vagrant_configuration(path)) ||
+        File.exist?(docker_configuration(path))
+      )
   end
+
+  # Gets the path to the Vagrant configuration file that resides
+  # in the configuration specified by the path
+  #
+  # @param path [String] path to the configuration
+  # @return [String] path to the Vagrant configuration file
+  def self.vagrant_configuration(path)
+    File.join(path, 'Vagrantfile')
+  end
+
+  # Forms the path to the Docker configuration file that resides
+  # in the configuration specified by the path
+  #
+  # @param path [String] path to the configuration
+  # @return [String] path to the Docker configuration file
+  def self.docker_configuration(path)
+    File.join(path, 'docker-configuration.yaml')
+  end
+
 
   def initialize(spec, labels = nil)
     @path, node = parse_spec(spec)

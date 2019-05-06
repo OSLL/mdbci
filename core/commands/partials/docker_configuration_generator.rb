@@ -195,7 +195,7 @@ class DockerConfigurationGenerator
   def generate_full_configuration
     @ui.info('Generating Docker Swarm configuration file')
     configuration_contents = YAML.dump(@configuration)
-    configuration_file = File.join(@configuration_path, 'full-configuration.yaml')
+    configuration_file = File.join(@configuration_path, 'docker-configuration.yaml')
     File.write(configuration_file, configuration_contents)
     SUCCESS_RESULT
   rescue IOError => error

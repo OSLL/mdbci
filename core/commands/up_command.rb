@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'base_command'
+require_relative 'partials/docker_swarm_configurator'
 require_relative 'partials/vagrant_configurator'
 require_relative '../models/configuration'
 
@@ -50,8 +51,13 @@ Labels should be separated with commas and should not contain any whitespaces.
   end
 
   def bing_up_nodes
-    configurator = VagrantConfigurator.new(@specification, @config, @env, @ui)
-    configurator.up
+    if @config.provider == 'docker'
+      configurator = DockerSwarmConfigurator.new(@config, @env, @ui)
+      configurator.configure
+    else
+      configurator = VagrantConfigurator.new(@specification, @config, @env, @ui)
+      configurator.up
+    end
   end
 
   def execute
