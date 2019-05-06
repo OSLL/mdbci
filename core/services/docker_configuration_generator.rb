@@ -40,6 +40,7 @@ class DockerConfigurationGenerator
   end
 
   def delete_configuration_directory
+    @ui.info('Removing the configuration directory that contains errors')
     FileUtils.rm_rf(@configuration_path)
     @ui.error("Unable to remove the destination directory '#{@configuration_path}'") if Dir.exist?(@configuration_path)
   end
@@ -70,7 +71,8 @@ class DockerConfigurationGenerator
   def setup_nodes_configuration
     @ui.info('Copying node configuration files')
     @template.each_node do |node_name, node|
-      setup_node_configuration(node_name, node)
+      result = setup_node_configuration(node_name, node)
+      return result unless result == SUCCESS_RESULT
     end
     SUCCESS_RESULT
   rescue SystemCallError => error
