@@ -51,7 +51,10 @@ class DockerConfigurationGenerator
     result = setup_nodes_configuration
     return result unless result == SUCCESS_RESULT
 
-    generate_full_configuration
+    result = generate_full_configuration
+    return result unless result == SUCCESS_RESULT
+
+    write_configuration_files
   end
 
   def create_configuration_directory
@@ -195,6 +198,17 @@ class DockerConfigurationGenerator
     SUCCESS_RESULT
   rescue IOError => error
     @ui.error("Unable to write configuration file '#{configuration_file}'.")
+    @ui.error("Error message: #{error.message}")
+    ERROR_RESULT
+  end
+
+  def write_configuration_files
+    @ui.info('Placing required configuration files')
+    File.write(File.join(@configuration_path, 'provider'), 'docker')
+    File.write(File.join(@configuration_path, 'template'), @template_file)
+    SUCCESS_RESULT
+  rescue IOError => error
+    @ui.error('Unable to create the required configuration files.')
     @ui.error("Error message: #{error.message}")
     ERROR_RESULT
   end
