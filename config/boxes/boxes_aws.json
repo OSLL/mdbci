@@ -65,9 +65,9 @@
   },
   "centos_7_aws_large" : {
     "provider": "aws",
-    "ami": "ami-1c2e8b6b",
+    "ami": "ami-0b22151636799d440",
     "user": "ec2-user",
-    "default_instance_type": "m1.large",
+    "default_instance_type": "m3.large",
     "platform": "centos",
     "platform_version": "7"
   },
