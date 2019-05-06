@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 require_relative 'base_command'
-require_relative '../services/vagrant_configuration_generator'
-require_relative '../services/docker_configuration_generator'
+require_relative 'partials/vagrant_configuration_generator'
+require_relative 'partials/docker_configuration_generator'
 require_relative '../models/configuration_template'
 
 # Command acs as the gatekeeper for two generators: Vagrant-based configurator

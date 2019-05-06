@@ -6,7 +6,7 @@ require_relative '../services/shell_commands'
 require_relative '../services/vagrant_commands'
 require_relative '../services/machine_configurator'
 require_relative '../services/network_config'
-require_relative '../services/vagrant_configuration_generator'
+require_relative 'partials/vagrant_configuration_generator'
 require_relative 'destroy_command'
 require_relative '../services/log_storage'
 

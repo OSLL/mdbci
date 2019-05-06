@@ -3,7 +3,7 @@
 require 'fileutils'
 require 'find'
 require 'yaml'
-require_relative '../models/return_codes'
+require_relative '../../models/return_codes'
 
 # The class generates the MDBCI configuration for the use in pair with Docker backend
 class DockerConfigurationGenerator

@@ -8,10 +8,10 @@ require 'securerandom'
 require 'socket'
 require 'erb'
 require 'set'
-require_relative '../commands/base_command'
-require_relative '../out'
-require_relative '../models/configuration.rb'
-require_relative '../services/shell_commands'
+require_relative '../base_command'
+require_relative '../../out'
+require_relative '../../models/configuration.rb'
+require_relative '../../services/shell_commands'
 
 # The class generates the MDBCI configuration for use in pair with the Vagrant backend
 class VagrantConfigurationGenerator < BaseCommand
