@@ -1,7 +1,7 @@
 require 'rspec'
 require_relative '../spec_helper'
 require_relative '../../core/session'
-require_relative '../../core/repo_manager'
+require_relative '../../core/services/repo_manager'
 require_relative '../../core/boxes_manager'
 require_relative '../../core/exception_handler'
 
