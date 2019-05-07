@@ -141,19 +141,17 @@ class VagrantConfigurator
   #
   # @param working_directory [String] path to the current working directory
   def generate_config_information(working_directory)
-    network_config_path = "#{@config.path}#{Configuration::NETWORK_FILE_SUFFIX}"
     @ui.info('All nodes were brought up and configured.')
     @ui.info("DIR_PWD=#{working_directory}")
     @ui.info("CONF_PATH=#{@config.path}")
-    @ui.info("Generating #{network_config_path} file")
-    File.write(network_config_path, @network_config.ini_format)
+    @ui.info("Generating #{@config.network_settings_file} file")
+    File.write(@config.network_settings_file, @network_config.ini_format)
   end
 
   # Provide information to the users about which labels are running right now
   def generate_label_information_file
-    labels_config_path = "#{@config.path}#{Configuration::LABELS_INFO_FILE_SUFFIX}"
-    @ui.info("Generating labels information file, '#{labels_config_path}'")
-    File.write(labels_config_path, @network_config.active_labels.sort.join(','))
+    @ui.info("Generating labels information file, '#{@config.labels_information_file}'")
+    File.write(@config.labels_information_file, @network_config.active_labels.sort.join(','))
   end
 
   # Forcefully destroys given node
