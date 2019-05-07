@@ -2,6 +2,7 @@
 
 require_relative '../../services/shell_commands'
 require_relative '../../models/return_codes'
+require_relative '../../models/network_settings'
 
 # The configurator that is able to bring up the Docker swarm cluster
 class DockerSwarmConfigurator
@@ -26,7 +27,10 @@ class DockerSwarmConfigurator
     result = bring_up_nodes
     return result unless result == SUCCESS_RESULT
 
-    wait_for_services
+    result = wait_for_services
+    return result unless result == SUCCESS_RESULT
+
+    store_network_settings
   end
 
   # Extract only the required node configuration from the whole configuration
@@ -63,25 +67,25 @@ class DockerSwarmConfigurator
   # Wait for services to start and acquire the IP-address
   def wait_for_services
     @ui.info('Waiting for stack services to become ready')
-    10.times do
+    60.times do
       @tasks.each do |task|
         next if task.key?(:ip_address)
 
-        status, ip_address = get_task_ip_address(task[:task_id])
+        status, task_info = get_task_information(task[:task_id])
         return ERROR_RESULT if status == ERROR_RESULT
 
-        task[:ip_address] = ip_address if status == SUCCESS_RESULT
+        task.merge!(task_info) if status == SUCCESS_RESULT
       end
       return SUCCESS_RESULT if @tasks.all? { |task| task.key?(:ip_address) }
 
       sleep(1)
     end
-    SUCCESS_RESULT
+    ERROR_RESULT
   end
 
   # Get the IP address for the task
   # @param task_id [String] the task to get the IP address for
-  def get_task_ip_address(task_id)
+  def get_task_information(task_id)
     result = run_command("docker inspect #{task_id}")
     unless result[:value].success?
       @ui.error('Unable to get information about the service')
@@ -89,9 +93,25 @@ class DockerSwarmConfigurator
     end
     task_data = JSON.parse(result[:output])[0]
     if task_data['Status']['State'] == 'running'
-      return SUCCESS_RESULT, task_data['NetworksAttachments'][0]['Addresses'][0].split('/')[0]
+      task_info = {
+        ip_address: task_data['NetworksAttachments'][0]['Addresses'][0].split('/')[0],
+        node_name: task_data['Spec']['Networks'][0]['Aliases'][0]
+      }
+      return SUCCESS_RESULT, task_info
     end
 
     [NO_RESULT, '']
+  end
+
+  # Put the network settings information into the files
+  def store_network_settings
+    @ui.info('')
+    network_settings = NetworkSettings.new
+    @tasks.each do |task|
+      network_settings.add_network_configuration(task[:node_name], {
+        'network' => task[:ip_address]
+      })
+    end
+    network_settings.store_network_configuration(@config)
   end
 end

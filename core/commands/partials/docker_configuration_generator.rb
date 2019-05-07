@@ -107,9 +107,10 @@ class DockerConfigurationGenerator
     end
     @configuration['services'][node_name] = {
       'image' => image['repo'],
-      'deploy' => DEFAULT_DEPLOY_OPTIONS,
+      'deploy' => Marshal.load(Marshal.dump(DEFAULT_DEPLOY_OPTIONS)),
       'configs' => []
     }
+    @configuration['services'][node_name]['deploy']['labels'] = { 'org.mariadb.node.name' => node_name }
     if ENVIRONMENT_OPTIONS.key?(product['name'])
       @configuration['services'][node_name]['environment'] = ENVIRONMENT_OPTIONS[product['name']]
     end

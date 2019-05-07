@@ -40,7 +40,31 @@ class NetworkSettings
     result
   end
 
+  # Save the network information into the files and label information into the files
+  def store_network_configuration(configuration)
+    store_network_settings(configuration)
+    store_labels_information(configuration)
+  end
+
   private
+
+  def store_network_settings(configuration)
+    document = IniParse.gen do |doc|
+      doc.section('__anonymous__') do |section|
+        as_hash.each_pair do |parameter, value|
+          section.option(parameter, value)
+        end
+      end
+    end
+    document.save(configuration.network_settings_file)
+  end
+
+  def store_labels_information(configuration)
+    active_labels =  configuration.nodes_by_label.select do |_, nodes|
+      nodes.all? { |node| @settings.key?(node) }
+    end.keys
+    File.write(configuration.labels_information_file, active_labels.sort.join(','))
+  end
 
   # Parse INI document into a set of machine descriptions
   def self.parse_document(document)
