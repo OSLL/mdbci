@@ -5,4 +5,5 @@ module ReturnCodes
   SUCCESS_RESULT = 0
   ERROR_RESULT = 1
   ARGUMENT_ERROR_RESULT = 2
+  NO_RESULT = 4
 end
