@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../models/network_config_file'
+require_relative '../models/network_settings'
 require_relative '../services/machine_configurator'
 require 'net/ssh'
 
@@ -13,15 +13,13 @@ class PublicKeysCommand < BaseCommand
       show_help
       return SUCCESS_RESULT
     end
-    return ARGUMENT_ERROR_RESULT if init == ARGUMENT_ERROR_RESULT
+    return ARGUMENT_ERROR_RESULT unless init == SUCCESS_RESULT
 
-    nodes = @mdbci_config.node_configurations
-    nodes.each do |node|
-      next unless @mdbci_config.node_names.include? node[0]
-
-      machine = setup_ssh_key(node[0])
-      code = configure_server_ssh_key(machine)
-      exit_code = ERROR_RESULT if code == ERROR_RESULT
+    @mdbci_config.node_names.each do |node_name|
+      @ui.info("Putting the key file to node '#{node_name}'")
+      ssh_connection_parameters = setup_ssh_key(node_name)
+      result = configure_server_ssh_key(ssh_connection_parameters)
+      exit_code = ERROR_RESULT if result == ERROR_RESULT
     end
     exit_code
   end
@@ -45,18 +43,21 @@ class PublicKeysCommand < BaseCommand
 
   # Initializes the command variable.
   def init
-    raise 'Configuration name is required' if @args.nil?
+    if @args.first.nil?
+      @ui.error('Please specify the configuration')
+      return ARGUMENT_ERROR_RESULT
+    end
 
-    @mdbci_config = Configuration.new(@args[0], @env.labels)
-    @keyfile = @env.keyFile
-    unless File.exist? @keyfile
-      @ui.error "Invalid path to ssh key\n"
+    @mdbci_config = Configuration.new(@args.first, @env.labels)
+    @keyfile = @env.keyFile.to_s
+    unless File.exist?(@keyfile)
+      @ui.error('Please specify the key file to put to nodes')
       return ARGUMENT_ERROR_RESULT
     end
     begin
-      @network_config = NetworkConfigFile.new(@mdbci_config.network_settings_file)
+      @network_config = NetworkSettings.from_file(@mdbci_config.network_settings_file)
     rescue StandardError
-      @ui.error "File network configuration not found\n"
+      @ui.error('Network settings file is not found for the configuration')
       return ARGUMENT_ERROR_RESULT
     end
     SUCCESS_RESULT
@@ -75,7 +76,7 @@ class PublicKeysCommand < BaseCommand
         add_key(ssh)
       end
     rescue StandardError
-      @ui.info "Could not connection to machine with name #{machine['name']}\n"
+      @ui.error("Could not initiate connection to the node '#{machine['name']}'")
       exit_code = ERROR_RESULT
     end
     exit_code
@@ -85,17 +86,18 @@ class PublicKeysCommand < BaseCommand
   # param ssh [Connection] ssh connection to use
   def add_key(ssh)
     output = ssh.exec!('cat ~/.ssh/authorized_keys')
-    keyfile_content = File.read(@keyfile)
-    ssh.exec!('mkdir ~/.ssh') if output.include? "No such file or directory\n"
-    ssh.exec!("echo '#{keyfile_content}' >> ~/.ssh/authorized_keys") unless output.include? keyfile_content
+    key_file_content = File.read(@keyfile)
+    ssh.exec!('mkdir ~/.ssh')
+    ssh.exec!("echo '#{key_file_content}' >> ~/.ssh/authorized_keys") unless output.include? key_file_content
   end
 
   # Setup ssh key data
-  # @param node [Node] node object
-  def setup_ssh_key(name)
-    { 'whoami' => @network_config.configs[name]['whoami'],
-      'network' => @network_config.configs[name]['network'],
-      'keyfile' => @network_config.configs[name]['keyfile'],
-      'name' => name }
+  # @param node_name [String] name of the node
+  def setup_ssh_key(node_name)
+    network_settings = @network_config.node_settings(node_name)
+    { 'whoami' => network_settings['whoami'],
+      'network' => network_settings['network'],
+      'keyfile' => network_settings['keyfile'],
+      'name' => node_name }
   end
 end

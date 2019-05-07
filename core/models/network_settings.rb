@@ -1,31 +1,40 @@
 # frozen_string_literal: true
 
 require 'iniparse'
-require 'ostruct'
 
 # Class provides access to the configuration of machines
-class NetworkConfigFile
-  attr_reader :configs
+class NetworkSettings
+  def self.from_file(path)
+    document = IniParse.parse(File.read(path))
+    settings = parse_document(document)
+    NetworkSettings.new(settings)
+  end
 
-  # @param config [String] path to the configuration file in ini format
-  def initialize(config)
-    document = IniParse.parse(File.read(config))
-    @configs = parse_document(document)
+  def initialize(settings = {})
+    @settings = settings
+  end
+
+  def add_network_configuration(name, settings)
+    @settings[name] = settings
+  end
+
+  def node_settings(name)
+    @settings[name]
   end
 
   # Provide configuration in the form of the configuration hash
-  def environment_hash
-    @configs.each_with_object({}) do |(name, config), result|
+  def as_hash
+    @settings.each_with_object({}) do |(name, config), result|
       config.each_pair do |key, value|
         result["#{name}_#{key}"] = value
       end
     end
   end
 
-  # Provide configureation in the form of the biding
-  def environment_binding
+  # Provide configuration in the form of the biding
+  def as_binding
     result = binding
-    environment_hash.merge(ENV).each_pair do |key, value|
+    as_hash.merge(ENV).each_pair do |key, value|
       result.local_variable_set(key.downcase.to_sym, value)
     end
     result
@@ -34,7 +43,7 @@ class NetworkConfigFile
   private
 
   # Parse INI document into a set of machine descriptions
-  def parse_document(document)
+  def self.parse_document(document)
     section = document['__anonymous__']
     options = section.enum_for(:each)
     names = options.map(&:key)

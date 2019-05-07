@@ -127,6 +127,15 @@ class Configuration
     File.join(@path, 'docker-partial-configuration.yaml')
   end
 
+  # Iterator by the list of node configurations that were selected by the user
+  def selected_node_configurations
+    @node_configurations.each do |name, configuration|
+      next unless node_names.include?(name)
+
+      yield name, configuration
+    end
+  end
+
   private
 
   # Method parses configuration/node specification and extracts path to the
