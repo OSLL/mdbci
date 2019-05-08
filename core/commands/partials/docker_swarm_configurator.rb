@@ -11,8 +11,8 @@ class DockerSwarmConfigurator
 
   def initialize(config, env, logger)
     @config = config
-    @env = env
     @ui = logger
+    @attempts = env.attempts&.to_i || 5
   end
 
   def configure
@@ -50,11 +50,9 @@ class DockerSwarmConfigurator
     @ui.info('Bringing up the Docker Swarm stack')
     config_file = @config.docker_partial_configuration
     File.write(config_file, YAML.dump(@configuration))
-    result = run_command_and_log("docker stack deploy -c #{config_file} #{@config.name}")
-    unless result[:value].success?
-      @ui.error('Unable to deploy the docker stack!')
-      return ERROR_RESULT
-    end
+    result = bring_up_docker_stack
+    return result unless result == SUCCESS_RESULT
+
     result = run_command("docker stack ps --format '{{.ID}}' #{@config.name}")
     unless result[:value].success?
       @ui.error('Unable to get the list of tasks')
@@ -62,6 +60,18 @@ class DockerSwarmConfigurator
     end
     @tasks = result[:output].each_line.map { |task_id| { task_id: task_id } }
     SUCCESS_RESULT
+  end
+
+  # Bring up the stack, perform it several times if necessary
+  def bring_up_docker_stack
+    (@attempts + 1).times do
+      result = run_command_and_log("docker stack deploy -c #{config_file} #{@config.name}")
+      return SUCCESS_RESULT if result[:value].success?
+
+      @ui.error('Unable to deploy the docker stack!')
+      sleep(1)
+    end
+    ERROR_RESULT
   end
 
   # Wait for services to start and acquire the IP-address
@@ -105,12 +115,10 @@ class DockerSwarmConfigurator
 
   # Put the network settings information into the files
   def store_network_settings
-    @ui.info('')
+    @ui.info('Generating network configuration file')
     network_settings = NetworkSettings.new
     @tasks.each do |task|
-      network_settings.add_network_configuration(task[:node_name], {
-        'network' => task[:ip_address]
-      })
+      network_settings.add_network_configuration(task[:node_name], 'network' => task[:ip_address])
     end
     network_settings.store_network_configuration(@config)
   end
