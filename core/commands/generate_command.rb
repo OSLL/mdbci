@@ -179,7 +179,7 @@ end
           aws.tags = <%= tags %>
           aws.instance_type = '<%= default_instance_type %>'
           <% if device_name %>
-            aws.block_device_mapping = [{ 'DeviceName' => '<%= device_name %>', 'Ebs.VolumeSize' => 100 }]
+            aws.block_device_mapping = [{ 'DeviceName' => '<%= device_name %>', 'Ebs.VolumeSize' => 500 }]
           <% end %>
           override.ssh.username = '<%= user %>'
         end
