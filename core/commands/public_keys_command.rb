@@ -17,9 +17,9 @@ class PublicKeysCommand < BaseCommand
 
     nodes = @mdbci_config.node_configurations
     nodes.each do |node|
-      next unless @mdbci_config.node_names.include? node[1]['hostname']
+      next unless @mdbci_config.node_names.include? node[0]
 
-      machine = setup_ssh_key(node[1])
+      machine = setup_ssh_key(node[0])
       code = configure_server_ssh_key(machine)
       exit_code = ERROR_RESULT if code == ERROR_RESULT
     end
@@ -92,10 +92,10 @@ class PublicKeysCommand < BaseCommand
 
   # Setup ssh key data
   # @param node [Node] node object
-  def setup_ssh_key(node)
-    { 'whoami' => @network_config.configs[node['hostname']]['whoami'],
-      'network' => @network_config.configs[node['hostname']]['network'],
-      'keyfile' => @network_config.configs[node['hostname']]['keyfile'],
-      'name' => node['hostname'] }
+  def setup_ssh_key(name)
+    { 'whoami' => @network_config.configs[name]['whoami'],
+      'network' => @network_config.configs[name]['network'],
+      'keyfile' => @network_config.configs[name]['keyfile'],
+      'name' => name }
   end
 end
