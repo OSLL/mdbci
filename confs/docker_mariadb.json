@@ -1,6 +1,6 @@
 {
   "node_000": {
-    "hostname": "mariadb_node_000",
+    "hostname": "mariadb-node-000",
     "box": "docker",
     "product": {
       "name": "mariadb",
@@ -9,7 +9,7 @@
     }
   },
   "node_001": {
-    "hostname": "mariadb_node_001",
+    "hostname": "mariadb-node-001",
     "box": "docker",
     "product": {
       "name": "mariadb",
