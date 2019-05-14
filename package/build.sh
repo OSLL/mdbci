@@ -25,7 +25,7 @@ mkdir -p "$BUILD_DIR"
 # Copy all files that should be distributed to the build directory
 MDBCI_BUILD_DIR="$BUILD_DIR/mdbci"
 mkdir -p "$MDBCI_BUILD_DIR"
-for file in config confs core docs Gemfile Gemfile.lock mdbci recipes scripts
+for file in assets config confs core docs Gemfile Gemfile.lock mdbci scripts
 do
   cp -r "../$file" "$MDBCI_BUILD_DIR/"
 done
