@@ -132,6 +132,14 @@ end
           qemu.memory = <%= vm_mem %>
         end
       end #  <-- End of Qemu definition for machine: <%= name %>
+
+      <% if platform == 'ubuntu' && platform_version == 'bionic' %>
+        # Fix DNS bug
+        config.trigger.after :up do |trigger|
+          trigger.info = "Relink resolv.conf"
+          trigger.run_remote = { inline: "sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf" }
+        end
+      <% end %>
     LIBVIRT
     template.result(OpenStruct.new(node_params).instance_eval { binding })
   end
