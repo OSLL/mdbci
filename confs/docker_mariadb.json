@@ -1,0 +1,20 @@
+{
+  "node_000": {
+    "hostname": "mariadb_node_000",
+    "box": "docker",
+    "product": {
+      "name": "mariadb",
+      "version": "10.3",
+      "cnf_template": "cnf/server1.cnf"
+    }
+  },
+  "node_001": {
+    "hostname": "mariadb_node_001",
+    "box": "docker",
+    "product": {
+      "name": "mariadb",
+      "version": "10.3",
+      "cnf_template": "cnf/server2.cnf"
+    }
+  }
+}
