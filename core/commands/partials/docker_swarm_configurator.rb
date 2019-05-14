@@ -50,7 +50,7 @@ class DockerSwarmConfigurator
     @ui.info('Bringing up the Docker Swarm stack')
     config_file = @config.docker_partial_configuration
     File.write(config_file, YAML.dump(@configuration))
-    result = bring_up_docker_stack
+    result = bring_up_docker_stack(config_file)
     return result unless result == SUCCESS_RESULT
 
     result = run_command("docker stack ps --format '{{.ID}}' #{@config.name}")
@@ -63,7 +63,7 @@ class DockerSwarmConfigurator
   end
 
   # Bring up the stack, perform it several times if necessary
-  def bring_up_docker_stack
+  def bring_up_docker_stack(config_file)
     (@attempts + 1).times do
       result = run_command_and_log("docker stack deploy -c #{config_file} #{@config.name}")
       return SUCCESS_RESULT if result[:value].success?
