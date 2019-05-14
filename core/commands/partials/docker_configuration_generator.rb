@@ -165,17 +165,18 @@ class DockerConfigurationGenerator
 
   def copy_initialization_files(node_name, product, init_files_path)
     @ui.info("Copying initialization files for the node '#{node_name}'")
-    Find.find(File.join(@docker_configs, product['name'])).with_index do |file, index|
+    init_assets_path = File.join(@docker_configs, product['name'])
+    return SUCCESS_RESULT unless File.exist?(init_assets_path)
+
+    Find.find(init_assets_path).with_index do |file, index|
       next unless File.file?(file)
 
       result_file = File.join(init_files_path, File.basename(file))
       FileUtils.cp(file, result_file)
-
       unless INITIALIZATION_LOCATIONS.key?(product['name'])
         @ui.error("Do not know how to configure initialization of product #{product['name']}")
         return ERROR_RESULT
       end
-
       add_service_configuration_file(node_name, result_file, "#{node_name}_#{index}_init",
                                      File.join(INITIALIZATION_LOCATIONS[product['name']], File.basename(file)))
     end
