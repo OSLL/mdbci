@@ -4,7 +4,9 @@ require_relative 'base_command'
 require_relative '../models/configuration'
 require_relative '../models/command_result.rb'
 require_relative '../services/shell_commands'
+require_relative 'partials/docker_swarm_cleaner'
 require_relative 'partials/vagrant_cleaner'
+
 require 'fileutils'
 
 # Command allows to destroy the whole configuration or a specific node.
@@ -50,6 +52,8 @@ The command also deletes AWS key pair for corresponding configurations.
 After running the vagrant destroy this command also deletes the
 libvirt and VirtualBox boxes using low-level commands.
 
+For the Docker-based configuration only the destruction of the whole configuration is supported.
+
 You can destroy nodes by name without the need for configuration file.
 As a name you can use any part of node name or regular expression:
   mdbci destroy --node-name name
@@ -58,7 +62,7 @@ You can view a list of all the virtual machines of all providers:
   mdbci destroy --list
 
 Specifies the list of desired labels. It allows to filter VMs based on the label presence.
-You can specify the list of labes to initiate destruction of virtual machines with those labels:
+You can specify the list of labels to initiate destruction of virtual machines with those labels:
   mdbci destroy --labels [string]
 If any of the labels passed to the command match any label in the machine description, then this
 machine will be brought up and configured according to its configuration.
@@ -94,12 +98,18 @@ Labels should be separated with commas, do not contain any whitespaces.
   # Handle case when command calling with configuration.
   def destroy_by_configuration
     configuration = Configuration.new(@args.first, @env.labels)
-    vagrant_cleaner = VagrantCleaner.new(@env, @ui)
-    vagrant_cleaner.destroy_nodes_by_configuration(configuration)
-    return unless @env.labels.nil? && Configuration.config_directory?(@args.first)
+    if configuration.docker_configuration?
+      docker_cleaner = DockerSwarmCleaner.new(@env, @ui)
+      docker_cleaner.destroy_stack(configuration)
+      remove_files(configuration, @env.keep_template)
+    else
+      vagrant_cleaner = VagrantCleaner.new(@env, @ui)
+      vagrant_cleaner.destroy_nodes_by_configuration(configuration)
+      return unless @env.labels.nil? && Configuration.config_directory?(@args.first)
 
-    remove_files(configuration, @env.keep_template)
-    vagrant_cleaner.destroy_aws_keypair(configuration)
+      remove_files(configuration, @env.keep_template)
+      vagrant_cleaner.destroy_aws_keypair(configuration)
+    end
   end
 
   def execute
