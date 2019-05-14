@@ -12,52 +12,6 @@ class NetworkConfig
     @nodes = {}
   end
 
-  # Get node public IP
-  #
-  # @param node_name [String] name of the node
-  # return [String] public ipv4 address
-  def get_network(node_name)
-    @nodes[node_name].get_ip(false)
-  end
-
-  # Path to node private key file
-  #
-  # @param node_name [String] name of the node
-  # return [String] path to private_key
-  def get_keyfile(node_name)
-    @nodes[node_name].identity_file
-  end
-
-  # Get node private IP
-  #
-  # @param node_name [String] name of the node
-  # return [String] private ipv4 address
-  def get_private_ip(node_name)
-    @nodes[node_name].get_ip(true)
-  end
-
-  # Get uername for given node
-  #
-  # @param node_name [String] name of the node
-  # return [String] node user name
-  def get_whoami(node_name)
-    @nodes[node_name].user
-  end
-
-  # Get information about the network configuration of the particular node
-  #
-  # @param node [String] name of the node to get information about
-  # @return [Hash] node network configuration
-  def [](node)
-    {
-      'network' => get_network(node),
-      'keyfile' => get_keyfile(node),
-      'private_ip' => get_private_ip(node),
-      'whoami' => get_whoami(node),
-      'hostname' => @config.node_configurations[node]['hostname']
-    }
-  end
-
   # Adds configuration for a list of nodes.
   # Names not in the configuration file will be ignored
   #
@@ -96,5 +50,53 @@ class NetworkConfig
       end
       buffer.string
     end
+  end
+
+  # Get information about the network configuration of the particular node
+  #
+  # @param node [String] name of the node to get information about
+  # @return [Hash] node network configuration
+  def [](node)
+    {
+      'network' => get_network(node),
+      'keyfile' => get_keyfile(node),
+      'private_ip' => get_private_ip(node),
+      'whoami' => get_whoami(node),
+      'hostname' => @config.node_configurations[node]['hostname']
+    }
+  end
+
+  private
+
+  # Get node public IP
+  #
+  # @param node_name [String] name of the node
+  # return [String] public ipv4 address
+  def get_network(node_name)
+    @nodes[node_name].get_ip(false)
+  end
+
+  # Path to node private key file
+  #
+  # @param node_name [String] name of the node
+  # return [String] path to private_key
+  def get_keyfile(node_name)
+    @nodes[node_name].identity_file
+  end
+
+  # Get node private IP
+  #
+  # @param node_name [String] name of the node
+  # return [String] private ipv4 address
+  def get_private_ip(node_name)
+    @nodes[node_name].get_ip(true)
+  end
+
+  # Get uername for given node
+  #
+  # @param node_name [String] name of the node
+  # return [String] node user name
+  def get_whoami(node_name)
+    @nodes[node_name].user
   end
 end

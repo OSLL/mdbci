@@ -11,7 +11,7 @@ class MachineConfigurator
   # installed old version of the Chef, the installation is performed at the second attempt
   CHEF_INSTALLATION_ATTEMPTS = 2
 
-  def initialize(logger, root_path = File.expand_path('../../../recipes', __FILE__))
+  def initialize(logger, root_path = File.expand_path('../../../assets/chef-recipes', __FILE__))
     @log = logger
     @root_path = root_path
   end

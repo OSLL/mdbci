@@ -20,13 +20,12 @@ require_relative 'commands/deploy_command'
 require_relative 'commands/setup_dependencies_command'
 require_relative 'commands/show_network_config_command'
 require_relative 'constants'
-require_relative 'docker_manager'
 require_relative 'helper'
 require_relative 'models/configuration'
 require_relative 'models/tool_configuration'
 require_relative 'network'
 require_relative 'out'
-require_relative 'repo_manager'
+require_relative 'services/repo_manager'
 require_relative 'services/aws_service'
 require_relative 'services/shell_commands'
 require_relative 'services/box_definitions'
@@ -38,11 +37,11 @@ class Session
   attr_accessor :configs
   attr_accessor :configuration_file
   attr_accessor :versions
-  attr_accessor :configFile
+  attr_accessor :template_file
   attr_accessor :boxes_location
   attr_accessor :boxName
   attr_accessor :field
-  attr_accessor :isOverride
+  attr_accessor :override
   attr_accessor :isSilent
   attr_accessor :command
   attr_accessor :repos
@@ -105,16 +104,15 @@ EOF
       File.join(XDG['CONFIG_HOME'].to_s, 'mdbci'),
       File.join(@mdbci_dir, 'config')
     ]
-    @repo_dir = find_configuration('repo.d') unless @repo_dir
   end
 
   # Method initializes services that depend on the parsed configuration
   def initialize_services
     fill_paths
-    $out.info('Load MDBCI configuration file')
+    $out.info('Loading MDBCI configuration file')
     @tool_config = ToolConfiguration.load
-    $out.info("Load Repos from #{@repo_dir}")
-    @repos = RepoManager.new(@repo_dir)
+    $out.info('Loading repository configuration files')
+    @repos = RepoManager.new($out, @repo_dir)
     if @tool_config['aws']
       @aws_service = AwsService.new(@tool_config['aws'], $out)
     end
@@ -364,14 +362,14 @@ EOF
   end
 
   def validate_template
-    raise 'Template must be specified!' unless $session.configFile
+    raise 'Template must be specified!' unless $session.template_file
     begin
       schema = JSON.parse(File.read 'templates/schemas/template.json')
-      json = JSON.parse(File.read $session.configFile)
+      json = JSON.parse(File.read $session.template_file)
       JSON::Validator.validate!(schema, json)
-      $out.info "Template #{$session.configFile} is valid"
+      $out.info "Template #{$session.template_file} is valid"
     rescue JSON::Schema::ValidationError => e
-      $out.error "Template #{$session.configFile} is NOT valid"
+      $out.error "Template #{$session.template_file} is NOT valid"
       raise e.message
     end
     return 0
@@ -490,7 +488,7 @@ EOF
       exit_code = destroy.execute
     when 'generate'
       command = GenerateCommand.new(ARGV, self, $out)
-      exit_code = command.execute(ARGV.shift, isOverride)
+      exit_code = command.execute
     when 'generate-product-repositories'
       command = GenerateProductRepositoriesCommand.new(ARGV, self, $out)
       exit_code = command.execute

@@ -47,7 +47,7 @@ require 'core/services/version'
 
 session = Session.new
 $session = session
-session.configFile = 'instance.json'
+session.template_file = 'instance.json'
 $exception_handler = ExceptionHandler.new
 session.ipv6 = false
 
@@ -72,7 +72,7 @@ begin
       session.isSilent = true
 
     when '--template'
-      session.configFile = arg unless arg.empty?
+      session.template_file = arg unless arg.empty?
 
     when '--boxes'
       session.boxes_location = arg unless arg.empty?
@@ -84,7 +84,7 @@ begin
       session.field = arg unless arg.empty?
 
     when '--override'
-      session.isOverride = true
+      session.override = true
 
     when '--command'
       session.command = arg

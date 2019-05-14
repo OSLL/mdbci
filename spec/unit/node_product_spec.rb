@@ -4,7 +4,7 @@ require_relative '../spec_helper'
 require_relative '../../core/session'
 require_relative '../../core/node_product'
 require_relative '../../core/out'
-require_relative '../../core/repo_manager'
+require_relative '../../core/services/repo_manager'
 
 describe 'NodeProduct' do
 
