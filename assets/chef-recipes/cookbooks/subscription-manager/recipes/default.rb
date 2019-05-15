@@ -1,7 +1,8 @@
 execute 'Register the system' do
   command 'subscription-manager register '\
           "--username #{node['subscription-manager']['username']} "\
-          "--password #{node['subscription-manager']['password']}"
+          "--password #{node['subscription-manager']['password']} "\
+	  "--force"
 end
 
 execute 'Setting a Service Level Preference' do
