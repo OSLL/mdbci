@@ -103,14 +103,49 @@ class DockerSwarmConfigurator
     end
     task_data = JSON.parse(result[:output])[0]
     if task_data['Status']['State'] == 'running'
-      task_info = {
-        ip_address: task_data['NetworksAttachments'][0]['Addresses'][0].split('/')[0],
-        node_name: task_data['Spec']['Networks'][0]['Aliases'][0]
-      }
-      return SUCCESS_RESULT, task_info
+      process_task_data(task_data)
+    else
+      [NO_RESULT, '']
+    end
+  end
+
+  # Convert task description into correct description, get all required ip addresses
+  def process_task_data(task_data)
+    private_ip_address = task_data['NetworksAttachments'][0]['Addresses'][0].split('/')[0]
+
+    result, ip_address = get_service_public_ip(task_data['Status']['ContainerStatus']['ContainerID'],
+                                               private_ip_address)
+    return ERROR_RESULT, '' if result == ERROR_RESULT
+
+    task_info = {
+      ip_address: ip_address,
+      private_ip_address: private_ip_address,
+      node_name: task_data['Spec']['Networks'][0]['Aliases'][0]
+    }
+    [SUCCESS_RESULT, task_info]
+  end
+
+  # Get the ip address of the docker swarm service that is located on the current machine
+  # @param container_id [String] the name of the container to get data from
+  # @param private_ip_address [String] the private IP address
+  def get_service_public_ip(container_id, private_ip_address)
+    result = run_command("docker exec #{container_id} ip address")
+    unless result[:value].success?
+      @ui.error("Unable to determine the IP address of the container #{container_id}")
+      return ERROR_RESULT, ''
     end
 
-    [NO_RESULT, '']
+    result[:output].each_line do |full_line|
+      line = full_line.strip
+      next unless line.start_with?('inet')
+
+      possible_addr = line.split(/\s+/)[1].split('/')[0]
+      next if ['127.0.0.1', private_ip_address].include?(possible_addr)
+
+      return [SUCCESS_RESULT, possible_addr]
+    end
+
+    [ERROR_RESULT, '']
   end
 
   # Put the network settings information into the files
@@ -118,7 +153,8 @@ class DockerSwarmConfigurator
     @ui.info('Generating network configuration file')
     network_settings = NetworkSettings.new
     @tasks.each do |task|
-      network_settings.add_network_configuration(task[:node_name], 'network' => task[:ip_address])
+      network_settings.add_network_configuration(task[:node_name], 'private_ip' => task[:private_ip_address],
+                                                                   'network' => task[:ip_address])
     end
     network_settings.store_network_configuration(@config)
   end
