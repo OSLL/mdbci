@@ -62,9 +62,9 @@ Arguments:
   end
 
   def generate_config(template_path, config_name)
-    $session.configFile = template_path
+    $session.template_file = template_path
     $session.generate config_name
-    $session.configFile = nil
+    $session.template_file = nil
   end
 
   def up_config(config_name)

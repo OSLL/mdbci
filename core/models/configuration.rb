@@ -23,9 +23,30 @@ class Configuration
     !path.nil? &&
       !path.empty? &&
       Dir.exist?(path) &&
-      File.exist?("#{path}/template") &&
-      File.exist?("#{path}/provider") &&
-      File.exist?("#{path}/Vagrantfile")
+      File.exist?(File.join(path, 'template')) &&
+      File.exist?(File.join(path, 'provider')) &&
+      (
+        File.exist?(vagrant_configuration(path)) ||
+        File.exist?(docker_configuration(path))
+      )
+  end
+
+  # Gets the path to the Vagrant configuration file that resides
+  # in the configuration specified by the path
+  #
+  # @param path [String] path to the configuration
+  # @return [String] path to the Vagrant configuration file
+  def self.vagrant_configuration(path)
+    File.join(path, 'Vagrantfile')
+  end
+
+  # Forms the path to the Docker configuration file that resides
+  # in the configuration specified by the path
+  #
+  # @param path [String] path to the configuration
+  # @return [String] path to the Docker configuration file
+  def self.docker_configuration(path)
+    File.join(path, 'docker-configuration.yaml')
   end
 
   def initialize(spec, labels = nil)
@@ -36,6 +57,7 @@ class Configuration
     @template_path = read_template_path(@path)
     @node_configurations = extract_node_configurations(read_template(@template_path))
     @aws_keypair_name = read_aws_keypair_name
+    @docker_configuration = read_docker_configuration
     @labels = labels.nil? ? [] : labels.split(',')
     @node_names = select_node_names(node)
   end
@@ -85,6 +107,33 @@ class Configuration
       end
     end
     result
+  end
+
+  # Check whether configuration has a valid Docker Swarm configuration file or not
+  # @return [Boolean] true if the configuration is present
+  def docker_configuration?
+    !@docker_configuration.empty?
+  end
+
+  # Provide a copy of the Docker configuration for further modification
+  # @return [Hash] a full Docker Swarm configuration
+  def docker_configuration
+    Marshal.load(Marshal.dump(@docker_configuration))
+  end
+
+  # Provide a path to the partial Docker configuration that can be used for swarm Management
+  # @return [String] path to the partial configuration
+  def docker_partial_configuration
+    File.join(@path, 'docker-partial-configuration.yaml')
+  end
+
+  # Iterator by the list of node configurations that were selected by the user
+  def selected_node_configurations
+    @node_configurations.each do |name, configuration|
+      next unless node_names.include?(name)
+
+      yield name, configuration
+    end
   end
 
   private
@@ -183,6 +232,16 @@ class Configuration
     end
 
     provider
+  end
+
+  # Read the Docker Swarm full configuration file for futher processing
+  # If file does not present, return the empty string
+  # @return [Hash] the processed hash
+  def read_docker_configuration
+    config_file = self.class.docker_configuration(@path)
+    return {} unless File.exist?(config_file)
+
+    YAML.load_file(config_file).freeze
   end
 
   # Read template path from the configuration

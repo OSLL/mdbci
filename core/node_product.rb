@@ -23,7 +23,7 @@ class NodeProduct
     end
 
     if repo.nil?
-      repo = $session.repos.findRepo(product_name, product, box)
+      repo = $session.repos.find_repository(product_name, product, box)
     end
     repo
   end

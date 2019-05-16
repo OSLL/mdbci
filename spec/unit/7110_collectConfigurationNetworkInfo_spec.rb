@@ -4,7 +4,7 @@ require_relative '../spec_helper'
 require_relative '../../core/session'
 require_relative '../../core/node_product'
 require_relative '../../core/out'
-require_relative '../../core/repo_manager'
+require_relative '../../core/services/repo_manager'
 require_relative '../../core/exception_handler'
 require_relative '../../core/network'
 
@@ -20,7 +20,7 @@ describe 'Network' do
     boxesPath = './BOXES'
     $session.boxes = BoxesManager.new boxesPath
     reposPath = './config/repo.d'
-    $session.configFile='instance.json'
+    $session.template_file='instance.json'
     $session.awsConfigFile='aws-config.yml'
     $session.repos = RepoManager.new reposPath
     $session.checkConfig
