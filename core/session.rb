@@ -497,8 +497,7 @@ EOF
       command = HelpCommand.new(ARGV, self, $out)
       exit_code = command.execute
     when 'install_product'
-      command InstallProduct.new(ARGV, self, $out)
-      exit_code = command.execute
+      exit_code = NodeProduct.install_product(ARGV.shift)
     when 'public_keys'
       command = PublicKeysCommand.new(ARGV, self, $out)
       exit_code = command.execute
