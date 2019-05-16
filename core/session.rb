@@ -19,6 +19,7 @@ require_relative 'commands/public_keys_command'
 require_relative 'commands/deploy_command'
 require_relative 'commands/setup_dependencies_command'
 require_relative 'commands/show_network_config_command'
+require_relative 'commands/install_product_command.rb'
 require_relative 'constants'
 require_relative 'helper'
 require_relative 'models/configuration'
@@ -496,7 +497,9 @@ EOF
       command = HelpCommand.new(ARGV, self, $out)
       exit_code = command.execute
     when 'install_product'
-      exit_code = NodeProduct.install_product(ARGV.shift)
+      command InstallProduct.new(ARGV, self, $out)
+      exit_code = command.execute
+      # NodeProduct.install_product(ARGV.shift)
     when 'public_keys'
       command = PublicKeysCommand.new(ARGV, self, $out)
       exit_code = command.execute
