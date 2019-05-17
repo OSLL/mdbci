@@ -59,6 +59,10 @@ Dir.chdir ENV['OLD_CWD'] unless ENV['OLD_CWD'].nil?
 Dir.chdir ENV['MDBCI_VM_PATH'] unless ENV['MDBCI_VM_PATH'].nil?
 $work_dir = Dir.pwd
 
+# Greeting user
+out.info "MariaDB CI CLI, version: #{Version.version(session.mdbci_dir, out)}"
+out.info "mdbci called with: #{ARGV.join(' ')}"
+
 session.mdbci_dir = $mdbci_exec_dir
 session.starting_dir = $current_dir
 session.working_dir = $work_dir
@@ -162,13 +166,9 @@ rescue GetoptLong::MissingArgument => error
   exit 1
 end
 
-# Greeting user
-out.info "MariaDB CI CLI, version: #{Version.version(session.mdbci_dir, out)}"
-out.info "mdbci called with: #{ARGV.join(' ')}"
-session.initialize_services
-
 # run commands and return 0 for success, 1 for error
 begin
+  session.initialize_services
   exit_code = session.commands
 rescue StandardError => error
   out.error error.backtrace.join("\n")
