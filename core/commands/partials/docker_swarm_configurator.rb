@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'csv'
 require_relative '../../services/shell_commands'
 require_relative '../../models/return_codes'
 require_relative '../../models/network_settings'
