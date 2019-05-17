@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'csv'
 require_relative '../../services/shell_commands'
 require_relative '../../models/return_codes'
 require_relative '../../models/network_settings'
@@ -129,23 +130,33 @@ class DockerSwarmConfigurator
   # @param container_id [String] the name of the container to get data from
   # @param private_ip_address [String] the private IP address
   def get_service_public_ip(container_id, private_ip_address)
-    result = run_command("docker exec #{container_id} ip address")
+    result = run_command("docker exec #{container_id} cat /proc/net/fib_trie")
     unless result[:value].success?
       @ui.error("Unable to determine the IP address of the container #{container_id}")
       return ERROR_RESULT, ''
     end
 
-    result[:output].each_line do |full_line|
-      line = full_line.strip
-      next unless line.start_with?('inet')
+    addresses = extract_ip_addresses(result[:output])
+    addresses.each do |address|
+      next if ['127.0.0.1', private_ip_address].include?(address)
 
-      possible_addr = line.split(/\s+/)[1].split('/')[0]
-      next if ['127.0.0.1', private_ip_address].include?(possible_addr)
-
-      return [SUCCESS_RESULT, possible_addr]
+      return [SUCCESS_RESULT, address]
     end
 
     [ERROR_RESULT, '']
+  end
+
+  # Process /proc/net/fib_trie contents file and extract the ip addresses
+  # @param fib_contents [String] contents of the file
+  def extract_ip_addresses(fib_contents)
+    addresses = fib_contents.lines.each_with_object(last: '', result: []) do |line, acc|
+      if line.include?('host LOCAL')
+        address = acc[:last].scan(/\d+\.\d+\.\d+\.\d+/)
+        acc[:result].push(address.first) unless address.empty?
+      end
+      acc[:last] = line
+    end
+    addresses[:result]
   end
 
   # Put the network settings information into the files
