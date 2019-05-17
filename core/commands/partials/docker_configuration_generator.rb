@@ -129,6 +129,8 @@ class DockerConfigurationGenerator
     copy_initialization_files(node_name, product, init_files_path)
   end
 
+  MUST_PROVIDE_CONFIGURATION = %w[mariadb].freeze
+
   def copy_product_config_file(node_name, product, result_file)
     @ui.info("Copying configuration file for the node '#{node_name}'")
     if product.key?('cnf_template') && product.key?('cnf_template_path')
@@ -137,6 +139,8 @@ class DockerConfigurationGenerator
     elsif product.key?('cnf_template')
       FileUtils.cp(File.expand_path(product['cnf_template'], File.dirname(@template_file)), result_file)
     else
+      return SUCCESS_RESULT unless MUST_PROVIDE_CONFIGURATION.include?(product['name'])
+
       @ui.error("You must provide path to configuration file in 'cnf_template' and 'cnf_template_path'.")
       return ERROR_RESULT
     end
