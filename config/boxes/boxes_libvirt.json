@@ -90,7 +90,7 @@
   },
   "rhel_8_libvirt": {
     "provider": "libvirt",
-    "box": "generic/rhel8",
+    "box": "custom-rhel-8-release-1",
     "platform": "rhel",
     "platform_version": "8",
     "configure_subscription_manager": "true"
