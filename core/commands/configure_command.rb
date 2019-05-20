@@ -35,8 +35,8 @@ Or you can configure only AWS or only RHEL credentials (for example, AWS):
     end
     configure_results = []
 
-    configure_results << configure_aws if @env.nodeProduct.casecmp('aws').zero? || @env.nodeProduct.nil?
-    configure_results << configure_rhel if @env.nodeProduct.casecmp('rhel').zero? || @env.nodeProduct.nil?
+    configure_results << configure_aws if @env.nodeProduct.nil? || @env.nodeProduct.casecmp('aws').zero?
+    configure_results << configure_rhel if @env.nodeProduct.nil? || @env.nodeProduct.casecmp('rhel').zero?
 
     return ERROR_RESULT if configure_results.include?(ERROR_RESULT)
 
