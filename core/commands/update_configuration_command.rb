@@ -5,11 +5,12 @@ require_relative 'base_command'
 # Update the configuration file of the MaxScale and restart the service
 class UpdateConfigurationCommand < BaseCommand
   def self.synopsis
-    'Setup environment as specified in the configuration.'
+    'Update the service configuration file and restart the service.'
   end
 
   def show_help
     info = <<~HELP
+
       Command allows to update the configuration of the MaxScale and restart the service.
       Currently the MDBCI supports only the Docker configuration.
 
@@ -24,6 +25,11 @@ class UpdateConfigurationCommand < BaseCommand
   end
 
   def execute
+    if @env.show_help
+      show_help
+      return SUCCESS_RESULT
+    end
+
     SUCCESS_RESULT
   end
 end
