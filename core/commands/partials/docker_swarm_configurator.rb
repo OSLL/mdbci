@@ -112,13 +112,13 @@ class DockerSwarmConfigurator
   # Convert task description into correct description, get all required ip addresses
   def process_task_data(task_data)
     private_ip_address = task_data['NetworksAttachments'][0]['Addresses'][0].split('/')[0]
-
-    result, ip_address = get_service_public_ip(task_data['Status']['ContainerStatus']['ContainerID'],
-                                               private_ip_address)
+    container_id = task_data['Status']['ContainerStatus']['ContainerID']
+    result, ip_address = get_service_public_ip(container_id, private_ip_address)
     return ERROR_RESULT, '' if result == ERROR_RESULT
 
     task_info = {
       ip_address: ip_address,
+      container_id: container_id,
       private_ip_address: private_ip_address,
       node_name: task_data['Spec']['Networks'][0]['Aliases'][0]
     }
@@ -164,7 +164,8 @@ class DockerSwarmConfigurator
     network_settings = NetworkSettings.new
     @tasks.each do |task|
       network_settings.add_network_configuration(task[:node_name], 'private_ip' => task[:private_ip_address],
-                                                                   'network' => task[:ip_address])
+                                                                   'network' => task[:ip_address],
+                                                                   'docker_container_id' => task[:container_id])
     end
     network_settings.store_network_configuration(@config)
   end
