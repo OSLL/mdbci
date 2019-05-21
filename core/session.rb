@@ -19,6 +19,7 @@ require_relative 'commands/public_keys_command'
 require_relative 'commands/deploy_command'
 require_relative 'commands/setup_dependencies_command'
 require_relative 'commands/show_network_config_command'
+require_relative 'commands/update_configuration_command'
 require_relative 'constants'
 require_relative 'helper'
 require_relative 'models/configuration'
@@ -519,6 +520,9 @@ EOF
       exit_code = sudo.execute
     when 'up'
       command = UpCommand.new([ARGV.shift], self, $out)
+      exit_code = command.execute
+    when 'update-configuration'
+      command = UpdateConfigurationCommand.new(ARGV, self, $out)
       exit_code = command.execute
     when 'validate_template'
       exit_code = validate_template
