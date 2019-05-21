@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'base_command'
+require_relative '../models/configuration'
 
 # Update the configuration file of the MaxScale and restart the service
 class UpdateConfigurationCommand < BaseCommand
@@ -30,6 +31,38 @@ class UpdateConfigurationCommand < BaseCommand
       return SUCCESS_RESULT
     end
 
+    result = setup_command
+    return result unless result == SUCCESS_RESULT
+
     SUCCESS_RESULT
   end
+
+  # rubocop:disable Metrics/MethodLength
+  def setup_command
+    if @args.empty?
+      @ui.error('Please specify the configuration and node that should be updated')
+      return ERROR_RESULT
+    end
+
+    begin
+      @configuration = Configuration.new(@args.first, @env.labels)
+    rescue ArgumentError => error
+      @ui.error('Unable to detect the configuration')
+      @ui.error(error.message)
+      return ERROR_RESULT
+    end
+
+    if @configuration.provider != 'docker'
+      @ui.error('The command only supports the Docker configuration')
+      return ERROR_RESULT
+    end
+
+    @config_file = @env.configuration_file
+    if @config_file.nil? || !File.exist?(@config_file)
+      @ui.error('Please specify path to the new configuration file for the service')
+      return ERROR_RESULT
+    end
+    SUCCESS_RESULT
+  end
+  # rubocop:enable Metrics/MethodLength
 end
