@@ -110,7 +110,10 @@ class DockerConfigurationGenerator
       'deploy' => Marshal.load(Marshal.dump(DEFAULT_DEPLOY_OPTIONS)),
       'configs' => []
     }
-    @configuration['services'][node_name]['deploy']['labels'] = { 'org.mariadb.node.name' => node_name }
+    @configuration['services'][node_name]['deploy']['labels'] = {
+      'org.mariadb.node.name' => node_name,
+      'org.mariadb.node.config_version' => 0
+    }
     if ENVIRONMENT_OPTIONS.key?(product['name'])
       @configuration['services'][node_name]['environment'] = ENVIRONMENT_OPTIONS[product['name']]
     end
@@ -120,7 +123,7 @@ class DockerConfigurationGenerator
   def copy_node_config_files(node_name, product)
     service_config_path = File.join(@configuration_path, 'configs', node_name)
     FileUtils.mkdir_p(service_config_path)
-    config_file_path = File.join(service_config_path, "#{node_name}.cnf")
+    config_file_path = File.join(service_config_path, "#{node_name}_0.cnf")
     result = copy_product_config_file(node_name, product, config_file_path)
     return result unless result == SUCCESS_RESULT
 
@@ -158,7 +161,7 @@ class DockerConfigurationGenerator
       return ERROR_RESULT
     end
 
-    add_service_configuration_file(node_name, result_file, "#{node_name}_config",
+    add_service_configuration_file(node_name, result_file, "#{node_name}_config_0",
                                    CONFIGURATION_LOCATIONS[product['name']])
     SUCCESS_RESULT
   end

@@ -12,17 +12,19 @@ class DockerSwarmConfigurator
   def initialize(config, env, logger)
     @config = config
     @ui = logger
-    @attempts = env.attempts&.to_i || 5
+    @attempts = env.attempts&.to_i || 1
   end
 
-  def configure
+  def configure(generate_partial: true)
     @ui.info('Bringing up docker nodes')
     return SUCCESS_RESULT unless @config.docker_configuration?
 
-    extract_node_configuration
-    if @configuration['services'].empty?
-      @ui.info('No Docker services are configured to be brought up')
-      return SUCCESS_RESULT
+    if generate_partial
+      extract_node_configuration
+      if @configuration['services'].empty?
+        @ui.info('No Docker services are configured to be brought up')
+        return SUCCESS_RESULT
+      end
     end
     result = bring_up_nodes
     return result unless result == SUCCESS_RESULT
@@ -42,6 +44,8 @@ class DockerSwarmConfigurator
     @configuration['services'].select! do |service_name, _|
       node_names.include?(service_name)
     end
+    config_file = @config.docker_partial_configuration
+    File.write(config_file, YAML.dump(@configuration))
   end
 
   # Create the extract of the services that must be brought up and
@@ -49,7 +53,6 @@ class DockerSwarmConfigurator
   def bring_up_nodes
     @ui.info('Bringing up the Docker Swarm stack')
     config_file = @config.docker_partial_configuration
-    File.write(config_file, YAML.dump(@configuration))
     result = bring_up_docker_stack(config_file)
     return result unless result == SUCCESS_RESULT
 
@@ -82,13 +85,13 @@ class DockerSwarmConfigurator
         next if task.key?(:ip_address)
 
         status, task_info = get_task_information(task[:task_id])
-        return ERROR_RESULT if status == ERROR_RESULT
 
-        task.merge!(task_info) if status == SUCCESS_RESULT
+        task.merge!(task_info) unless status == ERROR_RESULT
       end
+      @tasks.delete_if { |task| task.key?(:desired_state) && task[:desired_state] == 'shutdown' }
       return SUCCESS_RESULT if @tasks.all? { |task| task.key?(:ip_address) }
 
-      sleep(1)
+      sleep(2)
     end
     ERROR_RESULT
   end
@@ -98,29 +101,30 @@ class DockerSwarmConfigurator
   def get_task_information(task_id)
     result = run_command("docker inspect #{task_id}")
     unless result[:value].success?
-      @ui.error('Unable to get information about the service')
+      @ui.warning("Unable to get information about the task '#{task_id}'")
       return ERROR_RESULT, ''
     end
     task_data = JSON.parse(result[:output])[0]
     if task_data['Status']['State'] == 'running'
       process_task_data(task_data)
     else
-      [NO_RESULT, '']
+      [NO_RESULT, { desired_state: task_data['DesiredState'] }]
     end
   end
 
   # Convert task description into correct description, get all required ip addresses
   def process_task_data(task_data)
     private_ip_address = task_data['NetworksAttachments'][0]['Addresses'][0].split('/')[0]
-
-    result, ip_address = get_service_public_ip(task_data['Status']['ContainerStatus']['ContainerID'],
-                                               private_ip_address)
+    container_id = task_data['Status']['ContainerStatus']['ContainerID']
+    result, ip_address = get_service_public_ip(container_id, private_ip_address)
     return ERROR_RESULT, '' if result == ERROR_RESULT
 
     task_info = {
       ip_address: ip_address,
+      container_id: container_id,
       private_ip_address: private_ip_address,
-      node_name: task_data['Spec']['Networks'][0]['Aliases'][0]
+      node_name: task_data['Spec']['Networks'][0]['Aliases'][0],
+      desired_state: task_data['DesiredState']
     }
     [SUCCESS_RESULT, task_info]
   end
@@ -164,7 +168,8 @@ class DockerSwarmConfigurator
     network_settings = NetworkSettings.new
     @tasks.each do |task|
       network_settings.add_network_configuration(task[:node_name], 'private_ip' => task[:private_ip_address],
-                                                                   'network' => task[:ip_address])
+                                                                   'network' => task[:ip_address],
+                                                                   'docker_container_id' => task[:container_id])
     end
     network_settings.store_network_configuration(@config)
   end
