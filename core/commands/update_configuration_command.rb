@@ -4,6 +4,8 @@ require 'fileutils'
 require 'yaml'
 require_relative 'base_command'
 require_relative '../models/configuration'
+require_relative 'partials/docker_swarm_configurator'
+require_relative 'partials/docker_configuration_generator'
 
 # Update the configuration file of the MaxScale and restart the service
 class UpdateConfigurationCommand < BaseCommand
@@ -102,15 +104,11 @@ class UpdateConfigurationCommand < BaseCommand
   end
 
   def update_node_configuration_link(node, current_config_label, config_label)
-    node_config = @docker_config['services'][node]
-
-
-    node_config['configs'].each do |config|
-      next unless config['source'] == current_config_label
-
-      config['source'] = config_label
-    end
-
+    node_configs = @docker_config['services'][node]['configs']
+    node_configs.delete_if { |config| config['source'] == current_config_label }
+    node_product = @configuration.node_configurations[node]['product']['name']
+    target = DockerConfigurationGenerator::CONFIGURATION_LOCATIONS[node_product]
+    node_configs.append('source' => config_label, 'target' => target)
   end
 
   # Copy the passed configuration file as the configuration for the specified node
@@ -137,6 +135,7 @@ class UpdateConfigurationCommand < BaseCommand
     new_partial_config = Marshal.load(Marshal.dump(@docker_config))
     new_partial_config['services'].keep_if { |service_name, _| required_service_names.include?(service_name) }
     File.write(partial_config_path, YAML.dump(new_partial_config))
-    SUCCESS_RESULT
+    configurator = DockerSwarmConfigurator.new(@configuration, @env, @ui)
+    configurator.configure(generate_partial: false)
   end
 end
