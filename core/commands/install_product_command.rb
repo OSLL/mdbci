@@ -1,6 +1,7 @@
 # Install product class
 
 # This class installs the product on selected node.
+require_relative 'generate_command'
 class InstallProduct < BaseCommand
 
   # This method is called whenever the command is executed
@@ -12,8 +13,8 @@ class InstallProduct < BaseCommand
     end
     return ARGUMENT_ERROR_RESULT unless init == SUCCESS_RESULT
     
-    ssh_connection_parameters = setup_ssh_key(@mdbci_config.node_names[0])
-    result = configure_server_ssh_key(ssh_connection_parameters)
+    machine = setup_ssh_key(@mdbci_config.node_names[0])
+    result = install_product(machine)
     exit_code = ERROR_RESULT if result == ERROR_RESULT
     
     exit_code
@@ -35,6 +36,7 @@ class InstallProduct < BaseCommand
       return ARGUMENT_ERROR_RESULT
     end
     @mdbci_config = Configuration.new(@args.first, @env.labels)
+    p @mdbci_config
     
     begin
       @network_config = NetworkSettings.from_file(@mdbci_config.network_settings_file)
@@ -42,6 +44,8 @@ class InstallProduct < BaseCommand
       @ui.error('Network settings file is not found for the configuration')
       return ARGUMENT_ERROR_RESULT
     end
+    @machine_configurator = MachineConfigurator.new(@ui)
+    
     SUCCESS_RESULT
   end
   
@@ -55,28 +59,18 @@ class InstallProduct < BaseCommand
       'name' => node_name }
   end
   
-  # Connect and add install product on server
+  # Install product on server
   # @param machine [Hash] information about machine to connect
-  def configure_server_ssh_key(machine)
+  def install_product(machine)
     exit_code = SUCCESS_RESULT
-    options = Net::SSH.configuration_for(machine['network'], true)
-    options[:auth_methods] = %w[publickey none]
-    options[:verify_host_key] = false
-    options[:keys] = [machine['keyfile']]
-    begin
-      Net::SSH.start(machine['network'], machine['whoami'], options) do |ssh|
-        
-      end
-    rescue StandardError
-      @ui.error("Could not initiate connection to the node '#{machine['name']}'")
-      exit_code = ERROR_RESULT
-    end
+    solo_config = "#{machine['name']}-config.json"
+    role_file = "#{@mdbci_config.path}/#{machine['name']}.json"
+    extra_files = [
+      [role_file, "roles/#{machine['name']}.json"],
+      ["#{@mdbci_config.path}/#{machine['name']}-config.json", "configs/#{solo_config}"]
+    ]
+    @machine_configurator.configure(machine, solo_config, @ui, extra_files)
+    #node_provisioned?(machine['name'], logger)
     exit_code
   end
-
-  def install_product
-
-  end
-
 end
-
