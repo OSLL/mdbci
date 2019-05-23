@@ -63,6 +63,9 @@ session.mdbci_dir = $mdbci_exec_dir
 session.starting_dir = $current_dir
 session.working_dir = $work_dir
 
+# Storing argument for the further processing
+initial_arguments = ARGV.join(' ')
+
 ENV['LIBVIRT_DEFAULT_URI'] = 'qemu:///system'
 
 begin
@@ -162,13 +165,13 @@ rescue GetoptLong::MissingArgument => error
   exit 1
 end
 
-# Greeting user
+# Putting the information about the
 out.info "MariaDB CI CLI, version: #{Version.version(session.mdbci_dir, out)}"
-out.info "mdbci called with: #{ARGV.join(' ')}"
-session.initialize_services
+out.info "mdbci called with: #{initial_arguments}"
 
 # run commands and return 0 for success, 1 for error
 begin
+  session.initialize_services
   exit_code = session.commands
 rescue StandardError => error
   out.error error.backtrace.join("\n")

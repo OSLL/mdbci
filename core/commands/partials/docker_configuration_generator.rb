@@ -110,7 +110,10 @@ class DockerConfigurationGenerator
       'deploy' => Marshal.load(Marshal.dump(DEFAULT_DEPLOY_OPTIONS)),
       'configs' => []
     }
-    @configuration['services'][node_name]['deploy']['labels'] = { 'org.mariadb.node.name' => node_name }
+    @configuration['services'][node_name]['deploy']['labels'] = {
+      'org.mariadb.node.name' => node_name,
+      'org.mariadb.node.config_version' => 0
+    }
     if ENVIRONMENT_OPTIONS.key?(product['name'])
       @configuration['services'][node_name]['environment'] = ENVIRONMENT_OPTIONS[product['name']]
     end
@@ -120,7 +123,7 @@ class DockerConfigurationGenerator
   def copy_node_config_files(node_name, product)
     service_config_path = File.join(@configuration_path, 'configs', node_name)
     FileUtils.mkdir_p(service_config_path)
-    config_file_path = File.join(service_config_path, "#{node_name}.cnf")
+    config_file_path = File.join(service_config_path, "#{node_name}_0.cnf")
     result = copy_product_config_file(node_name, product, config_file_path)
     return result unless result == SUCCESS_RESULT
 
@@ -128,6 +131,8 @@ class DockerConfigurationGenerator
     FileUtils.mkdir_p(init_files_path)
     copy_initialization_files(node_name, product, init_files_path)
   end
+
+  MUST_PROVIDE_CONFIGURATION = %w[mariadb].freeze
 
   def copy_product_config_file(node_name, product, result_file)
     @ui.info("Copying configuration file for the node '#{node_name}'")
@@ -137,6 +142,8 @@ class DockerConfigurationGenerator
     elsif product.key?('cnf_template')
       FileUtils.cp(File.expand_path(product['cnf_template'], File.dirname(@template_file)), result_file)
     else
+      return SUCCESS_RESULT unless MUST_PROVIDE_CONFIGURATION.include?(product['name'])
+
       @ui.error("You must provide path to configuration file in 'cnf_template' and 'cnf_template_path'.")
       return ERROR_RESULT
     end
@@ -154,7 +161,7 @@ class DockerConfigurationGenerator
       return ERROR_RESULT
     end
 
-    add_service_configuration_file(node_name, result_file, "#{node_name}_config",
+    add_service_configuration_file(node_name, result_file, "#{node_name}_config_0",
                                    CONFIGURATION_LOCATIONS[product['name']])
     SUCCESS_RESULT
   end
