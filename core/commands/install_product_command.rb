@@ -6,16 +6,18 @@
 class InstallProduct < BaseCommand
   # This method is called whenever the command is executed
   def execute
-    exit_code = SUCCESS_RESULT
     if @env.show_help
       show_help
       return SUCCESS_RESULT
     end
     return ARGUMENT_ERROR_RESULT unless init == SUCCESS_RESULT
 
+    if @mdbci_config.node_names.size != 1
+      @ui.error('Invalid node specified')
+      return ARGUMENT_ERROR_RESULT
+    end
     machine = setup_ssh_key(@mdbci_config.node_names[0])
-    result = install_product(machine)
-    exit_code = ERROR_RESULT if result == ERROR_RESULT
+    exit_code = install_product(machine)
 
     exit_code
   end
@@ -32,11 +34,10 @@ class InstallProduct < BaseCommand
   # Initializes the command variable.
   def init
     if @args.first.nil?
-      @ui.error('Please specify the configuration')
+      @ui.error('Please specify the node')
       return ARGUMENT_ERROR_RESULT
     end
     @mdbci_config = Configuration.new(@args.first, @env.labels)
-    p @mdbci_config
 
     begin
       @network_config = NetworkSettings.from_file(@mdbci_config.network_settings_file)
@@ -62,7 +63,6 @@ class InstallProduct < BaseCommand
   # Install product on server
   # @param machine [Hash] information about machine to connect
   def install_product(machine)
-    exit_code = SUCCESS_RESULT
     solo_config = "#{machine['name']}-config.json"
     role_file = "#{@mdbci_config.path}/#{machine['name']}.json"
     extra_files = [
@@ -71,7 +71,6 @@ class InstallProduct < BaseCommand
     ]
     @machine_configurator.configure(machine, solo_config, @ui, extra_files)
     node_provisioned?(machine, @ui)
-    exit_code
   end
 
   # Check whether chef have provisioned the server or not
