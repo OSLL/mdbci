@@ -1,9 +1,10 @@
 # Install product class
+require_relative '../services/shell_commands'
 
 # This class installs the product on selected node.
 require_relative 'generate_command'
 class InstallProduct < BaseCommand
-
+include ShellCommands
   # This method is called whenever the command is executed
   def execute
     exit_code = SUCCESS_RESULT
@@ -70,7 +71,34 @@ class InstallProduct < BaseCommand
       ["#{@mdbci_config.path}/#{machine['name']}-config.json", "configs/#{solo_config}"]
     ]
     @machine_configurator.configure(machine, solo_config, @ui, extra_files)
-    #node_provisioned?(machine['name'], logger)
+    node_provisioned?(machine, @ui)
+    exit_code
+  end
+    
+  # Check whether chef have provisioned the server or not
+  #
+  # @param machine [Hash] information about machine to connect
+  # @param logger [Out] logger to log information to
+  def node_provisioned?(machine, logger)
+    exit_code = SUCCESS_RESULT
+    options = Net::SSH.configuration_for(machine['network'], true)
+    options[:auth_methods] = %w[publickey none]
+    options[:verify_host_key] = false
+    options[:keys] = [machine['keyfile']]
+    begin
+      Net::SSH.start(machine['network'], machine['whoami'], options) do |ssh|
+        output = ssh.exec!('test -e /var/mdbci/provisioned && printf PROVISIONED || printf NOT')
+        if output == 'PROVISIONED'
+          logger.info("Node '#{machine['name']}' was configured.")
+        else
+          logger.error("Node '#{machine['name']}' is not configured.")
+          exit_code = ERROR_RESULT
+        end
+      end
+    rescue StandardError
+      @ui.error("Could not initiate connection to the node '#{machine['name']}'")
+      exit_code = ERROR_RESULT
+    end
     exit_code
   end
 end
