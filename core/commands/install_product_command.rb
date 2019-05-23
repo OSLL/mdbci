@@ -1,10 +1,9 @@
+# frozen_string_literal: true
+
 # Install product class
-require_relative '../services/shell_commands'
 
 # This class installs the product on selected node.
-require_relative 'generate_command'
 class InstallProduct < BaseCommand
-include ShellCommands
   # This method is called whenever the command is executed
   def execute
     exit_code = SUCCESS_RESULT
@@ -13,11 +12,11 @@ include ShellCommands
       return SUCCESS_RESULT
     end
     return ARGUMENT_ERROR_RESULT unless init == SUCCESS_RESULT
-    
+
     machine = setup_ssh_key(@mdbci_config.node_names[0])
     result = install_product(machine)
     exit_code = ERROR_RESULT if result == ERROR_RESULT
-    
+
     exit_code
   end
 
@@ -38,7 +37,7 @@ include ShellCommands
     end
     @mdbci_config = Configuration.new(@args.first, @env.labels)
     p @mdbci_config
-    
+
     begin
       @network_config = NetworkSettings.from_file(@mdbci_config.network_settings_file)
     rescue StandardError
@@ -46,10 +45,10 @@ include ShellCommands
       return ARGUMENT_ERROR_RESULT
     end
     @machine_configurator = MachineConfigurator.new(@ui)
-    
+
     SUCCESS_RESULT
   end
-  
+
   # Setup ssh key data
   # @param node_name [String] name of the node
   def setup_ssh_key(node_name)
@@ -59,7 +58,7 @@ include ShellCommands
       'keyfile' => network_settings['keyfile'],
       'name' => node_name }
   end
-  
+
   # Install product on server
   # @param machine [Hash] information about machine to connect
   def install_product(machine)
@@ -74,30 +73,21 @@ include ShellCommands
     node_provisioned?(machine, @ui)
     exit_code
   end
-    
+
   # Check whether chef have provisioned the server or not
   #
   # @param machine [Hash] information about machine to connect
-  # @param logger [Out] logger to log information to
+  # @param logger [Out] logger to log information
   def node_provisioned?(machine, logger)
     exit_code = SUCCESS_RESULT
-    options = Net::SSH.configuration_for(machine['network'], true)
-    options[:auth_methods] = %w[publickey none]
-    options[:verify_host_key] = false
-    options[:keys] = [machine['keyfile']]
-    begin
-      Net::SSH.start(machine['network'], machine['whoami'], options) do |ssh|
-        output = ssh.exec!('test -e /var/mdbci/provisioned && printf PROVISIONED || printf NOT')
-        if output == 'PROVISIONED'
-          logger.info("Node '#{machine['name']}' was configured.")
-        else
-          logger.error("Node '#{machine['name']}' is not configured.")
-          exit_code = ERROR_RESULT
-        end
+    @machine_configurator.within_ssh_session(machine) do |ssh|
+      output = ssh.exec!('test -e /var/mdbci/provisioned && printf PROVISIONED || printf NOT')
+      if output == 'PROVISIONED'
+        logger.info("Node '#{machine['name']}' was configured.")
+      else
+        logger.error("Node '#{machine['name']}' is not configured.")
+        exit_code = ERROR_RESULT
       end
-    rescue StandardError
-      @ui.error("Could not initiate connection to the node '#{machine['name']}'")
-      exit_code = ERROR_RESULT
     end
     exit_code
   end
