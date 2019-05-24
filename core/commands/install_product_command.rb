@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative '../services/machine_configurator'
+
 # This class installs the product on selected node.
 class InstallProduct < BaseCommand
   
@@ -20,9 +22,7 @@ class InstallProduct < BaseCommand
       return ARGUMENT_ERROR_RESULT
     end
     machine = setup_ssh_key(@mdbci_config.node_names[0])
-    exit_code = install_product(machine)
-
-    exit_code
+    install_product(machine)
   end
 
   # Print brief instructions on how to use the command.
