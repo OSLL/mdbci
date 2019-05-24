@@ -10,6 +10,7 @@ require_relative 'configure_command'
 require_relative 'deploy_command'
 require_relative 'setup_dependencies_command'
 require_relative 'update_configuration_command'
+require_relative 'install_roduct_command'
 
 # Command provides a documentation to the user on how to use the mdbci tool.
 class HelpCommand < BaseCommand
@@ -28,7 +29,7 @@ class HelpCommand < BaseCommand
     'generate' => GenerateCommand.synopsis,
     'generate-product-repositories' => GenerateProductRepositoriesCommand.synopsis,
     'help' => HelpCommand.synopsis,
-    'install_product' => 'Install a product onto the configuration node.',
+    'install_product' => InstallProduct.synopsis,
     'public_keys' => 'Copy ssh keys to configured nodes.',
     'setup' => 'Download boxes to the vagrant.',
     'setup-dependencies' => SetupDependenciesCommand.synopsis,

@@ -55,7 +55,7 @@ class InstallProduct < BaseCommand
 
   # Setup ssh key data
   # @param node_name [String] name of the node
-  def setup_ssh_key(node_name)3
+  def setup_ssh_key(node_name)
     network_settings = @network_config.node_settings(node_name)
     { 'whoami' => network_settings['whoami'],
       'network' => network_settings['network'],
