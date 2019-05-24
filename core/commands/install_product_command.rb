@@ -26,7 +26,7 @@ class InstallProduct < BaseCommand
   def show_help
     info = <<-HELP
  'install_product'  Install a product onto the configuration node.
- mdbci install_product config/node
+ mdbci install_product config/node --product product --version-product version
     HELP
     @ui.info(info)
   end
@@ -52,7 +52,7 @@ class InstallProduct < BaseCommand
 
   # Setup ssh key data
   # @param node_name [String] name of the node
-  def setup_ssh_key(node_name)
+  def setup_ssh_key(node_name)3
     network_settings = @network_config.node_settings(node_name)
     { 'whoami' => network_settings['whoami'],
       'network' => network_settings['network'],
