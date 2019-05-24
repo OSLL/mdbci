@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
-# Install product class
-
 # This class installs the product on selected node.
 class InstallProduct < BaseCommand
+  
+  def self.synopsis
+    'Installs the product on selected node.'
+  end
+  
   # This method is called whenever the command is executed
   def execute
     if @env.show_help
