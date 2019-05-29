@@ -121,6 +121,11 @@ class Configuration
     Marshal.load(Marshal.dump(@docker_configuration))
   end
 
+  # Path to the Docker configuration file
+  def docker_configuration_path
+    self.class.docker_configuration(@path)
+  end
+
   # Provide a path to the partial Docker configuration that can be used for swarm Management
   # @return [String] path to the partial configuration
   def docker_partial_configuration
@@ -238,7 +243,7 @@ class Configuration
   # If file does not present, return the empty string
   # @return [Hash] the processed hash
   def read_docker_configuration
-    config_file = self.class.docker_configuration(@path)
+    config_file = docker_configuration_path
     return {} unless File.exist?(config_file)
 
     YAML.load_file(config_file).freeze
