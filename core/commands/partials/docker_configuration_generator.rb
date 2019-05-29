@@ -95,7 +95,7 @@ class DockerConfigurationGenerator
 
   ENVIRONMENT_OPTIONS = {
     'mariadb' => {
-      'MYSQL_RANDOM_ROOT_PASSWORD' => 'true'
+      'MARIADB_ALLOW_EMPTY_PASSWORD' => 'true'
     }
   }.freeze
 
