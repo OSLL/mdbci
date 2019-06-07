@@ -14,6 +14,7 @@ require_relative '../../models/configuration.rb'
 require_relative '../../services/shell_commands'
 
 # The class generates the MDBCI configuration for use in pair with the Vagrant backend
+# rubocop:disable Metrics/ClassLength
 class VagrantConfigurationGenerator < BaseCommand
   def self.synopsis
     'Generate a configuration based on the template.'
@@ -272,6 +273,7 @@ end
   # @param product [Hash] parameters of product to configure from configuration file
   # @param box [String] name of the box
   # @return [String, Hash] recipe name and product config.
+  # rubocop:disable Metrics/MethodLength
   def make_product_config_and_recipe_name(product, box)
     repo = nil
     if !product['repo'].nil?
@@ -294,6 +296,7 @@ end
     @ui.info("Recipe #{recipe_name}")
     [recipe_name, product_config]
   end
+  # rubocop:enable Metrics/MethodLength
 
   # Generate the role description for the specified node.
   #
@@ -636,3 +639,4 @@ end
     SUCCESS_RESULT
   end
 end
+# rubocop:enable Metrics/ClassLength
