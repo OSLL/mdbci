@@ -226,22 +226,22 @@ end
   # Make the list of the role parameters in the JSON-format.
   #
   # @param name [String] internal name of the machine specified in the template
-  # @param product_config [Hash] list of the product parameters
-  # @param recipe_name [String] name of the recipe
+  # @param products_configs [Array<Hash>] lists of the products parameters
+  # @param recipes_names [Array<String>] names of the recipes
   # @param box [String] name of the box
   # in format { recipe_name, credentials, attribute_name }
   # @return [String] pretty formatted role description in JSON format.
-  def make_role_json(name, product_config, recipe_name, box)
+  def make_role_json(name, products_configs, recipes_names, box)
     run_list = ['recipe[mdbci_provision_mark::remove_mark]',
-                "recipe[#{recipe_name}]",
+                *recipes_names.map { |recipe_name| "recipe[#{recipe_name}]" },
                 'recipe[mdbci_provision_mark::default]']
     if need_subscription_manager_credentials?(box)
       run_list.insert(1, 'recipe[subscription-manager]')
-      product_config = product_config.merge('subscription-manager': retrieve_subscription_credentials)
+      products_configs = products_configs.merge('subscription-manager': retrieve_subscription_credentials)
     end
     role = { name: name,
              default_attributes: {},
-             override_attributes: product_config,
+             override_attributes: products_configs,
              json_class: 'Chef::Role',
              description: '',
              chef_type: 'role',
@@ -267,24 +267,18 @@ end
     @boxes.get_box(box)['configure_subscription_manager'] == 'true'
   end
 
-  # Generate the role description for the specified node.
+  # Make product config and recipe name for install it to the VM.
   #
-  # @param name [String] internal name of the machine specified in the template
-  # @param product [Hash] parameters of the product to configure from configuration file
+  # @param product [Hash] parameters of product to configure from configuration file
   # @param box [String] name of the box
-  # @return [String] pretty formatted role description in JSON format
-  # rubocop:disable Metrics/MethodLength
-  # The method performs a single function; decomposition of the method will complicate the code.
-  def get_role_description(name, product, box)
-    error_text = "#NONE, due invalid repo name \n"
+  # @return [String, Hash] recipe name and product config.
+  def make_product_config_and_recipe_name(product, box)
     repo = nil
     if !product['repo'].nil?
       repo_name = product['repo']
       @ui.info("Repo name: #{repo_name}")
-      unless @env.repos.knownRepo?(repo_name)
-        @ui.warning("Unknown key for repo #{repo_name} will be skipped")
-        return error_text
-      end
+      raise "Unknown key for repo #{repo_name} will be skipped" unless @env.repos.knownRepo?(repo_name)
+
       @ui.info("Repo specified [#{repo_name}] (CORRECT), other product params will be ignored")
       repo = @env.repos.getRepo(repo_name)
       product_name = @env.repos.productName(repo_name)
@@ -298,9 +292,32 @@ end
                        {}
                      end
     @ui.info("Recipe #{recipe_name}")
-    make_role_json(name, product_config, recipe_name, box)
+    [recipe_name, product_config]
   end
-  # rubocop:enable Metrics/MethodLength
+
+  # Generate the role description for the specified node.
+  #
+  # @param name [String] internal name of the machine specified in the template
+  # @param products [Array<Hash>] list of parameters of products to configure from configuration file
+  # @param box [String] name of the box
+  # @return [String] pretty formatted role description in JSON format
+  def get_role_description(name, products, box)
+    errors = []
+    products_configs = {}
+    recipes_names = []
+    products.each do |product|
+      begin
+        recipe_name, product_config = make_product_config_and_recipe_name(product, box)
+      rescue RuntimeError => error
+        @ui.warning(error.message)
+        errors << "# ERROR, due invalid repo name for #{product}\n"
+      else
+        products_configs.merge!(product_config)
+        recipes_names << recipe_name
+      end
+    end
+    errors.join + make_role_json(name, products_configs, recipes_names, box)
+  end
 
   # Check for the existence of a path, create it if path is not exists or clear path
   # if it is exists and override parameter is true.
@@ -396,6 +413,20 @@ end
     end
   end
 
+  # Parse the products lists and path to the products configurations directory from configuration of node.
+  #
+  # @param node [Array] internal name of the machine specified in the template
+  # @return [Array<Hash>, String] list of parameters of products, path to the products configurations directory.
+  def parse_products_info(node)
+    cnf_template_path = node[1]['cnf_template_path'] || node[1]['product']&.fetch('cnf_template_path', nil)
+    products = [].push(node[1]['product']).push(node[1]['products']).flatten.compact.uniq
+    products << { 'name': 'packages' } if products.empty?
+    unless cnf_template_path.nil?
+      products.each { |product| product['cnf_template_path'] = cnf_template_path unless product['cnf_template'].nil? }
+    end
+    [products, cnf_template_path]
+  end
+
   # Make a list of node parameters, create the role and node_config files, generate
   # node definition for the Vagrantfile.
   #
@@ -411,16 +442,10 @@ end
       node_params = make_node_params(node, @boxes.get_box(box))
       print_node_info(node_params, box)
     end
-    provisioned = !node[1]['product'].nil?
-    if provisioned
-      product = node[1]['product']
-      node_params[:template_path] = product['cnf_template_path'] unless product['cnf_template_path'].nil?
-    else
-      product = { 'name' => 'packages' }
-    end
-    @ui.info("Machine #{node_params[:name]} is provisioned by #{product}")
-    # box with mariadb, maxscale provision - create role
-    role = get_role_description(node_params[:name], product, box)
+    products, cnf_template_path = parse_products_info(node)
+    node_params[:template_path] = cnf_template_path unless cnf_template_path.nil?
+    @ui.info("Machine #{node_params[:name]} is provisioned by #{products}")
+    role = get_role_description(node_params[:name], products, box)
     IO.write(self.class.role_file_name(path, node_params[:name]), role)
     IO.write(self.class.node_config_file_name(path, node_params[:name]),
              JSON.pretty_generate('run_list' => ["role[#{node_params[:name]}]"]))
