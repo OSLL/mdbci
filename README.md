@@ -144,6 +144,22 @@ Template is a JSON document that describes a set of virtual machines.
       "name": "maxscale",
       "version": "2.3"
     }
+  },
+  "several_products_host": {
+    "hostname": "severalproductshost",
+    "box": "centos_7_libvirt",
+    "cnf_template_path": "../cnf",
+    "products": [
+      {
+        "name": "maxscale",
+        "version": "2.3"
+      },
+      {
+        "name": "mariadb",
+        "version": "10.3",
+        "cnf_template": "server1.cnf"
+      }
+    ]
   }
 }
 ```
@@ -152,7 +168,7 @@ Each host description contains the `hostname` and `box` fields. The first one is
 
 You can get the list of boxes using the `./mdbci show platforms` command.
 
-Then each host is setup with the product. The products will be installed on the machines. The mandatory fields for each product is it's name and version that is required to be installed.
+Then each host is setup with the product. The products will be installed on the machines. The mandatory fields for each product is it's name and version that is required to be installed. You can install several products on one host, use the `products` field for it and describe the products list as array of json-objects (see `several_products_host` for reference). 
 
 When installing a database you must also specify the name of the configuration file and the path to the folder where the file is stored. It is advised to use absolute path in `cnf_template_path` as the relative path is calculated from within the configuration directory.
 
