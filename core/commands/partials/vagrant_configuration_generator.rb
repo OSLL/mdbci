@@ -305,21 +305,14 @@ end
   # @param box [String] name of the box
   # @return [String] pretty formatted role description in JSON format
   def get_role_description(name, products, box)
-    errors = []
     products_configs = {}
     recipes_names = []
     products.each do |product|
-      begin
-        recipe_and_config = make_product_config_and_recipe_name(product, box)
-      rescue RuntimeError => error
-        @ui.warning(error.message)
-        errors << "# ERROR, due invalid repo name for #{product}\n"
-      else
-        products_configs.merge!(recipe_and_config[:config])
-        recipes_names << recipe_and_config[:name]
-      end
+      recipe_and_config = make_product_config_and_recipe_name(product, box)
+      products_configs.merge!(recipe_and_config[:config])
+      recipes_names << recipe_and_config[:name]
     end
-    errors.join + make_role_json(name, products_configs, recipes_names, box)
+    make_role_json(name, products_configs, recipes_names, box)
   end
 
   # Check for the existence of a path, create it if path is not exists or clear path
