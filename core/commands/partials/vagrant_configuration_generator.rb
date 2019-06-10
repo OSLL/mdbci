@@ -310,7 +310,7 @@ end
     products.each do |product|
       recipe_and_config = make_product_config_and_recipe_name(product, box)
       products_configs.merge!(recipe_and_config[:config])
-      recipes_names << recipe_and_config[:name]
+      recipes_names << recipe_and_config[:recipe]
     end
     make_role_json(name, products_configs, recipes_names, box)
   end
