@@ -227,8 +227,8 @@ end
   # Make the list of the role parameters in the JSON-format.
   #
   # @param name [String] internal name of the machine specified in the template
-  # @param products_configs [Array<Hash>] lists of the products parameters
-  # @param recipes_names [Array<String>] names of the recipes
+  # @param products_configs [Array<Hash>] list of the products parameters
+  # @param recipes_names [Array<String>] list of the recipe names
   # @param box [String] name of the box
   # in format { recipe_name, credentials, attribute_name }
   # @return [String] pretty formatted role description in JSON format.
