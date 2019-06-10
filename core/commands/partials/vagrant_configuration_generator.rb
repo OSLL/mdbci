@@ -425,7 +425,7 @@ end
     products = [].push(node[1]['product']).push(node[1]['products']).flatten.compact.uniq
     products << { 'name': 'packages' } if products.empty?
     unless cnf_template_path.nil?
-      products.each { |product| product['cnf_template_path'] = cnf_template_path unless product['cnf_template'].nil? }
+      products.each { |product| product['cnf_template_path'] = cnf_template_path if product['cnf_template'] }
     end
     [products, cnf_template_path]
   end
