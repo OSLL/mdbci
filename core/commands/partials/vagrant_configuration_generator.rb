@@ -294,7 +294,7 @@ end
                        {}
                      end
     @ui.info("Recipe #{recipe_name}")
-    [recipe_name, product_config]
+    { recipe: recipe_name, config: product_config }
   end
   # rubocop:enable Metrics/MethodLength
 
@@ -310,13 +310,13 @@ end
     recipes_names = []
     products.each do |product|
       begin
-        recipe_name, product_config = make_product_config_and_recipe_name(product, box)
+        recipe_and_config = make_product_config_and_recipe_name(product, box)
       rescue RuntimeError => error
         @ui.warning(error.message)
         errors << "# ERROR, due invalid repo name for #{product}\n"
       else
-        products_configs.merge!(product_config)
-        recipes_names << recipe_name
+        products_configs.merge!(recipe_and_config[:config])
+        recipes_names << recipe_and_config[:name]
       end
     end
     errors.join + make_role_json(name, products_configs, recipes_names, box)
