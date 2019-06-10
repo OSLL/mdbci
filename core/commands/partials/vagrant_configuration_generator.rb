@@ -416,18 +416,26 @@ end
     end
   end
 
-  # Parse the products lists and path to the products configurations directory from configuration of node.
+  # Parse path to the products configurations directory from configuration of node.
   #
   # @param node [Array] internal name of the machine specified in the template
-  # @return [Array<Hash>, String] list of parameters of products, path to the products configurations directory.
-  def parse_products_info(node)
-    cnf_template_path = node[1]['cnf_template_path'] || node[1]['product']&.fetch('cnf_template_path', nil)
+  # @return [String] path to the products configurations directory.
+  def parse_cnf_template_path(node)
+    node[1]['cnf_template_path'] || node[1]['product']&.fetch('cnf_template_path', nil)
+  end
+
+  # Parse the products lists from configuration of node.
+  #
+  # @param node [Array] internal name of the machine specified in the template
+  # @param cnf_template_path [String] path to the products configurations directory
+  # @return [Array<Hash>] list of parameters of products.
+  def parse_products_info(node, cnf_template_path)
     products = [].push(node[1]['product']).push(node[1]['products']).flatten.compact.uniq
     products << { 'name': 'packages' } if products.empty?
     unless cnf_template_path.nil?
       products.each { |product| product['cnf_template_path'] = cnf_template_path if product['cnf_template'] }
     end
-    [products, cnf_template_path]
+    products
   end
 
   # Make a list of node parameters, create the role and node_config files, generate
@@ -445,7 +453,8 @@ end
       node_params = make_node_params(node, @boxes.get_box(box))
       print_node_info(node_params, box)
     end
-    products, cnf_template_path = parse_products_info(node)
+    cnf_template_path = parse_cnf_template_path(node)
+    products = parse_products_info(node, cnf_template_path)
     node_params[:template_path] = cnf_template_path unless cnf_template_path.nil?
     @ui.info("Machine #{node_params[:name]} is provisioned by #{products}")
     role = get_role_description(node_params[:name], products, box)
