@@ -272,7 +272,7 @@ end
   #
   # @param product [Hash] parameters of product to configure from configuration file
   # @param box [String] name of the box
-  # @return [String, Hash] recipe name and product config.
+  # @return [Hash] recipe name and product config in format { recipe: String, config: Hash }.
   # rubocop:disable Metrics/MethodLength
   def make_product_config_and_recipe_name(product, box)
     repo = nil
