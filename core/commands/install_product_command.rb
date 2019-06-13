@@ -22,7 +22,7 @@ class InstallProduct < BaseCommand
       return ARGUMENT_ERROR_RESULT
     end
     machine = setup_ssh_key(@mdbci_config.node_names[0])
-    install_product(machine)
+    #install_product(machine)
   end
 
   # Print brief instructions on how to use the command.
@@ -70,12 +70,29 @@ class InstallProduct < BaseCommand
   def install_product(machine)
     solo_config = "#{machine['name']}-config.json"
     role_file = "#{@mdbci_config.path}/#{machine['name']}.json"
-    #extra_files = [
-    #  [role_file, "roles/#{machine['name']}.json"],
-    #  ["#{@mdbci_config.path}/#{machine['name']}-config.json", "configs/#{solo_config}"]
-    #]
-    #@machine_configurator.configure(machine, solo_config, @ui, extra_files)
-    #node_provisioned?(machine, @ui)
+    repo = @env.repos.getRepo(repo_name)
+
+    product = node[1]['product']
+    name = machine['name']
+    product_config = generate_product_config(name, product, repo)
+
+
+  end
+
+  def generate_product_config(product_name, product, repo)
+    repo = @env.repos.find_repository(product_name, product, box) if repo.nil?
+    raise "Repo for product #{product['name']} #{product['version']} for #{box} not found" if repo.nil?
+
+    config = { 'version': repo['version'], 'repo': repo['repo'], 'repo_key': repo['repo_key'] }
+    if !product['cnf_template'].nil? && !product['cnf_template_path'].nil?
+      config['cnf_template'] = product['cnf_template']
+      config['cnf_template_path'] = product['cnf_template_path']
+    end
+    repo_file_name = @env.repos.repo_file_name(product_name)
+    config['repo_file_name'] = repo_file_name unless repo_file_name.nil?
+    config['node_name'] = product['node_name'] unless product['node_name'].nil?
+    attribute_name = @env.repos.attribute_name(product_name)
+    { "#{attribute_name}": config }
   end
 
   # Check whether chef have provisioned the server or not
