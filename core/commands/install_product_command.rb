@@ -41,6 +41,8 @@ class InstallProduct < BaseCommand
       return ARGUMENT_ERROR_RESULT
     end
     @mdbci_config = Configuration.new(@args.first, @env.labels)
+    @product = env.nodeProduct
+    @product_version = env.productVersion
 
     begin
       @network_config = NetworkSettings.from_file(@mdbci_config.network_settings_file)
@@ -68,12 +70,12 @@ class InstallProduct < BaseCommand
   def install_product(machine)
     solo_config = "#{machine['name']}-config.json"
     role_file = "#{@mdbci_config.path}/#{machine['name']}.json"
-    extra_files = [
-      [role_file, "roles/#{machine['name']}.json"],
-      ["#{@mdbci_config.path}/#{machine['name']}-config.json", "configs/#{solo_config}"]
-    ]
-    @machine_configurator.configure(machine, solo_config, @ui, extra_files)
-    node_provisioned?(machine, @ui)
+    #extra_files = [
+    #  [role_file, "roles/#{machine['name']}.json"],
+    #  ["#{@mdbci_config.path}/#{machine['name']}-config.json", "configs/#{solo_config}"]
+    #]
+    #@machine_configurator.configure(machine, solo_config, @ui, extra_files)
+    #node_provisioned?(machine, @ui)
   end
 
   # Check whether chef have provisioned the server or not

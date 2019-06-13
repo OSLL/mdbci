@@ -10,7 +10,7 @@ require_relative 'configure_command'
 require_relative 'deploy_command'
 require_relative 'setup_dependencies_command'
 require_relative 'update_configuration_command'
-require_relative 'install_roduct_command'
+require_relative 'install_product_command'
 
 # Command provides a documentation to the user on how to use the mdbci tool.
 class HelpCommand < BaseCommand
