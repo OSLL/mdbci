@@ -4,11 +4,11 @@ require_relative '../services/machine_configurator'
 
 # This class installs the product on selected node.
 class InstallProduct < BaseCommand
-  
+
   def self.synopsis
     'Installs the product on selected node.'
   end
-  
+
   # This method is called whenever the command is executed
   def execute
     if @env.show_help
@@ -16,13 +16,15 @@ class InstallProduct < BaseCommand
       return SUCCESS_RESULT
     end
     return ARGUMENT_ERROR_RESULT unless init == SUCCESS_RESULT
-
     if @mdbci_config.node_names.size != 1
       @ui.error('Invalid node specified')
       return ARGUMENT_ERROR_RESULT
     end
+    p @mdbci_config.node_names[0]
     machine = setup_ssh_key(@mdbci_config.node_names[0])
-    #install_product(machine)
+    install_product(machine)
+
+    SUCCESS_RESULT
   end
 
   # Print brief instructions on how to use the command.
@@ -34,6 +36,8 @@ class InstallProduct < BaseCommand
     @ui.info(info)
   end
 
+  private
+
   # Initializes the command variable.
   def init
     if @args.first.nil?
@@ -41,8 +45,8 @@ class InstallProduct < BaseCommand
       return ARGUMENT_ERROR_RESULT
     end
     @mdbci_config = Configuration.new(@args.first, @env.labels)
-    @product = env.nodeProduct
-    @product_version = env.productVersion
+    @product = @env.nodeProduct
+    @product_version = @env.productVersion
 
     begin
       @network_config = NetworkSettings.from_file(@mdbci_config.network_settings_file)
@@ -70,17 +74,23 @@ class InstallProduct < BaseCommand
   def install_product(machine)
     solo_config = "#{machine['name']}-config.json"
     role_file = "#{@mdbci_config.path}/#{machine['name']}.json"
-    repo = @env.repos.getRepo(repo_name)
-
-    product = node[1]['product']
-    name = machine['name']
-    product_config = generate_product_config(name, product, repo)
-
-
+    generate_role_file(machine['name'])
   end
 
-  def generate_product_config(product_name, product, repo)
-    repo = @env.repos.find_repository(product_name, product, box) if repo.nil?
+  def generate_role_file(name)
+    box = @mdbci_config.node_configurations[name]['box']
+
+    product = @mdbci_config.node_configurations[name]['product']
+    if product.nil?
+      product = {'name' => @product, 'version' => @product_version.to_s}
+    else
+      product < {'name' => @product, 'version' => @product_version.to_s}
+    end
+    product_config = generate_product_config(@product, product, box)
+  end
+
+  def generate_product_config(product_name, product, box)
+    repo = @env.repos.find_repository(product_name, product, box)
     raise "Repo for product #{product['name']} #{product['version']} for #{box} not found" if repo.nil?
 
     config = { 'version': repo['version'], 'repo': repo['repo'], 'repo_key': repo['repo_key'] }
@@ -100,16 +110,16 @@ class InstallProduct < BaseCommand
   # @param machine [Hash] information about machine to connect
   # @param logger [Out] logger to log information
   def node_provisioned?(machine, logger)
-    exit_code = SUCCESS_RESULT
-    @machine_configurator.within_ssh_session(machine) do |ssh|
-      output = ssh.exec!('test -e /var/mdbci/provisioned && printf PROVISIONED || printf NOT')
-      if output == 'PROVISIONED'
-        logger.info("Node '#{machine['name']}' was configured.")
-      else
-        logger.error("Node '#{machine['name']}' is not configured.")
-        exit_code = ERROR_RESULT
-      end
-    end
-    exit_code
-  end
+  #   exit_code = SUCCESS_RESULT
+  #   @machine_configurator.within_ssh_session(machine) do |ssh|
+  #     output = ssh.exec!('test -e /var/mdbci/provisioned && printf PROVISIONED || printf NOT')
+  #     if output == 'PROVISIONED'
+  #       logger.info("Node '#{machine['name']}' was configured.")
+  #     else
+  #       logger.error("Node '#{machine['name']}' is not configured.")
+  #       exit_code = ERROR_RESULT
+  #     end
+  #   end
+  #   exit_code
+   end
 end
