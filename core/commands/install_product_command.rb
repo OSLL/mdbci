@@ -16,11 +16,12 @@ class InstallProduct < BaseCommand
       return SUCCESS_RESULT
     end
     return ARGUMENT_ERROR_RESULT unless init == SUCCESS_RESULT
+
     if @mdbci_config.node_names.size != 1
       @ui.error('Invalid node specified')
       return ARGUMENT_ERROR_RESULT
     end
-    p @mdbci_config.node_names[0]
+
     machine = setup_ssh_key(@mdbci_config.node_names[0])
     install_product(machine)
 
@@ -87,7 +88,8 @@ class InstallProduct < BaseCommand
       product < {'name' => @product, 'version' => @product_version.to_s}
     end
     product_config = generate_product_config(@product, product, box)
-    generate_json_file(name, product_config, recipe_name, box)
+    role_json_file = generate_json_file(name, product_config, recipe_name, box)
+    IO.write("#{@mdbci_config.path}/#{name}_new.json", role_json_file)
 
   end
 
