@@ -90,13 +90,16 @@ class InstallProduct < BaseCommand
     product_config = generate_product_config(@product, product, box)
     role_json_file = generate_json_file(name, product_config, recipe_name, box)
     IO.write("#{@mdbci_config.path}/#{name}_new.json", role_json_file)
-
   end
 
   def generate_json_file(name, product_config, recipe_name, box)
     run_list = ['recipe[mdbci_provision_mark::remove_mark]',
                 "recipe[#{recipe_name}]",
                 'recipe[mdbci_provision_mark::default]']
+    if check_subscription_manager(box)
+      run_list.insert(1, 'recipe[subscription-manager]')
+      product_config = product_config.merge('subscription-manager': retrieve_subscription_credentials)
+    end
     role = { name: name,
              default_attributes: {},
              override_attributes: product_config,
@@ -105,6 +108,10 @@ class InstallProduct < BaseCommand
              chef_type: 'role',
              run_list: run_list }
     JSON.pretty_generate(role)
+  end
+
+  def check_subscription_manager(box)
+    @env.box_definitions.get_box(box)['configure_subscription_manager'] == 'true'
   end
 
   def generate_product_config(product_name, product, box)
