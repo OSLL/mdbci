@@ -79,7 +79,7 @@ class InstallProduct < BaseCommand
 
   def generate_role_file(name)
     box = @mdbci_config.node_configurations[name]['box']
-
+    recipe_name = @env.repos.recipe_name(@product)
     product = @mdbci_config.node_configurations[name]['product']
     if product.nil?
       product = {'name' => @product, 'version' => @product_version.to_s}
@@ -87,6 +87,22 @@ class InstallProduct < BaseCommand
       product < {'name' => @product, 'version' => @product_version.to_s}
     end
     product_config = generate_product_config(@product, product, box)
+    generate_json_file(name, product_config, recipe_name, box)
+
+  end
+
+  def generate_json_file(name, product_config, recipe_name, box)
+    run_list = ['recipe[mdbci_provision_mark::remove_mark]',
+                "recipe[#{recipe_name}]",
+                'recipe[mdbci_provision_mark::default]']
+    role = { name: name,
+             default_attributes: {},
+             override_attributes: product_config,
+             json_class: 'Chef::Role',
+             description: '',
+             chef_type: 'role',
+             run_list: run_list }
+    JSON.pretty_generate(role)
   end
 
   def generate_product_config(product_name, product, box)
@@ -110,16 +126,16 @@ class InstallProduct < BaseCommand
   # @param machine [Hash] information about machine to connect
   # @param logger [Out] logger to log information
   def node_provisioned?(machine, logger)
-  #   exit_code = SUCCESS_RESULT
-  #   @machine_configurator.within_ssh_session(machine) do |ssh|
-  #     output = ssh.exec!('test -e /var/mdbci/provisioned && printf PROVISIONED || printf NOT')
-  #     if output == 'PROVISIONED'
-  #       logger.info("Node '#{machine['name']}' was configured.")
-  #     else
-  #       logger.error("Node '#{machine['name']}' is not configured.")
-  #       exit_code = ERROR_RESULT
-  #     end
-  #   end
-  #   exit_code
+    exit_code = SUCCESS_RESULT
+    @machine_configurator.within_ssh_session(machine) do |ssh|
+      output = ssh.exec!('test -e /var/mdbci/provisioned && printf PROVISIONED || printf NOT')
+      if output == 'PROVISIONED'
+        logger.info("Node '#{machine['name']}' was configured.")
+      else
+        logger.error("Node '#{machine['name']}' is not configured.")
+        exit_code = ERROR_RESULT
+      end
+    end
+    exit_code
    end
 end
