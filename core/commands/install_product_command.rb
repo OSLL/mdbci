@@ -46,13 +46,12 @@ class InstallProduct < BaseCommand
       return ARGUMENT_ERROR_RESULT
     end
     @mdbci_config = Configuration.new(@args.first, @env.labels)
-    p @mdbci_config
+
     @product = @env.nodeProduct
     @product_version = @env.productVersion
 
     begin
       @network_config = NetworkSettings.from_file(@mdbci_config.network_settings_file)
-      p @network_config
     rescue StandardError
       @ui.error('Network settings file is not found for the configuration')
       return ARGUMENT_ERROR_RESULT
@@ -82,8 +81,8 @@ class InstallProduct < BaseCommand
                                     sudo_password = '', chef_version = '14.7.17')
   end
 
-  #
-  # @param name
+  # Create a role file to install the product from the chef
+  # @param name [String] node name
   def generate_role_file(name)
     box = @mdbci_config.node_configurations[name]['box']
     recipe_name = @env.repos.recipe_name(@product)
@@ -100,11 +99,11 @@ class InstallProduct < BaseCommand
     role_file_path
   end
 
-  #
-  # @param name
-  # @param product_config
-  # @param recipe_name
-  # @param box
+  # Generate a list of role parameters in JSON format
+  # @param name [String] node name
+  # @param product_config [Hash] list of the product parameters
+  # @param recipe_name [String] name of the recipe
+  # @param box [String] name of the box
   def generate_json_format(name, product_config, recipe_name, box)
     run_list = ['recipe[mdbci_provision_mark::remove_mark]',
                 "recipe[#{recipe_name}]",
@@ -123,16 +122,16 @@ class InstallProduct < BaseCommand
     JSON.pretty_generate(role)
   end
 
-  #
-  # @param box
+  # Check whether box needs to be subscribed or not
+  # @param box [String] name of the box
   def check_subscription_manager(box)
     @env.box_definitions.get_box(box)['configure_subscription_manager'] == 'true'
   end
 
-  #
-  # @param product_name
-  # @param product
-  # @param box
+  # Generate the list of the product parameters
+  # @param product_name [String] name of the product for install
+  # @param product [Hash] parameters of the product to configure from configuration file
+  # @param box [String] name of the box
   def generate_product_config(product_name, product, box)
     repo = @env.repos.find_repository(product_name, product, box)
     raise "Repo for product #{product['name']} #{product['version']} for #{box} not found" if repo.nil?
