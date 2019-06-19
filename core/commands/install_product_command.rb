@@ -46,11 +46,13 @@ class InstallProduct < BaseCommand
       return ARGUMENT_ERROR_RESULT
     end
     @mdbci_config = Configuration.new(@args.first, @env.labels)
+    p @mdbci_config
     @product = @env.nodeProduct
     @product_version = @env.productVersion
 
     begin
       @network_config = NetworkSettings.from_file(@mdbci_config.network_settings_file)
+      p @network_config
     rescue StandardError
       @ui.error('Network settings file is not found for the configuration')
       return ARGUMENT_ERROR_RESULT
@@ -73,15 +75,18 @@ class InstallProduct < BaseCommand
   # Install product on server
   # @param machine [Hash] information about machine to connect
   def install_product(machine)
-    solo_config = "#{machine['name']}-config.json"
-    role_file = "#{@mdbci_config.path}/#{machine['name']}.json"
-    generate_role_file(machine['name'])
+    role_file_path = generate_role_file(machine['name'])
+    target_path = "configs/#{machine['name']}.json"
+    @machine_configurator.configure(machine, "#{machine['name']}.json", @ui,
+                                    [[role_file_path, target_path]],
+                                    sudo_password = '', chef_version = '14.7.17')
   end
 
   def generate_role_file(name)
     box = @mdbci_config.node_configurations[name]['box']
     recipe_name = @env.repos.recipe_name(@product)
     product = @mdbci_config.node_configurations[name]['product']
+    role_file_path = "#{@mdbci_config.path}/#{name}.json"
     if product.nil?
       product = {'name' => @product, 'version' => @product_version.to_s}
     else
@@ -89,7 +94,8 @@ class InstallProduct < BaseCommand
     end
     product_config = generate_product_config(@product, product, box)
     role_json_file = generate_json_file(name, product_config, recipe_name, box)
-    IO.write("#{@mdbci_config.path}/#{name}_new.json", role_json_file)
+    IO.write(role_file_path, role_json_file)
+    role_file_path
   end
 
   def generate_json_file(name, product_config, recipe_name, box)
@@ -129,22 +135,4 @@ class InstallProduct < BaseCommand
     attribute_name = @env.repos.attribute_name(product_name)
     { "#{attribute_name}": config }
   end
-
-  # Check whether chef have provisioned the server or not
-  #
-  # @param machine [Hash] information about machine to connect
-  # @param logger [Out] logger to log information
-  def node_provisioned?(machine, logger)
-    exit_code = SUCCESS_RESULT
-    @machine_configurator.within_ssh_session(machine) do |ssh|
-      output = ssh.exec!('test -e /var/mdbci/provisioned && printf PROVISIONED || printf NOT')
-      if output == 'PROVISIONED'
-        logger.info("Node '#{machine['name']}' was configured.")
-      else
-        logger.error("Node '#{machine['name']}' is not configured.")
-        exit_code = ERROR_RESULT
-      end
-    end
-    exit_code
-   end
 end
