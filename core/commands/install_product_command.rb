@@ -31,7 +31,7 @@ class InstallProduct < BaseCommand
   def show_help
     info = <<~HELP
   'install_product' Install a product onto the configuration node.
-  mdbci install_product config/node --product product --version-product version
+  mdbci install_product --product product --version-product version config/node
     HELP
     @ui.info(info)
   end
