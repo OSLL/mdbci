@@ -4,7 +4,6 @@ require_relative '../services/machine_configurator'
 
 # This class installs the product on selected node.
 class InstallProduct < BaseCommand
-
   def self.synopsis
     'Installs the product on selected node.'
   end
@@ -78,7 +77,7 @@ class InstallProduct < BaseCommand
     target_path = "configs/#{machine['name']}.json"
     @machine_configurator.configure(machine, "#{machine['name']}.json", @ui,
                                     [[role_file_path, target_path]],
-                                    sudo_password = '', chef_version = '14.7.17')
+                                    '', '14.7.17')
   end
 
   # Create a role file to install the product from the chef
@@ -89,9 +88,9 @@ class InstallProduct < BaseCommand
     product = @mdbci_config.node_configurations[name]['product']
     role_file_path = "#{@mdbci_config.path}/#{name}.json"
     if product.nil?
-      product = {'name' => @product, 'version' => @product_version.to_s}
+      product = { 'name' => @product, 'version' => @product_version.to_s }
     else
-      product < {'name' => @product, 'version' => @product_version.to_s}
+      product < { 'name' => @product, 'version' => @product_version.to_s }
     end
     product_config = generate_product_config(@product, product, box)
     role_json_file = generate_json_format(name, product_config, recipe_name, box)
