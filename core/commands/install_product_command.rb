@@ -82,6 +82,8 @@ class InstallProduct < BaseCommand
                                     sudo_password = '', chef_version = '14.7.17')
   end
 
+  #
+  # @param name
   def generate_role_file(name)
     box = @mdbci_config.node_configurations[name]['box']
     recipe_name = @env.repos.recipe_name(@product)
@@ -93,12 +95,17 @@ class InstallProduct < BaseCommand
       product < {'name' => @product, 'version' => @product_version.to_s}
     end
     product_config = generate_product_config(@product, product, box)
-    role_json_file = generate_json_file(name, product_config, recipe_name, box)
+    role_json_file = generate_json_format(name, product_config, recipe_name, box)
     IO.write(role_file_path, role_json_file)
     role_file_path
   end
 
-  def generate_json_file(name, product_config, recipe_name, box)
+  #
+  # @param name
+  # @param product_config
+  # @param recipe_name
+  # @param box
+  def generate_json_format(name, product_config, recipe_name, box)
     run_list = ['recipe[mdbci_provision_mark::remove_mark]',
                 "recipe[#{recipe_name}]",
                 'recipe[mdbci_provision_mark::default]']
@@ -116,10 +123,16 @@ class InstallProduct < BaseCommand
     JSON.pretty_generate(role)
   end
 
+  #
+  # @param box
   def check_subscription_manager(box)
     @env.box_definitions.get_box(box)['configure_subscription_manager'] == 'true'
   end
 
+  #
+  # @param product_name
+  # @param product
+  # @param box
   def generate_product_config(product_name, product, box)
     repo = @env.repos.find_repository(product_name, product, box)
     raise "Repo for product #{product['name']} #{product['version']} for #{box} not found" if repo.nil?
