@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../services/machine_configurator'
+require_relative '../../core/models/configuration'
 
 # This class installs the product on selected node.
 class InstallProduct < BaseCommand
@@ -30,8 +31,8 @@ class InstallProduct < BaseCommand
   # Print brief instructions on how to use the command.
   def show_help
     info = <<~HELP
-  'install_product' Install a product onto the configuration node.
-  mdbci install_product --product product --version-product version config/node
+      'install_product' Install a product onto the configuration node.
+      mdbci install_product --product product --version-product version config/node
     HELP
     @ui.info(info)
   end
