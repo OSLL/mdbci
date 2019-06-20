@@ -44,7 +44,7 @@ class ConfigurationGenerator
     raise "Repo for product #{product['name']} #{product['version']} for #{box} not found" if repo.nil?
 
     config = { 'version': repo['version'], 'repo': repo['repo'], 'repo_key': repo['repo_key'] }
-    if !product['cnf_template'].nil? && !product['cnf_template_path'].nil?
+    if check_product_availability(product)
       config['cnf_template'] = product['cnf_template']
       config['cnf_template_path'] = product['cnf_template_path']
     end
@@ -53,5 +53,11 @@ class ConfigurationGenerator
     config['node_name'] = product['node_name'] unless product['node_name'].nil?
     attribute_name = env.repos.attribute_name(product_name)
     { "#{attribute_name}": config }
+  end
+
+  # Checks the availability of product information.
+  # @param product [Hash] parameters of the product to configure from configuration file
+  def self.check_product_availability(product)
+    !product['cnf_template'].nil? && !product['cnf_template_path'].nil?
   end
 end
