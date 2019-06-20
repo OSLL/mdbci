@@ -138,7 +138,8 @@ end
         # Fix DNS bug
         config.trigger.after :up do |trigger|
           trigger.info = "Relink resolv.conf"
-          trigger.run_remote = { inline: "sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf" }
+          trigger.run_remote = { inline: "sudo rm /etc/resolv.conf" }
+          trigger.run_remote = { inline: "sudo echo -e 'nameserver 8.8.8.8\\nnameserver 8.8.4.4' > /etc/resolv.conf" }
         end
       <% end %>
     LIBVIRT
