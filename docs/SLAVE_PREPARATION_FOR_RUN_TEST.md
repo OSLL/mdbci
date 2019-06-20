@@ -43,6 +43,7 @@ sudo service docker stop
 sudo mv /var/lib/docker /home/docker
 sudo ln -sf /home/docker /var/lib/docker
 sudo service docker start
+sudo docker swarm init
 ```
 
 ### Install MaxScale test dependencies
@@ -81,6 +82,12 @@ Install the `sshfs` tool:
 
 ```
 sudo apt install sshfs
+```
+
+Modify FUSE configuration file `/etc/fuse.conf` to allow mounting with correct auth:
+
+```bash
+user_allow_other
 ```
 
 Mount them using `sshfs` and enable automatic remount:
