@@ -239,7 +239,7 @@ end
                        {}
                      end
     @ui.info("Recipe #{recipe_name}")
-    ConfigurationGenerator.generate_product_config(@env, name, product_config, recipe_name, box)
+    ConfigurationGenerator.generate_json_format(@env, name, product_config, recipe_name, box)
   end
   # rubocop:enable Metrics/MethodLength
 

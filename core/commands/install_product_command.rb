@@ -4,7 +4,7 @@ require_relative '../services/machine_configurator'
 require_relative '../../core/models/configuration'
 require_relative '../../core/services/configuration_generator'
 
-# This class installs the product on selected node.
+# This class installs the product on selected node
 class InstallProduct < BaseCommand
   def self.synopsis
     'Installs the product on selected node.'
@@ -29,7 +29,7 @@ class InstallProduct < BaseCommand
     SUCCESS_RESULT
   end
 
-  # Print brief instructions on how to use the command.
+  # Print brief instructions on how to use the command
   def show_help
     info = <<~HELP
       'install_product' Install a product onto the configuration node.
@@ -40,7 +40,7 @@ class InstallProduct < BaseCommand
 
   private
 
-  # Initializes the command variable.
+  # Initializes the command variable
   def init
     if @args.first.nil?
       @ui.error('Please specify the node')
