@@ -24,5 +24,4 @@ include_recipe 'packages::configure_apt'
   end
 end
 
-include_recipe 'packages::setup_resolved'
 include_recipe 'chrony::default'
