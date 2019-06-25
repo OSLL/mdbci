@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+  registry:
+    image: registry
+    deploy:
+      mode: global # Only one service instance is needed
+    ports:
+      - mode: host
+        target: 5000
+        published: 5000
+    volumes:
+      - /home/docker-registry/registry:/var/lib/registry
+      - /home/docker-registry/auth:/auth
+      - /etc/nginx/ssl-certs/mariadb.net/:/cert
+    environment:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: MaxScale Docker Registry Realm
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/docker-registry.htpasswd
+      REGISTRY_HTTP_TLS_CERTIFICATE: /cert/mariadb.net.combined.crt
+      REGISTRY_HTTP_TLS_KEY: /cert/mariadb.net.key
