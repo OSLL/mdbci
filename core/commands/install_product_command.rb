@@ -78,10 +78,13 @@ class InstallProduct < BaseCommand
   def install_product(machine)
     name = machine['name'].to_s
     role_file_path = generate_role_file(name)
-    target_path = "configs/#{name}-config.json"
+    target_path = "roles/#{name}.json"
+    role_file_path_config = "#{@mdbci_config.path}/#{name}-config.json"
+    target_path_config = "configs/#{name}-config.json"
+    extra_files = [[role_file_path, target_path], [role_file_path_config, target_path_config]]
     @network_config.add_nodes([name])
     @machine_configurator.configure(@network_config[name], "#{name}-config.json",
-                                    @ui, [[role_file_path, target_path]])
+                                    @ui, extra_files)
   end
 
   # Create a role file to install the product from the chef
