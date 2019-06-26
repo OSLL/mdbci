@@ -15,6 +15,7 @@ require_relative '../../services/shell_commands'
 require_relative '../../../core/services/configuration_generator'
 
 # The class generates the MDBCI configuration for use in pair with the Vagrant backend
+# rubocop:disable Metrics/ClassLength
 class VagrantConfigurationGenerator < BaseCommand
   def self.synopsis
     'Generate a configuration based on the template.'
@@ -138,7 +139,8 @@ end
         # Fix DNS bug
         config.trigger.after :up do |trigger|
           trigger.info = "Relink resolv.conf"
-          trigger.run_remote = { inline: "sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf" }
+          trigger.run_remote = { inline: "sudo rm /etc/resolv.conf" }
+          trigger.run_remote = { inline: "sudo echo -e 'nameserver 8.8.8.8\\nnameserver 8.8.4.4' > /etc/resolv.conf" }
         end
       <% end %>
     LIBVIRT
@@ -196,7 +198,6 @@ end
     AWS
     template.result(OpenStruct.new(node_params).instance_eval { binding })
   end
-  # rubocop:enable Metrics/MethodLength
 
   # Returns the credentials for subscription manager.
   #
@@ -208,24 +209,20 @@ end
     @env.rhel_credentials
   end
 
-  # Generate the role description for the specified node.
+
+  # Make product config and recipe name for install it to the VM.
   #
-  # @param name [String] internal name of the machine specified in the template
-  # @param product [Hash] parameters of the product to configure from configuration file
+  # @param product [Hash] parameters of product to configure from configuration file
   # @param box [String] name of the box
-  # @return [String] pretty formatted role description in JSON format
+  # @return [Hash] recipe name and product config in format { recipe: String, config: Hash }.
   # rubocop:disable Metrics/MethodLength
-  # The method performs a single function; decomposition of the method will complicate the code.
-  def get_role_description(name, product, box)
-    error_text = "#NONE, due invalid repo name \n"
+  def make_product_config_and_recipe_name(product, box)
     repo = nil
     if !product['repo'].nil?
       repo_name = product['repo']
       @ui.info("Repo name: #{repo_name}")
-      unless @env.repos.knownRepo?(repo_name)
-        @ui.warning("Unknown key for repo #{repo_name} will be skipped")
-        return error_text
-      end
+      raise "Unknown key for repo #{repo_name} will be skipped" unless @env.repos.knownRepo?(repo_name)
+
       @ui.info("Repo specified [#{repo_name}] (CORRECT), other product params will be ignored")
       repo = @env.repos.getRepo(repo_name)
       product_name = @env.repos.productName(repo_name)
@@ -240,8 +237,26 @@ end
                      end
     @ui.info("Recipe #{recipe_name}")
     ConfigurationGenerator.generate_json_format(@env.box_definitions, name, product_config, recipe_name, box)
+    { recipe: recipe_name, config: product_config }
   end
   # rubocop:enable Metrics/MethodLength
+
+  # Generate the role description for the specified node.
+  #
+  # @param name [String] internal name of the machine specified in the template
+  # @param products [Array<Hash>] list of parameters of products to configure from configuration file
+  # @param box [String] name of the box
+  # @return [String] pretty formatted role description in JSON format
+  def get_role_description(name, products, box)
+    products_configs = {}
+    recipes_names = []
+    products.each do |product|
+      recipe_and_config = make_product_config_and_recipe_name(product, box)
+      products_configs.merge!(recipe_and_config[:config])
+      recipes_names << recipe_and_config[:recipe]
+    end
+    ConfigurationGenerator.generate_json_format(@env.box_definitions, name, products_configs, recipes_names, box)
+  end
 
   # Check for the existence of a path, create it if path is not exists or clear path
   # if it is exists and override parameter is true.
@@ -337,6 +352,28 @@ end
     end
   end
 
+  # Parse path to the products configurations directory from configuration of node.
+  #
+  # @param node [Array] internal name of the machine specified in the template
+  # @return [String] path to the products configurations directory.
+  def parse_cnf_template_path(node)
+    node[1]['cnf_template_path'] || node[1]['product']&.fetch('cnf_template_path', nil)
+  end
+
+  # Parse the products lists from configuration of node.
+  #
+  # @param node [Array] internal name of the machine specified in the template
+  # @param cnf_template_path [String] path to the products configurations directory
+  # @return [Array<Hash>] list of parameters of products.
+  def parse_products_info(node, cnf_template_path)
+    products = [].push(node[1]['product']).push(node[1]['products']).flatten.compact.uniq
+    products << { 'name' => 'packages' } if products.empty?
+    unless cnf_template_path.nil?
+      products.each { |product| product['cnf_template_path'] = cnf_template_path if product['cnf_template'] }
+    end
+    products
+  end
+
   # Make a list of node parameters, create the role and node_config files, generate
   # node definition for the Vagrantfile.
   #
@@ -352,16 +389,11 @@ end
       node_params = make_node_params(node, @boxes.get_box(box))
       print_node_info(node_params, box)
     end
-    provisioned = !node[1]['product'].nil?
-    if provisioned
-      product = node[1]['product']
-      node_params[:template_path] = product['cnf_template_path'] unless product['cnf_template_path'].nil?
-    else
-      product = { 'name' => 'packages' }
-    end
-    @ui.info("Machine #{node_params[:name]} is provisioned by #{product}")
-    # box with mariadb, maxscale provision - create role
-    role = get_role_description(node_params[:name], product, box)
+    cnf_template_path = parse_cnf_template_path(node)
+    products = parse_products_info(node, cnf_template_path)
+    node_params[:template_path] = cnf_template_path unless cnf_template_path.nil?
+    @ui.info("Machine #{node_params[:name]} is provisioned by #{products}")
+    role = get_role_description(node_params[:name], products, box)
     IO.write(self.class.role_file_name(path, node_params[:name]), role)
     IO.write(self.class.node_config_file_name(path, node_params[:name]),
              JSON.pretty_generate('run_list' => ["role[#{node_params[:name]}]"]))
@@ -552,3 +584,4 @@ end
     SUCCESS_RESULT
   end
 end
+# rubocop:enable Metrics/ClassLength

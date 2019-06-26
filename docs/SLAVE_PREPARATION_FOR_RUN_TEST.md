@@ -1,12 +1,134 @@
-# Prepare slave for run test
+# Prepare machine to be part of MaxScale CI
 
-## Preparation scripts and sequence (*+current order is important+*)
+## Install dependencies for BuildBot CI
 
-### Generate and copy slave ssh key to max-tst-01:
+### Install MDBCI and configure MDBCI
+
+Install mdbci:
+
 ```bash
-ssh-keygen -t rsa
-cat .ssh/id_rsa.pub | ssh vagrant@max-tst-01.mariadb.com 'cat >> .ssh/authorized_keys' # will ask for vagrant password
+mkdir ~/mdbci/mdbci
+wget http://max-tst-01.mariadb.com/ci-repository/mdbci -O ~/mdbci/mdbci
+chmod +x ~/mdbci/mdbci
 ```
+
+Install dependencies:
+
+```bash
+~/mdbci/mdbci setup-dependencies
+```
+
+Configure the MDBCI credentials:
+
+```bash
+~/mdbci/mdbci configure
+```
+
+After installation, re-initiate the SSH connection.
+
+### Install Docker
+
+Use the instructions on https://docs.docker.com/install/ to install the tooling.
+
+Add the current user to the docker group:
+
+```
+sudo gpasswd -a $(whoami) docker
+```
+
+Move docker container registry to the `/home` directory, so it won't run out of the free space.
+
+```
+sudo service docker stop
+sudo mv /var/lib/docker /home/docker
+sudo ln -sf /home/docker /var/lib/docker
+sudo service docker start
+sudo docker swarm init
+```
+
+### Install MaxScale test dependencies
+
+Clone the MaxScale and switch to the `develop` branch:
+
+```
+sudo apt install git
+
+git clone https://github.com/mariadb-corporation/MaxScale.git
+cd MaxScale
+git checkout develop
+```
+
+Install the test dependencies
+
+```
+~/MaxScale/BUILD/install_test_build_deps.sh
+```
+
+### Setup connection to repository locations
+
+Copy the ssh id key to the max-tst-01 server. If it is not present, generate it.
+
+```
+ssh-copy-id vagrant@max-tst-01.mariadb.com
+```
+
+Create directories:
+
+```
+mkdir ~/LOGS ~/repo ~/repository
+```
+
+Install the `sshfs` tool:
+
+```
+sudo apt install sshfs
+```
+
+Modify FUSE configuration file `/etc/fuse.conf` to allow mounting with correct auth:
+
+```bash
+user_allow_other
+```
+
+Mount them using `sshfs` and enable automatic remount:
+
+```bash
+cd ~/mdbci
+./mdbci deploy-examples
+./scripts/slave_setting/sshfs/check_resync_in_crone.sh
+./scripts/slave_setting/sshfs/resync_shared_dirs.sh
+```
+
+### Copy all private configuration files for the build tasks
+
+- `build_parser_db_password`
+- `maxscale_gpg_keys/MariaDBManager-GPG-KEY.private`
+- `maxscale_gpg_keys/MariaDBManager-GPG-KEY.public`
+
+### BuildBot worker installation
+
+Allow BuildBot master to connect to current machine via SSH.
+
+Install required dependencies:
+
+```
+sudo apt install python3 python3-dev python3-virtualenv
+```
+
+From the BuildBot master go to the worker-management script, install and start workers:
+
+```
+./manage.py --host HOST install
+./manage.py --host HOST start
+```
+
+## Setup Zabbix agent
+
+See official manual on the matter: https://www.zabbix.com/documentation/4.2/manual/installation/install_from_packages/debian_ubuntu
+
+Edit the `/etc/zabbix/zabbix_agentd.conf`.
+
+## OLD INFO
 
 ### To setup current machine as slave run
 `.scripts/setup_as_slave.sh`
@@ -43,45 +165,4 @@ Import keys for MariaDB packages
 Set up databases
 ```bash
 ./scripts/slave_setting/configure_ctest_parsing_and_performance.sh
-```
-
-### After that you need to logout and login
-```bash
-exec su $USER
-```
-
-### *IMPORTANT* Vagrant needs additional package - *nfs-server-kernel*:
-```bash
-sudo apt-get install nfs-kernel-server
-```
-
-### And you need to prepare vagrant user with all needed privileges
-Add to the */etc/sudoers.d/vagrant* next lines:
-```bash
-Cmnd_Alias VAGRANT_EXPORTS_ADD = /usr/bin/tee -a /etc/exports
-Cmnd_Alias VAGRANT_EXPORTS_COPY = /bin/cp /tmp/exports /etc/exports
-Cmnd_Alias VAGRANT_NFSD_CHECK = /etc/init.d/nfs-kernel-server status
-Cmnd_Alias VAGRANT_NFSD_START = /etc/init.d/nfs-kernel-server start
-Cmnd_Alias VAGRANT_NFSD_APPLY = /usr/sbin/exportfs -ar
-Cmnd_Alias VAGRANT_EXPORTS_REMOVE = /bin/sed -r -e * d -ibak /tmp/exports
-%sudo ALL=(root) NOPASSWD: VAGRANT_EXPORTS_ADD, VAGRANT_NFSD_CHECK, VAGRANT_NFSD_START, VAGRANT_NFSD_APPLY, VAGRANT_EXPORTS_REMOVE, VAGRANT_EXPORTS_COPY
-```
-
-### Relogin
-```bash
-exec su $USER
-```
-
-## Disable some authentifications for ssh (without it Jenkins unable to connect to slave)
-
-### Find in '/etc/ssh/sshd_config' on slave this lines and comment them:
-```bash
-Ciphers aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes128-ctr
-MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,hmac-ripemd160
-KexAlgorithms diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha1,diffie-hellman-group-exchange-sha1
-```
-
-### Restart ssh:
-```bash
-service ssh restart
 ```

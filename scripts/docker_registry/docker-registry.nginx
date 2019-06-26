@@ -1,0 +1,25 @@
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name maxscale-docker-registry.mariadb.net;
+
+    location / {
+        return 302 https://$server_name:5000$request_uri;
+    }
+}
+
+server {
+    listen 443;
+    listen [::]:443;
+
+    server_name maxscale-docker-registry.mariadb.net;
+
+    # SSL
+    include snippets/ssl-params.conf;
+    include snippets/mariadb-net-ssl-cert.conf;
+
+    location / {
+        return 302 https://$server_name:5000$request_uri;
+    }
+}
