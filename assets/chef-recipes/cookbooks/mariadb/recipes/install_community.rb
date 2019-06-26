@@ -128,8 +128,11 @@ when "windows"
     action :install
   end
 else
-  package 'MariaDB-server'
-  package 'MariaDB-client'
+  %w[MariaDB-server MariaDB-client].each do |package_name|
+    package package_name do
+      flush_cache [:before]
+    end
+  end
 end
 
 # Copy server.cnf configuration file to configuration

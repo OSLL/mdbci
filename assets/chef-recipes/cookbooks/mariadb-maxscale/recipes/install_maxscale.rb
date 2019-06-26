@@ -122,7 +122,9 @@ when "windows"
     action :install
   end
 else
-  package 'maxscale'
+  package 'maxscale' do
+    flush_cache [:before]
+  end
   package 'maxscale-experimental' do
     ignore_failure MaxScale.is_older_than?(node['maxscale']['version'], '2.2')
   end
