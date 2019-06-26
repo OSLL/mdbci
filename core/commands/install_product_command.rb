@@ -23,8 +23,7 @@ class InstallProduct < BaseCommand
       return ARGUMENT_ERROR_RESULT
     end
 
-    machine = setup_ssh_key(@mdbci_config.node_names[0])
-    install_product(machine)
+    install_product(@mdbci_config.node_names[0])
 
     SUCCESS_RESULT
   end
@@ -63,20 +62,9 @@ class InstallProduct < BaseCommand
     SUCCESS_RESULT
   end
 
-  # Setup ssh key data
-  # @param node_name [String] name of the node
-  def setup_ssh_key(node_name)
-    node_settings = @network_settings.node_settings(node_name)
-    { 'whoami' => node_settings['whoami'],
-      'network' => node_settings['network'],
-      'keyfile' => node_settings['keyfile'],
-      'name' => node_name }
-  end
-
   # Install product on server
-  # @param machine [Hash] information about machine to connect
-  def install_product(machine)
-    name = machine['name'].to_s
+  # param node_name [String] name of the node
+  def install_product(name)
     role_file_path = generate_role_file(name)
     target_path = "roles/#{name}.json"
     role_file_path_config = "#{@mdbci_config.path}/#{name}-config.json"
