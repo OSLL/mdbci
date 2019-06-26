@@ -3,7 +3,7 @@
 # The class provides methods for generating the role of the file.
 class ConfigurationGenerator
   # Generate a list of role parameters in JSON format
-  # @param env [Session] reference to the GOD object of this application
+  # @param box_definitions [BoxDefinitions] the list of BoxDefinitions that are configured in the application
   # @param name [String] node name
   # @param product_config [Hash] list of the product parameters
   # @param recipe_name [String] name of the recipe
@@ -27,14 +27,14 @@ class ConfigurationGenerator
   end
 
   # Check whether box needs to be subscribed or not
-  # @param env [Session] reference to the GOD object of this application
+  # @param box_definitions [BoxDefinitions] the list of BoxDefinitions that are configured in the application
   # @param box [String] name of the box
   def self.check_subscription_manager(box_definitions, box)
     box_definitions.get_box(box)['configure_subscription_manager'] == 'true'
   end
 
   # Generate the list of the product parameters
-  # @param env [Session] reference to the GOD object of this application
+  # @param repos [RepoManager] for products
   # @param product_name [String] name of the product for install
   # @param product [Hash] parameters of the product to configure from configuration file
   # @param box [String] name of the box
