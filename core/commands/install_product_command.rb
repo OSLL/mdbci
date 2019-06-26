@@ -88,8 +88,9 @@ class InstallProduct < BaseCommand
     else
       product < { 'name' => @product, 'version' => @product_version.to_s }
     end
-    product_config = ConfigurationGenerator.generate_product_config(@env, @product, product, box, nil)
-    role_json_file = ConfigurationGenerator.generate_json_format(@env, name, product_config, recipe_name, box)
+    product_config = ConfigurationGenerator.generate_product_config(@env.repos, @product, product, box, nil)
+    role_json_file = ConfigurationGenerator.generate_json_format(@env.box_definitions, name, product_config,
+                                                                 recipe_name, box)
     IO.write(role_file_path, role_json_file)
     role_file_path
   end
