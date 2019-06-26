@@ -50,13 +50,6 @@ class InstallProduct < BaseCommand
 
     @product = @env.nodeProduct
     @product_version = @env.productVersion
-
-    begin
-      @network_settings = NetworkSettings.from_file(@mdbci_config.network_settings_file)
-    rescue StandardError
-      @ui.error('Network settings file is not found for the configuration')
-      return ARGUMENT_ERROR_RESULT
-    end
     @machine_configurator = MachineConfigurator.new(@ui)
 
     SUCCESS_RESULT
@@ -86,7 +79,7 @@ class InstallProduct < BaseCommand
     if product.nil?
       product = { 'name' => @product, 'version' => @product_version.to_s }
     else
-      product < { 'name' => @product, 'version' => @product_version.to_s }
+      product.merge('name' => @product, 'version' => @product_version.to_s)
     end
     product_config = ConfigurationGenerator.generate_product_config(@env.repos, @product, product, box, nil)
     role_json_file = ConfigurationGenerator.generate_json_format(@env.box_definitions, name, product_config,
