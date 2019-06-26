@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 require_relative '../services/machine_configurator'
-require_relative '../../core/models/configuration'
-require_relative '../../core/services/configuration_generator'
+require_relative '../models/configuration'
+require_relative '../services/configuration_generator'
 
 # This class installs the product on selected node
 class InstallProduct < BaseCommand
@@ -104,23 +104,5 @@ class InstallProduct < BaseCommand
     role_json_file = ConfigurationGenerator.generate_json_format(@env, name, product_config, recipe_name, box)
     IO.write(role_file_path, role_json_file)
     role_file_path
-  end
-
-
-  # Make a hash list of node parameters by a node configuration and
-  # information of the box parameters.
-  #
-  # @param node [Array] information of the node from configuration file
-  # @param box_params [Hash] information of the box parameters
-  # @return [Hash] list of the node parameters.
-  def make_node_params(node, box_params, name)
-    p node
-    symbolic_box_params = Hash[box_params.map { |k, v| [k.to_sym, v] }]
-    {
-      name: name.to_s,
-      host: node['hostname'].to_s,
-      vm_mem: node['memory_size'].nil? ? '1024' : node['memory_size'].to_s,
-      vm_cpu: (@env.cpu_count || node['cpu_count'] || '1').to_s
-    }.merge(symbolic_box_params)
   end
 end
