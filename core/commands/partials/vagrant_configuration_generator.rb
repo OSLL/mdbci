@@ -12,6 +12,7 @@ require_relative '../base_command'
 require_relative '../../out'
 require_relative '../../models/configuration.rb'
 require_relative '../../services/shell_commands'
+require_relative '../../../core/services/configuration_generator'
 
 # The class generates the MDBCI configuration for use in pair with the Vagrant backend
 # rubocop:disable Metrics/ClassLength
@@ -197,59 +198,6 @@ end
     AWS
     template.result(OpenStruct.new(node_params).instance_eval { binding })
   end
-  # rubocop:enable Metrics/MethodLength
-
-  # Make the list of the product parameters.
-  #
-  # @param product_name [String] name of the product for install
-  # @param product [Hash] parameters of the product to configure from configuration file
-  # @param box information about the box
-  # @param repo [String] repo
-  # @return [Hash] pretty formatted role description in JSON format.
-  # rubocop:disable Metrics/CyclomaticComplexity
-  # Further decomposition of the method will complicate the code.
-  def make_product_config(product_name, product, box, repo)
-    repo = @env.repos.find_repository(product_name, product, box) if repo.nil?
-    raise "Repo for product #{product['name']} #{product['version']} for #{box} not found" if repo.nil?
-
-    config = { 'version': repo['version'], 'repo': repo['repo'], 'repo_key': repo['repo_key'] }
-    if !product['cnf_template'].nil? && !product['cnf_template_path'].nil?
-      config['cnf_template'] = product['cnf_template']
-      config['cnf_template_path'] = product['cnf_template_path']
-    end
-    repo_file_name = @env.repos.repo_file_name(product_name)
-    config['repo_file_name'] = repo_file_name unless repo_file_name.nil?
-    config['node_name'] = product['node_name'] unless product['node_name'].nil?
-    attribute_name = @env.repos.attribute_name(product_name)
-    { "#{attribute_name}": config }
-  end
-  # rubocop:enable Metrics/CyclomaticComplexity
-
-  # Make the list of the role parameters in the JSON-format.
-  #
-  # @param name [String] internal name of the machine specified in the template
-  # @param products_configs [Array<Hash>] list of the products parameters
-  # @param recipes_names [Array<String>] list of the recipe names
-  # @param box [String] name of the box
-  # in format { recipe_name, credentials, attribute_name }
-  # @return [String] pretty formatted role description in JSON format.
-  def make_role_json(name, products_configs, recipes_names, box)
-    run_list = ['recipe[mdbci_provision_mark::remove_mark]',
-                *recipes_names.map { |recipe_name| "recipe[#{recipe_name}]" },
-                'recipe[mdbci_provision_mark::default]']
-    if need_subscription_manager_credentials?(box)
-      run_list.insert(1, 'recipe[subscription-manager]')
-      products_configs = products_configs.merge('subscription-manager': retrieve_subscription_credentials)
-    end
-    role = { name: name,
-             default_attributes: {},
-             override_attributes: products_configs,
-             json_class: 'Chef::Role',
-             description: '',
-             chef_type: 'role',
-             run_list: run_list }
-    JSON.pretty_generate(role)
-  end
 
   # Returns the credentials for subscription manager.
   #
@@ -261,13 +209,6 @@ end
     @env.rhel_credentials
   end
 
-  # Check whether box needs to be subscribed or not.
-  #
-  # @param box [String] name of the box
-  # @return [Bool] true if box needs to be subscribed, otherwise - false.
-  def need_subscription_manager_credentials?(box)
-    @boxes.get_box(box)['configure_subscription_manager'] == 'true'
-  end
 
   # Make product config and recipe name for install it to the VM.
   #
@@ -290,11 +231,12 @@ end
     end
     recipe_name = @env.repos.recipe_name(product_name)
     product_config = if product_name != 'packages'
-                       make_product_config(product_name, product, box, repo)
+                       ConfigurationGenerator.generate_product_config(@env.repos, product_name, product, box, repo)
                      else
                        {}
                      end
     @ui.info("Recipe #{recipe_name}")
+    ConfigurationGenerator.generate_json_format(@env.box_definitions, name, product_config, recipe_name, box)
     { recipe: recipe_name, config: product_config }
   end
   # rubocop:enable Metrics/MethodLength
@@ -313,7 +255,7 @@ end
       products_configs.merge!(recipe_and_config[:config])
       recipes_names << recipe_and_config[:recipe]
     end
-    make_role_json(name, products_configs, recipes_names, box)
+    ConfigurationGenerator.generate_json_format(@env.box_definitions, name, products_configs, recipes_names, box)
   end
 
   # Check for the existence of a path, create it if path is not exists or clear path

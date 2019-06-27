@@ -40,7 +40,7 @@ $mdbci_exec_dir = File.expand_path(File.dirname(File.realpath(__FILE__)))
 $LOAD_PATH.unshift($mdbci_exec_dir) unless $LOAD_PATH.include?($mdbci_exec_dir)
 
 require 'core/session'
-require 'core/node_product'
+
 require 'core/out'
 require 'core/exception_handler'
 require 'core/services/version'
