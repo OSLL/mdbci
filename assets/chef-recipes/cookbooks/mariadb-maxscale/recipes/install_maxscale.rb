@@ -123,7 +123,9 @@ when "windows"
   end
 else
   package 'maxscale' do
-    flush_cache [:before]
+    if %w[rhel centos].include?(node[:platform_family])
+      flush_cache [:before]
+    end
   end
   package 'maxscale-experimental' do
     ignore_failure MaxScale.is_older_than?(node['maxscale']['version'], '2.2')
