@@ -14,8 +14,10 @@ class ConfigurationGenerator
                 *recipes_names.map { |recipe_name| "recipe[#{recipe_name}]" },
                 'recipe[mdbci_provision_mark::default]']
     if check_subscription_manager(box_definitions, box)
+      raise 'RHEL credentials for Red Hat Subscription-Manager are not configured' if rhel_credentials.nil?
+
       run_list.insert(1, 'recipe[subscription-manager]')
-      product_configs = product_configs.merge('subscription-manager': retrieve_subscription_credentials(rhel_credentials))
+      product_configs = product_configs.merge(rhel_credentials)
     end
     role = { name: name,
              default_attributes: {},
@@ -25,14 +27,6 @@ class ConfigurationGenerator
              chef_type: 'role',
              run_list: run_list }
     JSON.pretty_generate(role)
-  end
-
-  # Chek redentials for subscription manager
-  # @param rhel_credentials redentials for subscription manager
-  def self.retrieve_subscription_credentials(rhel_credentials)
-    raise 'RHEL credentials for Red Hat Subscription-Manager are not configured' if rhel_credentials.nil?
-
-    rhel_credentials
   end
 
   # Check whether box needs to be subscribed or not
