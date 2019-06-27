@@ -73,7 +73,8 @@ class InstallProduct < BaseCommand
   def generate_role_file(name)
     node = @mdbci_config.node_configurations[name]
     box = node['box'].to_s
-    recipe_name = @env.repos.recipe_name(@product)
+    recipe_name = []
+    recipe_name.push(@env.repos.recipe_name(@product))
     product = node['product']
     role_file_path = "#{@mdbci_config.path}/#{name}.json"
     if product.nil?
