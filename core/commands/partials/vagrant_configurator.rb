@@ -204,10 +204,9 @@ class VagrantConfigurator
 
   # Get the logger. Depending on the number of threads returns a unique logger or @ui.
   #
-  # @param size [Integer] number of nodes
   # @return [Out] logger.
-  def retrieve_logger_for_node(size)
-    if @env.threads_count > 1 && size > 1
+  def retrieve_logger_for_node
+    if @env.threads_count > 1 && @config.node_names.size > 1
       LogStorage.new(@env)
     else
       @ui
@@ -217,11 +216,10 @@ class VagrantConfigurator
   # Brings up node.
   #
   # @param node [String] name of node which needs to be up
-  # @param size [Integer] number of nodes
   # @return [Array<Bool, Out>] up result and log history.
   # rubocop:disable Style/IfUnlessModifier
-  def up_node(node, size)
-    logger = retrieve_logger_for_node(size)
+  def up_node(node)
+    logger = retrieve_logger_for_node
     if @env.recreate || !VagrantCommands.node_running?(node, logger)
       bring_up_and_configure(node, logger)
     end
@@ -245,11 +243,11 @@ class VagrantConfigurator
     run_in_directory(@config.path) do
       store_network_config
       if nodes.size != 1
-        up_results = Workers.map(nodes) { |node| up_node(node, nodes.size) }
+        up_results = Workers.map(nodes) { |node| up_node(node) }
         up_results.each { |up_result| up_result[1].print_to_stdout } if @env.threads_count > 1 && nodes.size > 1
         return ERROR_RESULT unless up_results.detect { |up_result| !up_result[0] }.nil?
       else
-        up_result = up_node(nodes[0], nodes.size)
+        up_result = up_node(nodes[0])
         return ERROR_RESULT unless up_result[0].nil?
       end
     end
