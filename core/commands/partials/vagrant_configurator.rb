@@ -238,9 +238,15 @@ class VagrantConfigurator
     nodes = @config.node_names
     run_in_directory(@config.path) do
       store_network_config
-      up_results = Workers.map(nodes) { |node| up_node(node) }
-      up_results.each { |up_result| up_result[1].print_to_stdout } if @env.threads_count > 1
-      return ERROR_RESULT unless up_results.detect { |up_result| !up_result[0] }.nil?
+      if nodes.size != 1
+        up_results = Workers.map(nodes) { |node| up_node(node) }
+        up_results.each { |up_result| up_result[1].print_to_stdout } if @env.threads_count > 1
+        return ERROR_RESULT unless up_results.detect { |up_result| !up_result[0] }.nil?
+      else
+        up_result = up_node(nodes[0])
+        up_result[1].print_to_stdout
+        return ERROR_RESULT unless up_result[0].nil?
+      end
     end
     generate_config_information(Dir.pwd)
     generate_label_information_file
