@@ -8,13 +8,16 @@ class ConfigurationGenerator
   # @param product_config [Hash] list of the product parameters
   # @param recipe_name [String] name of the recipe
   # @param box [String] name of the box
-  def self.generate_json_format(box_definitions, name, product_configs, recipes_names, box)
+  # @param rhel_credentials redentials for subscription manager
+  def self.generate_json_format(box_definitions, name, product_configs, recipes_names, box, rhel_credentials)
     run_list = ['recipe[mdbci_provision_mark::remove_mark]',
                 *recipes_names.map { |recipe_name| "recipe[#{recipe_name}]" },
                 'recipe[mdbci_provision_mark::default]']
     if check_subscription_manager(box_definitions, box)
+      raise 'RHEL credentials for Red Hat Subscription-Manager are not configured' if rhel_credentials.nil?
+
       run_list.insert(1, 'recipe[subscription-manager]')
-      product_configs = product_configs.merge('subscription-manager': retrieve_subscription_credentials)
+      product_configs = product_configs.merge(rhel_credentials)
     end
     role = { name: name,
              default_attributes: {},

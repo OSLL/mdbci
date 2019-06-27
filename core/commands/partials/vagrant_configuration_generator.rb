@@ -199,17 +199,6 @@ end
     template.result(OpenStruct.new(node_params).instance_eval { binding })
   end
 
-  # Returns the credentials for subscription manager.
-  #
-  # @return [Hash] subscription manager credentials.
-  # @raise RuntimeError if RHEL credentials for Red Hat Subscription-Manager are not configured.
-  def retrieve_subscription_credentials
-    raise 'RHEL credentials for Red Hat Subscription-Manager are not configured' if @env.rhel_credentials.nil?
-
-    @env.rhel_credentials
-  end
-
-
   # Make product config and recipe name for install it to the VM.
   #
   # @param product [Hash] parameters of product to configure from configuration file
@@ -254,7 +243,8 @@ end
       products_configs.merge!(recipe_and_config[:config])
       recipes_names << recipe_and_config[:recipe]
     end
-    ConfigurationGenerator.generate_json_format(@env.box_definitions, name, products_configs, recipes_names, box)
+    ConfigurationGenerator.generate_json_format(@env.box_definitions, name, products_configs, recipes_names,
+                                                box, @env.rhel_credentials)
   end
 
   # Check for the existence of a path, create it if path is not exists or clear path
