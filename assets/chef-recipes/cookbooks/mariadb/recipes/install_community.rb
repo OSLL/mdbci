@@ -127,12 +127,11 @@ when "windows"
     installer_type :msi
     action :install
   end
-else
-  %w[MariaDB-server MariaDB-client].each do |package_name|
-    package package_name do
-      flush_cache [:before]
-    end
+when "rhel", "centos"
+  package 'MariaDB-server' do
+    flush_cache [:before]
   end
+  package 'MariaDB-client'
 end
 
 # Copy server.cnf configuration file to configuration
