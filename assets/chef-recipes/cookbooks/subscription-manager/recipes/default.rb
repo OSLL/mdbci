@@ -1,4 +1,5 @@
 execute 'Register the system' do
+  sensitive true
   command 'subscription-manager register '\
           "--username #{node['subscription-manager']['username']} "\
           "--password #{node['subscription-manager']['password']} "\
