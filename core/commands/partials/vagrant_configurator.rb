@@ -206,7 +206,7 @@ class VagrantConfigurator
   #
   # @return [Out] logger.
   def retrieve_logger_for_node
-    if check_threads_and_nodes_count
+    if use_log_storage?
       LogStorage.new(@env)
     else
       @ui
@@ -243,7 +243,7 @@ class VagrantConfigurator
     run_in_directory(@config.path) do
       store_network_config
       up_results = Workers.map(nodes) { |node| up_node(node) }
-      up_results.each { |up_result| up_result[1].print_to_stdout } if check_threads_and_nodes_count
+      up_results.each { |up_result| up_result[1].print_to_stdout } if use_log_storage?
       return ERROR_RESULT unless up_results.detect { |up_result| !up_result[0] }.nil?
     end
     generate_config_information(Dir.pwd)
@@ -251,8 +251,8 @@ class VagrantConfigurator
     SUCCESS_RESULT
   end
 
-  # Check threads_count and number of nodes
-  def check_threads_and_nodes_count
+  # Checks whether to use log storage
+  def use_log_storage?
     @env.threads_count > 1 && @config.node_names.size > 1
   end
 end
